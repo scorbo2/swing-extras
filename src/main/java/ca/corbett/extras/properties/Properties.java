@@ -1,0 +1,255 @@
+package ca.corbett.extras.properties;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Provides a wrapper around java's Properties class, with convenience methods that
+ * abstract away the type conversions that callers would otherwise have to worry about.
+ * Specifically, the java.util.Properties class handles everything as Strings, which is
+ * great for simple name/value pairs, but when you want to start storing integers, booleans,
+ * colour values, and etc, you have to worry about converting everything to and from
+ * Strings. This class abstracts that for you and provides easy convenience methods.
+ *
+ * @author scorbo2
+ * @since 2022-05-10
+ */
+public class Properties {
+
+  private final static Logger logger = Logger.getLogger(Properties.class.getName());
+
+  protected final java.util.Properties props;
+
+  /**
+   * Creates a new, empty Properties object.
+   */
+  public Properties() {
+    this.props = new java.util.Properties();
+  }
+
+  /**
+   * Returns a sorted list of property names currently stored in this Properties object.
+   * Implementation note: a copy of the list is returned to avoid client modification headaches.
+   *
+   * @return A list of unique property names.
+   */
+  public List<String> getPropertyNames() {
+    List<String> list = new ArrayList<>();
+    for (Object key : props.keySet()) {
+      list.add((String)key);
+    }
+    list.sort(String::compareTo);
+    return list;
+  }
+
+  /**
+   * Removes the property with the given name, if any.
+   *
+   * @param name The property name.
+   */
+  public void remove(String name) {
+    props.remove(name);
+  }
+
+  /**
+   * Sets a String name/value pair. Replaces any previous value for the given name.
+   *
+   * @param name The property name.
+   * @param value The property value.
+   */
+  public void setString(String name, String value) {
+    props.setProperty(name, value);
+  }
+
+  /**
+   * Retrieves the String value of the named property, if any.
+   *
+   * @param name The property name.
+   * @param defaultValue A value to receive if no such named property exists.
+   * @return The value of the named property, or defaultValue if no such property exists.
+   */
+  public String getString(String name, String defaultValue) {
+    return props.getProperty(name, defaultValue);
+  }
+
+  /**
+   * Sets an Integer property. Replaces any previous value for the given property name.
+   *
+   * @param name The property name.
+   * @param value The property value.
+   */
+  public void setInteger(String name, Integer value) {
+    props.setProperty(name, Integer.toString(value));
+  }
+
+  /**
+   * Attempts to retrieve an Integer value for the named property.
+   * If no such named property exists, or if the stored value cannot be converted to
+   * an Integer, then defaultValue is returned.
+   *
+   * @param name The property name.
+   * @param defaultValue A value to receive if no such property exists.
+   * @return The value of the named property, or defaultValue if no such property or not an int.
+   */
+  public Integer getInteger(String name, Integer defaultValue) {
+    Integer value = defaultValue;
+    try {
+      value = Integer.valueOf(props.getProperty(name, Integer.toString(defaultValue)));
+    }
+    catch (NumberFormatException e) {
+      logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non integer value.", e);
+    }
+    return value;
+  }
+
+  /**
+   * Sets a Boolean value for the given property name. Replaces any previous value for the
+   * named property.
+   *
+   * @param name The property name.
+   * @param value The property value.
+   */
+  public void setBoolean(String name, Boolean value) {
+    props.setProperty(name, Boolean.toString(value));
+  }
+
+  /**
+   * Attempts to retrieve a Boolean value for the named property.
+   * If no such named property exists, then defaultValue is returned.
+   * Any of the following values will be considered valid boolean "true" values:
+   * "true", "1", "yes", "on", or "enabled".
+   * Any other property value will be considered "false".
+   *
+   * @param name The property name.
+   * @param defaultValue A value to receive if no such property exists.
+   * @return The value of the named property, or defaultValue if no such property exists.
+   */
+  public Boolean getBoolean(String name, Boolean defaultValue) {
+    Boolean value = defaultValue;
+    String propValue = props.getProperty(name);
+    if (propValue != null) {
+      propValue = propValue.trim();
+      value = (propValue.equalsIgnoreCase("true")
+              || propValue.equals("1")
+              || propValue.equals("yes")
+              || propValue.equals("on")
+              || propValue.equals("enabled"));
+    }
+    return value;
+  }
+
+  /**
+   * Sets a Float property. Replaces any previous value for the given property name.
+   *
+   * @param name The property name.
+   * @param value The property value.
+   */
+  public void setFloat(String name, Float value) {
+    props.setProperty(name, Float.toString(value));
+  }
+
+  /**
+   * Attempts to retrieve a Float value for the named property.
+   * If no such named property exists, or if the stored value cannot be converted to
+   * a Float, then defaultValue is returned.
+   *
+   * @param name The property name.
+   * @param defaultValue A value to receive if no such property exists.
+   * @return The value of the named property, or defaultValue if no such property or not a float.
+   */
+  public Float getFloat(String name, Float defaultValue) {
+    Float value = defaultValue;
+    try {
+      value = Float.valueOf(props.getProperty(name, Float.toString(defaultValue)));
+    }
+    catch (NumberFormatException e) {
+      logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-float value.", e);
+    }
+    return value;
+  }
+
+  /**
+   * Sets a Double property. Replaces any previous value for the given property name.
+   *
+   * @param name The property name.
+   * @param value The property value.
+   */
+  public void setDouble(String name, Double value) {
+    props.setProperty(name, Double.toString(value));
+  }
+
+  /**
+   * Attempts to retrieve a Double value for the named property.
+   * If no such named property exists, or if the stored value cannot be converted to
+   * a Double, then defaultValue is returned.
+   *
+   * @param name The property name.
+   * @param defaultValue A value to receive if no such property exists.
+   * @return The value of the named property, or defaultValue if no such property or not a double.
+   */
+  public Double getDouble(String name, Double defaultValue) {
+    Double value = defaultValue;
+    try {
+      value = Double.valueOf(props.getProperty(name, Double.toString(defaultValue)));
+    }
+    catch (NumberFormatException e) {
+      logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-double value.", e);
+    }
+    return value;
+  }
+
+  /**
+   * Sets a Color property. Replaces any previous value for the given property name.
+   * Color values are written as Strings in the form "0xAARRGGBB".
+   *
+   * @param name The property name.
+   * @param value The property value.
+   */
+  public void setColor(String name, Color value) {
+    props.setProperty(name, "0x" + Integer.toHexString(value.getRGB()));
+  }
+
+  /**
+   * Attempts to retrieve a Color value for the named property.
+   * If no such named property exists, then defaultValue is returned.
+   * Color values may be stored as Strings in the form "0XAARRGGBB", or
+   * "0xRRGGBB" with no alpha value, or in the legacy format of
+   * a simple integer representation of the rgb value (deprecated
+   * but will still be read here).
+   *
+   * @param name The property name
+   * @param defaultValue The value to receive if no such property exists.
+   * @return The value of the named property, or defaultValue if no such property exists.
+   */
+  public Color getColor(String name, Color defaultValue) {
+    Color value = defaultValue;
+    try {
+      String propValue = props.getProperty(name);
+      if (propValue != null && !propValue.isEmpty()) {
+        if (propValue.toLowerCase().startsWith("0x")) {
+          // alpha values: 0xAARRGGBB
+          if (propValue.length() == 10) {
+            value = new Color(Long.decode(propValue).intValue(), true);
+          }
+
+          // regular values: 0xRRGGBB with no alpha value (fully opaque)
+          else {
+            value = new Color(Long.decode(propValue).intValue());
+          }
+        }
+        else {
+          // backwards compatibility... we used to just take color.getRGB() as an int value
+          value = new Color(Integer.valueOf(propValue));
+        }
+      }
+    }
+    catch (NumberFormatException e) {
+      logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-colour value.", e);
+    }
+    return value;
+  }
+
+}
