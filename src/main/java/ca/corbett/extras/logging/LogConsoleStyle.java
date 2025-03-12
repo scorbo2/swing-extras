@@ -243,7 +243,7 @@ public final class LogConsoleStyle extends ConfigObject {
     logToken = props.getString(pfx + "logToken", logToken);
     logTokenIsCaseSensitive = props.getBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
     fontColor = props.getColor(pfx + "fontColor", fontColor);
-    boolean hasFontBgColor = props.getBoolean("fontBgColorIsSet", (fontBgColor != null));
+    boolean hasFontBgColor = props.getBoolean(pfx + "fontBgColorIsSet", (fontBgColor != null));
     fontBgColor = hasFontBgColor ? props.getColor(pfx + "fontBgColor", fontBgColor) : null;
     fontFamilyName = props.getString(pfx + "fontFamilyName", fontFamilyName);
     isBold = props.getBoolean(pfx + "isBold", isBold);
@@ -259,6 +259,10 @@ public final class LogConsoleStyle extends ConfigObject {
     props.setString(pfx + "logToken", logToken);
     props.setBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
     props.setColor(pfx + "fontColor", fontColor);
+    props.setBoolean(pfx + "fontBgColorIsSet", (fontBgColor!=null));
+    if (fontBgColor != null) {
+      props.setColor(pfx + "fontBgColor", fontBgColor);
+    }
     props.setString(pfx + "fontFamilyName", fontFamilyName);
     props.setBoolean(pfx + "isBold", isBold);
     props.setBoolean(pfx + "isItalic", isItalic);

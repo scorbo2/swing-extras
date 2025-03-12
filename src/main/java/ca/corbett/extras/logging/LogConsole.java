@@ -81,6 +81,7 @@ public final class LogConsole extends JFrame implements ChangeListener {
   private final List<Level> logLevelQueue = new ArrayList<>(1000);
 
   private final Map<String, LogConsoleTheme> registeredThemes = new HashMap<>();
+  private String currentThemeName;
   private LogConsoleTheme currentTheme;
 
   private static LogConsole instance;
@@ -143,14 +144,7 @@ public final class LogConsole extends JFrame implements ChangeListener {
    * @return The name of the current theme.
    */
   public String getCurrentThemeName() {
-    String themeName = null;
-    for (String key : registeredThemes.keySet()) {
-      if (registeredThemes.get(key) == currentTheme) {
-        themeName = key;
-        break;
-      }
-    }
-    return themeName;
+    return currentThemeName;
   }
 
   /**
@@ -206,6 +200,33 @@ public final class LogConsole extends JFrame implements ChangeListener {
   }
 
   /**
+   * Unregisters the given theme, and switches back to the DEFAULT theme if the
+   * given theme was the current theme. Note that you cannot unregister the
+   * DEFAULT theme (though you can unregister the other built-in themes if you want).
+   * If no theme is registered by the given name, this method does nothing.
+   *
+   * @param name The name of the theme to unregister. Cannot be "Default".
+   */
+  public void unregisterTheme(String name) {
+    if (name == null || name.isBlank()) {
+      return;
+    }
+
+    // You can't delete the default theme:
+    if (LogConsoleTheme.DEFAULT_STYLE_NAME.equals(name)) {
+      return;
+    }
+
+    // If we're deleting the current theme, switch back to default:
+    if (currentThemeName.equals(name)) {
+      switchTheme(LogConsoleTheme.DEFAULT_STYLE_NAME);
+    }
+
+    // Nuke it:
+    registeredThemes.remove(name);
+  }
+
+  /**
    * Switches to the named theme, if that theme is registered with this LogConsole.
    * Does nothing if the given theme name is null or unrecognized.
    *
@@ -225,6 +246,7 @@ public final class LogConsole extends JFrame implements ChangeListener {
     }
 
     currentTheme = newTheme;
+    currentThemeName = themeName;
     currentTheme.addChangeListener(this);
 
     comboBox.removeItemListener(itemListener);
@@ -368,10 +390,8 @@ public final class LogConsole extends JFrame implements ChangeListener {
     textPane.setText("");
 
     // Copy the lists to iterate over because append() will add to the master lists.
-    List<String> logCopy = new ArrayList<>();
-    List<Level> levelCopy = new ArrayList<>();
-    logCopy.addAll(logHistory);
-    levelCopy.addAll(logLevelHistory);
+    List<String> logCopy = new ArrayList<>(logHistory);
+    List<Level> levelCopy = new ArrayList<>(logLevelHistory);
     logHistory.clear();
     logLevelHistory.clear();
     for (int i = 0; i < logCopy.size(); i++) {
