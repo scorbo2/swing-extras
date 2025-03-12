@@ -29,9 +29,9 @@ public class DemoApp extends JFrame {
         aboutInfo = new AboutInfo();
         aboutInfo.applicationName = Version.NAME + " demo app";
         aboutInfo.applicationVersion = Version.VERSION;
-        aboutInfo.logoImageLocation = "/images/swing-extras-logo.jpg";
+        aboutInfo.logoImageLocation = "/swing-extras/images/swing-extras-logo.jpg";
 
-        URL url = getClass().getResource("/images/swing-extras-icon.jpg");
+        URL url = getClass().getResource("/swing-extras/images/swing-extras-icon.jpg");
         if (url != null) {
             setIconImage(Toolkit.getDefaultToolkit().createImage(url));
         }

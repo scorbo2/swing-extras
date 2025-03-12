@@ -19,9 +19,11 @@ import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.FileImageOutputStream;
 
 /**
- * Utility class to do the actual logo image generation, given some text and a configuration preset.
+ * Utility class to generate small, text-based images that can serve as a
+ * very quick logo type of thing. This was moved into sc-util from the
+ * standalone LogoGenerator app as it makes more sense to live here.
  *
- * @author scorbett
+ * @author scorbo2
  */
 public final class LogoGenerator {
 
@@ -138,7 +140,8 @@ public final class LogoGenerator {
 
     /**
      * Generates an image using the given text and LogoConfig instance, and then saves it
-     * to the given File.
+     * to the given File. Output format is currently limited to jpeg regardless of
+     * what file name/extension you pass in here.
      *
      * @param text The text to render.
      * @param preset The LogoConfig instance containing config settings to use.

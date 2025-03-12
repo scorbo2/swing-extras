@@ -1,6 +1,7 @@
 package ca.corbett.extras.io;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
@@ -25,41 +26,44 @@ public class FileSystemUtilTest {
     public FileSystemUtilTest() {
     }
 
-    @BeforeAll
-    public static void setUpClass() throws Exception {
-        File tmpdir = new File(System.getProperty("java.io.tmpdir"));
-        testDir = new File(tmpdir.getAbsolutePath() + "/sc-util-io-test");
-        if (testDir.exists()) {
-            tearDownClass();
-        }
-        testDir.mkdir();
-        rootDir1 = new File(testDir, "rootDir1");
-        rootDir2 = new File(testDir, "rootDir2");
-        rootDir3 = new File(testDir, "rootDir3");
-        rootDir1.mkdir();
-        rootDir2.mkdir();
-        rootDir3.mkdir();
-        File subdir1 = new File(rootDir2, "subDir1");
-        File subdir2 = new File(rootDir2, "subDir2");
-        subdir1.mkdir();
-        subdir2.mkdir();
-        File nestedDir1 = new File(rootDir3, "nestedDir1");
-        nestedDir1.mkdir();
-        File nestedDir2 = new File(nestedDir1, "nestedDir2");
-        nestedDir2.mkdir();
-        File nestedDir3 = new File(nestedDir2, "nestedDir3");
-        nestedDir3.mkdir();
+    static {
+        try {
+            File tmpdir = new File(System.getProperty("java.io.tmpdir"));
+            testDir = new File(tmpdir.getAbsolutePath() + "/sc-util-io-test");
+            if (testDir.exists()) {
+                tearDownClass();
+            }
+            testDir.mkdir();
+            rootDir1 = new File(testDir, "rootDir1");
+            rootDir2 = new File(testDir, "rootDir2");
+            rootDir3 = new File(testDir, "rootDir3");
+            rootDir1.mkdir();
+            rootDir2.mkdir();
+            rootDir3.mkdir();
+            File subdir1 = new File(rootDir2, "subDir1");
+            File subdir2 = new File(rootDir2, "subDir2");
+            subdir1.mkdir();
+            subdir2.mkdir();
+            File nestedDir1 = new File(rootDir3, "nestedDir1");
+            nestedDir1.mkdir();
+            File nestedDir2 = new File(nestedDir1, "nestedDir2");
+            nestedDir2.mkdir();
+            File nestedDir3 = new File(nestedDir2, "nestedDir3");
+            nestedDir3.mkdir();
 
-        File dummy = new File(testDir, "test.txt");
-        dummy.createNewFile();
-        dummy = new File(rootDir1, "test.txt");
-        dummy.createNewFile();
-        dummy = new File(rootDir2, "test.txt");
-        dummy.createNewFile();
-        dummy = new File(subdir2, "test.txt");
-        dummy.createNewFile();
-        dummy = new File(nestedDir2, "test.txt");
-        dummy.createNewFile();
+            File dummy = new File(testDir, "test.txt");
+            dummy.createNewFile();
+            dummy = new File(rootDir1, "test.txt");
+            dummy.createNewFile();
+            dummy = new File(rootDir2, "test.txt");
+            dummy.createNewFile();
+            dummy = new File(subdir2, "test.txt");
+            dummy.createNewFile();
+            dummy = new File(nestedDir2, "test.txt");
+            dummy.createNewFile();
+        } catch (Exception e) {
+            System.out.println("Unable to initialize FileSystemUtilTest: "+e.getMessage());
+        }
     }
 
     @AfterAll

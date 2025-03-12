@@ -12,7 +12,9 @@ import java.util.Comparator;
  *
  * @author scorbo2
  * @since 2022-05-10
+ * @deprecated Use FileNameComparator
  */
+@Deprecated
 public class FilePathDepthComparator implements Comparator<File> {
 
   private int countSlashes(String name) {

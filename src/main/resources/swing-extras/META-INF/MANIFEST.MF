@@ -1,3 +1,4 @@
 Manifest-Version: 1.0
 Main-Class: ca.corbett.extras.demo.DemoAppLauncher
-SplashScreen-Image: swing-extras/images/swing-extras-logo.jpg
+Class-Path: swing-forms-1.9.0.jar
+
