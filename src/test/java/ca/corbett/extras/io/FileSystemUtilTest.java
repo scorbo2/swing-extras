@@ -1,11 +1,9 @@
 package ca.corbett.extras.io;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,6 +24,7 @@ public class FileSystemUtilTest {
     public FileSystemUtilTest() {
     }
 
+    // This should be in a @BeforeAll but strangely that never seems to trigger......
     static {
         try {
             File tmpdir = new File(System.getProperty("java.io.tmpdir"));
