@@ -39,8 +39,19 @@ public final class AboutInfo {
     /** The copyright notice for this application, if there is one. */
     public String copyright;
 
-    /** The license name or url for this application, if there is one. */
+    /**
+     * The license name or url for this application, if there is one.
+     * If this starts with http:// or https://, the link will be clickable
+     * (assuming clickable links are supported and allowed in this JRE).
+     */
     public String license;
+
+    /**
+     * The project URL for this project, if there is one.
+     * If this starts with http:// or https://, the link will be clickable
+     * (assuming clickable links are supported and allowed in this JRE).
+     */
+    public String projectUrl;
 
     /**
      * The resource url location of the application logo image.
@@ -55,6 +66,13 @@ public final class AboutInfo {
      * Example: "/application_name/ReleaseNotes.txt"
      */
     public String releaseNotesLocation;
+
+    /**
+     * You can alternatively specify release notes as a String.
+     * If both releaseNotesLocation and releaseNotesText are specified,
+     * then releaseNotesText will be used.
+     */
+    public String releaseNotesText;
 
     /**
      * An optional user-friendly short description of the application. If null or empty,

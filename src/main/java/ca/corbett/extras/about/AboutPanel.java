@@ -13,22 +13,27 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -49,6 +54,7 @@ public final class AboutPanel extends JPanel {
     private static final Logger logger = Logger.getLogger(AboutPanel.class.getName());
     private LabelField memoryUsageField;
     private final Map<String, LabelField> customFields;
+    private final Desktop desktop;
 
     /**
      * Creates a new AboutPanel with the given AboutInfo object.
@@ -57,6 +63,8 @@ public final class AboutPanel extends JPanel {
      */
     public AboutPanel(AboutInfo info) {
         super();
+
+        desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
 
         customFields = new HashMap<>();
         info.registerAboutPanel(this);
@@ -151,9 +159,33 @@ public final class AboutPanel extends JPanel {
             formPanel.addFormField(labelField);
         }
 
+        if (info.projectUrl != null && ! info.projectUrl.isBlank()) {
+            labelField = new LabelField(info.projectUrl);
+            labelField.setFont(labelFont);
+            if (isBrowsingSupported() && isUrl(info.projectUrl)) {
+                try {
+                    labelField.setHyperlink(new BrowseAction(URI.create(info.projectUrl)));
+                }
+                catch (IllegalArgumentException e) {
+                    logger.warning("Project URL is not well-formed.");
+                }
+            }
+            labelField.setMargins(2, 8, 2, 2, 0);
+            labelField.setExtraMargins(0, 0);
+            formPanel.addFormField(labelField);
+        }
+
         if (info.license != null && ! info.license.isBlank()) {
             labelField = new LabelField(info.license);
             labelField.setFont(labelFont);
+            if (isBrowsingSupported() && isUrl(info.license)) {
+                try {
+                    labelField.setHyperlink(new BrowseAction(URI.create(info.license)));
+                }
+                catch (IllegalArgumentException e) {
+                    logger.warning("License URL is not well-formed.");
+                }
+            }
             labelField.setMargins(2, 8, 2, 2, 0);
             labelField.setExtraMargins(0, 0);
             formPanel.addFormField(labelField);
@@ -174,31 +206,19 @@ public final class AboutPanel extends JPanel {
             customFields.put(customField, labelField);
         }
 
-        if (info.releaseNotesLocation != null &&
-                ! info.releaseNotesLocation.isBlank() &&
-                getClass().getResource(info.releaseNotesLocation) != null) {
+        String releaseNotes = getReleaseNotesText(info);
+        if (releaseNotes != null && ! releaseNotes.isBlank()) {
             PanelField releaseNotesField = new PanelField();
             releaseNotesField.getPanel().setLayout(new BorderLayout());
             releaseNotesField.setMargins(12, 0, 0, 0, 4);
             JTextArea textArea = new JTextArea();
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
             textArea.setFont(new Font("Monospaced", Font.PLAIN, 10));
             textArea.setColumns(70);
             textArea.setRows(16);
             textArea.setEditable(false);
-            try {
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(getClass().getResourceAsStream(info.releaseNotesLocation)));
-                StringBuilder text = new StringBuilder();
-                String line;
-                while ((line = in.readLine()) != null) {
-                    text.append(line);
-                    text.append(System.lineSeparator());
-                }
-                textArea.setText(text.toString());
-            } catch (IOException ioe) {
-                logger.log(Level.SEVERE, "Unable to load release notes: " + ioe.getMessage(), ioe);
-                textArea.setText("(unable to load release notes: " + ioe.getMessage());
-            }
+            textArea.setText(releaseNotes);
 
             JPanel wrapperPanel = new JPanel();
             wrapperPanel.setLayout(new GridBagLayout());
@@ -245,6 +265,34 @@ public final class AboutPanel extends JPanel {
         }
     }
 
+    private String getReleaseNotesText(AboutInfo info) {
+        if (info.releaseNotesText != null && ! info.releaseNotesText.isBlank()) {
+            return info.releaseNotesText;
+        }
+
+        if (info.releaseNotesLocation != null && ! info.releaseNotesLocation.isBlank()) {
+            try (InputStream inStream = getClass().getResourceAsStream(info.releaseNotesLocation)) {
+                if (inStream != null) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
+                    StringBuilder text = new StringBuilder();
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        text.append(line);
+                        text.append(System.lineSeparator());
+                    }
+                    return text.toString();
+                }
+            }
+            catch (IOException ioe) {
+                String err = "Unable to load release notes: " + ioe.getMessage();
+                logger.log(Level.SEVERE, err, ioe);
+                return err;
+            }
+        }
+
+        return "";
+    }
+
     private String getMemoryStats() {
         Runtime runtime = Runtime.getRuntime();
         int maxMemory = (int)(runtime.maxMemory() / 1024 / 1024);
@@ -270,4 +318,31 @@ public final class AboutPanel extends JPanel {
         return LogoGenerator.generateImage(name, config);
     }
 
+    private class BrowseAction extends AbstractAction {
+        private final URI uri;
+
+        public BrowseAction(URI uri) {
+            this.uri = uri;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (isBrowsingSupported()) {
+                try {
+                    desktop.browse(uri);
+                }
+                catch (IOException ioe) {
+                    logger.warning("Unable to browse URI: "+ioe.getMessage());
+                }
+            }
+        }
+    };
+
+    private boolean isBrowsingSupported() {
+        return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);
+    }
+
+    private boolean isUrl(String url) {
+        return url != null && (url.startsWith("http://") || url.startsWith("https://"));
+    }
 }
