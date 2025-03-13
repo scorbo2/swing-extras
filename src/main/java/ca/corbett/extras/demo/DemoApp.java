@@ -1,12 +1,14 @@
 package ca.corbett.extras.demo;
 
 import ca.corbett.extras.Version;
+import ca.corbett.extras.demo.panels.AudioDemoPanel;
 import ca.corbett.extras.demo.panels.DesktopDemoPanel;
 import ca.corbett.extras.demo.panels.IntroPanel;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.demo.panels.AboutDemoPanel;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -22,6 +24,8 @@ import java.util.List;
  */
 public class DemoApp extends JFrame {
 
+    AudioDemoPanel audioDemoPanel = new AudioDemoPanel();
+
     public DemoApp() {
         super(Version.FULL_NAME + " demo");
         setSize(840,800);
@@ -35,6 +39,7 @@ public class DemoApp extends JFrame {
 
         final List<PanelBuilder> panels = new ArrayList<>();
         panels.add(new IntroPanel());
+        panels.add(audioDemoPanel);
         panels.add(new DesktopDemoPanel());
         panels.add(new AboutDemoPanel());
 
@@ -44,5 +49,18 @@ public class DemoApp extends JFrame {
             tabPane.addTab(builder.getTitle(), builder.build());
         }
         add(tabPane, BorderLayout.CENTER);
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    audioDemoPanel.generateWaveform(); // has to be done after frame is packed and shown.
+                }
+            });
+        }
     }
 }
