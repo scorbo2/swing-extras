@@ -1,12 +1,13 @@
 package ca.corbett.extras.demo;
 
 import ca.corbett.extras.Version;
+import ca.corbett.extras.demo.panels.AboutDemoPanel;
 import ca.corbett.extras.demo.panels.AudioDemoPanel;
 import ca.corbett.extras.demo.panels.DesktopDemoPanel;
 import ca.corbett.extras.demo.panels.DirTreeDemoPanel;
 import ca.corbett.extras.demo.panels.IntroPanel;
 import ca.corbett.extras.demo.panels.PanelBuilder;
-import ca.corbett.extras.demo.panels.AboutDemoPanel;
+
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;

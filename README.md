@@ -1,4 +1,15 @@
 # swing-extras
-A small collection of custom components for Java Swing
 
-2025-03-12: I'm still importing all of this from sc-util and building out the demo application to show off what swing-extras can do. Will improve this README once it's all in place.
+This is swing-extras, a collection of custom components and utilities for Java Swing 
+applications. I wrote this collection of code from around 2012 until around 2022, but
+it was not publicly available until 2025. 
+
+The library includes a demo application so you can try out the various components and
+utilities within swing-extras:
+
+TODO screenshot
+
+## Documentation
+
+- [Customizable About dialog](docs/about.md)
+- TODO more

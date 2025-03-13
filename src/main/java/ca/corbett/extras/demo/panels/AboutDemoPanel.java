@@ -1,23 +1,15 @@
 package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.Version;
-import ca.corbett.extras.about.AboutInfo;
 import ca.corbett.extras.about.AboutPanel;
 
 import javax.swing.JPanel;
 
 public class AboutDemoPanel extends PanelBuilder {
-    private final AboutInfo aboutInfo;
 
     public AboutDemoPanel() {
-        aboutInfo = new AboutInfo();
-        aboutInfo.applicationName = Version.NAME + " demo app";
-        aboutInfo.applicationVersion = Version.VERSION;
-        aboutInfo.logoImageLocation = "/swing-extras/images/swing-extras-logo.jpg";
-        aboutInfo.copyright = Version.COPYRIGHT;
-        aboutInfo.license = Version.LICENSE;
-        aboutInfo.projectUrl = Version.PROJECT_URL;
-        aboutInfo.releaseNotesText = "This AboutPanel is created by populating a simple AboutInfo object. "
+        Version.aboutInfo.applicationName = Version.NAME + " demo app";
+        Version.aboutInfo.releaseNotesText = "This AboutPanel is created by populating a simple AboutInfo object. "
                 + "You can then very easily show a consistent AboutPanel for your application with clickable "
                 + "links for the project URL and license URL (if the current JRE supports browsing). "
                 + "Zero UI code required!\n\n"
@@ -38,6 +30,6 @@ public class AboutDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        return new AboutPanel(aboutInfo);
+        return new AboutPanel(Version.aboutInfo);
     }
 }

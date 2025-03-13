@@ -9,6 +9,14 @@ import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
+
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.border.LineBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -28,18 +36,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.border.LineBorder;
 
 /**
  * A re-usable JPanel that can display information about a given application.
@@ -71,8 +71,8 @@ public final class AboutPanel extends JPanel {
         setLayout(new BorderLayout());
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_CENTER);
 
+        BufferedImage logoImage = getLogoImage(info);
         PanelField logoPanel = new PanelField();
-        URL url = getClass().getResource(info.logoImageLocation);
 
         if (info.logoDisplayMode != AboutInfo.LogoDisplayMode.STRETCH) {
             logoPanel.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -82,7 +82,7 @@ public final class AboutPanel extends JPanel {
                 logoPanel.getPanel().setBackground(Color.DARK_GRAY);
             }
 
-            ImageIcon icon = new ImageIcon(url);
+            ImageIcon icon = new ImageIcon(logoImage);
             JLabel imageLabel = new JLabel(icon);
             imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             logoPanel.getPanel().add(imageLabel);
@@ -100,14 +100,6 @@ public final class AboutPanel extends JPanel {
         }
 
         else {
-            BufferedImage img;
-            try {
-                img = ImageUtil.loadImage(url);
-            }
-            catch (IOException ioe) {
-                logger.log(Level.SEVERE, "Error loading logo image: " + ioe.getMessage(), ioe);
-                img = generateLogoImage(280, 80, info.applicationName);
-            }
             logoPanel.setMargins(8, 8, 8, 8, 0);
             logoPanel.getPanel().setLayout(new BorderLayout());
             ImagePanelConfig ipc = ImagePanelConfig.createDefaultProperties();
@@ -115,7 +107,7 @@ public final class AboutPanel extends JPanel {
             ipc.setEnableMouseDragging(false);
             ipc.setEnableZoomOnMouseClick(false);
             ipc.setEnableZoomOnMouseWheel(false);
-            ImagePanel imgPanel = new ImagePanel(img, ipc);
+            ImagePanel imgPanel = new ImagePanel(logoImage, ipc);
             imgPanel.setPreferredSize(new Dimension(200, 80));
             logoPanel.getPanel().add(imgPanel, BorderLayout.CENTER);
 
@@ -198,7 +190,7 @@ public final class AboutPanel extends JPanel {
         formPanel.addFormField(memoryUsageField);
 
         for (String customField : info.getCustomFieldNames()) {
-            labelField = new LabelField(info.getCustomFieldValue(customField));
+            labelField = new LabelField(customField, info.getCustomFieldValue(customField));
             labelField.setFont(labelFont);
             labelField.setMargins(2, 8, 2, 2, 0);
             labelField.setExtraMargins(2, 2);
@@ -303,6 +295,31 @@ public final class AboutPanel extends JPanel {
         return "Using " + memoryUsed + "M of "
                 + totalMemory + "M (" + memoryUsagePercent + "%), "
                 + maxMemory + "M available";
+    }
+
+    /**
+     * Try to load or create an application logo image for the given AboutInfo.
+     * We look in the logoImageLocation field and try to load it from resources.
+     * If that fails, we'll generate one with basic properties.
+     *
+     * @param info The AboutInfo containing logoImageLocation and applicationName that we will use.
+     * @return A BufferedImage, either loaded from resources or generated.
+     */
+    private BufferedImage getLogoImage(AboutInfo info) {
+        BufferedImage image = null;
+        String appName = info.applicationName == null || info.applicationName.isBlank() ? "About" : info.applicationName;
+        if (info.logoImageLocation == null || info.logoImageLocation.isBlank()) {
+            image = generateLogoImage(450, 90, appName);
+        } else {
+            try {
+                image = ImageUtil.loadImage(getClass().getResource(info.logoImageLocation));
+            } catch (IOException ioe) {
+                logger.log(Level.SEVERE, "Error loading logo image: " + ioe.getMessage(), ioe);
+                image = generateLogoImage(450, 90, appName);
+            }
+
+        }
+        return image;
     }
 
     private BufferedImage generateLogoImage(int width, int height, String name) {
