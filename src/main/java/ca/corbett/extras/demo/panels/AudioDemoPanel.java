@@ -27,13 +27,20 @@ import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Provides a way to test out the AudioUtils, and more specifically, the AudioWaveformPanel.
+ * Apologies: this code predates swing-forms and is therefore a little ugly. One day I'll
+ * sit down and rewrite it to get rid of all the GridBagLayout stuff.
+ *
+ * @author scorbo2
+ * @since 2018-01-04
+ */
 public final class AudioDemoPanel extends PanelBuilder implements AudioPanelListener {
     private MessageUtil messageUtil;
     private final JFileChooser fileChooser;

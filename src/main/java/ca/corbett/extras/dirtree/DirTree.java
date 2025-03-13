@@ -23,7 +23,8 @@ import javax.swing.tree.TreeSelectionModel;
  * A component that renders directories in the file system as a navigable tree view.
  * Note that this is pretty heavily targeted towards linux, with the concept
  * of a single root directory and an arbitrarily large hierarchy of subdirectories.
- * Never been tested or used on windows or any other OS, and I don't really care.
+ * Take a look in the swing-extras demo app for an example of how this can be made
+ * to work on systems that have multiple filesystem root directories. It can be done!
  * <p>
  * The DirTree can be "locked" to any given directory - this will treat that directory
  * as the root directory, so the tree will only show subdirectories of that directory.
