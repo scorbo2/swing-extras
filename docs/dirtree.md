@@ -5,17 +5,17 @@
 DirTree is a component that gives you a read-only view onto a file system, with the
 optional ability to "lock" the view (chroot-style) to a specific directory.
 
-![DirTree](dirtree_screenshot1.png "DirTree")
+![DirTree](screenshots/dirtree_screenshot1.png "DirTree")
 
 Right-clicking on the tree will allow you to lock the tree to the given node:
 
-![DirTree](dirtree_screenshot2.png "Locking to specific directory")
+![DirTree](screenshots/dirtree_screenshot2.png "Locking to specific directory")
 
 This has an effect similar to `chroot`, in that the `DirTree` component now 
 views that directory as the root of the filesystem, and can only see directories
 underneath it:
 
-![DirTree](dirtree_screenshot3.png "Locked")
+![DirTree](screenshots/dirtree_screenshot3.png "Locked")
 
 You can then right-click again to unlock the tree.
 

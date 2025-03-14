@@ -33,7 +33,7 @@ new AboutDialog(myMainWindow, aboutInfo).
 setVisible(true);
 ```
 
-![About1](about_screenshot1.jpg "Simple usage")
+![About1](screenshots/about_screenshot1.jpg "Simple usage")
 
 We see a logo image was automatically generated for us, because we didn't specify
 one, and we see that the links to our project URL and license URL were automatically
@@ -52,7 +52,7 @@ something more visually interesting, and then we an specify it in our `AboutInfo
 aboutInfo.logoImageLocation = "/myapp/images/logo.jpg";
 ```
 
-![About2](about_screenshot2.jpg "With custom logo")
+![About2](screenshots/about_screenshot2.jpg "With custom logo")
 
 Looks better! The logo image is recommended to be around 480x90 pixels, but
 you can experiment to see what works. You can also look at `AboutInfo.LogoDisplayMode`
@@ -76,7 +76,7 @@ aboutInfo.releaseNotesText = releaseNotes;
 aboutInfo.releaseNotesLocation = "/myapp/releaseNotes.txt";
 ```
 
-![About3](about_screenshot3.jpg "With release notes")
+![About3](screenshots/about_screenshot3.jpg "With release notes")
 
 If both options are specified, `releaseNotesText` will be used and `releaseNotesLocation`
 will be ignored. If either option is specified, a read-only text area will 
@@ -93,7 +93,7 @@ aboutInfo.addCustomField("Messages received:", "10");
 aboutInfo.addCustomField("Messages sent:", "4");
 ```
 
-![About4](about_screenshot4.jpg "With custom fields")
+![About4](screenshots/about_screenshot4.jpg "With custom fields")
 
 We now see that our custom fields `Messages sent` and `Messages received` appear
 on the About dialog.
@@ -106,7 +106,7 @@ aboutInfo.updateCustomField("Messages received:", "99");
 aboutInfo.updateCustomField("Messages sent:", "50");
 ```
 
-![About5](about_screenshot5.jpg "Updating custom values")
+![About5](screenshots/about_screenshot5.jpg "Updating custom values")
 
 We see that the values have been updated. We can call `updateCustomField` whenever
 our custom field values change. Any AboutPanel or AboutDialog that is currently
