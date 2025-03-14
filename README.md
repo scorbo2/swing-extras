@@ -13,4 +13,5 @@ TODO screenshot
 
 - [Customizable About dialog](docs/about.md)
 - [AudioWaveformPanel and AudioUtil](docs/audio.md)
+- [DirTree](docs/dirtree.md)
 - TODO more
