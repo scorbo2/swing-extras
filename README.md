@@ -12,4 +12,5 @@ TODO screenshot
 ## Documentation
 
 - [Customizable About dialog](docs/about.md)
+- [AudioWaveformPanel and AudioUtil](docs/audio.md)
 - TODO more
