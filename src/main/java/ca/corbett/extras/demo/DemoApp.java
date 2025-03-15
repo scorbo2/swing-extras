@@ -5,6 +5,7 @@ import ca.corbett.extras.demo.panels.AboutDemoPanel;
 import ca.corbett.extras.demo.panels.AudioDemoPanel;
 import ca.corbett.extras.demo.panels.DesktopDemoPanel;
 import ca.corbett.extras.demo.panels.DirTreeDemoPanel;
+import ca.corbett.extras.demo.panels.ImageTextUtilDemoPanel;
 import ca.corbett.extras.demo.panels.ImageUtilDemoPanel;
 import ca.corbett.extras.demo.panels.IntroPanel;
 import ca.corbett.extras.demo.panels.PanelBuilder;
@@ -46,6 +47,7 @@ public class DemoApp extends JFrame {
         panels.add(new DesktopDemoPanel());
         panels.add(new DirTreeDemoPanel());
         panels.add(new ImageUtilDemoPanel());
+        panels.add(new ImageTextUtilDemoPanel());
         panels.add(new AboutDemoPanel());
 
         setLayout(new BorderLayout());

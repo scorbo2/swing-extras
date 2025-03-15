@@ -32,3 +32,11 @@ selection tool:
 Color gradients can be used for an image background, or for text to be
 overlaid on an image, or for image borders as well.
 
+## ImageTextUtil
+
+Another handy class in the image package is `ImageTextUtil`, which allows you
+to write multi-line text onto an image, with automatic configurable line wrapping:
+
+![ImageTextUtil](screenshots/imageutil_screenshot3.jpg "ImageTextUtil")
+
+The included demo application shows some basic usage of this class.
