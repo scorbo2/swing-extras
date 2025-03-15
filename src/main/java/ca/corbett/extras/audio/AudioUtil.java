@@ -255,6 +255,9 @@ public class AudioUtil {
    * @throws IOException on general i/o problem.
    */
   public static void saveAudioFile(File file, int[][] audioData) throws IOException {
+    if (audioData == null) {
+      return;
+    }
     AudioInputStream audioStream = getAudioInputStream(audioData);
     AudioSystem.write(audioStream, AudioFileFormat.Type.WAVE, file);
     audioStream.close();

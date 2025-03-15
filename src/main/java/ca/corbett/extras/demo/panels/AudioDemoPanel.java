@@ -301,11 +301,16 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
 
     @Override
     public void recordingComplete(AudioWaveformPanel sourcePanel) {
+        if (waveformPanel.getAudioData() == null) {
+            getMessageUtil().warning("No audio data was captured - is there a mic connected?");
+            return;
+        }
         recordedAudioFile = null;
         try {
             File tempFile = File.createTempFile("audio_", "_recording.wav");
             AudioUtil.saveAudioFile(tempFile, waveformPanel.getAudioData());
             recordedAudioFile = tempFile;
+            audioSourceCombo.setSelectedIndex(2);
             System.out.println("Write recorded audio to "+tempFile.getAbsolutePath());
         }
         catch (IOException ioe) {

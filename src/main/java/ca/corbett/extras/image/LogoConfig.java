@@ -3,6 +3,7 @@ package ca.corbett.extras.image;
 import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.gradient.GradientConfig;
 import ca.corbett.extras.properties.Properties;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.util.logging.Logger;
@@ -10,7 +11,7 @@ import java.util.logging.Logger;
 /**
  * Represents a configuration preset for logo images, to be used with LogoGenerator.
  *
- * @author scorbett
+ * @author scorbo2
  */
 public final class LogoConfig extends ConfigObject {
 
@@ -58,7 +59,6 @@ public final class LogoConfig extends ConfigObject {
     private boolean hasBorder;
     private boolean autoSize;
     private Font font;
-    private int fontPointSize;
     private int logoWidth;
     private int logoHeight;
     private int yTweak;
@@ -379,22 +379,23 @@ public final class LogoConfig extends ConfigObject {
     /**
      * Returns the desired font point size. This property is not used if isAutoSize() is true.
      *
-     * @return The desired font point size to use with the iamge.
+     * @return The desired font point size to use with the image.
      */
     public int getFontPointSize() {
-        return fontPointSize;
+        return font.getSize();
     }
 
     /**
      * Sets the desired font point size to use with the generated image. This property is only
      * used if isAutoSize() is false.
      *
-     * @param fontPointSize The desired font point size.
+     * @param fontPointSize The desired font point size. If 0, we set autoSize to true.
      */
     public void setFontPointSize(int fontPointSize) {
-        this.fontPointSize = (fontPointSize < 0) ? 0 : fontPointSize;
-        if (this.fontPointSize == 0) {
+        if (fontPointSize <= 0) {
             autoSize = true;
+        } else {
+            font = font.deriveFont((float) fontPointSize);
         }
     }
 
@@ -454,8 +455,7 @@ public final class LogoConfig extends ConfigObject {
         this.borderWidth = 1;
         this.hasBorder = true;
         this.autoSize = false;
-        this.font = new Font(Font.SERIF, Font.PLAIN, 12);
-        this.fontPointSize = 42;
+        this.font = new Font(Font.SERIF, Font.PLAIN, 42);
         this.logoWidth = 200;
         this.logoHeight = 150;
         this.yTweak = 0;
@@ -489,8 +489,7 @@ public final class LogoConfig extends ConfigObject {
         textGradient.loadFromProps(props, pfx + "textGradient");
         borderWidth = props.getInteger(pfx + "borderWidth", borderWidth);
         hasBorder = props.getBoolean(pfx + "hasBorder", hasBorder);
-        fontPointSize = props.getInteger(pfx + "fontPointSize", fontPointSize);
-        font = new Font(props.getString(pfx + "fontName", font.getName()), 0, fontPointSize);
+        font = props.getFont(pfx + "font", font);
         logoWidth = props.getInteger(pfx + "width", logoWidth);
         logoHeight = props.getInteger(pfx + "height", logoHeight);
         yTweak = props.getInteger(pfx + "yTweak", yTweak);
@@ -525,13 +524,11 @@ public final class LogoConfig extends ConfigObject {
         textGradient.saveToProps(props, pfx + "textGradient");
         props.setInteger(pfx + "borderWidth", borderWidth);
         props.setBoolean(pfx + "hasBorder", hasBorder);
-        props.setInteger(pfx + "fontPointSize", fontPointSize);
-        props.setString(pfx + "fontName", font.getName());
+        props.setFont(pfx + "font", font);
         props.setInteger(pfx + "width", logoWidth);
         props.setInteger(pfx + "height", logoHeight);
         props.setInteger(pfx + "yTweak", yTweak);
         props.setBoolean(pfx + "autoSize", autoSize);
         props.setString(pfx + "name", name);
     }
-
 }

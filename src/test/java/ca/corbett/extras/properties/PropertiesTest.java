@@ -1,9 +1,13 @@
 package ca.corbett.extras.properties;
 
-import java.awt.Color;
-import java.util.List;
 import org.junit.jupiter.api.Test;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 /**
@@ -52,6 +56,30 @@ public class PropertiesTest {
         Color answer = new Color(0xaa, 0xbb, 0xcc);
         assertEquals(color1, color2);
         assertEquals(answer, color2);
+    }
+
+    @Test
+    public void testFontStorage() {
+        Font input = new Font("Monospaced", Font.BOLD, 14);
+        Properties props = new Properties();
+        props.setFont("myFont", input);
+        assertEquals("Monospaced", props.getString("myFont_familyName", ""));
+        assertEquals(true, props.getBoolean("myFont_isBold", false));
+        assertEquals(false, props.getBoolean("myFont_isItalic", true));
+        assertEquals(14, props.getInteger("myFont_pointSize", 99));
+    }
+
+    @Test
+    public void testFontRetrieval() {
+        Font input = new Font("Monospaced", Font.BOLD, 14);
+        Properties props = new Properties();
+        props.setFont("myFont", input);
+        Font actual = props.getFont("myFont", null);
+        assertNotNull(actual);
+        assertEquals(input.getFamily(), actual.getFamily());
+        assertEquals(input.isBold(), actual.isBold());
+        assertEquals(input.isItalic(), actual.isItalic());
+        assertEquals(input.getSize(), actual.getSize());
     }
 
     private Properties createTestProps() {

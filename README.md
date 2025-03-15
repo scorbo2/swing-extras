@@ -15,4 +15,5 @@ TODO screenshot
 - [AudioWaveformPanel and AudioUtil](docs/audio.md)
 - [DesktopPane](docs/desktoppane.md)
 - [DirTree](docs/dirtree.md)
+- [ImageUtil and GradientUtil](docs/imageutil.md)
 - TODO more

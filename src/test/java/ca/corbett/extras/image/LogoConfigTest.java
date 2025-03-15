@@ -4,6 +4,7 @@ import ca.corbett.extras.properties.Properties;
 import org.junit.jupiter.api.Test;
 
 import java.awt.Color;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -34,7 +35,7 @@ public class LogoConfigTest {
         assertEquals(conf1.getBgColor(), conf2.getBgColor());
         assertEquals(conf1.getBorderColor(), conf2.getBorderColor());
         assertEquals(conf1.getBorderWidth(), conf2.getBorderWidth());
-        assertEquals(conf1.getFont().getName(), conf2.getFont().getName());
+        assertEquals(conf1.getFont().getFamily(), conf2.getFont().getFamily());
         assertEquals(conf1.getTextColor(), conf2.getTextColor());
         assertEquals(conf1.getFontPointSize(), conf2.getFontPointSize());
         assertEquals(conf1.hasBorder(), conf2.hasBorder());

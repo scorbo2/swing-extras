@@ -1,6 +1,7 @@
 package ca.corbett.extras.properties;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -255,6 +256,14 @@ public final class FileBasedProperties extends Properties {
   @Override
   public void setString(String name, String value) {
     super.setString(name, value);
+    if (eagerSave) {
+      saveWithoutException();
+    }
+  }
+
+  @Override
+  public void setFont(String name, Font font) {
+    super.setFont(name, font);
     if (eagerSave) {
       saveWithoutException();
     }
