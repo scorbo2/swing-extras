@@ -4,6 +4,14 @@ import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -16,13 +24,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.border.BevelBorder;
 
 /**
  * Replacement for ProgressMonitor, which is a bit limiting.
@@ -157,6 +158,15 @@ public final class MultiProgressDialog extends JDialog {
           progressDialog.dispose();
         }
         else {
+          progressDialog.setVisible(false);
+        }
+      }
+
+      @Override
+      public void progressCanceled() {
+        if (disposeWhenComplete) {
+          progressDialog.dispose();
+        } else {
           progressDialog.setVisible(false);
         }
       }

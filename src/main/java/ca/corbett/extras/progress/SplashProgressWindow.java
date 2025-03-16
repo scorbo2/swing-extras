@@ -1,20 +1,22 @@
 package ca.corbett.extras.progress;
 
-import ca.corbett.extras.image.LogoConfig;
-import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
+import ca.corbett.extras.image.LogoConfig;
+import ca.corbett.extras.image.LogoGenerator;
+
 import javax.swing.AbstractAction;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JProgressBar;
 import javax.swing.JWindow;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 
 /**
  * Normally the SplashScreen that comes with AWT is good enough for an application, but if the
@@ -28,7 +30,6 @@ public final class SplashProgressWindow extends JWindow {
 
   private static final int PROGRESS_BAR_HEIGHT = 20;
 
-  private String appName;
   private final int splashWidth;
   private final int splashHeight;
   private final BufferedImage splashImage;
@@ -45,14 +46,27 @@ public final class SplashProgressWindow extends JWindow {
    * @param config The LogoConfig instance containing cosmetic parameters for the logo image.
    */
   public SplashProgressWindow(String appName, LogoConfig config) {
-    super();
-    this.appName = appName;
+    this(null, appName, config);
+  }
+
+  /**
+   * Very generally, the SplashProgressWindow will never have a parent frame, as it
+   * is intended to be used as a standalone splash screen on application startup.
+   * But, for testing purposes (or perhaps for some custom scenario), this constructor
+   * is offered as a way to set a parent frame for it.
+   *
+   * @param owner   The owning Frame (can be null for no owner).
+   * @param appName The name of the application (used as logo text)
+   * @param config  The LogoConfig instance containing cosmetic parameters for the logo image.
+   */
+  public SplashProgressWindow(Frame owner, String appName, LogoConfig config) {
+    super(owner);
     this.splashWidth = config.getLogoWidth();
     this.splashHeight = config.getLogoHeight();
     this.fgColor = config.getTextColor();
     this.bgColor = config.getBgColor();
     this.splashImage = LogoGenerator.generateImage(appName, config);
-    initializeWindow();
+    initializeWindow(owner);
   }
 
   /**
@@ -66,13 +80,28 @@ public final class SplashProgressWindow extends JWindow {
    * dimensions.
    */
   public SplashProgressWindow(Color fgColor, Color bgColor, BufferedImage splashImage) {
-    super();
+    this(null, fgColor, bgColor, splashImage);
+  }
+
+  /**
+   * Very generally, the SplashProgressWindow will never have a parent frame, as it
+   * is intended to be used as a standalone splash screen on application startup.
+   * But, for testing purposes (or perhaps for some custom scenario), this constructor
+   * is offered as a way to set a parent frame for it.
+   *
+   * @param fgColor     The foreground colour for the progress bar.
+   * @param bgColor     The background colour for the progress bar.
+   * @param splashImage The application logo image. Window dimensions will be based on this image's
+   *                    dimensions.
+   */
+  public SplashProgressWindow(Frame owner, Color fgColor, Color bgColor, BufferedImage splashImage) {
+    super(owner);
     this.splashImage = splashImage;
     this.fgColor = fgColor;
     this.bgColor = bgColor;
     this.splashWidth = splashImage.getWidth();
     this.splashHeight = splashImage.getHeight();
-    initializeWindow();
+    initializeWindow(owner);
   }
 
   /**
@@ -192,12 +221,16 @@ public final class SplashProgressWindow extends JWindow {
     progressBar.setValue(value);
   }
 
-  private void initializeWindow() {
+  private void initializeWindow(Frame owner) {
     setLayout(new BorderLayout());
     setSize(new Dimension(splashWidth, splashHeight));
-    Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
-    int windowHeight = splashHeight + PROGRESS_BAR_HEIGHT;
-    setBounds(center.x - splashWidth / 2, center.y - windowHeight / 2, splashWidth, windowHeight);
+    if (owner == null) {
+      Point center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+      int windowHeight = splashHeight + PROGRESS_BAR_HEIGHT;
+      setBounds(center.x - splashWidth / 2, center.y - windowHeight / 2, splashWidth, windowHeight);
+    } else {
+      setLocationRelativeTo(owner);
+    }
 
     ImagePanelConfig ipc = ImagePanelConfig.createSimpleReadOnlyProperties();
     ipc.setDisplayMode(ImagePanelConfig.DisplayMode.NONE);

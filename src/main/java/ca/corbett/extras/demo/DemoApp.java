@@ -9,6 +9,7 @@ import ca.corbett.extras.demo.panels.ImageTextUtilDemoPanel;
 import ca.corbett.extras.demo.panels.ImageUtilDemoPanel;
 import ca.corbett.extras.demo.panels.IntroPanel;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.extras.demo.panels.ProgressDemoPanel;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
@@ -29,8 +30,16 @@ import java.util.List;
 public class DemoApp extends JFrame {
 
     AudioDemoPanel audioDemoPanel = new AudioDemoPanel();
+    private static DemoApp instance;
 
-    public DemoApp() {
+    public static DemoApp getInstance() {
+        if (instance == null) {
+            instance = new DemoApp();
+        }
+        return instance;
+    }
+
+    private DemoApp() {
         super(Version.FULL_NAME + " demo");
         setSize(840,800);
         setMinimumSize(new Dimension(840,800));
@@ -48,6 +57,7 @@ public class DemoApp extends JFrame {
         panels.add(new DirTreeDemoPanel());
         panels.add(new ImageUtilDemoPanel());
         panels.add(new ImageTextUtilDemoPanel());
+        panels.add(new ProgressDemoPanel());
         panels.add(new AboutDemoPanel());
 
         setLayout(new BorderLayout());

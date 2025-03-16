@@ -16,4 +16,5 @@ TODO screenshot
 - [DesktopPane](docs/desktoppane.md)
 - [DirTree](docs/dirtree.md)
 - [Image and Gradient utilities](docs/imageutil.md)
+- [Progress utilities](docs/progress.md)
 - TODO more

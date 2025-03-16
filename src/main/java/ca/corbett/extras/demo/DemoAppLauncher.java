@@ -27,7 +27,7 @@ public class DemoAppLauncher {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new DemoApp().setVisible(true);
+                DemoApp.getInstance().setVisible(true);
             }
         });
     }
