@@ -10,6 +10,7 @@ import ca.corbett.extras.demo.panels.ImageUtilDemoPanel;
 import ca.corbett.extras.demo.panels.IntroPanel;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.demo.panels.ProgressDemoPanel;
+import ca.corbett.extras.demo.panels.PropertiesDemoPanel;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
@@ -41,8 +42,8 @@ public class DemoApp extends JFrame {
 
     private DemoApp() {
         super(Version.FULL_NAME + " demo");
-        setSize(840,800);
-        setMinimumSize(new Dimension(840,800));
+        setSize(800, 800);
+        setMinimumSize(new Dimension(800, 800));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         URL url = getClass().getResource("/swing-extras/images/swing-extras-icon.jpg");
@@ -58,6 +59,7 @@ public class DemoApp extends JFrame {
         panels.add(new ImageUtilDemoPanel());
         panels.add(new ImageTextUtilDemoPanel());
         panels.add(new ProgressDemoPanel());
+        panels.add(new PropertiesDemoPanel());
         panels.add(new AboutDemoPanel());
 
         setLayout(new BorderLayout());
