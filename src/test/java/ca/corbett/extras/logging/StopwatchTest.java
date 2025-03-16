@@ -48,8 +48,8 @@ public class StopwatchTest {
 
         // Do something to get some time to elapse:
         int blah = 1;
-        for (int i = 0; i < 100000; i++) {
-            blah = i * 2;
+        for (int i = 0; i < 1000000; i++) {
+            blah = i * 2 + 3 + (int) (i / 4f);
         }
         assertNotEquals(0, blah);
 
