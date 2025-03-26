@@ -63,6 +63,6 @@ The swing-extras library came together slowly as part of various side projects f
 until around 2023, but was not made available on github until recently. Version `1.9.0` 
 is the first publicly available version of the library.
 
-- v1.9.1:
+- v1.9.1 [2025-03-26]:
   - Change `ConfigObject` from an abstract class to an interface
   - Add `EnumProperty` to easily use enums as config properties.
