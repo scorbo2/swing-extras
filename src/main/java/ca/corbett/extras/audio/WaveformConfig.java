@@ -2,6 +2,7 @@ package ca.corbett.extras.audio;
 
 import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.properties.Properties;
+
 import java.awt.Color;
 
 /**
@@ -10,7 +11,7 @@ import java.awt.Color;
  * @author scorbo2
  * @since 2018-01-03
  */
-public class WaveformConfig extends ConfigObject {
+public class WaveformConfig implements ConfigObject {
 
   private Color fillColor;
   private Color bgColor;

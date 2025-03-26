@@ -2,12 +2,13 @@ package ca.corbett.extras.image;
 
 import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.properties.Properties;
+
+import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
-import javax.swing.ImageIcon;
 
 /**
  * Represents configuration options for ImagePanel. This class is optional - if you
@@ -18,7 +19,7 @@ import javax.swing.ImageIcon;
  * @author scorbett
  * @since 2017-11-07
  */
-public class ImagePanelConfig extends ConfigObject {
+public class ImagePanelConfig implements ConfigObject {
 
     public enum DisplayMode {
         NONE, CENTER, BEST_FIT, STRETCH, CUSTOM

@@ -2,6 +2,9 @@ package ca.corbett.extras.logging;
 
 import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.properties.Properties;
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,8 +14,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * A LogConsoleTheme represents a set of LogConsoleStyle objects that can be applied
@@ -55,7 +56,7 @@ import javax.swing.event.ChangeListener;
  * @author scorbo2
  * @since 2023-03-17
  */
-public final class LogConsoleTheme extends ConfigObject implements ChangeListener {
+public final class LogConsoleTheme implements ConfigObject, ChangeListener {
 
   public static final String DEFAULT_STYLE_NAME = "Default";
 

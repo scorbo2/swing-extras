@@ -3,14 +3,13 @@ package ca.corbett.extras.config;
 import ca.corbett.extras.properties.Properties;
 
 /**
- * Provides a generic, abstract base class for any kind of configuration object.
- * Provides methods for loading and saving these config objects to and from
- * a java.util.Properties instance.
+ * Implement this interface to signify that your class is capable of loading
+ * and saving its current state to or from a Properties instance.
  *
  * @author scorbo2
  * @since 2018-02-04
  */
-public abstract class ConfigObject {
+public interface ConfigObject {
 
     /**
      * Loads all settings from the given Properties object. You can use the optional "prefix"
@@ -24,7 +23,7 @@ public abstract class ConfigObject {
      * @param props The Properties instance from which to load.
      * @param prefix An optional string prefix to apply to all property names, or null.
      */
-    public abstract void loadFromProps(Properties props, String prefix);
+    void loadFromProps(Properties props, String prefix);
 
     /**
      * Saves all settings to the given Properties object. You can use the optional "prefix"
@@ -38,6 +37,6 @@ public abstract class ConfigObject {
      * @param props The Properties instance to which to save.
      * @param prefix An optional string prefix to apply to all property names, or null.
      */
-    public abstract void saveToProps(Properties props, String prefix);
+    void saveToProps(Properties props, String prefix);
 
 }
