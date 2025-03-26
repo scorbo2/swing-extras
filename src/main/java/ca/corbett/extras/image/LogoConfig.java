@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  *
  * @author scorbo2
  */
-public final class LogoConfig extends ConfigObject {
+public final class LogoConfig implements ConfigObject {
 
     private static final Logger logger = Logger.getLogger(LogoConfig.class.getName());
 

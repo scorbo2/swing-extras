@@ -2,6 +2,7 @@ package ca.corbett.extras.gradient;
 
 import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.properties.Properties;
+
 import java.awt.Color;
 
 /**
@@ -10,7 +11,7 @@ import java.awt.Color;
  * @author scorbo2
  * @since 2022-05-10
  */
-public final class GradientConfig extends ConfigObject {
+public final class GradientConfig implements ConfigObject {
 
     private GradientUtil.GradientType gradientType;
     private Color color1;

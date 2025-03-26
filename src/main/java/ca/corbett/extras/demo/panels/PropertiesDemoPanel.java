@@ -6,6 +6,7 @@ import ca.corbett.extras.properties.BooleanProperty;
 import ca.corbett.extras.properties.ColorProperty;
 import ca.corbett.extras.properties.ComboProperty;
 import ca.corbett.extras.properties.DirectoryProperty;
+import ca.corbett.extras.properties.EnumProperty;
 import ca.corbett.extras.properties.FileProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
@@ -42,6 +43,23 @@ public class PropertiesDemoPanel extends PanelBuilder {
     private static final Logger logger = Logger.getLogger(PropertiesDemoPanel.class.getName());
 
     private PropertiesManager propsManager;
+
+    public enum TestEnum {
+        VALUE1("This is value 1"),
+        VALUE2("This is value 2"),
+        VALUE3("This is value 3");
+
+        final String label;
+
+        TestEnum(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
 
     @Override
     public String getTitle() {
@@ -134,6 +152,21 @@ public class PropertiesDemoPanel extends PanelBuilder {
         IntegerProperty hiddenProp = new IntegerProperty("Hidden.someHiddenProp", "hiddenProp", 77);
         hiddenProp.setExposed(false);
         props.add(hiddenProp);
+
+        props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));
+        props.add(new EnumProperty<TestEnum>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
+        props.add(new LabelProperty("Enums.Enums.label2", "Alternatively, you can use the enum names instead of toString():"));
+        props.add(new EnumProperty<>("Enums.Enums.enumField2", "Choose:", TestEnum.VALUE1, true));
+
+        String explanation = "<html>Either way, your code deals natively with instances of your enum<br>" +
+                "and the combobox is generated for you! And either way,<br>" +
+                "the value saved to the properties file will be the enum name,<br>" +
+                " in case the toString() changes over time or is localized to<br>" +
+                " a different language.</html>";
+        LabelProperty label = new LabelProperty("Enums.Enums.label3", explanation);
+        label.setFont(new Font(Font.DIALOG, Font.PLAIN, 12));
+        label.setExtraMargins(8, 0);
+        props.add(label);
 
         return props;
     }

@@ -2,13 +2,14 @@ package ca.corbett.extras.logging;
 
 import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.properties.Properties;
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Represents configuration options for a specific LogConsole message style.
@@ -36,7 +37,7 @@ import javax.swing.event.ChangeListener;
  * @author scorbo2
  * @since 2023-03-17
  */
-public final class LogConsoleStyle extends ConfigObject {
+public final class LogConsoleStyle implements ConfigObject {
 
   private static final Logger logger = Logger.getLogger(LogConsoleStyle.class.getName());
 
