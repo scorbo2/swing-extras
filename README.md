@@ -38,7 +38,7 @@ If you're using Maven, you can simply list it as a dependency:
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>1.9.0</version>
+    <version>1.9.1</version>
   </dependency>
 </dependencies>
 ```
@@ -50,7 +50,7 @@ for example to generate the javadocs locally, then you can clone the repo:
 git clone https://github.com/scorbo2/swing-extras.git
 cd swing-extras
 mvn package
-java -jar target/swing-extras-1.9.0-jar-with-dependencies.jar
+java -jar target/swing-extras-1.9.1-jar-with-dependencies.jar
 ```
 
 ## License
@@ -62,3 +62,7 @@ swing-extras is made available under the MIT license: https://opensource.org/lic
 The swing-extras library came together slowly as part of various side projects from around 2012
 until around 2023, but was not made available on github until recently. Version `1.9.0` 
 is the first publicly available version of the library.
+
+- v1.9.1:
+  - Change `ConfigObject` from an abstract class to an interface
+  - Add `EnumProperty` to easily use enums as config properties.
