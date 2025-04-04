@@ -1,6 +1,7 @@
 package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.FormField;
+
 import java.util.Objects;
 
 /**
@@ -54,6 +55,7 @@ public abstract class AbstractProperty {
   protected String propertyLabel;
   protected boolean isExposed;
   protected boolean isEnabled;
+  protected boolean isReadOnly;
 
   /**
    * Each property has a fully qualified name that can optionally specify a
@@ -236,6 +238,40 @@ public abstract class AbstractProperty {
   }
 
   /**
+   * Reports whether this property will be editable when shown in the PropertiesDialog.
+   * <p>
+   * <b>Question: Why would I want a property to be read only?</b> - a common
+   * use case with forms is to make certain controls visible/editable only
+   * if certain conditions are met elsewhere on the form. You can use
+   * isReadOnly to set the initial state of this property when it is added
+   * to the PropertiesDialog (it can still be changed at runtime as a result
+   * of action handlers on other form fields).
+   * </p>
+   * <p>
+   * Another use case is for displaying programmatically configurable properties
+   * that can be set by the code but not by the user. It may still be desirable
+   * to show these properties on the PropertiesDialog and their current value,
+   * without allowing the user to change them. Unlike using a static label for
+   * this purpose, these properties will still save and load their values
+   * to and from properties.
+   * </p>
+   */
+  public boolean isReadOnly() {
+    return isReadOnly;
+  }
+
+  /**
+   * Set whether this property is to be editable by default when shown on a
+   * PropertiesDialog. Note that this reflects the <b>initial</b> state of the property
+   * on the PropertiesDialog. This can be changed at runtime by action handlers
+   * on other form fields (for example, field B is only editable if field A contains
+   * a specific value).
+   */
+  public void setReadOnly(boolean readOnly) {
+    isReadOnly = readOnly;
+  }
+
+  /**
    * Saves the current value(s) of this property to the given Properties instance.
    *
    * @param props Any Properties instance which will receive the value(s) of this property.
@@ -290,5 +326,4 @@ public abstract class AbstractProperty {
     final AbstractProperty other = (AbstractProperty)obj;
     return Objects.equals(this.fullyQualifiedName, other.fullyQualifiedName);
   }
-
 }

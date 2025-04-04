@@ -64,6 +64,7 @@ public class LabelProperty extends AbstractProperty {
       ((JLabel)field.getFieldComponent()).setForeground(labelColor);
     }
     field.setIdentifier(fullyQualifiedName);
+    field.setEnabled(!isReadOnly);
     return field;
   }
 

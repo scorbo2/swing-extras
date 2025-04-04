@@ -2,6 +2,7 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.NumberField;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,6 +103,7 @@ public class DecimalProperty extends AbstractProperty {
   public FormField generateFormField() {
     NumberField field = new NumberField(propertyLabel, value, minValue, maxValue, stepValue);
     field.setIdentifier(fullyQualifiedName);
+    field.setEnabled(!isReadOnly);
     return field;
   }
 

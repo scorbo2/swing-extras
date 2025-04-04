@@ -2,6 +2,7 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.FormField;
+
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,6 +88,7 @@ public class FileProperty extends AbstractProperty {
                                             ? ca.corbett.forms.fields.FileField.SelectionType.NonExistingFile
                                             : ca.corbett.forms.fields.FileField.SelectionType.ExistingFile);
     field.setIdentifier(fullyQualifiedName);
+    field.setEnabled(!isReadOnly);
     return field;
   }
 
