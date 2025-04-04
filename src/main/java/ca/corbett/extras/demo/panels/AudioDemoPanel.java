@@ -4,6 +4,7 @@ import ca.corbett.extras.MessageUtil;
 import ca.corbett.extras.audio.AudioPanelListener;
 import ca.corbett.extras.audio.AudioUtil;
 import ca.corbett.extras.audio.AudioWaveformPanel;
+import ca.corbett.extras.audio.PlaybackThread;
 import ca.corbett.extras.audio.WaveformConfig;
 import ca.corbett.extras.audio.WaveformConfigPanel;
 import ca.corbett.extras.audio.WaveformPanelConfigPanel;
@@ -42,6 +43,8 @@ import java.util.logging.Logger;
  * @since 2018-01-04
  */
 public final class AudioDemoPanel extends PanelBuilder implements AudioPanelListener {
+    private static final Logger logger = Logger.getLogger(AudioDemoPanel.class.getName());
+
     private MessageUtil messageUtil;
     private final JFileChooser fileChooser;
     private JComboBox audioSourceCombo;
@@ -320,5 +323,10 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
 
     @Override
     public void audioLoaded(AudioWaveformPanel sourcePanel) {
+    }
+
+    @Override
+    public void audioStopped(PlaybackThread.StopReason stopReason) {
+        logger.info("Audio stopped because: " + stopReason);
     }
 }

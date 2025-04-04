@@ -17,8 +17,10 @@ public interface PlaybackListener {
   /**
    * Invoked when playback stops, either due to programmatic stop or by hitting the end of the
    * audio stream.
+   *
+   * @param stopReason Contains information about why the clip stopped playing.
    */
-  public void stopped();
+  public void stopped(PlaybackThread.StopReason stopReason);
   
   /**
    * Invoked about once per second while playback is in progress. The current position, in 

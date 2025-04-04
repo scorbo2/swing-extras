@@ -1,13 +1,14 @@
 package ca.corbett.extras.audio;
 
-import java.io.IOException;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Provides a worker thread that can be used to play audio clips. You can instantiate
@@ -20,30 +21,47 @@ import javax.sound.sampled.LineUnavailableException;
 public class PlaybackThread implements Runnable {
 
   // Update progress interval, in milliseconds. Lower is more frequent, but also more costly.
-  private static final int UPDATE_MS = 75;
+  protected static final int UPDATE_MS = 75;
 
-  private final Clip clip;
-  private boolean isPlaying;
-  private final long offsetms;
-  private final long limitms;
-  private long lastPlayPositionms;
-  private final PlaybackListener listener;
+  public enum StopReason {
+    /**
+     * The audio stopped because the clip ran to the very end.
+     **/
+    AUDIO_EXHAUSTED,
+
+    /**
+     * The audio stopped because it was interrupted by a call to stop() or because a listener signalled us to stop.
+     **/
+    INTERRUPTED,
+
+    /**
+     * The audio stopped because a limit was configured when we started, and we hit that limit.
+     **/
+    LIMIT_REACHED
+  }
+
+  protected final Clip clip;
+  protected volatile boolean isPlaying;
+  protected final long offsetms;
+  protected final long limitms;
+  protected long lastPlayPositionms;
+  protected final List<PlaybackListener> listeners;
+  protected volatile StopReason stopReason;
 
   public PlaybackThread(AudioInputStream audioStream, long offset, long limit,
                         PlaybackListener listener) throws LineUnavailableException, IOException {
-    this.listener = listener;
+    this.listeners = new ArrayList<>();
+    if (listener != null) {
+      listeners.add(listener);
+    }
     this.offsetms = offset;
     this.limitms = limit;
     clip = (Clip)AudioSystem.getLine(new Line.Info(Clip.class));
 
-    clip.addLineListener(new LineListener() {
-      @Override
-      public void update(LineEvent event) {
-        if (event.getType() == LineEvent.Type.STOP) {
-          isPlaying = false;
-        }
+    clip.addLineListener(event -> {
+      if (event.getType() == LineEvent.Type.STOP) {
+        isPlaying = false;
       }
-
     });
 
     clip.open(audioStream);
@@ -54,6 +72,7 @@ public class PlaybackThread implements Runnable {
   }
 
   public void stop() {
+    stopReason = StopReason.INTERRUPTED;
     isPlaying = false;
   }
 
@@ -69,6 +88,7 @@ public class PlaybackThread implements Runnable {
 
   @Override
   public void run() {
+    stopReason = null;
 
     // If given a starting offset, set it now before calling clip.start()
     clip.setMicrosecondPosition(offsetms * 1000);
@@ -90,9 +110,7 @@ public class PlaybackThread implements Runnable {
     isPlaying = true;
 
     // Notify listeners that we're starting up:
-    if (listener != null) {
-      listener.started();
-    }
+    fireStartedEvent();
 
     long startTime = System.currentTimeMillis();
     long lastUpdateTime = startTime - UPDATE_MS; // Ensure immediate update
@@ -109,6 +127,7 @@ public class PlaybackThread implements Runnable {
       // If a limit is set, don't play past the limit:
       if (limitms > 0) {
         if (lastPlayPositionms >= limitms) {
+          stopReason = StopReason.LIMIT_REACHED;
           isPlaying = false;
         }
       }
@@ -116,23 +135,56 @@ public class PlaybackThread implements Runnable {
       // Update progress every UPDATE_MS milliseconds:
       long elapsedSinceLastUpdate = System.currentTimeMillis() - lastUpdateTime;
       if (elapsedSinceLastUpdate > UPDATE_MS) {
-        lastUpdateTime = System.currentTimeMillis();
-        if (listener != null) {
-          long curMillis = lastPlayPositionms;
-          if (!listener.updateProgress(curMillis, clipTimeMillis)) {
-            isPlaying = false;
-          }
+        if (!fireProgressEvent(lastPlayPositionms, clipTimeMillis)) {
+          stopReason = StopReason.INTERRUPTED;
+          isPlaying = false;
         }
+        lastUpdateTime = System.currentTimeMillis();
       }
     }
 
-    // Notify listeners that we're stopped:
-    if (listener != null) {
-      listener.stopped();
+    // If no stop reason was set above, then we must
+    // have just hit the end of the clip:
+    if (stopReason == null) {
+      stopReason = StopReason.AUDIO_EXHAUSTED;
     }
+
+    // Notify listeners that we're stopped:
+    fireStopEvent(stopReason);
 
     clip.stop();
     clip.close();
   }
 
+  public void addPlaybackListener(PlaybackListener listener) {
+    if (listener != null) {
+      listeners.add(listener);
+    }
+  }
+
+  public void removePlaybackListener(PlaybackListener listener) {
+    if (listener != null) {
+      listeners.remove(listener);
+    }
+  }
+
+  protected void fireStartedEvent() {
+    for (PlaybackListener listener : listeners) {
+      listener.started();
+    }
+  }
+
+  protected boolean fireProgressEvent(long current, long total) {
+    boolean shouldContinue = true;
+    for (PlaybackListener listener : listeners) {
+      shouldContinue = shouldContinue && listener.updateProgress(current, total);
+    }
+    return shouldContinue;
+  }
+
+  protected void fireStopEvent(StopReason stopReason) {
+    for (PlaybackListener listener : listeners) {
+      listener.stopped(stopReason);
+    }
+  }
 }
