@@ -2,12 +2,17 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
+
+import javax.swing.JLabel;
 import java.awt.Color;
 import java.awt.Font;
-import javax.swing.JLabel;
 
 /**
  * An extremely simple property which represents a static label.
+ * Labels are not input fields, so they do not save or load anything
+ * to or from properties. If you are looking for a way to display
+ * some read-only programmatically configurable field on a properties
+ * dialog, you should use a read-only text field instead of a label.
  *
  * @author scorbo2
  * @since 2024-12-30
@@ -27,12 +32,12 @@ public class LabelProperty extends AbstractProperty {
 
   @Override
   public void saveToProps(Properties props) {
-    props.setString(fullyQualifiedName, propertyLabel);
+    // Labels are static form fields, so there's literally nothing to do here.
   }
 
   @Override
   public void loadFromProps(Properties props) {
-    propertyLabel = props.getString(fullyQualifiedName, propertyLabel);
+    // Labels are static form fields, so there's literally nothing to do here.
   }
 
   public void setExtraMargins(int top, int bottom) {
