@@ -136,6 +136,10 @@ public class PropertiesDemoPanel extends PanelBuilder {
         testLabel.setColor(Color.BLUE);
         props.add(testLabel);
         props.add(new LabelProperty("Intro.Labels.label3", "You can also add hidden properties."));
+        for (int i = 0; i < 10; i++) {
+            props.add(new LabelProperty("Intro.Labels.scroll" + i, "Scroll down!"));
+        }
+        props.add(new LabelProperty("Intro.Labels.scrollSummary", "Long properties forms will automatically get scrollbars (horizontal and vertical as needed) so you can scroll to view everything - even long lines like this!"));
 
         props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorProperty.ColorType.SOLID, Color.RED));
         props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorProperty.ColorType.GRADIENT));

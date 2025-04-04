@@ -3,6 +3,8 @@ package ca.corbett.extras.properties;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
+
+import javax.swing.JTabbedPane;
 import java.awt.Font;
 import java.awt.Frame;
 import java.io.File;
@@ -11,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JTabbedPane;
 
 /**
  * Provides a highly configurable wrapper around a set of related properties,
@@ -293,7 +294,7 @@ public class PropertiesManager {
     for (String category : categories) {
       FormPanel formPanel = generateUnrenderedFormPanel(category, leftAlign, leftMargin);
       formPanel.render();
-      tabPane.addTab(category, formPanel);
+      tabPane.addTab(category, PropertiesDialog.buildScrollPane(formPanel));
     }
     return new PropertiesDialog(this, owner, dialogTitle, tabPane);
   }
@@ -383,5 +384,4 @@ public class PropertiesManager {
     labelField.setFont(labelField.getFieldLabelFont().deriveFont(headerBold ? Font.BOLD : 0, (float)headerFontSize));
     return labelField;
   }
-
 }
