@@ -2,8 +2,8 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.extras.gradient.GradientColorField;
 import ca.corbett.extras.gradient.GradientConfig;
-import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.FormField;
+
 import java.awt.Color;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,6 +109,7 @@ public class ColorProperty extends AbstractProperty {
     }
 
     field.setIdentifier(fullyQualifiedName);
+    field.setEnabled(!isReadOnly);
     return field;
   }
 

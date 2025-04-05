@@ -2,6 +2,7 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.FontStyleField;
 import ca.corbett.forms.fields.FormField;
+
 import java.awt.Font;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,6 +95,7 @@ public class FontProperty extends AbstractProperty {
     field.setItalic(isItalic);
     field.setFontSize(pointSize);
     field.setIdentifier(fullyQualifiedName);
+    field.setEnabled(!isReadOnly);
     return field;
   }
 

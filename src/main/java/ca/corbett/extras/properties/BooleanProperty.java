@@ -2,6 +2,7 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.FormField;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,6 +49,7 @@ public class BooleanProperty extends AbstractProperty {
   public FormField generateFormField() {
     CheckBoxField field = new CheckBoxField(propertyLabel, value);
     field.setIdentifier(fullyQualifiedName);
+    field.setEnabled(!isReadOnly);
     return field;
   }
 

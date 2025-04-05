@@ -6,7 +6,7 @@
 
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>1.9.1</version>
+    <version>1.9.2</version>
     <packaging>jar</packaging>
 
     <name>swing-extras</name>
@@ -95,6 +95,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <!-- Javadoc warnings need to chill out a lot -->
+                    <additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
+                    <additionalJOptions>
+                        <additionalJOption>-Xdoclint:all</additionalJOption>
+                        <additionalJOption>-Xdoclint:-missing</additionalJOption>
+                    </additionalJOptions>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>

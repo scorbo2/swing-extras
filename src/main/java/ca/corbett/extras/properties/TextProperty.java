@@ -2,6 +2,7 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.TextField;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -88,6 +89,7 @@ public class TextProperty extends AbstractProperty {
     TextField textField = new TextField(propertyLabel, columns, rows, allowBlank);
     textField.setText(value);
     textField.setIdentifier(fullyQualifiedName);
+    textField.setEnabled(!isReadOnly);
     return textField;
   }
 

@@ -2,6 +2,7 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.FormField;
+
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,6 +68,7 @@ public class DirectoryProperty extends AbstractProperty {
   public FormField generateFormField() {
     FileField field = new FileField(propertyLabel, dir, columns, FileField.SelectionType.ExistingDirectory, allowBlank);
     field.setIdentifier(fullyQualifiedName);
+    field.setEnabled(!isReadOnly);
     return field;
   }
 

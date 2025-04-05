@@ -15,7 +15,7 @@ import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.extras.properties.TextProperty;
 import ca.corbett.forms.FormPanel;
-import ca.corbett.forms.fields.CheckBoxField;
+import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 
@@ -89,8 +89,12 @@ public class PropertiesDemoPanel extends PanelBuilder {
                 "PropertiesDialog that could just generate the UI for you? Well, there is!</html>");
         formPanel.addFormField(labelField);
 
-        final CheckBoxField checkBoxField = new CheckBoxField("Left-align the properties forms", true);
-        formPanel.addFormField(checkBoxField);
+        List<String> options = new ArrayList<>();
+        for (FormPanel.Alignment option : FormPanel.Alignment.values()) {
+            options.add(option.name());
+        }
+        final ComboField alignmentField = new ComboField("Form alignment:", options, 1, false);
+        formPanel.addFormField(alignmentField);
 
         PanelField panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -103,7 +107,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
                 } catch (Exception ex) {
                     logger.log(Level.SEVERE, "Couldn't load properties.", ex);
                 }
-                PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(), "Test properties", checkBoxField.isChecked());
+                PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(), "Test properties", FormPanel.Alignment.valueOf(alignmentField.getSelectedItem()), 16);
                 dialog.setVisible(true);
                 if (dialog.wasOkayed()) {
                     propsManager.save();
@@ -136,6 +140,10 @@ public class PropertiesDemoPanel extends PanelBuilder {
         testLabel.setColor(Color.BLUE);
         props.add(testLabel);
         props.add(new LabelProperty("Intro.Labels.label3", "You can also add hidden properties."));
+        for (int i = 0; i < 10; i++) {
+            props.add(new LabelProperty("Intro.Labels.scroll" + i, "Scroll down!"));
+        }
+        props.add(new LabelProperty("Intro.Labels.scrollSummary", "Long properties forms will automatically get scrollbars (horizontal and vertical as needed) so you can scroll to view everything - even long lines like this!"));
 
         props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorProperty.ColorType.SOLID, Color.RED));
         props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorProperty.ColorType.GRADIENT));

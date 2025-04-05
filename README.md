@@ -66,3 +66,11 @@ is the first publicly available version of the library.
 - v1.9.1 [2025-03-26]:
   - Change `ConfigObject` from an abstract class to an interface
   - Add `EnumProperty` to easily use enums as config properties.
+- v1.9.2 [2025-04-04]:
+  - https://github.com/scorbo2/swing-extras/issues/4 - better properties dialog generation
+  - https://github.com/scorbo2/swing-extras/issues/5 - better properties dialog generation
+  - https://github.com/scorbo2/swing-extras/issues/6 - long properties forms now scroll
+  - https://github.com/scorbo2/swing-extras/issues/7 - properties can now have read-only initial state
+  - https://github.com/scorbo2/swing-extras/issues/8 - label properties shouldn't save values
+  - https://github.com/scorbo2/swing-extras/issues/10 - better reporting within playback thread
+

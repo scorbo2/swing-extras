@@ -2,6 +2,7 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FormField;
+
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,6 +85,7 @@ public class ComboProperty extends AbstractProperty {
   public FormField generateFormField() {
     ComboField field = new ComboField(propertyLabel, items, selectedIndex, isEditable);
     field.setIdentifier(fullyQualifiedName);
+    field.setEnabled(!isReadOnly);
     return field;
   }
 

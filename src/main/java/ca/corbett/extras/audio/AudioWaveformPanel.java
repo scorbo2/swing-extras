@@ -5,6 +5,12 @@ import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
 
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -27,12 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 /**
  * Presents a JPanel that encapsulates an audio clip, and can visually present a graphical
@@ -154,10 +154,11 @@ public final class AudioWaveformPanel extends JPanel {
       }
 
       @Override
-      public void stopped() {
+      public void stopped(PlaybackThread.StopReason stopReason) {
         setPlaybackPosition(0);
         panelState = PanelState.IDLE;
         fireStateChangedEvent();
+        fireAudioStoppedEvent(stopReason);
       }
 
       @Override
@@ -1062,6 +1063,19 @@ public final class AudioWaveformPanel extends JPanel {
   private void fireRecordingCompleteEvent() {
     for (AudioPanelListener listener : panelListeners) {
       listener.recordingComplete(this);
+    }
+  }
+
+  /**
+   * Notifies all listeners that audio has stopped (this is in addition to the
+   * stateChanged they will also receive). The distinction here is that we will
+   * supply the reason why the audio stopped playing.
+   *
+   * @param stopReason Why did the audio stop?
+   */
+  private void fireAudioStoppedEvent(PlaybackThread.StopReason stopReason) {
+    for (AudioPanelListener listener : panelListeners) {
+      listener.audioStopped(stopReason);
     }
   }
 

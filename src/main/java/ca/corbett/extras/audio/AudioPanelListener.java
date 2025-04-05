@@ -35,5 +35,12 @@ public interface AudioPanelListener {
    * @param sourcePanel The AudioWaveformPanel that triggered this event.
    */
   public void audioLoaded(AudioWaveformPanel sourcePanel);
-  
+
+  /**
+   * In addition to stateChanged, this message will also be triggered when audio
+   * stops playing, to provide information about why the audio stopped.
+   *
+   * @param stopReason Indicates whether the audio was interrupted, hit its limit, or exhausted itself.
+   */
+  public void audioStopped(PlaybackThread.StopReason stopReason);
 }
