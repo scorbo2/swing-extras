@@ -2,10 +2,7 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
-import ca.corbett.forms.fields.LabelField;
 
-import javax.swing.JTabbedPane;
-import java.awt.Font;
 import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
@@ -32,11 +29,6 @@ public class PropertiesManager {
   protected final Properties propertiesInstance;
   protected final List<AbstractProperty> properties;
   protected final String name;
-
-  protected int headerFontSize = 16;
-  protected boolean headerBold = true;
-  protected int headerTopMargin = 10;
-  protected int headerBottomMargin = 0;
 
   /**
    * Creates a PropertiesManager instance backed onto the given File object, and a list
@@ -91,45 +83,24 @@ public class PropertiesManager {
 
   /**
    * Returns a list of all property categories of all non-hidden properties in this
-   * PropertiesManager, in the order they were given to the constructor.We don't sort
+   * PropertiesManager, in the order they were given to the constructor. We don't sort
    * them alphabetically so that applications can define their own preferred order.
    *
    * @return A list of one or more property categories.
    */
   public List<String> getCategories() {
-    List<String> categories = new ArrayList<>();
-    for (AbstractProperty prop : properties) {
-      if (!prop.isExposed() || !prop.isEnabled) {
-        continue;
-      }
-      if (!categories.contains(prop.getCategoryName())) {
-        categories.add(prop.getCategoryName());
-      }
-    }
-    return categories;
+    return getCategories(properties);
   }
 
   /**
    * Returns a list of all subcategories contained within the named property category.
-   * If the specified category does not exist, the list will be empty. Otherwise, it will
-   * always contain at least one category, as we provide a default "General" category in
-   * the event that no property mentions a category.
+   * If the specified category does not exist, the list will be empty.
    *
    * @param category The name of the category to check.
-   * @return A list of 1 or more subcategories for that category, or empty if no such category.
+   * @return A list of zero or more subcategories for the named category.
    */
   public List<String> getSubcategories(String category) {
-    List<String> subCategories = new ArrayList<>();
-    for (AbstractProperty prop : properties) {
-      if (!prop.isExposed() || !prop.isEnabled()) {
-        continue;
-      }
-      if (prop.getCategoryName().equals(category)
-              && !subCategories.contains(prop.getSubCategoryName())) {
-        subCategories.add(prop.getSubCategoryName());
-      }
-    }
-    return subCategories;
+    return getSubcategories(category, properties);
   }
 
   /**
@@ -163,17 +134,7 @@ public class PropertiesManager {
    * @return A list of all AbstractProperty objects in that category/subcategory.
    */
   public List<AbstractProperty> getProperties(String category, String subCategory) {
-    List<AbstractProperty> props = new ArrayList<>();
-    for (AbstractProperty prop : this.properties) {
-      if (!prop.isExposed() || !prop.isEnabled()) {
-        continue;
-      }
-      if (prop.getCategoryName().equals(category)
-              && prop.getSubCategoryName().equals(subCategory)) {
-        props.add(prop);
-      }
-    }
-    return props;
+    return getProperties(properties, category, subCategory);
   }
 
   /**
@@ -246,142 +207,221 @@ public class PropertiesManager {
       // TODO we could do dirty checking here to avoid saving if nothing was modified...
       if (field != null) {
         prop.loadFromFormField(field);
+      } else {
+        logger.warning("PropertiesManager.updateFromDialog(): couldn't find the form field for property: " + prop.getFullyQualifiedName());
       }
     }
     save();
   }
 
   /**
-   * Shorthand for generateDialog(owner,dialogTitle,leftAlign,8) - basically generate a dialog
-   * with an 8 pixel left margin in the generated form panel(s).
+   * Generates a PropertiesDialog for the current properties list with default dialog values.
+   * That is, a left-aligned dialog with an 8 pixel left margin.
    *
-   * @param owner The owher frame for the dialog.
+   * @param owner The owner frame for the dialog.
    * @param dialogTitle The title of the dialog.
-   * @param leftAlign Should form fields be left-aligned within their container. False=center.
    * @return A PropertiesDialog instance, populated and ready to be shown.
    */
-  public PropertiesDialog generateDialog(Frame owner, String dialogTitle, boolean leftAlign) {
-    return generateDialog(owner, dialogTitle, leftAlign, 8);
+  public PropertiesDialog generateDialog(Frame owner, String dialogTitle) {
+    return generateDialog(owner, dialogTitle, FormPanel.Alignment.TOP_LEFT, 8);
   }
 
   /**
    * Generates a PropertiesDialog containing all the non-hidden properties managed by this
-   * PropertiesManager.
+   * PropertiesManager. Note that this method is shorthand for:
+   * <blockquote><pre>
+   *     panelList = generateUnrenderedFormPanels(alignment, leftMargin);
+   *     return new PropertiesDialog(this, owner, dialogTitle, panelList);
+   * </pre></blockquote>
+   * You have the option of calling generateUnrenderedFormPanels() yourself to get the list
+   * of FormPanels that are not yet rendered. The advantage of doing it that way is that you
+   * can add custom logic to form fields on those panels to do things like showing/hiding
+   * or enabling/disabling form fields based on the values contained in other fields. Your code
+   * would look something like this:
+   * <blockquote><pre>
+   *     panelList = propsManager.generateUnrenderedFormPanels(alignment, leftMargin);
+   *
+   *     // Add some custom logic to the form:
+   *     ComboField field1 = (ComboField)PropertiesManager.findFormField("my.field.one");
+   *     FormField field2 = PropertiesManager.findFormField("my.field.two");
+   *     field1.addValueChangedAction(new AbstractAction() {
+   *          public void actionPerformed(ActionEvent e) {
+   *              field2.setEnabled("Some special value".equals(field1.getSelectedItem()));
+   *          }
+   *     });
+   *     field2.setEnabled(false); // set initial value
+   *
+   *     new PropertiesDialog(propsManager, owner, dialogTitle, panelList).setVisible(true);
+   * </pre></blockquote>
+   * <p>
+   *     If you invoke this generateDialog() method to generate the dialog for you,
+   *     instead of using the above approach, you will lose the ability to
+   *     add those action handlers before the form panels are rendered. That might be
+   *     a problem if you need to set certain fields to invisible or disabled before
+   *     the dialog is shown based on current form values.
+   * </p>
    *
    * @param owner The owner frame for the dialog.
    * @param dialogTitle The title of the dialog.
-   * @param leftAlign Should form fields be left-aligned within their container. False=center.
-   * @param leftMargin If leftAlign is true, you can apply a pixel margin to the form's left side.
+   * @param alignment How the form panel(s) on the generated dialog should align themselves.
+   * @param leftMargin If form panels are left aligned, you can apply a pixel margin to the form's left side.
    * @return A PropertiesDialog instance, populated and ready to be shown.
    */
-  public PropertiesDialog generateDialog(Frame owner, String dialogTitle, boolean leftAlign, int leftMargin) {
-    List<String> categories = getCategories();
+  public PropertiesDialog generateDialog(Frame owner, String dialogTitle, FormPanel.Alignment alignment, int leftMargin) {
+    List<FormPanel> formPanelList = generateUnrenderedFormPanels(alignment, leftMargin);
+    return new PropertiesDialog(this, owner, dialogTitle, formPanelList);
+  }
 
-    // Should ideally never happen, but it is possible, if all our properties are hidden properties:
+  public List<FormPanel> generateUnrenderedFormPanels() {
+    return generateUnrenderedFormPanels(properties, FormPanel.Alignment.TOP_LEFT, 8);
+  }
+
+  public List<FormPanel> generateUnrenderedFormPanels(FormPanel.Alignment alignment) {
+    return generateUnrenderedFormPanels(properties, alignment, 8);
+  }
+
+  public List<FormPanel> generateUnrenderedFormPanels(FormPanel.Alignment alignment, int leftMargin) {
+    return generateUnrenderedFormPanels(properties, alignment, leftMargin);
+  }
+
+  public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props) {
+    return generateUnrenderedFormPanels(props, FormPanel.Alignment.TOP_LEFT, 8);
+  }
+
+  public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, FormPanel.Alignment alignment) {
+    return generateUnrenderedFormPanels(props, alignment, 8);
+  }
+
+  public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, FormPanel.Alignment alignment, int leftMargin) {
+    List<String> categories = getCategories(props);
+
+    // Our list of categories might be empty if all properties are hidden or disabled,
+    // of if we simply weren't given any properties. In that case, generate a simple
+    // dialog with a single label field on it indicating that we have nothing to show.
     if (categories.isEmpty()) {
-      return null;
+      props = List.of(LabelProperty.createLabel("defaultLabel", "There are no properties defined."));
+      categories = getCategories(props);
     }
 
-    // If there's only one category, just wrap it in a single form panel:
-    if (categories.size() == 1) {
-      FormPanel formPanel = generateUnrenderedFormPanel(categories.get(0), leftAlign, leftMargin);
-      formPanel.render();
-      return new PropertiesDialog(this, owner, dialogTitle, formPanel);
-    }
-
-    // If there's more than one category, wrap it all in a tab pane:
-    JTabbedPane tabPane = new JTabbedPane();
+    // Now go through each category:
+    List<FormPanel> formPanelList = new ArrayList<>();
     for (String category : categories) {
-      FormPanel formPanel = generateUnrenderedFormPanel(category, leftAlign, leftMargin);
-      formPanel.render();
-      tabPane.addTab(category, PropertiesDialog.buildScrollPane(formPanel));
-    }
-    return new PropertiesDialog(this, owner, dialogTitle, tabPane);
-  }
-
-  /**
-   * Shorthand for generateUnrenderedFormPanel(category,leftAlign,8) - basically, if a left
-   * aligned form is generated, there will be an 8 pixel left margin by default.
-   *
-   * @param category The name of the category in question.
-   * @param leftAlign Should form fields be left-aligned within their container. False=center.
-   * @return A FormPanel object, NOT yet rendered.
-   */
-  public FormPanel generateUnrenderedFormPanel(String category, boolean leftAlign) {
-    return generateUnrenderedFormPanel(category, leftAlign, 8);
-  }
-
-  /**
-   * Generates a FormPanel for all the properties in all of the subcategories of the named Category.
-   * The FormPanel is returned unrendered in case you want to set custom initial visibility
-   * of form fields, or conditional logic such as field B should only be visible/editable if
-   * field A contains some specific value, etc. If you don't need to do that, it's easier
-   * to just go through generateDialog() and get all FormPanels prerendered and ready to go.
-   *
-   * @param category The name of the category in question.
-   * @param leftAlign Should form properties be left-aligned within their container. False=center.
-   * @param leftMargin A pixel margin to apply to the left of all form fields, ignored if centered.
-   * @return A FormPanel object, NOT yet rendered.
-   */
-  public FormPanel generateUnrenderedFormPanel(String category, boolean leftAlign, int leftMargin) {
-    List<String> subCategories = getSubcategories(category);
-    FormPanel.Alignment formAlignment = FormPanel.Alignment.TOP_CENTER;
-    if (leftAlign) {
-      formAlignment = FormPanel.Alignment.TOP_LEFT;
-    }
-
-    FormPanel formPanel = new FormPanel(formAlignment);
-    for (String subCategory : subCategories) {
-      // Show a subcategory label header if there's more than one subcategory:
-      if (subCategories.size() > 1) {
-        FormField field = generateHeaderField(subCategory);
-        if (leftAlign) {
-          field.setLeftMargin(leftMargin);
+      List<String> subCategories = getSubcategories(category, props);
+      FormPanel formPanel = new FormPanel(alignment);
+      formPanel.setName(category);
+      for (String subCategory : subCategories) {
+        // Show a subcategory label header if there's more than one subcategory:
+        if (subCategories.size() > 1) {
+          FormField field = LabelProperty.createHeaderLabel(category + "." + subCategory + ".autoGeneratedHeaderLabel", subCategory).generateFormField();
+          if (alignment.isLeftAligned()) {
+            field.setLeftMargin(leftMargin);
+          }
+          formPanel.addFormField(field);
         }
-        formPanel.addFormField(field);
+
+        // Show all the properties in this subcategory:
+        List<AbstractProperty> propList = getProperties(props, category, subCategory);
+        for (AbstractProperty prop : propList) {
+          FormField field = prop.generateFormField();
+          if (alignment.isLeftAligned()) {
+            field.setLeftMargin(leftMargin);
+          }
+          formPanel.addFormField(field);
+        }
       }
+      formPanelList.add(formPanel);
+    }
 
-      // Show all the properties in this subcategory:
-      List<AbstractProperty> propList = getProperties(category, subCategory);
-      for (AbstractProperty prop : propList) {
-        FormField field = prop.generateFormField();
-        if (leftAlign) {
-          field.setLeftMargin(leftMargin);
+    return formPanelList;
+  }
+
+  /**
+   * A convenience method to find a specific named form field in a list of
+   * unrendered form panels. If the field is not found, null is returned.
+   * If you can't figure out why the field you're sure is there is returning
+   * null, check if it is marked as hidden or disabled. Such fields are not
+   * included in the generated form panels.
+   *
+   * @param fieldName            The fully qualified name of the field to look for.
+   * @param unrenderedFormPanels A List of unrendered FormPanels, presumably from generateUnrenderedFormPanels()
+   * @return The FormField in question, or null if not found.
+   */
+  public static FormField findFormField(String fieldName, List<FormPanel> unrenderedFormPanels) {
+    for (FormPanel formPanel : unrenderedFormPanels) {
+      List<FormField> fields = formPanel.getFormFields();
+      for (FormField field : fields) {
+        if (field.getIdentifier() != null && field.getIdentifier().equals(fieldName)) {
+          return field;
         }
-        formPanel.addFormField(field);
       }
     }
-
-    return formPanel;
+    return null;
   }
 
   /**
-   * Allows setting properties for generated header labels in properties forms. Values set here
-   * will be used for generated forms going forward; calling this has no effect on forms
-   * that have already been generated via this class.
+   * Extracts and returns a list of all top-level property categories for all non-hidden
+   * properties in the given list, in the order that they are discovered within that list.
+   * We don't sort the category list so that applications can define their own preferred order.
    *
-   * @param isBold Should the header labels be in bold text (default true).
-   * @param topMargin Extra pixel margin to apply above the label (default 10).
-   * @param bottomMargin Extra pixel margin to apply below the label (default 0).
-   * @param pointSize Point size for header font (default 16).
+   * @param props A list of properties to scan.
+   * @return A List of unique top-level category names for all non-hidden properties that were found.
    */
-  public void setHeaderProperties(boolean isBold, int topMargin, int bottomMargin, int pointSize) {
-    headerBold = isBold;
-    headerTopMargin = topMargin;
-    headerBottomMargin = bottomMargin;
-    headerFontSize = pointSize;
+  protected static List<String> getCategories(List<AbstractProperty> props) {
+    List<String> categories = new ArrayList<>();
+    for (AbstractProperty prop : props) {
+      if (!prop.isExposed() || !prop.isEnabled()) {
+        continue;
+      }
+      if (!categories.contains(prop.getCategoryName())) {
+        categories.add(prop.getCategoryName());
+      }
+    }
+    return categories;
   }
 
   /**
-   * Generates a subCategory label.
+   * Scans the given property list and returns a list of all subcategories within the named
+   * category have at least one non-hidden property. If the specified category does not exist,
+   * the list will be empty.
    *
-   * @param title The name of the sub category.
-   * @return A LabelField instance
+   * @param category The name of the category to check.
+   * @param props    The list of properties to scan. Hidden or disabled properties will be ignored.
+   * @return A list of zero or more subcategories for the named category.
    */
-  protected LabelField generateHeaderField(String title) {
-    LabelField labelField = new LabelField(title);
-    labelField.setExtraMargins(headerTopMargin, headerBottomMargin);
-    labelField.setFont(labelField.getFieldLabelFont().deriveFont(headerBold ? Font.BOLD : 0, (float)headerFontSize));
-    return labelField;
+  protected static List<String> getSubcategories(String category, List<AbstractProperty> props) {
+    List<String> subCategories = new ArrayList<>();
+    for (AbstractProperty prop : props) {
+      if (!prop.isExposed() || !prop.isEnabled()) {
+        continue;
+      }
+      if (prop.getCategoryName().equals(category)
+              && !subCategories.contains(prop.getSubCategoryName())) {
+        subCategories.add(prop.getSubCategoryName());
+      }
+    }
+    return subCategories;
+  }
+
+  /**
+   * Scans the given properties list and returns a list of all non-hidden properties
+   * that belong to the given category and subcategory.
+   *
+   * @param props       The list of properties to scan
+   * @param category    The toplevel category to check
+   * @param subCategory The subcategory to check
+   * @return A List of zero or more AbstractProperties that match the search parameters.
+   */
+  protected static List<AbstractProperty> getProperties(List<AbstractProperty> props, String category, String subCategory) {
+    List<AbstractProperty> propList = new ArrayList<>();
+    for (AbstractProperty prop : props) {
+      if (!prop.isExposed() || !prop.isEnabled()) {
+        continue;
+      }
+      if (prop.getCategoryName().equals(category)
+              && prop.getSubCategoryName().equals(subCategory)) {
+        propList.add(prop);
+      }
+    }
+    return propList;
   }
 }
