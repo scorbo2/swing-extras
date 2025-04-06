@@ -203,6 +203,9 @@ public class PropertiesManager {
       return;
     }
     for (AbstractProperty prop : properties) {
+      if (!prop.isEnabled() || !prop.isExposed()) {
+        continue; // we won't find hidden or disabled fields as they aren't added to the form in the first place
+      }
       FormField field = dialog.findFormField(prop.getFullyQualifiedName());
       // TODO we could do dirty checking here to avoid saving if nothing was modified...
       if (field != null) {

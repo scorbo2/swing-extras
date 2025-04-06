@@ -64,7 +64,7 @@ public class PropertiesDialog extends JDialog {
       add(tabPane, BorderLayout.CENTER);
     }
 
-    // If we got one form panel, use use it directly:
+    // If we got one form panel, use it directly:
     else if (formPanelList.size() == 1) {
       tabPane = null;
       formPanel = formPanelList.get(0);
@@ -111,7 +111,7 @@ public class PropertiesDialog extends JDialog {
   }
 
   /**
-   * Returns the FormField with the given identifier it it exists on this dialog.
+   * Returns the FormField with the given identifier if it exists on this dialog.
    *
    * @param identifier The string identifier of the field in question.
    * @return A FormField instance representing that field, or null if not found.
@@ -125,7 +125,12 @@ public class PropertiesDialog extends JDialog {
 
     else {
       for (int i = 0; i < tabPane.getTabCount(); i++) {
-        allFields.addAll(((FormPanel)tabPane.getComponentAt(i)).getFormFields());
+        FormPanel formPanel = getFormPanelAt(i);
+        if (formPanel != null) {
+          allFields.addAll(formPanel.getFormFields());
+        } else {
+          logger.warning("PropertiesDialog.findFormField: couldn't find FormPanel at index " + i);
+        }
       }
     }
 
@@ -164,6 +169,40 @@ public class PropertiesDialog extends JDialog {
     return scrollPane;
   }
 
+  /**
+   * Returns the FormPanel from the tab with the given index. If the tab is out of range,
+   * or if no FormPanel can be found on that tab for any reason, this returns null.
+   *
+   * @param index The tab index in question.
+   * @return A FormPanel instance, or null if not found.
+   */
+  public FormPanel getFormPanelAt(int index) {
+    // Special case: if we only have one, we won't have a tab pane at all:
+    if (index == 0 && tabPane == null && formPanel != null) {
+      return formPanel;
+    }
+
+    if (tabPane == null) {
+      return null;
+    }
+
+    if (index < 0 || index >= tabPane.getTabCount()) {
+      return null;
+    }
+
+    Object something = tabPane.getComponentAt(index);
+    if (!(something instanceof JScrollPane)) {
+      return null;
+    }
+
+    JScrollPane scrollPane = (JScrollPane) something;
+    if (!(scrollPane.getViewport().getView() instanceof FormPanel)) {
+      return null;
+    }
+
+    return (FormPanel) scrollPane.getViewport().getView();
+  }
+
   protected void validateFormAndClose() {
     // If we're wrapping a single FormPanel, validate it:
     if (formPanel != null) {
@@ -176,11 +215,15 @@ public class PropertiesDialog extends JDialog {
     else {
       int firstTabWithErrors = -1;
       for (int i = 0; i < tabPane.getTabCount(); i++) {
-        FormPanel form = (FormPanel)tabPane.getComponentAt(i);
-        if (!form.isFormValid()) {
-          if (firstTabWithErrors == -1) {
-            firstTabWithErrors = i;
+        FormPanel form = getFormPanelAt(i);
+        if (form != null) {
+          if (!form.isFormValid()) {
+            if (firstTabWithErrors == -1) {
+              firstTabWithErrors = i;
+            }
           }
+        } else {
+          logger.warning("PropertiesDialog.validateFormAndClose: couldn't find FormPanel at index " + i);
         }
       }
 
