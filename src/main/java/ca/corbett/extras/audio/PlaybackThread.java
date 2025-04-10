@@ -21,7 +21,7 @@ import java.util.List;
 public class PlaybackThread implements Runnable {
 
   // Update progress interval, in milliseconds. Lower is more frequent, but also more costly.
-  protected static final int UPDATE_MS = 75;
+  protected static final int UPDATE_MS = 1000;
 
   public enum StopReason {
     /**
@@ -140,6 +140,14 @@ public class PlaybackThread implements Runnable {
           isPlaying = false;
         }
         lastUpdateTime = System.currentTimeMillis();
+      }
+
+      // Take a break until next update is due:
+      else {
+        try {
+          Thread.sleep(UPDATE_MS - elapsedSinceLastUpdate);
+        } catch (InterruptedException ignored) {
+        }
       }
     }
 
