@@ -17,62 +17,95 @@ import java.util.logging.Logger;
 public class FontProperty extends AbstractProperty {
 
   private static final Logger logger = Logger.getLogger(FontProperty.class.getName());
+  public static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 
-  protected String fontName;
-  protected boolean isBold;
-  protected boolean isItalic;
-  protected int pointSize;
+  protected Font font;
   protected Color textColor;
   protected Color bgColor;
 
-  public FontProperty(String name, String label, String fontName, boolean isBold, boolean isItalic, int pointSize) {
-    this(name, label, fontName, isBold, isItalic, pointSize, null, null);
+  /**
+   * Creates a new FontProperty with all default values.
+   * This will use FontProperty.DEFAULT_FONT as the font, and will
+   * set null for both foreground and background colors.
+   *
+   * @param name  The fully qualified field name.
+   * @param label The field label.
+   */
+  public FontProperty(String name, String label) {
+    this(name, label, DEFAULT_FONT, null, null);
   }
 
-  public FontProperty(String name, String label, String fontName, boolean isBold, boolean isItalic, int pointSize, Color textColor) {
-    this(name, label, fontName, isBold, isItalic, pointSize, textColor, null);
+  /**
+   * Creates a new FontProperty with the given font and
+   * null for both foreground and background colors.
+   *
+   * @param name  The fully qualified field name.
+   * @param label The field label.
+   * @param font  The initial font.
+   */
+  public FontProperty(String name, String label, Font font) {
+    this(name, label, font, null, null);
   }
 
-  public FontProperty(String name, String label, String fontName, boolean isBold, boolean isItalic, int pointSize, Color textColor, Color bgColor) {
+  /**
+   * Creates a new FontProperty with the given font and
+   * the given foreground color, and null for the background color.
+   *
+   * @param name      The fully qualified field name.
+   * @param label     The field label.
+   * @param font      The initial font.
+   * @param textColor The foreground color.
+   */
+  public FontProperty(String name, String label, Font font, Color textColor) {
+    this(name, label, font, textColor, null);
+  }
+
+  /**
+   * Creates a new FontProperty with the default font and
+   * the given foreground color and a null background color.
+   * FontProperty.DEFAULT_FONT will be used for the font.
+   *
+   * @param name      The fully qualified field name.
+   * @param label     The field label.
+   * @param textColor The foreground color.
+   */
+  public FontProperty(String name, String label, Color textColor) {
+    this(name, label, DEFAULT_FONT, textColor, null);
+  }
+
+  /**
+   * Creates a new FontProperty with the default font and
+   * the given foreground color and the given background color.
+   * FontProperty.DEFAULT_FONT will be used for the font.
+   *
+   * @param name      The fully qualified field name.
+   * @param label     The field label.
+   * @param textColor The foreground color.
+   * @param bgColor   The background color.
+   */
+  public FontProperty(String name, String label, Color textColor, Color bgColor) {
+    this(name, label, DEFAULT_FONT, textColor, bgColor);
+  }
+
+  /**
+   * Creates a new FontProperty with the given font and
+   * the given foreground color and the given background color.
+   *
+   * @param name      The fully qualified field name.
+   * @param label     The field label.
+   * @param font      The initial font.
+   * @param textColor The foreground color.
+   * @param bgColor   The background color.
+   */
+  public FontProperty(String name, String label, Font font, Color textColor, Color bgColor) {
     super(name, label);
-    this.fontName = fontName;
-    this.isBold = isBold;
-    this.isItalic = isItalic;
-    this.pointSize = pointSize;
+    this.font = font;
     this.textColor = textColor;
     this.bgColor = bgColor;
   }
 
-  public void setFontName(String name) {
-    fontName = name;
-  }
-
-  public String getFontName() {
-    return fontName;
-  }
-
-  public boolean isIsBold() {
-    return isBold;
-  }
-
-  public void setIsBold(boolean isBold) {
-    this.isBold = isBold;
-  }
-
-  public boolean isIsItalic() {
-    return isItalic;
-  }
-
-  public void setIsItalic(boolean isItalic) {
-    this.isItalic = isItalic;
-  }
-
-  public int getPointSize() {
-    return pointSize;
-  }
-
-  public void setPointSize(int pointSize) {
-    this.pointSize = pointSize;
+  public void setFont(Font font) {
+    this.font = font;
   }
 
   public Color getTextColor() {
@@ -92,22 +125,15 @@ public class FontProperty extends AbstractProperty {
   }
 
   public Font getFont() {
-    int style = Font.PLAIN;
-    if (isBold) {
-      style = style | Font.BOLD;
-    }
-    if (isItalic) {
-      style = style | Font.ITALIC;
-    }
-    return new Font(fontName, style, pointSize);
+    return font;
   }
 
   @Override
   public void saveToProps(Properties props) {
-    props.setString(fullyQualifiedName + ".name", fontName);
-    props.setBoolean(fullyQualifiedName + ".isBold", isBold);
-    props.setBoolean(fullyQualifiedName + ".isItalic", isItalic);
-    props.setInteger(fullyQualifiedName + ".pointSize", pointSize);
+    props.setString(fullyQualifiedName + ".name", font.getFamily());
+    props.setBoolean(fullyQualifiedName + ".isBold", font.isBold());
+    props.setBoolean(fullyQualifiedName + ".isItalic", font.isItalic());
+    props.setInteger(fullyQualifiedName + ".pointSize", font.getSize());
     if (textColor != null) {
       props.setColor(fullyQualifiedName + ".textColor", textColor);
     } else {
@@ -122,10 +148,11 @@ public class FontProperty extends AbstractProperty {
 
   @Override
   public void loadFromProps(Properties props) {
-    fontName = props.getString(fullyQualifiedName + ".name", fontName);
-    isBold = props.getBoolean(fullyQualifiedName + ".isBold", isBold);
-    isItalic = props.getBoolean(fullyQualifiedName + ".isItalic", isItalic);
-    pointSize = props.getInteger(fullyQualifiedName + ".pointSize", pointSize);
+    String fontName = props.getString(fullyQualifiedName + ".name", font.getFamily());
+    boolean isBold = props.getBoolean(fullyQualifiedName + ".isBold", font.isBold());
+    boolean isItalic = props.getBoolean(fullyQualifiedName + ".isItalic", font.isItalic());
+    int pointSize = props.getInteger(fullyQualifiedName + ".pointSize", font.getSize());
+    font = Properties.createFontFromAttributes(fontName, isBold, isItalic, pointSize);
     textColor = props.getColor(fullyQualifiedName + ".textColor", textColor);
     bgColor = props.getColor(fullyQualifiedName + ".bgColor", bgColor);
   }
@@ -148,10 +175,7 @@ public class FontProperty extends AbstractProperty {
     }
 
     FontField fontField = (FontField) field;
-    fontName = fontField.getSelectedFont().getFontName();
-    isBold = fontField.getSelectedFont().isBold();
-    isItalic = fontField.getSelectedFont().isItalic();
-    pointSize = fontField.getSelectedFont().getSize();
+    font = ((FontField) field).getSelectedFont();
     textColor = fontField.getTextColor();
     bgColor = fontField.getBgColor();
   }
