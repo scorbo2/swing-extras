@@ -4,7 +4,6 @@ import ca.corbett.extras.CustomizableDesktopPane;
 import ca.corbett.extras.gradient.GradientColorField;
 import ca.corbett.extras.gradient.GradientConfig;
 import ca.corbett.extras.gradient.GradientUtil;
-import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.forms.FormPanel;
@@ -24,8 +23,6 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +61,8 @@ public class DesktopDemoPanel extends PanelBuilder {
         sb.append("options for customization.<br/><br/>");
         sb.append("Meet the CustomizableDesktopPane!</html>");
         LabelField labelField = new LabelField(sb.toString());
-        labelField.setExtraMargins(12,16);
+        labelField.setTopMargin(14);
+        labelField.setBottomMargin(18);
         formPanel.addFormField(labelField);
 
         final GradientColorField bgColorField = new GradientColorField("Background:", Color.BLACK, gradient, false);

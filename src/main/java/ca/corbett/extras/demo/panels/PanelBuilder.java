@@ -35,7 +35,6 @@ public abstract class PanelBuilder {
     protected LabelField createSimpleLabelField(String text) {
         LabelField field = new LabelField(text);
         field.setMargins(2, 2, 2, 2, 0);
-        field.setExtraMargins(0, 0);
         field.setFieldLabelFont(new Font("SansSerif", Font.PLAIN, 14));
         field.setFont(new Font("SansSerif", Font.PLAIN, 14));
         return field;

@@ -5,8 +5,8 @@ import ca.corbett.extras.gradient.GradientColorField;
 import ca.corbett.extras.gradient.GradientConfig;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.forms.FormPanel;
-import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.NumberField;
 
 import javax.swing.AbstractAction;
@@ -28,15 +28,12 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
     private GradientColorField bgColorField;
     private GradientColorField borderColorField;
     private GradientColorField textColorField;
-    private ComboField fontChooser;
-    private CheckBoxField boldCheckBox;
-    private CheckBoxField italicCheckBox;
+    private FontField fontField;
     private NumberField borderWidthField;
     private NumberField imageWidthField;
     private NumberField imageHeightField;
     private NumberField yTweakField;
     private ComboField fontSizeChooser;
-    private NumberField fontSizeField;
 
     public LogoConfigPanel(String title) {
         this(title, new LogoConfig("Untitled"));
@@ -86,12 +83,12 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
         modelObject.setBorderColorType(obj.getBorderColorType());
         modelObject.setBorderWidth(obj.getBorderWidth());
         modelObject.setHasBorder(obj.hasBorder());
+        modelObject.setFontPointSize(obj.getFont().getSize()); // set this BEFORE setAutoSize()
         modelObject.setAutoSize(obj.isAutoSize());
         modelObject.setFont(obj.getFont());
         modelObject.setTextColor(obj.getTextColor());
         modelObject.setTextGradient(obj.getTextGradient());
         modelObject.setTextColorType(obj.getTextColorType());
-        modelObject.setFontPointSize(obj.getFontPointSize());
         modelObject.setLogoWidth(obj.getLogoWidth());
         modelObject.setLogoHeight(obj.getLogoHeight());
         modelObject.setYTweak(obj.getYTweak());
@@ -116,10 +113,7 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
             }
             borderWidthField.setCurrentValue(obj.getBorderWidth());
             fontSizeChooser.setSelectedIndex(obj.isAutoSize() ? 0 : 1);
-            fontSizeField.setCurrentValue(obj.getFontPointSize());
-            fontChooser.setSelectedItem(obj.getFont().getFamily()); // TODO would be nice to set font face name...
-            boldCheckBox.setChecked(obj.getFont().isBold());
-            italicCheckBox.setChecked(obj.getFont().isItalic());
+            fontField.setSelectedFont(modelObject.getFont());
             imageWidthField.setCurrentValue(obj.getLogoWidth());
             imageHeightField.setCurrentValue(obj.getLogoHeight());
             yTweakField.setCurrentValue(obj.getYTweak());
@@ -185,43 +179,17 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
         });
         formPanel.addFormField(textColorField);
 
+        fontField = new FontField("Font:", modelObject.getFont());
+        fontField.addValueChangedAction(fontFieldChangedAction);
+        formPanel.addFormField(fontField);
+
         List<String> options = new ArrayList<>();
-        options.add(Font.SERIF);
-        options.add(Font.SANS_SERIF);
-        options.add(Font.MONOSPACED);
-        fontChooser = new ComboField("Font:", options, 0, false);
-        fontChooser.setSelectedItem(modelObject.getFont().getFamily());
-        fontChooser.addValueChangedAction(fontFieldChangedAction);
-        formPanel.addFormField(fontChooser);
-
-        boldCheckBox = new CheckBoxField("Bold", modelObject.getFont().isBold());
-        boldCheckBox.addValueChangedAction(fontFieldChangedAction);
-        boldCheckBox.setLeftMargin(32);
-        formPanel.addFormField(boldCheckBox);
-
-        italicCheckBox = new CheckBoxField("Italic", modelObject.getFont().isItalic());
-        italicCheckBox.addValueChangedAction(fontFieldChangedAction);
-        italicCheckBox.setLeftMargin(32);
-        formPanel.addFormField(italicCheckBox);
-
-        options.clear();
         options.add("Auto-scale to image");
-        options.add("Choose font size...");
+        options.add("Use size from font chooser");
         fontSizeChooser = new ComboField("Font size:", options, 0, false);
         fontSizeChooser.setSelectedIndex(modelObject.isAutoSize() ? 0 : 1);
         fontSizeChooser.addValueChangedAction(fontFieldChangedAction);
-        fontSizeChooser.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fontSizeField.setEnabled(fontSizeChooser.getSelectedIndex() == 1);
-            }
-        });
         formPanel.addFormField(fontSizeChooser);
-
-        fontSizeField = new NumberField("Font size:", modelObject.getFontPointSize(), 2, 200, 2);
-        fontSizeField.setEnabled(fontSizeChooser.getSelectedIndex() == 1);
-        fontSizeField.addValueChangedAction(fontFieldChangedAction);
-        formPanel.addFormField(fontSizeField);
 
         borderWidthField = new NumberField("Border width:", 1, 0, 20, 1);
         borderWidthField.addValueChangedAction(new AbstractAction() {
@@ -274,12 +242,10 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
     private final AbstractAction fontFieldChangedAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            String familyName = fontChooser.getSelectedItem();
-            boolean isBold = boldCheckBox.isChecked();
-            boolean isItalic = italicCheckBox.isChecked();
-            int pointSize = (Integer) fontSizeField.getCurrentValue();
-            modelObject.setFont(Properties.createFontFromAttributes(familyName, isBold, isItalic, pointSize));
-            modelObject.setFontPointSize(pointSize);
+            Font font = fontField.getSelectedFont();
+            int size = font.getSize();
+            modelObject.setFont(font);
+            modelObject.setFontPointSize(size);
             modelObject.setAutoSize(fontSizeChooser.getSelectedIndex() == 0);
             notifyChangeListeners();
         }

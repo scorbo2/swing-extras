@@ -8,6 +8,7 @@ import ca.corbett.extras.properties.ComboProperty;
 import ca.corbett.extras.properties.DirectoryProperty;
 import ca.corbett.extras.properties.EnumProperty;
 import ca.corbett.extras.properties.FileProperty;
+import ca.corbett.extras.properties.FontProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.extras.properties.Properties;
@@ -148,6 +149,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorProperty.ColorType.SOLID, Color.RED));
         props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorProperty.ColorType.GRADIENT));
         props.add(new ColorProperty("Colors.someMultiColor", "Both:", ColorProperty.ColorType.BOTH));
+        props.add(new FontProperty("Colors.fontColor", "Font with color:", Font.SANS_SERIF, false, false, 14, Color.CYAN, Color.DARK_GRAY));
 
         props.add(new DirectoryProperty("Files.someDirProperty", "Directory:"));
         props.add(new FileProperty("Files.someFileProperty", "File:"));

@@ -308,7 +308,6 @@ public final class MultiProgressDialog extends JDialog {
     List<FormField> formFields = new ArrayList<>();
 
     majorProgressLabel = new LabelField("");
-    majorProgressLabel.setExtraMargins(0, 0);
     majorProgressLabel.setMargins(12, 0, 0, 0, 2);
     formFields.add(majorProgressLabel);
 
@@ -323,7 +322,6 @@ public final class MultiProgressDialog extends JDialog {
     formFields.add(panelField);
 
     minorProgressLabel = new LabelField("");
-    minorProgressLabel.setExtraMargins(0, 0);
     minorProgressLabel.setMargins(16, 0, 0, 0, 2);
     formFields.add(minorProgressLabel);
 

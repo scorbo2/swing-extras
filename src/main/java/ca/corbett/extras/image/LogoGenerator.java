@@ -2,6 +2,12 @@ package ca.corbett.extras.image;
 
 import ca.corbett.extras.gradient.GradientUtil;
 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.FileImageOutputStream;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -11,12 +17,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.logging.Logger;
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
-import javax.imageio.stream.FileImageOutputStream;
 
 /**
  * Utility class to generate small, text-based images that can serve as a
@@ -68,7 +68,7 @@ public final class LogoGenerator {
             }
         }
 
-        int fontPointSize = preset.getFontPointSize();
+        int fontPointSize = preset.getFont().getSize();
         Font font = preset.getFont().deriveFont((float)fontPointSize);
         graphics.setFont(font);
         int textWidth = (int)graphics.getFontMetrics().stringWidth(text);

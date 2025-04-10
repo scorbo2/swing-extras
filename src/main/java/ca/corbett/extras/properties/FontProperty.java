@@ -1,14 +1,16 @@
 package ca.corbett.extras.properties;
 
-import ca.corbett.forms.fields.FontStyleField;
+import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.FormField;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Represents a property field that allows storing a Font.
+ * Represents a property field that allows storing a Font,
+ * along with associated style and optional color attributes.
  *
  * @author scorbo2
  */
@@ -20,13 +22,25 @@ public class FontProperty extends AbstractProperty {
   protected boolean isBold;
   protected boolean isItalic;
   protected int pointSize;
+  protected Color textColor;
+  protected Color bgColor;
 
   public FontProperty(String name, String label, String fontName, boolean isBold, boolean isItalic, int pointSize) {
+    this(name, label, fontName, isBold, isItalic, pointSize, null, null);
+  }
+
+  public FontProperty(String name, String label, String fontName, boolean isBold, boolean isItalic, int pointSize, Color textColor) {
+    this(name, label, fontName, isBold, isItalic, pointSize, textColor, null);
+  }
+
+  public FontProperty(String name, String label, String fontName, boolean isBold, boolean isItalic, int pointSize, Color textColor, Color bgColor) {
     super(name, label);
     this.fontName = fontName;
     this.isBold = isBold;
     this.isItalic = isItalic;
     this.pointSize = pointSize;
+    this.textColor = textColor;
+    this.bgColor = bgColor;
   }
 
   public void setFontName(String name) {
@@ -61,7 +75,23 @@ public class FontProperty extends AbstractProperty {
     this.pointSize = pointSize;
   }
 
-  public Font createFont() {
+  public Color getTextColor() {
+    return textColor;
+  }
+
+  public Color getBgColor() {
+    return bgColor;
+  }
+
+  public void setTextColor(Color color) {
+    textColor = color;
+  }
+
+  public void setBgColor(Color color) {
+    bgColor = color;
+  }
+
+  public Font getFont() {
     int style = Font.PLAIN;
     if (isBold) {
       style = style | Font.BOLD;
@@ -78,6 +108,16 @@ public class FontProperty extends AbstractProperty {
     props.setBoolean(fullyQualifiedName + ".isBold", isBold);
     props.setBoolean(fullyQualifiedName + ".isItalic", isItalic);
     props.setInteger(fullyQualifiedName + ".pointSize", pointSize);
+    if (textColor != null) {
+      props.setColor(fullyQualifiedName + ".textColor", textColor);
+    } else {
+      props.remove(fullyQualifiedName + ".textColor");
+    }
+    if (bgColor != null) {
+      props.setColor(fullyQualifiedName + ".bgColor", bgColor);
+    } else {
+      props.remove(fullyQualifiedName + ".bgColor");
+    }
   }
 
   @Override
@@ -86,14 +126,13 @@ public class FontProperty extends AbstractProperty {
     isBold = props.getBoolean(fullyQualifiedName + ".isBold", isBold);
     isItalic = props.getBoolean(fullyQualifiedName + ".isItalic", isItalic);
     pointSize = props.getInteger(fullyQualifiedName + ".pointSize", pointSize);
+    textColor = props.getColor(fullyQualifiedName + ".textColor", textColor);
+    bgColor = props.getColor(fullyQualifiedName + ".bgColor", bgColor);
   }
 
   @Override
   public FormField generateFormField() {
-    FontStyleField field = new FontStyleField(propertyLabel, fontName);
-    field.setBold(isBold);
-    field.setItalic(isItalic);
-    field.setFontSize(pointSize);
+    FontField field = new FontField(propertyLabel, getFont(), textColor, bgColor);
     field.setIdentifier(fullyQualifiedName);
     field.setEnabled(!isReadOnly);
     return field;
@@ -103,16 +142,18 @@ public class FontProperty extends AbstractProperty {
   public void loadFromFormField(FormField field) {
     if (field.getIdentifier() == null
             || !field.getIdentifier().equals(fullyQualifiedName)
-            || !(field instanceof FontStyleField)) {
+            || !(field instanceof FontField)) {
       logger.log(Level.SEVERE, "FontProperty.loadFromFormField: received the wrong field \"{0}\"", field.getIdentifier());
       return;
     }
 
-    FontStyleField fontField = (FontStyleField)field;
-    fontName = fontField.getFontName();
-    isBold = fontField.isBold();
-    isItalic = fontField.isItalic();
-    pointSize = fontField.getFontSize();
+    FontField fontField = (FontField) field;
+    fontName = fontField.getSelectedFont().getFontName();
+    isBold = fontField.getSelectedFont().isBold();
+    isItalic = fontField.getSelectedFont().isItalic();
+    pointSize = fontField.getSelectedFont().getSize();
+    textColor = fontField.getTextColor();
+    bgColor = fontField.getBgColor();
   }
 
 }

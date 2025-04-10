@@ -9,9 +9,9 @@ import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageTextUtil;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.forms.FormPanel;
-import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.TextField;
@@ -38,9 +38,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
     private ImagePanel imagePanel;
 
     private TextField textField;
-    private ComboField fontChooser;
-    private CheckBoxField boldCheckBox;
-    private CheckBoxField italicCheckBox;
+    private FontField fontField;
     private GradientColorField bgColorField;
     private ColorField textFillColorField;
     private ColorField textOutlineColorField;
@@ -92,7 +90,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
 
         LabelField labelField = new LabelField("ImageTextUtil");
-        labelField.setExtraMargins(16, 0);
+        labelField.setTopMargin(18);
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
         formPanel.addFormField(labelField);
 
@@ -100,7 +98,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
                 "to write multiple lines of text to an image<br>" +
                 "with optional fill and outline properties.<br>" +
                 "Line wrapping can be handled automatically!</html>");
-        labelField.setExtraMargins(0, 8);
+        labelField.setBottomMargin(10);
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.PLAIN, 12f));
         formPanel.addFormField(labelField);
 
@@ -109,23 +107,9 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         textField.addValueChangedAction(changeAction);
         formPanel.addFormField(textField);
 
-        List<String> options = new ArrayList<>();
-        options.add(Font.SERIF);
-        options.add(Font.SANS_SERIF);
-        options.add(Font.MONOSPACED);
-        fontChooser = new ComboField("Font family:", options, 1, false);
-        fontChooser.addValueChangedAction(changeAction);
-        formPanel.addFormField(fontChooser);
-
-        boldCheckBox = new CheckBoxField("Bold", false);
-        boldCheckBox.setLeftMargin(32);
-        boldCheckBox.addValueChangedAction(changeAction);
-        formPanel.addFormField(boldCheckBox);
-
-        italicCheckBox = new CheckBoxField("Italic", false);
-        italicCheckBox.setLeftMargin(32);
-        italicCheckBox.addValueChangedAction(changeAction);
-        formPanel.addFormField(italicCheckBox);
+        fontField = new FontField("Font:");
+        fontField.addValueChangedAction(changeAction);
+        formPanel.addFormField(fontField);
 
         bgColorField = new GradientColorField("Background:", bgGradient);
         bgColorField.addValueChangedAction(changeAction);
@@ -139,7 +123,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         textOutlineColorField.addValueChangedAction(changeAction);
         formPanel.addFormField(textOutlineColorField);
 
-        options.clear();
+        List<String> options = new ArrayList<>();
         for (ImageTextUtil.TextAlign align : ImageTextUtil.TextAlign.values()) {
             options.add(align.toString());
         }
@@ -190,9 +174,9 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         @Override
         public void actionPerformed(ActionEvent e) {
             text = textField.getText();
-            fontFamily = fontChooser.getSelectedItem();
-            isBold = boldCheckBox.isChecked();
-            isItalic = italicCheckBox.isChecked();
+            fontFamily = fontField.getSelectedFont().getFamily();
+            isBold = fontField.getSelectedFont().isBold();
+            isItalic = fontField.getSelectedFont().isItalic();
             Object something = bgColorField.getSelectedValue();
             if (something instanceof Color) {
                 bgGradient = null;

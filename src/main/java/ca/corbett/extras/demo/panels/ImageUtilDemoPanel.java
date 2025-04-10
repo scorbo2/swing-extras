@@ -47,7 +47,7 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
 
         LabelField labelField = new LabelField("ImageUtil");
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
-        labelField.setExtraMargins(16, 0);
+        labelField.setTopMargin(18);
         controlPanel.addFormField(labelField);
 
         labelField = new LabelField("<html>ImageUtil and the associated color<br>"
