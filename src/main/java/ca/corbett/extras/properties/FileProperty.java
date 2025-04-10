@@ -89,6 +89,7 @@ public class FileProperty extends AbstractProperty {
                                             : ca.corbett.forms.fields.FileField.SelectionType.ExistingFile);
     field.setIdentifier(fullyQualifiedName);
     field.setEnabled(!isReadOnly);
+    field.setHelpText(helpText);
     return field;
   }
 

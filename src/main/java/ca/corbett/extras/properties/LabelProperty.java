@@ -116,6 +116,7 @@ public class LabelProperty extends AbstractProperty {
     }
     field.setIdentifier(fullyQualifiedName);
     field.setEnabled(!isReadOnly);
+    field.setHelpText(helpText);
     return field;
   }
 

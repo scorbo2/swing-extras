@@ -86,6 +86,7 @@ public class ComboProperty extends AbstractProperty {
     ComboField field = new ComboField(propertyLabel, items, selectedIndex, isEditable);
     field.setIdentifier(fullyQualifiedName);
     field.setEnabled(!isReadOnly);
+    field.setHelpText(helpText);
     return field;
   }
 

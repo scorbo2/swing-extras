@@ -81,6 +81,7 @@ public class DesktopDemoPanel extends PanelBuilder {
             }
 
         });
+        bgColorField.setHelpText("You can choose a solid color or a gradient!");
         formPanel.addFormField(bgColorField);
 
         NumberField alphaField = new NumberField("Logo alpha:", 0.5, 0.0, 1.0, 0.1);
@@ -91,6 +92,7 @@ public class DesktopDemoPanel extends PanelBuilder {
             }
 
         });
+        alphaField.setHelpText("The logo can be partially transparent");
         formPanel.addFormField(alphaField);
 
         List<String> options = new ArrayList<>();

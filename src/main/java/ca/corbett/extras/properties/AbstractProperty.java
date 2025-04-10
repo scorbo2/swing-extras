@@ -49,6 +49,7 @@ public abstract class AbstractProperty {
   public static final String DEFAULT_PROPERTY_NAME = "(unnamed property)";
 
   protected final String fullyQualifiedName;
+  protected String helpText;
   protected String categoryName;
   protected String subCategoryName;
   protected String propertyName;
@@ -118,6 +119,7 @@ public abstract class AbstractProperty {
     this.propertyLabel = label;
     this.isExposed = true; // arbitrary default
     this.isEnabled = true; // arbitrary default
+    this.helpText = "";
   }
 
   /**
@@ -269,6 +271,28 @@ public abstract class AbstractProperty {
    */
   public void setReadOnly(boolean readOnly) {
     isReadOnly = readOnly;
+  }
+
+  /**
+   * Returns the optional help text for this property, if any is set, otherwise
+   * a blank string.
+   *
+   * @return The help text for this property, or empty string if not set.
+   */
+  public String getHelpText() {
+    return helpText;
+  }
+
+  /**
+   * Sets optional help text for this property. This will be used when generating
+   * the form field for this property, to give the user an informational icon on
+   * the generated form. Multi-line tooltips are supported by wrapping the
+   * contents in an &lt;html&gt; tag and using &lt;br&gt; to separate lines.
+   *
+   * @param helpText The new help text, or null to unset it.
+   */
+  public void setHelpText(String helpText) {
+    this.helpText = (helpText == null) ? "" : helpText;
   }
 
   /**

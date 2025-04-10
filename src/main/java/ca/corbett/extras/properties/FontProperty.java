@@ -162,6 +162,7 @@ public class FontProperty extends AbstractProperty {
     FontField field = new FontField(propertyLabel, getFont(), textColor, bgColor);
     field.setIdentifier(fullyQualifiedName);
     field.setEnabled(!isReadOnly);
+    field.setHelpText(helpText);
     return field;
   }
 

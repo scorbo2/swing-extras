@@ -50,6 +50,7 @@ public class BooleanProperty extends AbstractProperty {
     CheckBoxField field = new CheckBoxField(propertyLabel, value);
     field.setIdentifier(fullyQualifiedName);
     field.setEnabled(!isReadOnly);
+    field.setHelpText(helpText);
     return field;
   }
 

@@ -90,6 +90,7 @@ public class TextProperty extends AbstractProperty {
     textField.setText(value);
     textField.setIdentifier(fullyQualifiedName);
     textField.setEnabled(!isReadOnly);
+    textField.setHelpText(helpText);
     return textField;
   }
 
