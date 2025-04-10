@@ -141,14 +141,14 @@ public final class MultiProgressDialog extends JDialog {
       public boolean majorProgressUpdate(int majorStep, int totalMinorSteps, String message) {
         this.totalMinorSteps = totalMinorSteps;
         progressDialog.setMinorProgressBounds(0, totalMinorSteps);
-        progressDialog.setMajorProgress(majorStep, message + " (" + (majorStep + 1) + " of " + totalMajorSteps + ")");
+        progressDialog.setMajorProgress(majorStep + 1, message + " (" + (majorStep + 1) + " of " + totalMajorSteps + ")");
         progressDialog.setMinorProgress(0, "");
         return !isCanceled;
       }
 
       @Override
       public boolean minorProgressUpdate(int majorStep, int minorStep, String message) {
-        progressDialog.setMinorProgress(minorStep, message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
+        progressDialog.setMinorProgress(minorStep + 1, message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
         return !isCanceled;
       }
 
