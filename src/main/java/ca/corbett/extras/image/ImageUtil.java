@@ -1,5 +1,13 @@
 package ca.corbett.extras.image;
 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
+import javax.swing.ImageIcon;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -10,14 +18,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
-import javax.swing.ImageIcon;
 
 /**
  * Contains generic methods for dealing with images and image data.
@@ -105,8 +105,8 @@ public final class ImageUtil {
      * Loads a BufferedImage from the specified file.
      *
      * @param file The file in question. Can be any format supported by javax.imageio.ImageIO.
-     * @throws IOException on read/write error.
      * @return A BufferedImage containing the image data.
+     * @throws IOException on read/write error.
      */
     public static BufferedImage loadImage(final File file) throws IOException {
         return ImageIO.read(file);
@@ -118,7 +118,7 @@ public final class ImageUtil {
      * or compression quality.
      *
      * @param image The BufferedImage to save
-     * @param file The File to which to save.
+     * @param file  The File to which to save.
      * @throws IOException on file access error.
      */
     public static void saveImage(final BufferedImage image, final File file) throws IOException {
@@ -133,12 +133,13 @@ public final class ImageUtil {
      * Saves the specified BufferedImage to the specified file in jpeg format with the specified
      * compression quality.
      *
-     * @param image The BufferedImage to save.
-     * @param file The File to which to save.
+     * @param image              The BufferedImage to save.
+     * @param file               The File to which to save.
      * @param compressionQuality The jpeg compression quality value to use.
      * @throws IOException On file access error.
      */
-    public static void saveImage(final BufferedImage image, final File file, float compressionQuality) throws IOException {
+    public static void saveImage(final BufferedImage image, final File file, float compressionQuality)
+            throws IOException {
         if (imageWriter == null) {
             createImageWriter();
         }
@@ -154,12 +155,13 @@ public final class ImageUtil {
      * ImageWriteParam. You can use this to specify your own image write parameters. If you only
      * want to set the jpeg compression quality, use saveImage(BufferedImage,File,float) instead.
      *
-     * @param image The BufferedImage to save.
-     * @param file The File to which to save.
+     * @param image      The BufferedImage to save.
+     * @param file       The File to which to save.
      * @param writeParam The ImageWriteParam to use.
      * @throws IOException On file access error.
      */
-    public static void saveImage(final BufferedImage image, final File file, ImageWriteParam writeParam) throws IOException {
+    public static void saveImage(final BufferedImage image, final File file, ImageWriteParam writeParam)
+            throws IOException {
         if (imageWriter == null) {
             createImageWriter();
         }
@@ -172,14 +174,15 @@ public final class ImageUtil {
      * This allows you to save in some format other than jpeg. For example:
      * ImageIO.getImageWritersByFormatName("png")
      *
-     * @param image The BufferedImage to save.
-     * @param file The File to which to save.
-     * @param writer The ImageWriter to use.
+     * @param image      The BufferedImage to save.
+     * @param file       The File to which to save.
+     * @param writer     The ImageWriter to use.
      * @param writeParam The ImageWriteParam to use.
      * @throws IOException On file access error.
      */
-    public static void saveImage(final BufferedImage image, final File file, ImageWriter writer, ImageWriteParam writeParam) throws IOException {
-        try ( FileImageOutputStream os = new FileImageOutputStream(file)) {
+    public static void saveImage(final BufferedImage image, final File file, ImageWriter writer, ImageWriteParam writeParam)
+            throws IOException {
+        try (FileImageOutputStream os = new FileImageOutputStream(file)) {
             writer.setOutput(os);
             writer.write(null, new IIOImage(image, null, null), writeParam);
         }
@@ -209,7 +212,7 @@ public final class ImageUtil {
      * For more control over the output, or to change the output format, use the overloaded
      * serializeImage methods instead.
      *
-     * @param image The BufferedImage to serialize.
+     * @param image              The BufferedImage to serialize.
      * @param compressionQuality The jpeg compression quality to use.
      * @return A byte array representing the image in question.
      * @throws IOException if an error occurs during serialization.
@@ -233,12 +236,13 @@ public final class ImageUtil {
      * If you just want to set the jpeg compression level, use serializeImage(BufferedImage, float)
      * instead.
      *
-     * @param image The BufferedImage to serialize.
+     * @param image      The BufferedImage to serialize.
      * @param writeParam The ImageWriteParam to use when generating the output image.
      * @return A byte array representing the image in question.
      * @throws IOException If an error occurs during serialization.
      */
-    public static byte[] serializeImage(final BufferedImage image, final ImageWriteParam writeParam) throws IOException {
+    public static byte[] serializeImage(final BufferedImage image, final ImageWriteParam writeParam)
+            throws IOException {
         if (imageWriter == null) {
             createImageWriter();
         }
@@ -252,15 +256,16 @@ public final class ImageUtil {
      * of the generated image if you don't like the default jpeg. For example:
      * ImageIO.getImageWritersByFormatName("png")
      *
-     * @param image The BufferedImage to save.
-     * @param writer The ImageWriter to use.
+     * @param image      The BufferedImage to save.
+     * @param writer     The ImageWriter to use.
      * @param writeParam The ImageWriteParam to use.
      * @return A byte array representing the image in question.
      * @throws IOException If an error occurs during serialization.
      */
-    public static byte[] serializeImage(final BufferedImage image, final ImageWriter writer, final ImageWriteParam writeParam) throws IOException {
+    public static byte[] serializeImage(final BufferedImage image, final ImageWriter writer, final ImageWriteParam writeParam)
+            throws IOException {
         byte[] arr;
-        try ( ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             writer.setOutput(new MemoryCacheImageOutputStream(os));
             writer.write(null, new IIOImage(image, null, null), writeParam);
             arr = os.toByteArray();
@@ -288,8 +293,8 @@ public final class ImageUtil {
      * Note that the image will be resized proportionally so that it fits inside the max of the
      * specified width and height. For example, an 800x600 image will be shrunk to 150x112.
      *
-     * @param image The image file in question. Can be any format supported by javax.imageio.ImageIO.
-     * @param width The desired max width of the thumbnail.
+     * @param image  The image file in question. Can be any format supported by javax.imageio.ImageIO.
+     * @param width  The desired max width of the thumbnail.
      * @param height The desired max height of the thumbnail.
      * @return A BufferedImage containing the thumbnail.
      * @throws IOException on input/output error.
@@ -306,8 +311,8 @@ public final class ImageUtil {
      * The image will be resized proportionally to fit into the specified width and height.
      *
      * @param sourceImage The image in question
-     * @param width The desired max width of the thumbnail
-     * @param height The desired max height of the thumbnail
+     * @param width       The desired max width of the thumbnail
+     * @param height      The desired max height of the thumbnail
      * @return A BufferedImage representing the thumbnail
      */
     public static BufferedImage generateThumbnail(final BufferedImage sourceImage,
@@ -327,12 +332,12 @@ public final class ImageUtil {
         newHeight = Math.max(newHeight, 1);
 
         BufferedImage resizedImage = new BufferedImage(newWidth, newHeight,
-                BufferedImage.TYPE_INT_RGB);
+                                                       BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = resizedImage.createGraphics();
         graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                                  RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
-                RenderingHints.VALUE_RENDER_QUALITY);
+                                  RenderingHints.VALUE_RENDER_QUALITY);
         graphics.drawImage(sourceImage, 0, 0, newWidth, newHeight, null);
         graphics.dispose();
         return resizedImage;
@@ -344,8 +349,8 @@ public final class ImageUtil {
      * Note that the image will be resized proportionally so that it fits inside the max of the
      * specified width and height. For example, an 800x600 image will be shrunk to 150x112.
      *
-     * @param image The image file in question. Can be any format supported by javax.imageio.ImageIO.
-     * @param width The desired max width of the thumbnail.
+     * @param image  The image file in question. Can be any format supported by javax.imageio.ImageIO.
+     * @param width  The desired max width of the thumbnail.
      * @param height The desired max height of the thumbnail.
      * @return A BufferedImage containing the thumbnail.
      * @throws IOException on input/output error.
@@ -363,8 +368,8 @@ public final class ImageUtil {
      * The image will be resized proportionally to fit into the specified width and height.
      *
      * @param sourceImage The image in question
-     * @param width The desired max width of the thumbnail
-     * @param height The desired max height of the thumbnail
+     * @param width       The desired max width of the thumbnail
+     * @param height      The desired max height of the thumbnail
      * @return A BufferedImage representing the thumbnail
      */
     public static BufferedImage generateThumbnailWithTransparency(final BufferedImage sourceImage,
@@ -384,14 +389,14 @@ public final class ImageUtil {
         newHeight = Math.max(newHeight, 1);
 
         BufferedImage resizedImage = new BufferedImage(newWidth, newHeight,
-                BufferedImage.TYPE_INT_ARGB);
+                                                       BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = resizedImage.createGraphics();
         graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                                  RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         graphics.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+                                  RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
-                RenderingHints.VALUE_RENDER_QUALITY);
+                                  RenderingHints.VALUE_RENDER_QUALITY);
         graphics.drawImage(sourceImage, 0, 0, newWidth, newHeight, null);
         graphics.dispose();
         return resizedImage;

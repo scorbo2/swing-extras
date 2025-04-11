@@ -98,7 +98,6 @@ public final class AboutPanel extends JPanel {
                 });
             }
         }
-
         else {
             logoPanel.setMargins(8, 8, 8, 8, 0);
             logoPanel.getPanel().setLayout(new BorderLayout());
@@ -131,7 +130,7 @@ public final class AboutPanel extends JPanel {
         formPanel.addFormField(labelField);
 
         Font labelFont = new Font("SansSerif", Font.PLAIN, 12);
-        if (info.shortDescription != null && ! info.shortDescription.isBlank()) {
+        if (info.shortDescription != null && !info.shortDescription.isBlank()) {
             String desc = (info.shortDescription.length() > 60)
                     ? info.shortDescription.substring(0, 60) + "..."
                     : info.shortDescription;
@@ -141,14 +140,14 @@ public final class AboutPanel extends JPanel {
             formPanel.addFormField(labelField);
         }
 
-        if (info.copyright != null && ! info.copyright.isBlank()) {
+        if (info.copyright != null && !info.copyright.isBlank()) {
             labelField = new LabelField(info.copyright);
             labelField.setFont(labelFont);
             labelField.setMargins(2, 8, 2, 2, 0);
             formPanel.addFormField(labelField);
         }
 
-        if (info.projectUrl != null && ! info.projectUrl.isBlank()) {
+        if (info.projectUrl != null && !info.projectUrl.isBlank()) {
             labelField = new LabelField(info.projectUrl);
             labelField.setFont(labelFont);
             if (isBrowsingSupported() && isUrl(info.projectUrl)) {
@@ -163,7 +162,7 @@ public final class AboutPanel extends JPanel {
             formPanel.addFormField(labelField);
         }
 
-        if (info.license != null && ! info.license.isBlank()) {
+        if (info.license != null && !info.license.isBlank()) {
             labelField = new LabelField(info.license);
             labelField.setFont(labelFont);
             if (isBrowsingSupported() && isUrl(info.license)) {
@@ -192,7 +191,7 @@ public final class AboutPanel extends JPanel {
         }
 
         String releaseNotes = getReleaseNotesText(info);
-        if (releaseNotes != null && ! releaseNotes.isBlank()) {
+        if (releaseNotes != null && !releaseNotes.isBlank()) {
             PanelField releaseNotesField = new PanelField();
             releaseNotesField.getPanel().setLayout(new BorderLayout());
             releaseNotesField.setMargins(12, 0, 0, 0, 4);
@@ -251,11 +250,11 @@ public final class AboutPanel extends JPanel {
     }
 
     private String getReleaseNotesText(AboutInfo info) {
-        if (info.releaseNotesText != null && ! info.releaseNotesText.isBlank()) {
+        if (info.releaseNotesText != null && !info.releaseNotesText.isBlank()) {
             return info.releaseNotesText;
         }
 
-        if (info.releaseNotesLocation != null && ! info.releaseNotesLocation.isBlank()) {
+        if (info.releaseNotesLocation != null && !info.releaseNotesLocation.isBlank()) {
             try (InputStream inStream = getClass().getResourceAsStream(info.releaseNotesLocation)) {
                 if (inStream != null) {
                     BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
@@ -303,10 +302,12 @@ public final class AboutPanel extends JPanel {
         String appName = info.applicationName == null || info.applicationName.isBlank() ? "About" : info.applicationName;
         if (info.logoImageLocation == null || info.logoImageLocation.isBlank()) {
             image = generateLogoImage(450, 90, appName);
-        } else {
+        }
+        else {
             try {
                 image = ImageUtil.loadImage(getClass().getResource(info.logoImageLocation));
-            } catch (IOException ioe) {
+            }
+            catch (IOException ioe) {
                 logger.log(Level.SEVERE, "Error loading logo image: " + ioe.getMessage(), ioe);
                 image = generateLogoImage(450, 90, appName);
             }
@@ -342,11 +343,13 @@ public final class AboutPanel extends JPanel {
                     desktop.browse(uri);
                 }
                 catch (IOException ioe) {
-                    logger.warning("Unable to browse URI: "+ioe.getMessage());
+                    logger.warning("Unable to browse URI: " + ioe.getMessage());
                 }
             }
         }
-    };
+    }
+
+    ;
 
     private boolean isBrowsingSupported() {
         return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);

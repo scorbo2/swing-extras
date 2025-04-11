@@ -8,8 +8,8 @@ package ca.corbett.extras.logging;
  */
 public abstract class LogConsoleListener {
 
-  public abstract void logConsoleThemeChanged(String newThemeName);
+    public abstract void logConsoleThemeChanged(String newThemeName);
 
-  public abstract void logConsoleFontSizeChanged(int fontPointSize);
+    public abstract void logConsoleFontSizeChanged(int fontPointSize);
 
 }

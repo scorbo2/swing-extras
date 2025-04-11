@@ -14,53 +14,53 @@ import java.util.List;
  */
 public abstract class SimpleProgressWorker implements Runnable {
 
-  private final List<SimpleProgressListener> listeners = new ArrayList<>();
+    private final List<SimpleProgressListener> listeners = new ArrayList<>();
 
-  public void addProgressListener(SimpleProgressListener listener) {
-    listeners.add(listener);
-  }
-
-  public void removeProgressListener(SimpleProgressListener listener) {
-    listeners.remove(listener);
-  }
-
-  public void clearProgressListeners() {
-    listeners.clear();
-  }
-
-  protected void fireProgressBegins(int totalMajorSteps) {
-    for (SimpleProgressListener listener : listeners) {
-      listener.progressBegins(totalMajorSteps);
+    public void addProgressListener(SimpleProgressListener listener) {
+        listeners.add(listener);
     }
-  }
 
-  protected boolean fireProgressUpdate(int currentStep, String message) {
-    boolean shouldContinue = true;
-    for (SimpleProgressListener listener : listeners) {
-      shouldContinue = shouldContinue && listener.progressUpdate(currentStep, message);
+    public void removeProgressListener(SimpleProgressListener listener) {
+        listeners.remove(listener);
     }
-    return shouldContinue;
-  }
 
-  protected boolean fireProgressError(String errorSource, String errorDetails) {
-    boolean shouldContinue = true;
-    for (SimpleProgressListener listener : listeners) {
-      shouldContinue = shouldContinue && listener.progressError(errorSource, errorDetails);
+    public void clearProgressListeners() {
+        listeners.clear();
     }
-    return shouldContinue;
 
-  }
-
-  protected void fireProgressComplete() {
-    for (SimpleProgressListener listener : listeners) {
-      listener.progressComplete();
+    protected void fireProgressBegins(int totalMajorSteps) {
+        for (SimpleProgressListener listener : listeners) {
+            listener.progressBegins(totalMajorSteps);
+        }
     }
-  }
 
-  public void fireProgressCanceled() {
-    for (SimpleProgressListener listener : listeners) {
-      listener.progressCanceled();
+    protected boolean fireProgressUpdate(int currentStep, String message) {
+        boolean shouldContinue = true;
+        for (SimpleProgressListener listener : listeners) {
+            shouldContinue = shouldContinue && listener.progressUpdate(currentStep, message);
+        }
+        return shouldContinue;
     }
-  }
+
+    protected boolean fireProgressError(String errorSource, String errorDetails) {
+        boolean shouldContinue = true;
+        for (SimpleProgressListener listener : listeners) {
+            shouldContinue = shouldContinue && listener.progressError(errorSource, errorDetails);
+        }
+        return shouldContinue;
+
+    }
+
+    protected void fireProgressComplete() {
+        for (SimpleProgressListener listener : listeners) {
+            listener.progressComplete();
+        }
+    }
+
+    public void fireProgressCanceled() {
+        for (SimpleProgressListener listener : listeners) {
+            listener.progressCanceled();
+        }
+    }
 
 }

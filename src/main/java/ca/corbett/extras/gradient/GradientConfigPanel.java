@@ -1,13 +1,16 @@
 package ca.corbett.extras.gradient;
 
 import ca.corbett.extras.config.ConfigPanel;
-import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
+import ca.corbett.extras.properties.Properties;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
+
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,11 +20,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
 
 /**
- *
  * @author scorbo2
  */
 public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
@@ -52,7 +52,7 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
      * Saves settings to the specified Properties instance, using the specified
      * parameter name prefix (may be null or empty). This will clear the isModified flag.
      *
-     * @param props A Properties instance to which to save all settings.
+     * @param props  A Properties instance to which to save all settings.
      * @param prefix An optional property name prefix to use with prop names.
      */
     @Override
@@ -67,7 +67,7 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
      * whatever is loaded from the Properties instance, clear the isModified flag, and
      * will overwrite whatever settings were contained previously.
      *
-     * @param props A Properties instance from which to load all settings.
+     * @param props  A Properties instance from which to load all settings.
      * @param prefix An optional property name prefix to use with prop names.
      */
     @Override
@@ -164,7 +164,8 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
 
         ImagePanelConfig iPanelConf = ImagePanelConfig.createSimpleReadOnlyProperties();
         iPanelConf.setDisplayMode(ImagePanelConfig.DisplayMode.STRETCH);
-        previewPanel = new ImagePanel(GradientUtil.createGradientImage(modelObject, PREVIEW_WIDTH, PREVIEW_HEIGHT), iPanelConf);
+        previewPanel = new ImagePanel(GradientUtil.createGradientImage(modelObject, PREVIEW_WIDTH, PREVIEW_HEIGHT),
+                                      iPanelConf);
         add(previewPanel, BorderLayout.CENTER);
     }
 

@@ -84,7 +84,8 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
             out.close();
         }
         catch (IOException ioe) {
-            Logger.getLogger(AudioDemoPanel.class.getName()).log(Level.SEVERE, "Unable to load example audio file.", ioe);
+            Logger.getLogger(AudioDemoPanel.class.getName())
+                  .log(Level.SEVERE, "Unable to load example audio file.", ioe);
         }
     }
 
@@ -168,7 +169,6 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
                 waveformPanel.setWaveformPreferences(wavePrefs);
                 waveformPanel.setAudioClip(exampleAudioFile);
             }
-
             else if (audioSourceCombo.getSelectedIndex() == 1) {
                 if (selectedAudioFile == null || !selectedAudioFile.exists() || !selectedAudioFile.canRead()) {
                     return;
@@ -177,9 +177,8 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
                 waveformPanel.setWaveformPreferences(wavePrefs);
                 waveformPanel.setAudioClip(selectedAudioFile);
             }
-
             else {
-                if (recordedAudioFile == null || !recordedAudioFile.exists() || ! recordedAudioFile.canRead()) {
+                if (recordedAudioFile == null || !recordedAudioFile.exists() || !recordedAudioFile.canRead()) {
                     return;
                 }
 
@@ -190,7 +189,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
             Dimension dim = waveformPanel.getWaveformDimensions();
             if (dim != null) {
                 waveformLabel.setText("Waveform image size: "
-                        + ((int)dim.getWidth()) + "x" + ((int)dim.getHeight()) + " pixels");
+                                              + ((int)dim.getWidth()) + "x" + ((int)dim.getHeight()) + " pixels");
             }
             else {
                 waveformLabel.setText("");
@@ -314,10 +313,10 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
             AudioUtil.saveAudioFile(tempFile, waveformPanel.getAudioData());
             recordedAudioFile = tempFile;
             audioSourceCombo.setSelectedIndex(2);
-            System.out.println("Write recorded audio to "+tempFile.getAbsolutePath());
+            System.out.println("Write recorded audio to " + tempFile.getAbsolutePath());
         }
         catch (IOException ioe) {
-            getMessageUtil().warning("Problem generating recording: "+ioe.getMessage());
+            getMessageUtil().warning("Problem generating recording: " + ioe.getMessage());
         }
     }
 

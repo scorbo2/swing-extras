@@ -20,7 +20,7 @@ public interface ConfigObject {
      * "instance1.enableX". If you specify null or an empty string for prefix, property names
      * will be specified as-is, and will overwrite any previous value.
      *
-     * @param props The Properties instance from which to load.
+     * @param props  The Properties instance from which to load.
      * @param prefix An optional string prefix to apply to all property names, or null.
      */
     void loadFromProps(Properties props, String prefix);
@@ -34,7 +34,7 @@ public interface ConfigObject {
      * "instance1.enableX". If you specify null or an empty string for prefix, property names
      * will be specified as-is, and will overwrite any previous value.
      *
-     * @param props The Properties instance to which to save.
+     * @param props  The Properties instance to which to save.
      * @param prefix An optional string prefix to apply to all property names, or null.
      */
     void saveToProps(Properties props, String prefix);

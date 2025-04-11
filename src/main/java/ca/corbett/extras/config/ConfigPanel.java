@@ -1,20 +1,21 @@
 package ca.corbett.extras.config;
 
 import ca.corbett.extras.properties.Properties;
-import java.util.ArrayList;
-import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An abstract base class for all ConfigPanel subclasses.
  *
- * @author scorbo2
  * @param <T> The type of model object to configure.
+ * @author scorbo2
  * @since 2018-01-25
  */
 public abstract class ConfigPanel<T> extends JPanel {
@@ -37,7 +38,7 @@ public abstract class ConfigPanel<T> extends JPanel {
         setBorder(new TitledBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createBevelBorder(BevelBorder.LOWERED),
                 BorderFactory.createBevelBorder(BevelBorder.RAISED)),
-                title));
+                                   title));
     }
 
     /**
@@ -74,7 +75,7 @@ public abstract class ConfigPanel<T> extends JPanel {
      * Saves settings to the specified Properties instance, using the specified
      * parameter name prefix (may be null or empty). This will clear the isModified flag.
      *
-     * @param props A Properties instance to which to save all settings.
+     * @param props  A Properties instance to which to save all settings.
      * @param prefix An optional property name prefix to use with prop names.
      */
     public abstract void save(Properties props, String prefix);
@@ -85,7 +86,7 @@ public abstract class ConfigPanel<T> extends JPanel {
      * whatever is loaded from the Properties instance, clear the isModified flag, and
      * will overwrite whatever settings were contained previously.
      *
-     * @param props A Properties instance from which to load all settings.
+     * @param props  A Properties instance from which to load all settings.
      * @param prefix An optional property name prefix to use with prop names.
      */
     public abstract void load(Properties props, String prefix);

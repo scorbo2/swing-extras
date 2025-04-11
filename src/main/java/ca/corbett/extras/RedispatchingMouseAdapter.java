@@ -1,12 +1,12 @@
 package ca.corbett.extras;
 
+import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import javax.swing.SwingUtilities;
 
 /**
  * Sometimes you want mouse events that arrive on a child component to bubble up to the
@@ -20,7 +20,7 @@ import javax.swing.SwingUtilities;
  * @since 2017-11-12
  */
 public class RedispatchingMouseAdapter
-        implements MouseListener, MouseWheelListener, MouseMotionListener{
+        implements MouseListener, MouseWheelListener, MouseMotionListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {

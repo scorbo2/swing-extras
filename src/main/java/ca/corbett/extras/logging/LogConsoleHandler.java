@@ -29,24 +29,24 @@ import java.util.logging.SimpleFormatter;
  */
 public class LogConsoleHandler extends Handler {
 
-  public LogConsoleHandler() {
-    setFormatter(new SimpleFormatter());
-  }
-
-  @Override
-  public void publish(LogRecord record) {
-    if (!isLoggable(record)) {
-      return;
+    public LogConsoleHandler() {
+        setFormatter(new SimpleFormatter());
     }
-    LogConsole.getInstance().append(getFormatter().format(record), record.getLevel());
-  }
 
-  @Override
-  public void flush() {
-  }
+    @Override
+    public void publish(LogRecord record) {
+        if (!isLoggable(record)) {
+            return;
+        }
+        LogConsole.getInstance().append(getFormatter().format(record), record.getLevel());
+    }
 
-  @Override
-  public void close() throws SecurityException {
-  }
+    @Override
+    public void flush() {
+    }
+
+    @Override
+    public void close() throws SecurityException {
+    }
 
 }

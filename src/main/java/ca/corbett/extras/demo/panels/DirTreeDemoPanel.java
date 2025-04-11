@@ -36,13 +36,13 @@ public class DirTreeDemoPanel extends PanelBuilder {
         dirTreeListener = new DirTreeListener() {
             @Override
             public void selectionChanged(DirTree source, File selectedDir) {
-                String msg = "selectionChanged: new dir is "+selectedDir.getAbsolutePath();
+                String msg = "selectionChanged: new dir is " + selectedDir.getAbsolutePath();
                 listenerTextArea.setText(listenerTextArea.getText() + msg + System.lineSeparator());
             }
 
             @Override
             public void treeLocked(DirTree source, File lockDir) {
-                String msg = "treeLocked: lock dir is "+lockDir.getAbsolutePath();
+                String msg = "treeLocked: lock dir is " + lockDir.getAbsolutePath();
                 listenerTextArea.setText(listenerTextArea.getText() + msg + System.lineSeparator());
             }
 
@@ -75,7 +75,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
         }
 
         dirTree = DirTree.createDirTree(rootNode);
-        dirTree.setPreferredSize(new Dimension(200,1));
+        dirTree.setPreferredSize(new Dimension(200, 1));
 
         JPanel containerPanel = new JPanel();
         containerPanel.setLayout(new BorderLayout());
@@ -116,7 +116,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
         formPanel.addFormField(comboField);
 
         options = new ArrayList<>();
-        if (! fileSystems.isEmpty()) {
+        if (!fileSystems.isEmpty()) {
             for (File file : getRootNodes(fileSystems.get(0))) {
                 options.add(file.getAbsolutePath());
             }
@@ -148,11 +148,11 @@ public class DirTreeDemoPanel extends PanelBuilder {
                 boolean isSelected = ((CheckBoxField)e.getSource()).isChecked();
                 if (isSelected) {
                     dirTree.addDirTreeListener(dirTreeListener);
-                    listenerTextArea.setText("Listening for events..."+System.lineSeparator());
+                    listenerTextArea.setText("Listening for events..." + System.lineSeparator());
                 }
                 else {
                     dirTree.removeDirTreeListener(dirTreeListener);
-                    listenerTextArea.setText("(listener disabled)"+System.lineSeparator());
+                    listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
                 }
             }
         });

@@ -57,7 +57,7 @@ public final class ImageTextUtil {
             return null;
         }
 
-    };
+    }
 
     public static final int DEFAULT_LINE_LENGTH = 30;
     public static final Font DEFAULT_FONT = new Font("SansSerif", Font.BOLD, 12);
@@ -73,19 +73,19 @@ public final class ImageTextUtil {
      * centered in the image horizontally and vertically and will be line wrapped as needed.
      *
      * @param image The image on which to draw.
-     * @param text The text to be rendered.
+     * @param text  The text to be rendered.
      */
     public static void drawText(BufferedImage image, String text) {
         drawText(image,
-                text,
-                DEFAULT_LINE_LENGTH,
-                DEFAULT_FONT,
-                TextAlign.CENTER,
-                DEFAULT_OUTLINE_COLOR,
-                DEFAULT_OUTLINE_WIDTH_FACTOR,
-                DEFAULT_FILL_COLOR,
-                null,
-                new Rectangle(image.getWidth(), image.getHeight()));
+                 text,
+                 DEFAULT_LINE_LENGTH,
+                 DEFAULT_FONT,
+                 TextAlign.CENTER,
+                 DEFAULT_OUTLINE_COLOR,
+                 DEFAULT_OUTLINE_WIDTH_FACTOR,
+                 DEFAULT_FILL_COLOR,
+                 null,
+                 new Rectangle(image.getWidth(), image.getHeight()));
     }
 
     /**
@@ -93,75 +93,75 @@ public final class ImageTextUtil {
      * The text will be centered within the image vertically and horizontally and will
      * be line wrapped as needed.
      *
-     * @param image The BufferedImage on which the text will be drawn.
-     * @param text The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
-     * @param font The font to use.
+     * @param image        The BufferedImage on which the text will be drawn.
+     * @param text         The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
+     * @param font         The font to use.
      * @param outlineColor The Color to use for outlining the text (if necessary).
-     * @param fillColor The color to use to fill the text.
+     * @param fillColor    The color to use to fill the text.
      */
     public static void drawText(BufferedImage image, String text, Font font, Color outlineColor, Color fillColor) {
         drawText(image,
-                text,
-                DEFAULT_LINE_LENGTH,
-                font,
-                TextAlign.CENTER,
-                outlineColor,
-                DEFAULT_OUTLINE_WIDTH_FACTOR,
-                fillColor,
-                null,
-                new Rectangle(image.getWidth(), image.getHeight()));
+                 text,
+                 DEFAULT_LINE_LENGTH,
+                 font,
+                 TextAlign.CENTER,
+                 outlineColor,
+                 DEFAULT_OUTLINE_WIDTH_FACTOR,
+                 fillColor,
+                 null,
+                 new Rectangle(image.getWidth(), image.getHeight()));
     }
 
     /**
      * Shorthand for drawing text on an image with the given font styling properties and alignment.
      * The text will be line wrapped as needed.
      *
-     * @param image The BufferedImage on which the text will be drawn.
-     * @param text The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
-     * @param font The font to use.
+     * @param image        The BufferedImage on which the text will be drawn.
+     * @param text         The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
+     * @param font         The font to use.
      * @param outlineColor The Color to use for outlining the text (if necessary).
-     * @param fillColor The color to use to fill the text.
-     * @param align The desired alignment for the text within the image.
+     * @param fillColor    The color to use to fill the text.
+     * @param align        The desired alignment for the text within the image.
      */
     public static void drawText(BufferedImage image, String text, Font font, Color outlineColor,
                                 Color fillColor, TextAlign align) {
         drawText(image,
-                text,
-                DEFAULT_LINE_LENGTH,
-                font,
-                align,
-                outlineColor,
-                DEFAULT_OUTLINE_WIDTH_FACTOR,
-                fillColor,
-                null,
-                new Rectangle(image.getWidth(), image.getHeight()));
+                 text,
+                 DEFAULT_LINE_LENGTH,
+                 font,
+                 align,
+                 outlineColor,
+                 DEFAULT_OUTLINE_WIDTH_FACTOR,
+                 fillColor,
+                 null,
+                 new Rectangle(image.getWidth(), image.getHeight()));
     }
 
     /**
      * Outputs the given lines of text using the given styling parameters.
      * Text will be line wrapped and scaled as needed to fit in the image.
      *
-     * @param image The BufferedImage on which the text will be drawn.
-     * @param text The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
-     * @param lineLength The desired length of each line. Will be adjusted based on image dimensions.
-     * @param font The font to use.
-     * @param align A TextAlign value for placing the text within our rectangle.
-     * @param outlineColor The Color to use for outlining the text (if necessary).
+     * @param image              The BufferedImage on which the text will be drawn.
+     * @param text               The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
+     * @param lineLength         The desired length of each line. Will be adjusted based on image dimensions.
+     * @param font               The font to use.
+     * @param align              A TextAlign value for placing the text within our rectangle.
+     * @param outlineColor       The Color to use for outlining the text (if necessary).
      * @param outlineWidthFactor fontPointSize/outlineWidthFactor determines thickness of text border.
-     * @param fillColor The color to use to fill the text.
+     * @param fillColor          The color to use to fill the text.
      */
     public static void drawText(BufferedImage image, String text, int lineLength, Font font,
                                 TextAlign align, Color outlineColor, float outlineWidthFactor, Color fillColor) {
         drawText(image,
-                text,
-                lineLength,
-                font,
-                align,
-                outlineColor,
-                outlineWidthFactor,
-                fillColor,
-                null,
-                new Rectangle(image.getWidth(), image.getHeight()));
+                 text,
+                 lineLength,
+                 font,
+                 align,
+                 outlineColor,
+                 outlineWidthFactor,
+                 fillColor,
+                 null,
+                 new Rectangle(image.getWidth(), image.getHeight()));
     }
 
     /**
@@ -169,16 +169,16 @@ public final class ImageTextUtil {
      * given placement rectangle. Text will be line wrapped and scaled as needed to fit
      * in the given Rectangle.
      *
-     * @param image The BufferedImage on which the text will be drawn.
-     * @param text The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
-     * @param lineLength The desired length of each line. Will be adjusted based on image dimensions.
-     * @param font The font to use.
-     * @param align A TextAlign value for placing the text within our rectangle.
-     * @param outlineColor The Color to use for outlining the text (if necessary).
+     * @param image              The BufferedImage on which the text will be drawn.
+     * @param text               The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
+     * @param lineLength         The desired length of each line. Will be adjusted based on image dimensions.
+     * @param font               The font to use.
+     * @param align              A TextAlign value for placing the text within our rectangle.
+     * @param outlineColor       The Color to use for outlining the text (if necessary).
      * @param outlineWidthFactor fontPointSize/outlineWidthFactor determines thickness of text border.
-     * @param fillColor The color to use to fill the text.
-     * @param fillTexture An image to use to fill text (if fillColor is null, otherwise ignored).
-     * @param rect The Rectangle in image coordinates in which the text will be drawn.
+     * @param fillColor          The color to use to fill the text.
+     * @param fillTexture        An image to use to fill text (if fillColor is null, otherwise ignored).
+     * @param rect               The Rectangle in image coordinates in which the text will be drawn.
      */
     public static void drawText(BufferedImage image, String text, int lineLength, Font font,
                                 TextAlign align, Color outlineColor, float outlineWidthFactor,
@@ -197,8 +197,8 @@ public final class ImageTextUtil {
         int linewrapLength = (int)(lineLength * ((float)image.getWidth() / image.getHeight()));
         if (linewrapLength != lineLength) {
             logger.log(Level.FINE,
-                    "drawText: adjusting linewrap limit from {0} to {1} based on image dimensions.",
-                    new Object[]{lineLength, linewrapLength});
+                       "drawText: adjusting linewrap limit from {0} to {1} based on image dimensions.",
+                       new Object[]{lineLength, linewrapLength});
         }
 
         // Now handle line wrapping as needed:
@@ -266,13 +266,14 @@ public final class ImageTextUtil {
             BufferedImage textImage = new BufferedImage(tmpImgWidth, textHeight * 2, BufferedImage.TYPE_INT_ARGB);
             Graphics2D textGraphics = textImage.createGraphics();
             textGraphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                                          RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             textGraphics.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_QUALITY);
+                                          RenderingHints.VALUE_RENDER_QUALITY);
             textGraphics.setColor(new Color(0, 0, 0, 0)); // transparent background
             textGraphics.fillRect(0, 0, (int)(textWidth * 1.2), textHeight * 2);
             textGraphics.setColor(outlineColor);
-            textGraphics.setStroke(new BasicStroke(fontPointSize / outlineWidthFactor, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            textGraphics.setStroke(
+                    new BasicStroke(fontPointSize / outlineWidthFactor, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             textGraphics.setFont(font);
             GlyphVector vector = font.createGlyphVector(textGraphics.getFontRenderContext(), line);
             Shape textShape = vector.getOutline();
@@ -292,7 +293,8 @@ public final class ImageTextUtil {
             }
             else {
                 textGraphics.setPaint(
-                        new TexturePaint(fillTexture, new Rectangle(0, 0, fillTexture.getWidth(), fillTexture.getHeight())));
+                        new TexturePaint(fillTexture,
+                                         new Rectangle(0, 0, fillTexture.getWidth(), fillTexture.getHeight())));
             }
             textGraphics.fill(textShape);
             textGraphics.dispose();
@@ -310,7 +312,7 @@ public final class ImageTextUtil {
      * If the given text is shorter than the given lineLength, then the returned
      * array will contain just that one string.
      *
-     * @param text The text to be split up (if needed).
+     * @param text       The text to be split up (if needed).
      * @param lineLength The length at which the given text will be split.
      * @return A List containing one or more lines generated from the line wrapping.
      */
@@ -323,8 +325,8 @@ public final class ImageTextUtil {
      * Invoked internally to recurse and handle line wrapping as needed.
      * See handleLineWrap(String,int)
      *
-     * @param lines A List of Strings which will be added to as needed.
-     * @param text The remaining text to be split.
+     * @param lines      A List of Strings which will be added to as needed.
+     * @param text       The remaining text to be split.
      * @param lineLength The length at which the line will be line-wrapped.
      * @return The modified input List.
      */
@@ -353,12 +355,12 @@ public final class ImageTextUtil {
      * A minimum font point size of 12 is used to prevent text from getting too long to see.
      * Very very long lines will therefore overflow if line wrapping has not been performed.
      *
-     * @param font The font to use for calculation purposes.
-     * @param text The block of text in question.
-     * @param g A Graphics object which will be used to retrieve font metrics.
-     * @param left The left edge of the text zone.
-     * @param top The top edge of the text zone.
-     * @param right The right edge of the text zone.
+     * @param font   The font to use for calculation purposes.
+     * @param text   The block of text in question.
+     * @param g      A Graphics object which will be used to retrieve font metrics.
+     * @param left   The left edge of the text zone.
+     * @param top    The top edge of the text zone.
+     * @param right  The right edge of the text zone.
      * @param bottom The bottom edge of the text zone.
      * @return A font point size appropriate for the given text in the given boundary.
      */
@@ -402,7 +404,7 @@ public final class ImageTextUtil {
         }
 
         logger.log(Level.FINE, "computeFontSize: computed font point size of {0} for text \"{1}\"",
-                new Object[]{fontPointSize, text});
+                   new Object[]{fontPointSize, text});
         return fontPointSize;
     }
 

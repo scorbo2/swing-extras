@@ -98,17 +98,20 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
         if (bgColorField != null) {
             if (obj.getBgColorType() == LogoConfig.ColorType.SOLID) {
                 bgColorField.setColor(obj.getBgColor());
-            } else {
+            }
+            else {
                 bgColorField.setGradient(obj.getBgGradient());
             }
             if (obj.getBorderColorType() == LogoConfig.ColorType.SOLID) {
                 borderColorField.setColor(obj.getBorderColor());
-            } else {
+            }
+            else {
                 borderColorField.setGradient(obj.getBorderGradient());
             }
             if (obj.getTextColorType() == LogoConfig.ColorType.SOLID) {
                 textColorField.setColor(obj.getTextColor());
-            } else {
+            }
+            else {
                 textColorField.setGradient(obj.getTextGradient());
             }
             borderWidthField.setCurrentValue(obj.getBorderWidth());
@@ -125,17 +128,19 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
         setLayout(new BorderLayout());
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
 
-        bgColorField = new GradientColorField("Background:", modelObject.getBgColor(), modelObject.getBgGradient(), modelObject.getBgColorType() == LogoConfig.ColorType.SOLID);
+        bgColorField = new GradientColorField("Background:", modelObject.getBgColor(), modelObject.getBgGradient(),
+                                              modelObject.getBgColorType() == LogoConfig.ColorType.SOLID);
         bgColorField.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Object selectedValue = bgColorField.getSelectedValue();
                 if (selectedValue instanceof Color) {
                     modelObject.setBgColorType(LogoConfig.ColorType.SOLID);
-                    modelObject.setBgColor((Color) selectedValue);
-                } else {
+                    modelObject.setBgColor((Color)selectedValue);
+                }
+                else {
                     modelObject.setBgColorType(LogoConfig.ColorType.GRADIENT);
-                    modelObject.setBgGradient((GradientConfig) selectedValue);
+                    modelObject.setBgGradient((GradientConfig)selectedValue);
                 }
                 notifyChangeListeners();
             }
@@ -143,17 +148,20 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
         });
         formPanel.addFormField(bgColorField);
 
-        borderColorField = new GradientColorField("Border color:", modelObject.getBorderColor(), modelObject.getBorderGradient(), modelObject.getBorderColorType() == LogoConfig.ColorType.SOLID);
+        borderColorField = new GradientColorField("Border color:", modelObject.getBorderColor(),
+                                                  modelObject.getBorderGradient(),
+                                                  modelObject.getBorderColorType() == LogoConfig.ColorType.SOLID);
         borderColorField.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Object selectedValue = borderColorField.getSelectedValue();
                 if (selectedValue instanceof Color) {
                     modelObject.setBorderColorType(LogoConfig.ColorType.SOLID);
-                    modelObject.setBorderColor((Color) selectedValue);
-                } else {
+                    modelObject.setBorderColor((Color)selectedValue);
+                }
+                else {
                     modelObject.setBorderColorType(LogoConfig.ColorType.GRADIENT);
-                    modelObject.setBorderGradient((GradientConfig) selectedValue);
+                    modelObject.setBorderGradient((GradientConfig)selectedValue);
                 }
                 notifyChangeListeners();
             }
@@ -161,17 +169,20 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
         });
         formPanel.addFormField(borderColorField);
 
-        textColorField = new GradientColorField("Text color:", modelObject.getTextColor(), modelObject.getTextGradient(), modelObject.getTextColorType() == LogoConfig.ColorType.SOLID);
+        textColorField = new GradientColorField("Text color:", modelObject.getTextColor(),
+                                                modelObject.getTextGradient(),
+                                                modelObject.getTextColorType() == LogoConfig.ColorType.SOLID);
         textColorField.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Object selectedValue = textColorField.getSelectedValue();
                 if (selectedValue instanceof Color) {
                     modelObject.setTextColorType(LogoConfig.ColorType.SOLID);
-                    modelObject.setTextColor((Color) selectedValue);
-                } else {
+                    modelObject.setTextColor((Color)selectedValue);
+                }
+                else {
                     modelObject.setTextColorType(LogoConfig.ColorType.GRADIENT);
-                    modelObject.setTextGradient((GradientConfig) selectedValue);
+                    modelObject.setTextGradient((GradientConfig)selectedValue);
                 }
                 notifyChangeListeners();
             }
@@ -198,7 +209,6 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
                 modelObject.setBorderWidth(borderWidthField.getCurrentValue().intValue());
                 notifyChangeListeners();
             }
-
         });
         formPanel.addFormField(borderWidthField);
 
@@ -209,7 +219,6 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
                 modelObject.setLogoWidth(imageWidthField.getCurrentValue().intValue());
                 notifyChangeListeners();
             }
-
         });
         formPanel.addFormField(imageWidthField);
 
@@ -220,7 +229,6 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
                 modelObject.setLogoHeight(imageHeightField.getCurrentValue().intValue());
                 notifyChangeListeners();
             }
-
         });
         formPanel.addFormField(imageHeightField);
 
@@ -231,7 +239,6 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
                 modelObject.setYTweak(yTweakField.getCurrentValue().intValue());
                 notifyChangeListeners();
             }
-
         });
         formPanel.addFormField(yTweakField);
 

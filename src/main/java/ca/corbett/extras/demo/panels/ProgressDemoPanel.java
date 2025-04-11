@@ -63,9 +63,9 @@ public class ProgressDemoPanel extends PanelBuilder {
         formPanel.addFormField(labelField);
 
         labelField = createSimpleLabelField("<html>Java Swing comes with the ProgressMonitor class,<br>" +
-                "which is great for simple scenarios. But, sometimes it's<br>" +
-                "useful to be able to show major and minor progress for a<br>" +
-                "more complicated task. Meet the MultiProgressDialog!</html>");
+                                                    "which is great for simple scenarios. But, sometimes it's<br>" +
+                                                    "useful to be able to show major and minor progress for a<br>" +
+                                                    "more complicated task. Meet the MultiProgressDialog!</html>");
         formPanel.addFormField(labelField);
 
         majorProgressTextField = new TextField("Major progress label: ", 16, 1, false);
@@ -102,10 +102,10 @@ public class ProgressDemoPanel extends PanelBuilder {
         formPanel.addFormField(labelField);
 
         labelField = createSimpleLabelField("<html>Java offers the SplashScreen class for showing a splash<br>" +
-                "screen as your application starts up. But sometimes,<br>" +
-                "your application startup may involve some complex loading<br>" +
-                "and you want to show a progress bar during startup.<br>" +
-                "Let's look at SplashProgressWindow!");
+                                                    "screen as your application starts up. But sometimes,<br>" +
+                                                    "your application startup may involve some complex loading<br>" +
+                                                    "and you want to show a progress bar during startup.<br>" +
+                                                    "Let's look at SplashProgressWindow!");
         formPanel.addFormField(labelField);
 
         splashAppNameField = new TextField("Application name:", 15, 1, false);
@@ -148,10 +148,12 @@ public class ProgressDemoPanel extends PanelBuilder {
     }
 
     private void showMultiProgress() {
-        String majorText = majorProgressTextField.getText().isBlank() ? "Major progress" : majorProgressTextField.getText();
-        String minorText = minorProgressTextField.getText().isBlank() ? "Minor progress" : minorProgressTextField.getText();
-        int majorSteps = (Integer) majorProgressStepsField.getCurrentValue();
-        int minorSteps = (Integer) minorProgressStepsField.getCurrentValue();
+        String majorText = majorProgressTextField.getText()
+                                                 .isBlank() ? "Major progress" : majorProgressTextField.getText();
+        String minorText = minorProgressTextField.getText()
+                                                 .isBlank() ? "Minor progress" : minorProgressTextField.getText();
+        int majorSteps = (Integer)majorProgressStepsField.getCurrentValue();
+        int minorSteps = (Integer)minorProgressStepsField.getCurrentValue();
 
         MultiProgressDummyWorker worker = new MultiProgressDummyWorker(majorText, majorSteps, minorText, minorSteps);
         worker.addProgressListener(new MultiProgressAdapter() {
@@ -176,18 +178,19 @@ public class ProgressDemoPanel extends PanelBuilder {
         Object something = splashBgColorField.getSelectedValue();
         if (something instanceof GradientConfig) {
             config.setBgColorType(LogoConfig.ColorType.GRADIENT);
-            config.setBgGradient((GradientConfig) something);
-        } else {
+            config.setBgGradient((GradientConfig)something);
+        }
+        else {
             config.setBgColorType(LogoConfig.ColorType.SOLID);
-            config.setBgColor((Color) something);
+            config.setBgColor((Color)something);
         }
         config.setTextColorType(LogoConfig.ColorType.SOLID);
         config.setTextColor(splashFgColorField.getColor());
         config.setBorderColorType(LogoConfig.ColorType.SOLID);
         config.setBorderColor(splashFgColorField.getColor());
-        config.setBorderWidth((Integer) splashBorderWidthField.getCurrentValue());
-        config.setLogoWidth((Integer) splashWidthField.getCurrentValue());
-        config.setLogoHeight((Integer) splashHeightField.getCurrentValue());
+        config.setBorderWidth((Integer)splashBorderWidthField.getCurrentValue());
+        config.setLogoWidth((Integer)splashWidthField.getCurrentValue());
+        config.setLogoHeight((Integer)splashHeightField.getCurrentValue());
         new SplashProgressWindow(DemoApp.getInstance(), appName, config).showFakeProgress(5, 666);
     }
 
@@ -222,7 +225,8 @@ public class ProgressDemoPanel extends PanelBuilder {
                     wasCanceled = !fireMinorProgressUpdate(curMajorStep, curMinorStep, minorText);
                     try {
                         Thread.sleep(STEP_DURATION_MS);
-                    } catch (InterruptedException ex) {
+                    }
+                    catch (InterruptedException ex) {
                         wasCanceled = true;
                     }
                 }
@@ -230,7 +234,8 @@ public class ProgressDemoPanel extends PanelBuilder {
             }
             if (wasCanceled) {
                 fireProgressCanceled();
-            } else {
+            }
+            else {
                 fireProgressComplete();
             }
         }

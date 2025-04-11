@@ -40,7 +40,8 @@ public class DesktopDemoPanel extends PanelBuilder {
         LogoConfig logoConfig = new LogoConfig("demo");
         logoConfig.setLogoHeight(80);
         BufferedImage logoImage = LogoGenerator.generateImage("Logo", logoConfig);
-        desktopPane = new CustomizableDesktopPane(logoImage, CustomizableDesktopPane.LogoPlacement.BOTTOM_RIGHT, 0.5f, gradient);
+        desktopPane = new CustomizableDesktopPane(logoImage, CustomizableDesktopPane.LogoPlacement.BOTTOM_RIGHT, 0.5f,
+                                                  gradient);
     }
 
     @Override
@@ -103,7 +104,8 @@ public class DesktopDemoPanel extends PanelBuilder {
         placementCombo.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                desktopPane.setLogoImagePlacement(CustomizableDesktopPane.LogoPlacement.fromLabel(placementCombo.getSelectedItem()));
+                desktopPane.setLogoImagePlacement(
+                        CustomizableDesktopPane.LogoPlacement.fromLabel(placementCombo.getSelectedItem()));
             }
 
         });

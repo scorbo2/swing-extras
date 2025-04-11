@@ -36,7 +36,7 @@ public final class LogoGenerator {
     /**
      * Generates an image using the given text and LogoConfig instance.
      *
-     * @param text The text to render.
+     * @param text   The text to render.
      * @param preset The LogoConfig instance containing config settings to use.
      * @return A BufferedImage containing the rendered final product.
      */
@@ -63,7 +63,8 @@ public final class LogoGenerator {
             }
             else {
                 for (int offset = 0; offset < preset.getBorderWidth(); offset++) {
-                    GradientUtil.drawRect(preset.getBorderGradient(), graphics, offset, offset, width - (offset * 2) - 1, height - (offset * 2) - 1);
+                    GradientUtil.drawRect(preset.getBorderGradient(), graphics, offset, offset,
+                                          width - (offset * 2) - 1, height - (offset * 2) - 1);
                 }
             }
         }
@@ -116,7 +117,7 @@ public final class LogoGenerator {
         }
 
         graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                                  RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         // Kludge alert: text height calculations seems wrong, have to divide by 4 to center vertically:
         // Kludge alert: and sometimes even that doesn't work... hence "yTweak"
         int textX = (width - textWidth) / 2;
@@ -143,8 +144,8 @@ public final class LogoGenerator {
      * to the given File. Output format is currently limited to jpeg regardless of
      * what file name/extension you pass in here.
      *
-     * @param text The text to render.
-     * @param preset The LogoConfig instance containing config settings to use.
+     * @param text       The text to render.
+     * @param preset     The LogoConfig instance containing config settings to use.
      * @param outputFile The file to which the image will be saved. Must be writable.
      * @throws IOException if something goes wrong.
      */

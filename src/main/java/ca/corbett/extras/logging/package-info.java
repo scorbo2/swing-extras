@@ -1,7 +1,7 @@
 /**
  * Contains the LogConsole and associated classes - useful for showing log information
  * for your Swing application at runtime.
- * <h2>LogConsole</H2>
+ * <h1>LogConsole</h1>
  * LogConsole is a singleton frame that contains a styleable text pane showing log
  * messages for your application. You must specify "ca.corbett.extras.logging.LogConsoleHandler"
  * in the "handlers" list in your logging.properties in order for LogConsole to receive

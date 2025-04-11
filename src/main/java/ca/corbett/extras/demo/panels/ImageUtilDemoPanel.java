@@ -51,8 +51,8 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         controlPanel.addFormField(labelField);
 
         labelField = new LabelField("<html>ImageUtil and the associated color<br>"
-                + "gradient classes can generate images with<br>"
-                + "a variety of options. Here are just a few!</html>");
+                                            + "gradient classes can generate images with<br>"
+                                            + "a variety of options. Here are just a few!</html>");
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.PLAIN, 12f));
         controlPanel.addFormField(labelField);
 
@@ -141,6 +141,8 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
 
     private void regenerate() {
         imagePanel.applyProperties(imagePanelConfig);
-        imagePanel.setImage(LogoGenerator.generateImage(textField.getText().isBlank() ? Version.NAME : textField.getText(), logoConfig));
+        imagePanel.setImage(
+                LogoGenerator.generateImage(textField.getText().isBlank() ? Version.NAME : textField.getText(),
+                                            logoConfig));
     }
 }

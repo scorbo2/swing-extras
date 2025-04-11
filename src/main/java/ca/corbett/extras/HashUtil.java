@@ -20,7 +20,8 @@ public final class HashUtil {
 
     public enum HashType {
         MD2, MD5, SHA1, SHA256, SHA384, SHA512
-    };
+    }
+
     private static Map<HashType, MessageDigest> hashMap;
 
     private HashUtil() {
@@ -39,7 +40,8 @@ public final class HashUtil {
         catch (NoSuchAlgorithmException nsae) {
             // The above are all guaranteed to us by the java standard, so this *should* be okay
             Logger.getLogger(HashUtil.class.getName()).log(Level.SEVERE,
-                    "Standard digest algorithms are not available in this JDK?! That's bad.", nsae);
+                                                           "Standard digest algorithms are not available in this JDK?! That's bad.",
+                                                           nsae);
         }
         for (MessageDigest digest : hashMap.values()) {
             digest.reset();
@@ -50,7 +52,7 @@ public final class HashUtil {
      * Returns a digest of the data in the given byte array using the given HashType.
      *
      * @param hashType The HashType to use.
-     * @param data A byte array of any length.
+     * @param data     A byte array of any length.
      * @return A hash of the input array using the specified digest algorithm.
      */
     public static byte[] getHash(final HashType hashType, final byte[] data) {
@@ -73,7 +75,7 @@ public final class HashUtil {
      * File must exist and be smaller than 2GB.
      *
      * @param hashType The HashType to use.
-     * @param file The input file. Must exist and be smaller than 2GB.
+     * @param file     The input file. Must exist and be smaller than 2GB.
      * @return A hash of the file contents, in the specified digest type.
      * @throws IOException If the file does not exist, is not readable, or is larger than 2GB.
      */
@@ -108,7 +110,7 @@ public final class HashUtil {
      * string (hex format) of the output.
      *
      * @param hashType The HashType to use.
-     * @param data A byte array of any length.
+     * @param data     A byte array of any length.
      * @return A hex-encoded printable string equivalent to the hash of the input.
      */
     public static String getHashString(final HashType hashType, final byte[] data) {
@@ -131,7 +133,7 @@ public final class HashUtil {
      * using the given HashType.
      *
      * @param hashType The HashType to use.
-     * @param file The input file in question. Must exist and be smaller than 2GB.
+     * @param file     The input file in question. Must exist and be smaller than 2GB.
      * @return A hex-encoded printable string of the hash of the file contents.
      * @throws IOException If the file does not exist, is not readable, or is too large (2GB).
      */

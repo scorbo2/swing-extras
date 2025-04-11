@@ -17,28 +17,28 @@ import java.util.Comparator;
 @Deprecated
 public class FilePathDepthComparator implements Comparator<File> {
 
-  private int countSlashes(String name) {
-    int count = 0;
-    for (char c : name.toCharArray()) {
-      if (c == File.separatorChar) {
-        count++;
-      }
-    }
-    return count;
-  }
-
-  @Override
-  public int compare(File o1, File o2) {
-    int count1 = countSlashes(o1.getAbsolutePath());
-    int count2 = countSlashes(o2.getAbsolutePath());
-
-    // If the depth is the same, sort by full path+name instead:
-    if (count1 == count2) {
-      return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
+    private int countSlashes(String name) {
+        int count = 0;
+        for (char c : name.toCharArray()) {
+            if (c == File.separatorChar) {
+                count++;
+            }
+        }
+        return count;
     }
 
-    // Otherwise sort by depth:
-    return Integer.compare(count1, count2);
-  }
+    @Override
+    public int compare(File o1, File o2) {
+        int count1 = countSlashes(o1.getAbsolutePath());
+        int count2 = countSlashes(o2.getAbsolutePath());
+
+        // If the depth is the same, sort by full path+name instead:
+        if (count1 == count2) {
+            return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
+        }
+
+        // Otherwise sort by depth:
+        return Integer.compare(count1, count2);
+    }
 
 }

@@ -93,8 +93,8 @@ public final class GradientUtil {
      * Creates a new RGB image of the given width and height, and then fills it with the given
      * GradientConfig.
      *
-     * @param conf The GradientConfig to use to fill the image.
-     * @param width The width of the image to generate.
+     * @param conf   The GradientConfig to use to fill the image.
+     * @param width  The width of the image to generate.
      * @param height The height of the image to generate.
      * @return A BufferedImage containing the requested gradient.
      */
@@ -109,12 +109,12 @@ public final class GradientUtil {
     /**
      * Renders a gradient fill into the given Graphics2D object using the given GradientConfig.
      *
-     * @param conf The GradientConfig describing the type of gradient to render.
+     * @param conf     The GradientConfig describing the type of gradient to render.
      * @param graphics A Graphics2D object to receive the gradient. Will not call dispose() here.
-     * @param x1 The x co-ordinate of the upper left area to fill.
-     * @param y1 The y co-ordinate of the upper left area to fill.
-     * @param width The width of the gradient fill.
-     * @param height The height of the gradient fill.
+     * @param x1       The x co-ordinate of the upper left area to fill.
+     * @param y1       The y co-ordinate of the upper left area to fill.
+     * @param width    The width of the gradient fill.
+     * @param height   The height of the gradient fill.
      */
     public static void fill(GradientConfig conf, Graphics2D graphics, int x1, int y1, int width, int height) {
         // Figure out our extent:
@@ -163,12 +163,12 @@ public final class GradientUtil {
     /**
      * Draws an unfilled rectangle into the given Graphics2D object using the given GradientConfig.
      *
-     * @param conf The GradientConfig describing the gradient to use.
+     * @param conf     The GradientConfig describing the gradient to use.
      * @param graphics The Graphics2D object to use. Won't dispose() it here.
-     * @param x1 The x value of the left edge of the rectangle.
-     * @param y1 The y value of the top edge of the rectangle.
-     * @param width The pixel width of the rectangle.
-     * @param height The pixel height of the rectangle.
+     * @param x1       The x value of the left edge of the rectangle.
+     * @param y1       The y value of the top edge of the rectangle.
+     * @param width    The pixel width of the rectangle.
+     * @param height   The pixel height of the rectangle.
      */
     public static void drawRect(GradientConfig conf, Graphics2D graphics, int x1, int y1, int width, int height) {
         // Figure out our extent:
@@ -245,11 +245,11 @@ public final class GradientUtil {
      * The boundaries for the gradient will be determined automatically based on the text extents.
      * If this is unacceptable, use the other drawString() method to set them manually.
      *
-     * @param conf The GradientConfig describing the gradient to use.
+     * @param conf     The GradientConfig describing the gradient to use.
      * @param graphics The Graphics2D object to use. Won't call dispose() here.
-     * @param textX The x value of the left of the text.
-     * @param textY The y value of the text baseline.
-     * @param string The string to render.
+     * @param textX    The x value of the left of the text.
+     * @param textY    The y value of the text baseline.
+     * @param string   The string to render.
      */
     public static void drawString(GradientConfig conf, Graphics2D graphics, int textX, int textY, String string) {
         // Kludge alert: stringWidth() and getHeight() are often shy of the actual number,
@@ -285,15 +285,15 @@ public final class GradientUtil {
      * within one large rectangle (the gradient bounding area).
      * </p>
      *
-     * @param conf The GradientConfig describing the gradient to use.
-     * @param graphics The Graphics2D object to use. Won't call dispose() here.
+     * @param conf       The GradientConfig describing the gradient to use.
+     * @param graphics   The Graphics2D object to use. Won't call dispose() here.
      * @param gradientX1 The left edge of the text gradient area.
      * @param gradientY1 The top edge of the text gradient area.
      * @param gradientX2 The right edge of the text gradient area.
      * @param gradientY2 The bottom edge of the text gradient area.
-     * @param textX The left edge of the text location.
-     * @param textY The bottom edge of the text location.
-     * @param string The String to render.
+     * @param textX      The left edge of the text location.
+     * @param textY      The bottom edge of the text location.
+     * @param string     The String to render.
      */
     public static void drawString(GradientConfig conf, Graphics2D graphics, int gradientX1, int gradientY1, int gradientX2, int gradientY2, int textX, int textY, String string) {
         // Figure out our extent:
@@ -308,54 +308,66 @@ public final class GradientUtil {
         //  for all the ones that are split into 2 or 4 calls):
         switch (conf.getGradientType()) {
             case HORIZONTAL_LINEAR:
-                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), gradientX2, gradientY1, conf.getColor2()));
+                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), gradientX2, gradientY1,
+                                                    conf.getColor2()));
                 graphics.drawString(string, textX, textY);
                 break;
 
             case VERTICAL_LINEAR:
-                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), gradientX1, gradientY2, conf.getColor2()));
+                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), gradientX1, gradientY2,
+                                                    conf.getColor2()));
                 graphics.drawString(string, textX, textY);
                 break;
 
             case HORIZONTAL_STRIPE:
-                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), gradientX1, centerY, conf.getColor2()));
+                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), gradientX1, centerY,
+                                                    conf.getColor2()));
                 graphics.setClip(gradientX1, gradientY1, width, height / 2);
                 graphics.drawString(string, textX, textY);
-                graphics.setPaint(new GradientPaint(gradientX1, centerY, conf.getColor2(), gradientX1, gradientY2, conf.getColor1()));
+                graphics.setPaint(new GradientPaint(gradientX1, centerY, conf.getColor2(), gradientX1, gradientY2,
+                                                    conf.getColor1()));
                 graphics.setClip(gradientX1, centerY, width, height / 2);
                 graphics.drawString(string, textX, textY);
                 break;
 
             case VERTICAL_STRIPE:
-                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), centerX, gradientY1, conf.getColor2()));
+                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), centerX, gradientY1,
+                                                    conf.getColor2()));
                 graphics.setClip(gradientX1, gradientY1, width / 2, height);
                 graphics.drawString(string, textX, textY);
-                graphics.setPaint(new GradientPaint(centerX, gradientY1, conf.getColor2(), gradientX2, gradientY1, conf.getColor1()));
+                graphics.setPaint(new GradientPaint(centerX, gradientY1, conf.getColor2(), gradientX2, gradientY1,
+                                                    conf.getColor1()));
                 graphics.setClip(centerX, gradientY1, width / 2, height);
                 graphics.drawString(string, textX, textY);
                 break;
 
             case DIAGONAL1:
-                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), gradientX2, gradientY2, conf.getColor2()));
+                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), gradientX2, gradientY2,
+                                                    conf.getColor2()));
                 graphics.drawString(string, textX, textY);
                 break;
 
             case DIAGONAL2:
-                graphics.setPaint(new GradientPaint(gradientX1, gradientY2, conf.getColor1(), gradientX2, gradientY1, conf.getColor2()));
+                graphics.setPaint(new GradientPaint(gradientX1, gradientY2, conf.getColor1(), gradientX2, gradientY1,
+                                                    conf.getColor2()));
                 graphics.drawString(string, textX, textY);
                 break;
 
             case STAR:
-                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), centerX, centerY, conf.getColor2()));
+                graphics.setPaint(new GradientPaint(gradientX1, gradientY1, conf.getColor1(), centerX, centerY,
+                                                    conf.getColor2()));
                 graphics.setClip(gradientX1, gradientY1, width / 2, height / 2);
                 graphics.drawString(string, textX, textY);
-                graphics.setPaint(new GradientPaint(centerX, centerY, conf.getColor2(), gradientX2, gradientY2, conf.getColor1()));
+                graphics.setPaint(new GradientPaint(centerX, centerY, conf.getColor2(), gradientX2, gradientY2,
+                                                    conf.getColor1()));
                 graphics.setClip(centerX, centerY, width / 2, height / 2);
                 graphics.drawString(string, textX, textY);
-                graphics.setPaint(new GradientPaint(gradientX1, gradientY2, conf.getColor1(), centerX, centerY, conf.getColor2()));
+                graphics.setPaint(new GradientPaint(gradientX1, gradientY2, conf.getColor1(), centerX, centerY,
+                                                    conf.getColor2()));
                 graphics.setClip(gradientX1, centerY, width / 2, height / 2);
                 graphics.drawString(string, textX, textY);
-                graphics.setPaint(new GradientPaint(centerX, centerY, conf.getColor2(), gradientX2, gradientY1, conf.getColor1()));
+                graphics.setPaint(new GradientPaint(centerX, centerY, conf.getColor2(), gradientX2, gradientY1,
+                                                    conf.getColor1()));
                 graphics.setClip(centerX, gradientY1, width / 2, height / 2);
                 graphics.drawString(string, textX, textY);
                 break;

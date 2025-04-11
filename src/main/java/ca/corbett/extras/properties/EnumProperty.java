@@ -53,9 +53,9 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
      * of the supplied enum, and lets you choose whether you want to use
      * name() or toString() for the possible combo box values.
      *
-     * @param name The fully qualified property name.
-     * @param label The human-readable label for this property.
-     * @param defaultValue A default value to use for initial selection.
+     * @param name                    The fully qualified property name.
+     * @param label                   The human-readable label for this property.
+     * @param defaultValue            A default value to use for initial selection.
      * @param useNamesInsteadOfLabels If true, name() will be used for combo box values instead of toString().
      */
     public EnumProperty(String name, String label, T defaultValue, boolean useNamesInsteadOfLabels) {
@@ -109,7 +109,7 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
     }
 
     public T getSelectedItem() {
-        return (T) defaultValue.getDeclaringClass().getEnumConstants()[selectedIndex];
+        return (T)defaultValue.getDeclaringClass().getEnumConstants()[selectedIndex];
     }
 
     @Override
@@ -126,7 +126,8 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
         }
         if (index == -1) {
             selectedIndex = 0; // fallback default
-        } else {
+        }
+        else {
             selectedIndex = index;
         }
     }
@@ -146,10 +147,11 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
                 || !(field instanceof ComboField)) {
-            logger.log(Level.SEVERE, "EnumProperty.loadFromFormField: received the wrong field \"{0}\"", field.getIdentifier());
+            logger.log(Level.SEVERE, "EnumProperty.loadFromFormField: received the wrong field \"{0}\"",
+                       field.getIdentifier());
             return;
         }
 
-        selectedIndex = ((ComboField) field).getSelectedIndex();
+        selectedIndex = ((ComboField)field).getSelectedIndex();
     }
 }

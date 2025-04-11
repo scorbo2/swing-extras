@@ -1,5 +1,11 @@
 package ca.corbett.extras.gradient;
 
+import javax.swing.JButton;
+import javax.swing.JColorChooser;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -8,12 +14,6 @@ import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
 
 /**
  * Combines a JColorChooser with a GradientConfigDialog to allow you to select
@@ -39,7 +39,7 @@ public final class GradientColorChooser extends JPanel {
             return this == GRADIENT || this == BOTH;
         }
 
-    };
+    }
 
     private final JColorChooser colorChooser;
     private final GradientConfigPanel gradientChooser;

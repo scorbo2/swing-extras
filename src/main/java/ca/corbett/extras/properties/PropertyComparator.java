@@ -10,9 +10,9 @@ import java.util.Comparator;
  */
 public class PropertyComparator implements Comparator<AbstractProperty> {
 
-  @Override
-  public int compare(AbstractProperty o1, AbstractProperty o2) {
-    return o1.fullyQualifiedName.compareTo(o2.fullyQualifiedName);
-  }
+    @Override
+    public int compare(AbstractProperty o1, AbstractProperty o2) {
+        return o1.fullyQualifiedName.compareTo(o2.fullyQualifiedName);
+    }
 
 }

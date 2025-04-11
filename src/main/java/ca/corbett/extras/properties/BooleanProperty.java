@@ -14,56 +14,57 @@ import java.util.logging.Logger;
  */
 public class BooleanProperty extends AbstractProperty {
 
-  private static final Logger logger = Logger.getLogger(BooleanProperty.class.getName());
+    private static final Logger logger = Logger.getLogger(BooleanProperty.class.getName());
 
-  protected boolean value;
+    protected boolean value;
 
-  public BooleanProperty(String name, String label) {
-    this(name, label, false);
-  }
-
-  public BooleanProperty(String name, String label, boolean initialValue) {
-    super(name, label);
-    value = initialValue;
-  }
-
-  public void setValue(boolean val) {
-    value = val;
-  }
-
-  public boolean getValue() {
-    return value;
-  }
-
-  @Override
-  public void saveToProps(Properties props) {
-    props.setBoolean(fullyQualifiedName, value);
-  }
-
-  @Override
-  public void loadFromProps(Properties props) {
-    value = props.getBoolean(fullyQualifiedName, value);
-  }
-
-  @Override
-  public FormField generateFormField() {
-    CheckBoxField field = new CheckBoxField(propertyLabel, value);
-    field.setIdentifier(fullyQualifiedName);
-    field.setEnabled(!isReadOnly);
-    field.setHelpText(helpText);
-    return field;
-  }
-
-  @Override
-  public void loadFromFormField(FormField field) {
-    if (field.getIdentifier() == null
-            || !field.getIdentifier().equals(fullyQualifiedName)
-            || !(field instanceof CheckBoxField)) {
-      logger.log(Level.SEVERE, "BooleanProperty.loadFromFormField: received the wrong field \"{0}\"", field.getIdentifier());
-      return;
+    public BooleanProperty(String name, String label) {
+        this(name, label, false);
     }
 
-    value = ((CheckBoxField)field).isChecked();
-  }
+    public BooleanProperty(String name, String label, boolean initialValue) {
+        super(name, label);
+        value = initialValue;
+    }
+
+    public void setValue(boolean val) {
+        value = val;
+    }
+
+    public boolean getValue() {
+        return value;
+    }
+
+    @Override
+    public void saveToProps(Properties props) {
+        props.setBoolean(fullyQualifiedName, value);
+    }
+
+    @Override
+    public void loadFromProps(Properties props) {
+        value = props.getBoolean(fullyQualifiedName, value);
+    }
+
+    @Override
+    public FormField generateFormField() {
+        CheckBoxField field = new CheckBoxField(propertyLabel, value);
+        field.setIdentifier(fullyQualifiedName);
+        field.setEnabled(!isReadOnly);
+        field.setHelpText(helpText);
+        return field;
+    }
+
+    @Override
+    public void loadFromFormField(FormField field) {
+        if (field.getIdentifier() == null
+                || !field.getIdentifier().equals(fullyQualifiedName)
+                || !(field instanceof CheckBoxField)) {
+            logger.log(Level.SEVERE, "BooleanProperty.loadFromFormField: received the wrong field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
+        value = ((CheckBoxField)field).isChecked();
+    }
 
 }

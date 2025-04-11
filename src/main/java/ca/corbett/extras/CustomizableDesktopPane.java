@@ -2,6 +2,9 @@ package ca.corbett.extras;
 
 import ca.corbett.extras.gradient.GradientConfig;
 import ca.corbett.extras.gradient.GradientUtil;
+
+import javax.swing.JDesktopPane;
+import javax.swing.SwingUtilities;
 import java.awt.AlphaComposite;
 import java.awt.Composite;
 import java.awt.Graphics;
@@ -9,8 +12,6 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDesktopPane;
-import javax.swing.SwingUtilities;
 
 /**
  * A customized JDesktopPane that allows setting a customized background
@@ -51,7 +52,7 @@ public class CustomizableDesktopPane extends JDesktopPane {
             return null;
         }
 
-    };
+    }
 
     private static final Logger logger = Logger.getLogger(CustomizableDesktopPane.class.getName());
     private LogoPlacement logoPlacement;
@@ -74,10 +75,10 @@ public class CustomizableDesktopPane extends JDesktopPane {
      * the specified initial GradientConfig. The GradientConfig can be modified later
      * via setGradientConfig(), but the logo image cannot be changed once set.
      *
-     * @param image The logo image to render in the background.
+     * @param image     The logo image to render in the background.
      * @param placement Where on the desktop the logo image should be rendered.
-     * @param alpha The transparency value to use for the logo image (0=invisible, 1=opaque).
-     * @param gradient The GradientConfig to use initially for drawing the background.
+     * @param alpha     The transparency value to use for the logo image (0=invisible, 1=opaque).
+     * @param gradient  The GradientConfig to use initially for drawing the background.
      */
     public CustomizableDesktopPane(BufferedImage image, LogoPlacement placement, float alpha, GradientConfig gradient) {
         super();
@@ -88,10 +89,10 @@ public class CustomizableDesktopPane extends JDesktopPane {
         this.gradientConfig = new GradientConfig(gradient);
 
         logger.log(Level.FINE, "CustomizableDesktopPane created: logo:{0}, {1}, {2}, {3}",
-                new Object[]{logoImage == null ? "no" : "yes",
-                        logoPlacement.name(),
-                        logoImageAlpha,
-                        gradientConfig.getGradientType().name()});
+                   new Object[]{logoImage == null ? "no" : "yes",
+                           logoPlacement.name(),
+                           logoImageAlpha,
+                           gradientConfig.getGradientType().name()});
     }
 
     /**

@@ -23,11 +23,11 @@ public class ImagePanelConfig implements ConfigObject {
 
     public enum DisplayMode {
         NONE, CENTER, BEST_FIT, STRETCH, CUSTOM
-    };
+    }
 
     public enum Quality {
         QUICK_AND_DIRTY, SLOW_AND_ACCURATE
-    };
+    }
 
     private Color bgColor;
     private Cursor magnifierCursor;
@@ -126,7 +126,7 @@ public class ImagePanelConfig implements ConfigObject {
      * "waveform1.enableOutline". If you specify null or an empty string for prefix, property names
      * will be specified as-is, and will overwrite any previous value.
      *
-     * @param props The Properties instance from which to load.
+     * @param props  The Properties instance from which to load.
      * @param prefix An optional string prefix to apply to all property names, or null.
      */
     @Override
@@ -152,7 +152,7 @@ public class ImagePanelConfig implements ConfigObject {
      * "waveform1.enableOutline". If you specify null or an empty string for prefix, property names
      * will be specified as-is, and will overwrite any previous value.
      *
-     * @param props The Properties instance to which to save.
+     * @param props  The Properties instance to which to save.
      * @param prefix An optional string prefix to apply to all property names, or null.
      */
     @Override
