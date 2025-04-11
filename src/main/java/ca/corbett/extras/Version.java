@@ -8,7 +8,7 @@ import ca.corbett.extras.about.AboutInfo;
  */
 public final class Version {
 
-    public static final String VERSION = "1.9.4";
+    public static final String VERSION = "2.0.0";
 
     public static final String NAME = "swing-extras";
 
