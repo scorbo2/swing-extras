@@ -6,7 +6,7 @@
 
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>1.9.4-SNAPSHOT</version>
+    <version>1.9.4</version>
     <packaging>jar</packaging>
 
     <name>swing-extras</name>
@@ -45,12 +45,12 @@
         <dependency>
             <groupId>ca.corbett</groupId>
             <artifactId>swing-forms</artifactId>
-            <version>1.9.1-SNAPSHOT</version>
+            <version>1.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>RELEASE</version>
+            <version>5.12.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -67,7 +67,7 @@
                     <checksums>all</checksums>
                     <centralBaseUrl>https://central.sonatype.com</centralBaseUrl>
                     <centralSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</centralSnapshotsUrl>
-                    <skipPublishing>true</skipPublishing>
+                    <skipPublishing>false</skipPublishing>
                 </configuration>
             </plugin>
             <plugin>
