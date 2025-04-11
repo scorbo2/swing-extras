@@ -142,7 +142,7 @@ public final class SplashProgressWindow extends JWindow {
 
       @Override
       public boolean progressUpdate(int currentStep, String message) {
-        thisWindow.setProgress(currentStep);
+        thisWindow.setProgress(currentStep + 1);
         return true;
       }
 

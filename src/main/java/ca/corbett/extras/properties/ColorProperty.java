@@ -110,6 +110,7 @@ public class ColorProperty extends AbstractProperty {
 
     field.setIdentifier(fullyQualifiedName);
     field.setEnabled(!isReadOnly);
+    field.setHelpText(helpText);
     return field;
   }
 

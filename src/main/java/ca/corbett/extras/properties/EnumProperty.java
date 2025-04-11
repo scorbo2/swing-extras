@@ -137,6 +137,7 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
         ComboField field = new ComboField(propertyLabel, options, selectedIndex, false);
         field.setIdentifier(fullyQualifiedName);
         field.setEnabled(!isReadOnly);
+        field.setHelpText(helpText);
         return field;
     }
 

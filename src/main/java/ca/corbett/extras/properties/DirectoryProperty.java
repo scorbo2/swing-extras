@@ -69,6 +69,7 @@ public class DirectoryProperty extends AbstractProperty {
     FileField field = new FileField(propertyLabel, dir, columns, FileField.SelectionType.ExistingDirectory, allowBlank);
     field.setIdentifier(fullyQualifiedName);
     field.setEnabled(!isReadOnly);
+    field.setHelpText(helpText);
     return field;
   }
 

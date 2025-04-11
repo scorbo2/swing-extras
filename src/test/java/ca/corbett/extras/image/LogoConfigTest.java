@@ -36,8 +36,10 @@ public class LogoConfigTest {
         assertEquals(conf1.getBorderColor(), conf2.getBorderColor());
         assertEquals(conf1.getBorderWidth(), conf2.getBorderWidth());
         assertEquals(conf1.getFont().getFamily(), conf2.getFont().getFamily());
+        assertEquals(conf1.getFont().isBold(), conf2.getFont().isBold());
+        assertEquals(conf1.getFont().isItalic(), conf2.getFont().isItalic());
+        assertEquals(conf1.getFont().getSize(), conf2.getFont().getSize());
         assertEquals(conf1.getTextColor(), conf2.getTextColor());
-        assertEquals(conf1.getFontPointSize(), conf2.getFontPointSize());
         assertEquals(conf1.hasBorder(), conf2.hasBorder());
         assertEquals(conf1.getLogoHeight(), conf2.getLogoHeight());
         assertEquals(conf1.getLogoWidth(), conf2.getLogoWidth());

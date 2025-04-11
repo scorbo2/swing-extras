@@ -1,9 +1,12 @@
 package ca.corbett.extras.gradient;
 
-import ca.corbett.forms.fields.FormField;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.FormField;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -11,8 +14,6 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 /**
  * A FormField implementation for selecting either a solid color, or a gradient fill.
@@ -66,7 +67,6 @@ public class GradientColorField extends FormField {
         // Initialize our UI components:
         fieldLabel = new JLabel(label);
         fieldLabel.setFont(fieldLabelFont);
-        validationLabel = new JLabel();
         ImagePanelConfig ipc = ImagePanelConfig.createSimpleReadOnlyProperties();
         colorPanel = new ImagePanel((BufferedImage)null, ipc);
         fieldComponent = colorPanel;
@@ -212,14 +212,10 @@ public class GradientColorField extends FormField {
         fieldLabel.setFont(fieldLabelFont);
         container.add(fieldLabel, constraints);
 
-        constraints.gridx++;
+        constraints.gridx = FormPanel.CONTROL_COLUMN;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
         container.add(colorPanel, constraints);
-
-        constraints.insets = new Insets(0, 0, 0, rightMargin);
-        constraints.gridx++;
-        container.add(validationLabel, constraints);
     }
 
 }

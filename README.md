@@ -38,7 +38,7 @@ If you're using Maven, you can simply list it as a dependency:
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>1.9.3</version>
+    <version>1.9.4</version>
   </dependency>
 </dependencies>
 ```
@@ -50,7 +50,7 @@ for example to generate the javadocs locally, then you can clone the repo:
 git clone https://github.com/scorbo2/swing-extras.git
 cd swing-extras
 mvn package
-java -jar target/swing-extras-1.9.3-jar-with-dependencies.jar
+java -jar target/swing-extras-1.9.4-jar-with-dependencies.jar
 ```
 
 ## License
@@ -75,4 +75,8 @@ is the first publicly available version of the library.
   - https://github.com/scorbo2/swing-extras/issues/10 - better reporting within playback thread
 - v1.9.3 [2025-04-05]:
   - https://github.com/scorbo2/swing-extras/issues/12 - fix ClassCastException in PropertiesDialog
-
+- v1.9.4 [2025-04-10]:
+  - https://github.com/scorbo2/swing-extras/issues/14 (bug) High CPU usage in audio playback
+  - https://github.com/scorbo2/swing-extras/issues/16 - Change FontProperty to use new swing-forms FontField
+  - https://github.com/scorbo2/swing-extras/issues/17 - Make use of new help text feature in swing-forms
+  - https://github.com/scorbo2/swing-extras/issues/19 (bug) Progress dialogs are all off by one

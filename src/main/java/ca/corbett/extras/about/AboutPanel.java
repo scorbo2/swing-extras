@@ -128,7 +128,6 @@ public final class AboutPanel extends JPanel {
         LabelField labelField = new LabelField(labelText);
         labelField.setFont(new Font("SansSerif", Font.BOLD, 24));
         labelField.setMargins(2, 8, 2, 2, 0);
-        labelField.setExtraMargins(0, 0);
         formPanel.addFormField(labelField);
 
         Font labelFont = new Font("SansSerif", Font.PLAIN, 12);
@@ -139,7 +138,6 @@ public final class AboutPanel extends JPanel {
             labelField = new LabelField("\"" + desc + "\"");
             labelField.setFont(labelFont);
             labelField.setMargins(2, 8, 2, 2, 0);
-            labelField.setExtraMargins(0, 0);
             formPanel.addFormField(labelField);
         }
 
@@ -147,7 +145,6 @@ public final class AboutPanel extends JPanel {
             labelField = new LabelField(info.copyright);
             labelField.setFont(labelFont);
             labelField.setMargins(2, 8, 2, 2, 0);
-            labelField.setExtraMargins(0, 0);
             formPanel.addFormField(labelField);
         }
 
@@ -163,7 +160,6 @@ public final class AboutPanel extends JPanel {
                 }
             }
             labelField.setMargins(2, 8, 2, 2, 0);
-            labelField.setExtraMargins(0, 0);
             formPanel.addFormField(labelField);
         }
 
@@ -179,21 +175,18 @@ public final class AboutPanel extends JPanel {
                 }
             }
             labelField.setMargins(2, 8, 2, 2, 0);
-            labelField.setExtraMargins(0, 0);
             formPanel.addFormField(labelField);
         }
 
         memoryUsageField = new LabelField(getMemoryStats());
         memoryUsageField.setFont(labelFont);
         memoryUsageField.setMargins(2, 8, 2, 2, 0);
-        memoryUsageField.setExtraMargins(0, 0);
         formPanel.addFormField(memoryUsageField);
 
         for (String customField : info.getCustomFieldNames()) {
             labelField = new LabelField(customField, info.getCustomFieldValue(customField));
             labelField.setFont(labelFont);
-            labelField.setMargins(2, 8, 2, 2, 0);
-            labelField.setExtraMargins(2, 2);
+            labelField.setMargins(4, 8, 4, 2, 0);
             formPanel.addFormField(labelField);
             customFields.put(customField, labelField);
         }

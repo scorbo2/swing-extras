@@ -2,7 +2,6 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.TextField;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -28,7 +27,8 @@ public class IntroPanel extends PanelBuilder {
         LabelField label = createSimpleLabelField("Welcome to swing-extras!");
         label.setFont(new Font("SansSerif", Font.BOLD, 24));
         label.setColor(Color.BLUE);
-        label.setExtraMargins(24, 16);
+        label.setTopMargin(24);
+        label.setBottomMargin(16);
         introPanel.addFormField(label);
 
         StringBuilder sb = new StringBuilder();
@@ -42,13 +42,14 @@ public class IntroPanel extends PanelBuilder {
         sb.append("<html>Take a look through the other tabs in this demo application<br/>");
         sb.append("to take a tour of some of the possibilities in this library.</html>");
         LabelField labelField = createSimpleLabelField(sb.toString());
-        labelField.setExtraMargins(12,0);
+        label.setTopMargin(14);
         introPanel.addFormField(labelField);
 
         sb = new StringBuilder();
         sb.append("<html>You can also browse through the code and javadocs for more!</html>");
         labelField = createSimpleLabelField(sb.toString());
-        labelField.setExtraMargins(12,12);
+        label.setTopMargin(12);
+        label.setBottomMargin(12);
         introPanel.addFormField(labelField);
 
         introPanel.render();

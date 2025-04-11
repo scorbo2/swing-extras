@@ -17,11 +17,11 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.ArrayList;
 import java.nio.file.FileSystem;
+import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DirTreeDemoPanel extends PanelBuilder {
 
@@ -97,7 +97,8 @@ public class DirTreeDemoPanel extends PanelBuilder {
         sb.append("You can also respond to selection changes as the user<br>");
         sb.append("selects different nodes.</html>");
         LabelField labelField = createSimpleLabelField(sb.toString());
-        labelField.setExtraMargins(12,16);
+        labelField.setTopMargin(12);
+        labelField.setBottomMargin(16);
         formPanel.addFormField(labelField);
 
         List<String> options = new ArrayList<>();

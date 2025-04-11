@@ -58,7 +58,8 @@ public class ProgressDemoPanel extends PanelBuilder {
 
         LabelField labelField = new LabelField("MultiProgressDialog");
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
-        labelField.setExtraMargins(16, 4);
+        labelField.setTopMargin(18);
+        labelField.setBottomMargin(6);
         formPanel.addFormField(labelField);
 
         labelField = createSimpleLabelField("<html>Java Swing comes with the ProgressMonitor class,<br>" +
@@ -96,7 +97,8 @@ public class ProgressDemoPanel extends PanelBuilder {
 
         labelField = new LabelField("SplashProgress");
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
-        labelField.setExtraMargins(2, 4);
+        labelField.setTopMargin(4);
+        labelField.setBottomMargin(6);
         formPanel.addFormField(labelField);
 
         labelField = createSimpleLabelField("<html>Java offers the SplashScreen class for showing a splash<br>" +

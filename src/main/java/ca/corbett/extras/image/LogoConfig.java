@@ -377,17 +377,11 @@ public final class LogoConfig implements ConfigObject {
     }
 
     /**
-     * Returns the desired font point size. This property is not used if isAutoSize() is true.
-     *
-     * @return The desired font point size to use with the image.
-     */
-    public int getFontPointSize() {
-        return font.getSize();
-    }
-
-    /**
-     * Sets the desired font point size to use with the generated image. This property is only
-     * used if isAutoSize() is false.
+     * Sets the desired font point size to use with the generated image. If this method
+     * is invoked to manually set the font point size, then auto-sizing of the text
+     * is automatically turned off. You can re-enable auto-sizing by invoking
+     * setAutoSize(true), in which case this font point size will be ignored
+     * (but will be stored for later use in case you do setAutoSize(false)).
      *
      * @param fontPointSize The desired font point size. If 0, we set autoSize to true.
      */
@@ -411,7 +405,7 @@ public final class LogoConfig implements ConfigObject {
 
     /**
      * Enables or disables font auto-sizing on the generated image. If disabled, then
-     * fontPointSize will be used to determine the font size.
+     * the size in our Font property will be used to determine the font size.
      *
      * @param auto Whether or not to auto-size the text to fit the image.
      */
