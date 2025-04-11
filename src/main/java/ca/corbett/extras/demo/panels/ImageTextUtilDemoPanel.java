@@ -109,6 +109,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
 
         fontField = new FontField("Font:");
         fontField.addValueChangedAction(changeAction);
+        fontField.setShowSizeField(false);
         formPanel.addFormField(fontField);
 
         bgColorField = new GradientColorField("Background:", bgGradient);

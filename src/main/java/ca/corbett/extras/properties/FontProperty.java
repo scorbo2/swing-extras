@@ -22,6 +22,7 @@ public class FontProperty extends AbstractProperty {
   protected Font font;
   protected Color textColor;
   protected Color bgColor;
+  protected boolean allowSizeSelection = true;
 
   /**
    * Creates a new FontProperty with all default values.
@@ -128,6 +129,14 @@ public class FontProperty extends AbstractProperty {
     return font;
   }
 
+  public boolean isAllowSizeSelection() {
+    return allowSizeSelection;
+  }
+
+  public void setAllowSizeSelection(boolean allow) {
+    allowSizeSelection = allow;
+  }
+
   @Override
   public void saveToProps(Properties props) {
     props.setString(fullyQualifiedName + ".name", font.getFamily());
@@ -144,6 +153,7 @@ public class FontProperty extends AbstractProperty {
     } else {
       props.remove(fullyQualifiedName + ".bgColor");
     }
+    props.setBoolean(fullyQualifiedName + ".allowSizeSelection", allowSizeSelection);
   }
 
   @Override
@@ -155,6 +165,7 @@ public class FontProperty extends AbstractProperty {
     font = Properties.createFontFromAttributes(fontName, isBold, isItalic, pointSize);
     textColor = props.getColor(fullyQualifiedName + ".textColor", textColor);
     bgColor = props.getColor(fullyQualifiedName + ".bgColor", bgColor);
+    allowSizeSelection = props.getBoolean(fullyQualifiedName + ".allowSizeSelection", allowSizeSelection);
   }
 
   @Override
@@ -163,6 +174,7 @@ public class FontProperty extends AbstractProperty {
     field.setIdentifier(fullyQualifiedName);
     field.setEnabled(!isReadOnly);
     field.setHelpText(helpText);
+    field.setShowSizeField(allowSizeSelection);
     return field;
   }
 

@@ -149,7 +149,9 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorProperty.ColorType.SOLID, Color.RED));
         props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorProperty.ColorType.GRADIENT));
         props.add(new ColorProperty("Colors.someMultiColor", "Both:", ColorProperty.ColorType.BOTH));
-        props.add(new FontProperty("Colors.fontColor", "Font with color:", new Font(Font.SANS_SERIF, Font.PLAIN, 14), Color.CYAN, Color.DARK_GRAY));
+        FontProperty fontProperty = new FontProperty("Colors.fontColor", "Font with color:", new Font(Font.SANS_SERIF, Font.PLAIN, 14), Color.CYAN, Color.DARK_GRAY);
+        fontProperty.setAllowSizeSelection(false);
+        props.add(fontProperty);
 
         props.add(new DirectoryProperty("Files.someDirProperty", "Directory:"));
         props.add(new FileProperty("Files.someFileProperty", "File:"));
