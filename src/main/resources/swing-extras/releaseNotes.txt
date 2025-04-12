@@ -1,0 +1,231 @@
+swing-extras Release Notes
+Author: Steve Corbett
+
+Version 2.0.0 [pending]
+  - Absorbed app-extensions library into swing-extras
+  - Absorbed swing-forms library into swing-extras
+  - New unified demo app
+  - Moved documentation to corbett.ca and expanded
+
+Version 1.9.4 [2025-04-10]
+  - Fix high CPU usage in PlaybackThread
+  - New FontField and FontProperty
+  - New help tooltip support in all form fields
+  - Fix cosmetic glitch in progress bars
+  - Bug: FileField.setEnabled wasn't working
+  - Bug: ComboBox's item listener was wrong
+  - PanelField now responds to validation
+
+Version 1.9.3 [2025-04-05]
+  - Fix ClassCastException introduced in 1.9.2
+
+Version 1.9.2 [2025-04-04]
+  - PropertiesDialog: add scrollbars to long forms
+  - LabelProperty should ignore saveToProps
+  - PropertiesManager: allow custom form logic pre-render
+  - Properties should allow read-only initial state
+  - PlaybackThread needs better reporting
+
+Version 1.9.1 [2025-03-26]
+  - Change ConfigObject from abstract class to interface
+  - Add EnumProperty for easier management of enum properties
+
+Version 1.9 [2025-03-09]
+  - Project moved to github
+
+Version 1.8 [2024-12-30] - ExtensionManager/PropertiesManager/EMS
+  [UTIL-141] - NumberField(String, SpinnerModel) should be public
+  [UTIL-142] - Escape should close AboutDialog
+  [UTIL-143] - Import image text writing from CapRoulette
+  [UTIL-144] - ImagePanel should expose translatePoint()
+  [UTIL-145] - Add ExtensionManager class
+  [UTIL-146] - Add PropertiesManager class
+  [UTIL-147] - FormPanel.render() can be invoked again
+  [UTIL-148] - Add ExtensionDialog
+  [UTIL-149] - EMS handlers should have usage info
+  [UTIL-150] - EMS Command registry should list commands
+  [UTIL-151] - EMS: clients need an identifier
+  [UTIL-152] - EMS: merge CommandRegistry into EMSServer
+  [UTIL-153] - Add demo panel for EMS
+  [UTIL-154] - EMSClient
+  [UTIL-155] - EMS: add EMSServerSpy
+  [UTIL-156] - Add EMSClientListener
+  [UTIL-157] - EMS is not handling threading very well
+  [UTIL-158] - Forms: TextField needs a scroll pane
+  [UTIL-159] - ExtensionManager: add way to manually add extensions
+  [UTIL-160] - Add demo panel for ExtensionManager
+  [UTIL-161] - Forms: FileField should support nullable directories
+  [UTIL-162] - DirTree should handle nulls better
+  [UTIL-163] - TextField needs more size options
+  [UTIL-164] - ExtensionManager: add extension type
+  [UTIL-165] - Forms: let me set field margins individually
+  [UTIL-166] - PropertiesDialog - let me specify a left margin
+  [UTIL-167] - AppExtensionInfo: use builder pattern
+  [UTIL-168] - Add json serialization wrapper
+  [UTIL-169] - AppExtensionInfo needs custom fields
+  [UTIL-170] - Extensions should package an extInfo.json
+  [UTIL-171] - ExtensionManager should be less abstract
+  [UTIL-172] - build script should make a fat jar
+  [UTIL-173] - Adjust spacing of header fields in PropertiesManager
+  [UTIL-174] - Need a way to change form field label
+  [UTIL-175] - Stopwatch shows 0s for very low values
+  [UTIL-176] - Stopwatch needs a public format method
+  [UTIL-177] - Small typos in ExtensionDetailsPanel
+  [UTIL-178] - IntegerProperty and DecimalProperty simple options
+  [UTIL-179] - Don't package apache commons io
+  [UTIL-181] - Minor: ok/cancel buttons on prefs dialog are small
+
+Version 1.7 [2023-03-17] - DesktopPane, LogConsole, animated GIFs
+  [UTIL-117] - AboutPanel not scrolling to top of release notes
+  [UTIL-119] - Bug: FileBasedProperties doesn't save on remove
+  [UTIL-120] - Bug: FileBasedProperties isn't saving correctly
+  [UTIL-121] - make FileSystemUtil.findFiles methods easier
+  [UTIL-122] - Absorb CustomDesktopPane from Snotes
+  [UTIL-123] - Bug: ColorField adding mouse listener in wrong place
+  [UTIL-124] - YMDDate needs a getDayName()
+  [UTIL-125] - Project changes for 1.7 release
+  [UTIL-126] - Add LogConsole
+  [UTIL-127] - LogConsole should have a way to persist theme choice
+  [UTIL-128] - LogConsole should have a way to customize output
+  [UTIL-129] - Add a Stopwatch utility for timing tracking
+  [UTIL-130] - Add LogConsole demo tab
+  [UTIL-131] - LogConsole should return quickly if not visible
+  [UTIL-132] - LogConsole: theme switch resets font size
+  [UTIL-133] - LogConsole should expose themes
+  [UTIL-134] - Bug: CheckBoxField should not use ChangeListener
+  [UTIL-135] - FileBasedProperties should expose its File
+  [UTIL-136] - YMDDate should have more flexible constructors
+  [UTIL-137] - ImagePanel should support animated GIFs
+  [UTIL-138] - ImageUtil should support animated GIFs
+  [UTIL-139] - Bug: LabelField setting hyperlink on wrong label
+  [UTIL-140] - Properties.getColor() is wrong
+
+Version 1.6 [2022-05-10] - Properties, progress, gradients, and more
+  [UTIL-92] - AboutPanel should allow showing custom fields
+  [UTIL-93] - Switch to Properties instead of Preferences
+  [UTIL-94] - Project updates for 1.6 release
+  [UTIL-95] - Bug: ImageWriter has changed in newer Java version
+  [UTIL-96] - Better use of logging throughout
+  [UTIL-97] - Make better use of unit testing
+  [UTIL-98] - Create FileBasedProperties
+  [UTIL-99] - AudioUtil needs a way to limit size of waveform images
+  [UTIL-100] - Add progress handling utiltiies
+  [UTIL-101] - MessageUtil should allow warnings
+  [UTIL-102] - AboutPanel custom fields should be updateable
+  [UTIL-103] - More intelligent color property loading
+  [UTIL-104] - Performance: fix FileSystemUtil.findSubdirectories
+  [UTIL-105] - FileBasedProperties should order the list of props
+  [UTIL-106] - Make ImagePanel extensible
+  [UTIL-107] - LogoConfig and Generator needs cleanup
+  [UTIL-108] - Add Gradient generation support
+  [UTIL-109] - Add "swap colors" button to GradientConfigDialog
+  [UTIL-110] - Add ColorChooser
+  [UTIL-111] - Implement gradient support for text and line drawing
+  [UTIL-112] - LogoConfigPanel should use standard change listeners
+  [UTIL-113] - Forms: FontField is wonky
+  [UTIL-114] - NumberField has a hard-coded component size
+  [UTIL-115] - ImageUtil.generateThumbnail is wonky
+  [UTIL-116] - Update release notes for 1.6 release
+
+Version 1.5 [2022-04-11] - Maintenance release
+  [UTIL-42] - WaveformConfig save and/or load is wrong
+  [UTIL-72] - Consider providing a SqlDAO abstract class
+  [UTIL-73] - Project updates for 1.5 release
+  [UTIL-74] - FileField.getFile() has problems with blank input
+  [UTIL-75] - JdbcSqlDAO.delete() has an invalid condition
+  [UTIL-76] - Expose jpeg compression quality in ImageUtil
+  [UTIL-77] - Remove FormBuilder factory class
+  [UTIL-78] - ImageUtil.deserializeImage can't handle null input
+  [UTIL-79] - AboutPanel should show app dir and home dir
+  [UTIL-80] - FormField.setFieldLabelFont() is broken
+  [UTIL-81] - Absorb the new ProgressDialog from Darwin into sc-util
+  [UTIL-82] - Add an installer script
+  [UTIL-83] - Add package-info.java to all directories
+  [UTIL-84] - Bug: YMDDate is in the wrong package
+  [UTIL-85] - Pretty up the AboutPanel a lot
+  [UTIL-86] - Create MessageUtil
+  [UTIL-87] - MultiProgressDialog: grey out cancel when clicked
+  [UTIL-88] - Consider absorbing SplashWindow from Darwin
+  [UTIL-89] - LogoGenerator needs cleanup
+  [UTIL-90] - Add ImagePanelConfig convenience getter
+  [UTIL-91] - AboutPanel and Dialog need a way to refresh mem stats
+
+Version 1.4 [2020-10-07] - Maintenance release
+  [UTIL-26] - Add a FormBuilder component
+  [UTIL-43] - YMDDate needs a .equals implementation
+  [UTIL-44] - Minor: release notes should auto-scroll to top
+  [UTIL-45] - ModelObject.delete() is triggering a recreate
+  [UTIL-46] - ModelObject needs a LoadMode
+  [UTIL-47] - Splash screen may have gone missing
+  [UTIL-48] - Update version properties for 1.4 release
+  [UTIL-49] - DAO class needs a configurable ModelObject cache
+  [UTIL-50] - ModelObject needs a way to listen for modifications
+  [UTIL-51] - YMDDate.setDate() should be smarter about blanks
+  [UTIL-52] - FormFields shouldn't validate themselves when disabled
+  [UTIL-53] - LabelFields are still showing their validation label
+  [UTIL-54] - AboutPanel should show sc-util version
+  [UTIL-55] - Add a FontField form field for choosing a Font
+  [UTIL-56] - Add a Numeric/spinner FormField
+  [UTIL-57] - FormPanel should have leftAlign and topAlign options
+  [UTIL-58] - Margin issues in LabelField and TextField
+  [UTIL-59] - ComboField needs a way to update after field creation
+  [UTIL-60] - Form validation tooltip shows empty tip when valid
+  [UTIL-61] - showValidationLabel should be smarter
+  [UTIL-62] - YMDDateValidator should have an allowBlank option
+  [UTIL-63] - Add a PanelField to FormBuilder
+  [UTIL-64] - Need a way to clear fields from a FormPanel
+  [UTIL-65] - Move rendering code to FormPanel; allow re-rendering
+  [UTIL-66] - TextFields aren't line wrapping
+  [UTIL-67] - Need a way to directly access label for a component
+  [UTIL-68] - LabelField needs to expose "extra" margin properties
+  [UTIL-69] - ModelObject.firePropertyChangedEvent is broken
+  [UTIL-70] - TextField should be expandable if multi-line
+  [UTIL-71] - FormField.addFieldValidator should reject duplicates
+
+Version 1.3 [2019-11-07] - Mainenance release
+  [UTIL-36] - YMDDate needs a copy constructor
+  [UTIL-37] - Add AboutDialog and AboutPanel as generic components
+  [UTIL-38] - Add ModelObject and DAO base classes
+  [UTIL-39] - Upgrade to Netbeans/Java 11
+  [UTIL-40] - Absorb LogoGenerator into sc-util
+  [UTIL-41] - Need a LogoConfigPanel
+
+Version 1.2 [2018-02-04] - Maintenance release
+  [UTIL-33] - Remove debug statements in audio util
+  [UTIL-34] - Refactoring: clean up naming of config objects
+  [UTIL-35] - NegativeArraySizeException in some cases
+
+Version 1.1 [2018-01-28] - Maintenance release
+  [UTIL-19] - Add AudioUtil
+  [UTIL-20] - ImagePanel: refactor display mode
+  [UTIL-21] - HashUtil: add additional digest options
+  [UTIL-22] - Create a demo/testing application
+  [UTIL-23] - ImagePanel: STRETCH mode fails after refresh
+  [UTIL-24] - Add stream support to AudioUtil
+  [UTIL-25] - Add AudioWaveformPanel
+  [UTIL-27] - Cut/copy/paste support in AudioWaveformPanel
+  [UTIL-28] - Create a YMDDate wrapper class
+  [UTIL-29] - WaveformPreferences: allow saving/loading via Prefs
+  [UTIL-30] - Add a generic ConfigPanel base class
+  [UTIL-31] - Add WaveformPreferencesConfigPanel
+  [UTIL-32] - Add ImagePanelPreferencesConfigPanel
+
+Version 1.0 [2018-01-02] - Initial version
+  [UTIL-1] - Migrate ImageUtil from ICE to util project
+  [UTIL-2] - Migrate HashUtil from ICE project
+  [UTIL-3] - Migrate FileSystemUtil from ICE project
+  [UTIL-4] - Create project skeleton and build.xml file
+  [UTIL-5] - Create Jenkins build and deploy job
+  [UTIL-6] - Unit tests: HashUtil
+  [UTIL-7] - Migrate ImagePanel from ICE project
+  [UTIL-8] - ImagePanel: make it more configurable
+  [UTIL-9] - ImagePanel: allow disabling the use magnifier cursor
+  [UTIL-10] - Migrate DirTree from ImageView project
+  [UTIL-11] - Import WrapUtil from ICE
+  [UTIL-12] - ImagePanel is stealing mouse wheel events
+  [UTIL-13] - ImagePanel: add a map of configurable properties
+  [UTIL-14] - DirTree is sorting directory names stupidly
+  [UTIL-15] - ImagePanel not resizing the image propertly
+  [UTIL-16] - DirTree needs a "reload"
+  [UTIL-17] - ImagePanel auto best fit is wonky sometimes
+  [UTIL-18] - FileSystemUtil default sort file is wrong

@@ -71,6 +71,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         wavePrefs = new WaveformConfig();
         wavePrefs.setXScale(DEFAULT_XSCALE);
         wavePrefs.setYScale(DEFAULT_YSCALE);
+        PlaybackThread.setUpdateIntervalMs(75); // super fast updates
 
         waveformLabel = new JLabel("(not yet generated)");
 

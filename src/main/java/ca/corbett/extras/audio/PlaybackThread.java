@@ -21,7 +21,7 @@ import java.util.List;
 public class PlaybackThread implements Runnable {
 
     // Update progress interval, in milliseconds. Lower is more frequent, but also more costly.
-    protected static final int UPDATE_MS = 1000;
+    protected static int UPDATE_MS = 1000;
 
     public enum StopReason {
         /** The audio stopped because the clip ran to the very end. **/
@@ -78,6 +78,15 @@ public class PlaybackThread implements Runnable {
      */
     public long getCurrentOffset() {
         return lastPlayPositionms;
+    }
+
+    public static int getUpdateIntervalMs() {
+        return UPDATE_MS;
+    }
+
+    public static void setUpdateIntervalMs(int ms) {
+        UPDATE_MS = Math.max(50, ms); // no shorter than 50ms
+        UPDATE_MS = Math.min(2000, ms); // no longer than 2s
     }
 
     @Override

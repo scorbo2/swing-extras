@@ -134,7 +134,7 @@ public class DemoApp extends JFrame {
         cardList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting()) {
+                if (e.getValueIsAdjusting() || cardList.getSelectedValue() == null) {
                     return;
                 }
                 ((CardLayout)demoPanel.getLayout()).show(demoPanel, cardList.getSelectedValue().trim());
