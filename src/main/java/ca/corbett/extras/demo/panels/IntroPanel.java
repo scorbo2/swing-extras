@@ -5,7 +5,6 @@ import ca.corbett.forms.fields.LabelField;
 
 import javax.swing.JPanel;
 import java.awt.Color;
-import java.awt.Font;
 
 /**
  * Builds a very simple FormPanel with some introductory text. This one isn't very interesting,
@@ -25,10 +24,7 @@ public class IntroPanel extends PanelBuilder {
         FormPanel introPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         introPanel.setStandardLeftMargin(24);
 
-        LabelField label = LabelField.createHeaderLabel("Welcome to swing-extras!",
-                                                        new Font("SansSerif", Font.BOLD, 24),
-                                                        24,
-                                                        16);
+        LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-extras!", 24);
         label.setColor(Color.BLUE);
         introPanel.addFormField(label);
 
