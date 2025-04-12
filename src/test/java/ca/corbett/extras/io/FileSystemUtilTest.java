@@ -1,6 +1,7 @@
 package ca.corbett.extras.io;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -25,8 +26,8 @@ public class FileSystemUtilTest {
     public FileSystemUtilTest() {
     }
 
-    // This should be in a @BeforeAll but strangely that never seems to trigger......
-    static {
+    @BeforeAll
+    public static void setup() {
         try {
             File tmpdir = new File(System.getProperty("java.io.tmpdir"));
             testDir = new File(tmpdir.getAbsolutePath() + "/sc-util-io-test");
