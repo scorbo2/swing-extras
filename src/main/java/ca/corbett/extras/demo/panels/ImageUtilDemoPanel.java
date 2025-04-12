@@ -44,9 +44,10 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BorderLayout());
         FormPanel controlPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        controlPanel.setStandardLeftMargin(12);
 
         LabelField labelField = new LabelField("ImageUtil");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
+        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 20f));
         labelField.setTopMargin(18);
         controlPanel.addFormField(labelField);
 

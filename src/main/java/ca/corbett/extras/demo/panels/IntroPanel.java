@@ -17,37 +17,37 @@ import java.awt.Font;
 public class IntroPanel extends PanelBuilder {
     @Override
     public String getTitle() {
-        return "Intro";
+        return "Introduction";
     }
 
     @Override
     public JPanel build() {
-        FormPanel introPanel = new FormPanel();
+        FormPanel introPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        introPanel.setStandardLeftMargin(24);
 
-        LabelField label = createSimpleLabelField("Welcome to swing-extras!");
-        label.setFont(new Font("SansSerif", Font.BOLD, 24));
+        LabelField label = LabelField.createHeaderLabel("Welcome to swing-extras!",
+                                                        new Font("SansSerif", Font.BOLD, 24),
+                                                        24,
+                                                        16);
         label.setColor(Color.BLUE);
-        label.setTopMargin(24);
-        label.setBottomMargin(16);
         introPanel.addFormField(label);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("<html>This is a library of custom components and widgets for<br/>");
-        sb.append("Java Swing that I have been slowly building for years. These were<br/>");
-        sb.append("originally part of the sc-util project, which was never published.<br/>");
-        sb.append("In 2025, sc-util became <b>swing-extras</b> and was made public.</html>");
-        introPanel.addFormField(createSimpleLabelField(sb.toString()));
+        sb.append("<html>This is a library of custom components and widgets for Java Swing that I have<br/>");
+        sb.append("been building for years. These were originally part of the sc-util project, which<br/>");
+        sb.append("was never published. In 2025, sc-util became <b>swing-extras</b> and was made public.<br/></html>");
+        introPanel.addFormField(LabelField.createPlainHeaderLabel(sb.toString(), 14));
 
         sb = new StringBuilder();
-        sb.append("<html>Take a look through the other tabs in this demo application<br/>");
-        sb.append("to take a tour of some of the possibilities in this library.</html>");
-        LabelField labelField = createSimpleLabelField(sb.toString());
+        sb.append("<html>Take a look through the other tabs in this demo application to take a tour of some<br/>");
+        sb.append("of the possibilities in this library.</html>");
+        LabelField labelField = LabelField.createPlainHeaderLabel(sb.toString(), 14);
         label.setTopMargin(14);
         introPanel.addFormField(labelField);
 
         sb = new StringBuilder();
         sb.append("<html>You can also browse through the code and javadocs for more!</html>");
-        labelField = createSimpleLabelField(sb.toString());
+        labelField = LabelField.createPlainHeaderLabel(sb.toString(), 14);
         label.setTopMargin(12);
         label.setBottomMargin(12);
         introPanel.addFormField(labelField);

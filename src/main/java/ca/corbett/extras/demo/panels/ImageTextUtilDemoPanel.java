@@ -88,10 +88,9 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         panel.add(imagePanel, BorderLayout.CENTER);
 
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(12);
 
-        LabelField labelField = new LabelField("ImageTextUtil");
-        labelField.setTopMargin(18);
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
+        LabelField labelField = LabelField.createBoldHeaderLabel("ImageTextUtil", 20);
         formPanel.addFormField(labelField);
 
         labelField = new LabelField("<html>The ImageTextUtil class gives you a way<br>" +

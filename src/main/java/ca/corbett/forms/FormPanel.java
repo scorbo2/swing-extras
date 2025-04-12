@@ -65,6 +65,7 @@ public final class FormPanel extends JPanel {
 
     private final List<FormField> formFields;
     private Alignment alignment;
+    private int standardLeftMargin = 0;
 
     /**
      * Creates a new, blank FormPanel that will default to the TOP_CENTER Alignment.
@@ -101,6 +102,27 @@ public final class FormPanel extends JPanel {
         this.formFields = new ArrayList<>();
         this.formFields.addAll(formFields);
         this.alignment = alignment;
+    }
+
+    /**
+     * For left-aligned forms, you can apply a standard margin to keep the form fields a bit
+     * away from the left edge of the FormPanel. Does nothing for center-aligned forms.
+     * This must be invoked before render()!
+     *
+     * @param margin The margin, in pixels, to apply to the left of all form fields.
+     */
+    public void setStandardLeftMargin(int margin) {
+        standardLeftMargin = margin;
+    }
+
+    /**
+     * Returns the left margin to apply to all form fields if the current alignment is
+     * left-aligned.
+     *
+     * @return A left margin value in pixels.
+     */
+    public int getStandardLeftMargin() {
+        return standardLeftMargin;
     }
 
     /**
@@ -148,6 +170,11 @@ public final class FormPanel extends JPanel {
      */
     public void addFormFields(List<FormField> fields) {
         this.formFields.addAll(fields);
+        if (alignment.isLeftAligned() && standardLeftMargin > 0) {
+            for (FormField field : fields) {
+                field.setLeftMargin(field.getLeftMargin() + standardLeftMargin);
+            }
+        }
     }
 
     /**
@@ -158,6 +185,9 @@ public final class FormPanel extends JPanel {
      */
     public void addFormField(FormField field) {
         this.formFields.add(field);
+        if (alignment.isLeftAligned() && standardLeftMargin > 0) {
+            field.setLeftMargin(field.getLeftMargin() + standardLeftMargin);
+        }
     }
 
     /**

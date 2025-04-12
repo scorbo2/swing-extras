@@ -87,7 +87,10 @@ public class DirTreeDemoPanel extends PanelBuilder {
     }
 
     private FormPanel buildFormPanel() {
-        FormPanel formPanel = new FormPanel();
+        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(12);
+
+        formPanel.addFormField(LabelField.createBoldHeaderLabel("DirTree", 20));
 
         StringBuilder sb = new StringBuilder();
         sb.append("<html>The <b>DirTree</b> component gives you a read-only view<br>");
@@ -96,7 +99,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
         sb.append("shows the contents of that directory.<br><br>");
         sb.append("You can also respond to selection changes as the user<br>");
         sb.append("selects different nodes.</html>");
-        LabelField labelField = createSimpleLabelField(sb.toString());
+        LabelField labelField = LabelField.createPlainHeaderLabel(sb.toString(), 14);
         labelField.setTopMargin(12);
         labelField.setBottomMargin(16);
         formPanel.addFormField(labelField);

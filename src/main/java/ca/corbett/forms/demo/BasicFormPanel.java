@@ -1,5 +1,6 @@
-package ca.corbett.forms.demo.panels;
+package ca.corbett.forms.demo;
 
+import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ColorField;
@@ -24,21 +25,23 @@ import java.util.List;
 public class BasicFormPanel extends PanelBuilder {
     @Override
     public String getTitle() {
-        return "The basics";
+        return "Forms: The basics";
     }
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel();
+        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(24);
 
-        LabelField headerLabel = new LabelField("Looking for basic Swing components? No problem!");
-        headerLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        headerLabel.setTopMargin(24);
-        headerLabel.setBottomMargin(24);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("Looking for basic Swing components? No problem!",
+                                                                  20);
         formPanel.addFormField(headerLabel);
 
         formPanel.addFormField(new TextField("Single-line text:", 15, 1, true));
-        formPanel.addFormField(new TextField("Multi-line text:", 18, 4, true));
+        TextField textField = new TextField("Multi-line text:", 18, 4, true);
+        textField.setAddScrollPaneWhenMultiLine(false);
+        textField.setBottomMargin(12);
+        formPanel.addFormField(textField);
         formPanel.addFormField(new CheckBoxField("Checkboxes", true));
         formPanel.addFormField(buildComboField());
         formPanel.addFormField(new ColorField("Color chooser:", Color.BLUE));

@@ -1,5 +1,6 @@
-package ca.corbett.forms.demo.panels;
+package ca.corbett.forms.demo;
 
+import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
@@ -9,7 +10,8 @@ import ca.corbett.forms.fields.TextField;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
-import java.awt.Font;
+import javax.swing.SwingUtilities;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,19 +28,18 @@ public class FormActionsPanel extends PanelBuilder {
     private ComboField mainComboField;
 
     public FormActionsPanel() {
-        formPanel = new FormPanel();
+        formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(24);
     }
 
     @Override
     public String getTitle() {
-        return "Form Actions";
+        return "Forms: actions";
     }
 
     @Override
     public JPanel build() {
-        LabelField headerLabel = new LabelField("Form fields can have customizable Actions:");
-        headerLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        headerLabel.setTopMargin(24);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have customizable Actions:", 20);
         headerLabel.setBottomMargin(24);
         formPanel.addFormField(headerLabel);
 
@@ -114,6 +115,17 @@ public class FormActionsPanel extends PanelBuilder {
             public void actionPerformed(ActionEvent e) {
                 formPanel.setAlignment(FormPanel.Alignment.valueOf(combo.getSelectedItem()));
                 formPanel.render();
+                final Component component = formPanel;
+
+                // swing wonkiness... changing layouts requires rejiggering the container:
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        component.invalidate();
+                        component.revalidate();
+                        component.repaint();
+                    }
+                });
             }
         });
         return combo;

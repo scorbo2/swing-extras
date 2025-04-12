@@ -1,5 +1,6 @@
-package ca.corbett.forms.demo.panels;
+package ca.corbett.forms.demo;
 
+import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ColorField;
@@ -14,7 +15,6 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -25,28 +25,30 @@ import java.awt.event.ActionListener;
  * @author scorbo2
  * @since 2029-11-25
  */
-public class ValidationPanel extends PanelBuilder {
+public class FormsValidationPanel extends PanelBuilder {
     @Override
     public String getTitle() {
-        return "Validation";
+        return "Forms: validation";
     }
 
     @Override
     public JPanel build() {
-        final FormPanel formPanel = new FormPanel();
+        final FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(24);
 
-        LabelField headerLabel = new LabelField("Form validation is easy and extensible!");
-        headerLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        headerLabel.setTopMargin(24);
-        headerLabel.setBottomMargin(24);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form validation is super easy!", 20);
+        headerLabel.setBottomMargin(12);
+        formPanel.addFormField(headerLabel);
+        headerLabel = LabelField.createPlainHeaderLabel("You can use built-in validators or make your own!", 14);
+        headerLabel.setBottomMargin(18);
         formPanel.addFormField(headerLabel);
 
         String sb = "<html>Oops! Looks like there are form validation errors!<br/>" +
                 "No problem, just hover over the validation error<br/>" +
                 "markers to see what went wrong.</html>";
-        final LabelField warningLabel = LabelField.createPlainHeaderLabel(sb);
+        final LabelField warningLabel = LabelField.createPlainHeaderLabel(sb, 14);
 
-        final LabelField successLabel = LabelField.createPlainHeaderLabel("Hooray! No validation errors to fix.");
+        final LabelField successLabel = LabelField.createPlainHeaderLabel("Hooray! No validation errors to fix.", 14);
 
         final TextField textField = new TextField("Must be 3+ chars long: ", 15, 1, false);
         textField.setText("Example");

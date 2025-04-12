@@ -56,12 +56,16 @@ public final class AboutPanel extends JPanel {
     private final Map<String, LabelField> customFields;
     private final Desktop desktop;
 
+    public AboutPanel(AboutInfo info) {
+        this(info, FormPanel.Alignment.TOP_CENTER, 24);
+    }
+
     /**
      * Creates a new AboutPanel with the given AboutInfo object.
      *
      * @param info The AboutInfo object to display.
      */
-    public AboutPanel(AboutInfo info) {
+    public AboutPanel(AboutInfo info, FormPanel.Alignment alignment, int leftMargin) {
         super();
 
         desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
@@ -69,13 +73,15 @@ public final class AboutPanel extends JPanel {
         customFields = new HashMap<>();
         info.registerAboutPanel(this);
         setLayout(new BorderLayout());
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_CENTER);
+        FormPanel formPanel = new FormPanel(alignment);
+        formPanel.setStandardLeftMargin(leftMargin);
 
         BufferedImage logoImage = getLogoImage(info);
         PanelField logoPanel = new PanelField();
 
         if (info.logoDisplayMode != AboutInfo.LogoDisplayMode.STRETCH) {
-            logoPanel.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
+            logoPanel.getPanel().setLayout(
+                    new FlowLayout(formPanel.getAlignment().isLeftAligned() ? FlowLayout.LEFT : FlowLayout.CENTER));
 
             if (info.logoDisplayMode == AboutInfo.LogoDisplayMode.AS_IS_WITH_BORDER) {
                 logoPanel.getPanel().setBorder(new LineBorder(Color.BLACK, 1));
@@ -213,7 +219,9 @@ public final class AboutPanel extends JPanel {
             constraints.fill = GridBagConstraints.BOTH;
             constraints.weightx = 0.5;
             constraints.weighty = 0.5;
-            wrapperPanel.add(dummy1, constraints);
+            if (formPanel.getAlignment().isCentered()) {
+                wrapperPanel.add(dummy1, constraints);
+            }
             constraints.gridx = 2;
             wrapperPanel.add(dummy2, constraints);
             constraints = new GridBagConstraints();

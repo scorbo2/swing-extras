@@ -23,7 +23,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -54,19 +53,16 @@ public class ProgressDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel();
+        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(24);
 
-        LabelField labelField = new LabelField("MultiProgressDialog");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
-        labelField.setTopMargin(18);
-        labelField.setBottomMargin(6);
+        LabelField labelField = LabelField.createBoldHeaderLabel("MultiProgressDialog", 20);
         formPanel.addFormField(labelField);
 
-        labelField = createSimpleLabelField("<html>Java Swing comes with the ProgressMonitor class,<br>" +
-                                                    "which is great for simple scenarios. But, sometimes it's<br>" +
-                                                    "useful to be able to show major and minor progress for a<br>" +
-                                                    "more complicated task. Meet the MultiProgressDialog!</html>");
-        formPanel.addFormField(labelField);
+        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+                "<html>Java Swing comes with the ProgressMonitor class, which is great for<br>" +
+                        "simple scenarios. But, sometimes it's useful to be able to show major and<br>" +
+                        "minor progress for a more complicated task. Meet the MultiProgressDialog!</html>", 14));
 
         majorProgressTextField = new TextField("Major progress label: ", 16, 1, false);
         majorProgressTextField.setText("Some major task");
@@ -83,7 +79,7 @@ public class ProgressDemoPanel extends PanelBuilder {
         formPanel.addFormField(minorProgressStepsField);
 
         PanelField panelField = new PanelField();
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
+        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         JButton btn = new JButton("Show multi-progress dialog");
         btn.addActionListener(new ActionListener() {
             @Override
@@ -95,18 +91,14 @@ public class ProgressDemoPanel extends PanelBuilder {
         panelField.setBottomMargin(24);
         formPanel.addFormField(panelField);
 
-        labelField = new LabelField("SplashProgress");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
-        labelField.setTopMargin(4);
-        labelField.setBottomMargin(6);
+        labelField = LabelField.createBoldHeaderLabel("SplashProgress", 20);
         formPanel.addFormField(labelField);
 
-        labelField = createSimpleLabelField("<html>Java offers the SplashScreen class for showing a splash<br>" +
-                                                    "screen as your application starts up. But sometimes,<br>" +
-                                                    "your application startup may involve some complex loading<br>" +
-                                                    "and you want to show a progress bar during startup.<br>" +
-                                                    "Let's look at SplashProgressWindow!");
-        formPanel.addFormField(labelField);
+        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+                "<html>Java offers the SplashScreen class for showing a splash screen as your application<br>" +
+                        "starts up. But sometimes, your application startup may involve some complex loading<br>" +
+                        "and you want to show a progress bar during startup. Let's look at SplashProgressWindow!</html>",
+                14));
 
         splashAppNameField = new TextField("Application name:", 15, 1, false);
         splashAppNameField.setText(Version.NAME);
@@ -132,7 +124,7 @@ public class ProgressDemoPanel extends PanelBuilder {
         formPanel.addFormField(splashBorderWidthField);
 
         panelField = new PanelField();
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
+        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         btn = new JButton("Show splash progress dialog");
         btn.addActionListener(new ActionListener() {
             @Override

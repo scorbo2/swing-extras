@@ -88,9 +88,9 @@ public final class TextField extends FormField {
         if (!allowBlank) {
             addFieldValidator(new NonBlankFieldValidator(this));
         }
-        multiLineTextBoxLeftMargin = leftMargin;
+        multiLineTextBoxLeftMargin = 0;
         multiLineTextBoxTopMargin = 0;
-        multiLineTextBoxBottomMargin = bottomMargin + 8;
+        multiLineTextBoxBottomMargin = 0;
         multiLineTextBoxRightMargin = 0;
         addScrollPaneWhenMultiLine = true;
         scrollPaneWidth = -1;
@@ -202,7 +202,6 @@ public final class TextField extends FormField {
                 container.add(helpLabel, constraints);
             }
 
-
             if (expandMultiLineHorizontally) {
                 constraints.insets = new Insets(topMargin, componentSpacing, componentSpacing, rightMargin);
                 constraints.gridwidth = 1;
@@ -220,9 +219,11 @@ public final class TextField extends FormField {
             else {
                 constraints.fill = GridBagConstraints.BOTH;
             }
-            int rightMarginValue = expandMultiLineHorizontally ? multiLineTextBoxRightMargin : componentSpacing;
-            constraints.insets = new Insets(multiLineTextBoxTopMargin, multiLineTextBoxLeftMargin,
-                                            multiLineTextBoxBottomMargin, rightMarginValue);
+            int rightMarginValue = rightMargin + (expandMultiLineHorizontally ? multiLineTextBoxRightMargin : componentSpacing);
+            constraints.insets = new Insets(topMargin + multiLineTextBoxTopMargin,
+                                            leftMargin + multiLineTextBoxLeftMargin,
+                                            bottomMargin + multiLineTextBoxBottomMargin,
+                                            rightMarginValue);
             constraints.weightx = expandMultiLineHorizontally ? 0.05 : 0.0;
             if (addScrollPaneWhenMultiLine) {
                 JScrollPane scrollPane = new JScrollPane(textComponent);

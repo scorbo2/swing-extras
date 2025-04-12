@@ -78,18 +78,18 @@ public class PropertiesDemoPanel extends PanelBuilder {
             propsManager = new PropertiesManager(new Properties(), buildProps(), "Test properties");
         }
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_CENTER);
+        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(24);
 
-        LabelField labelField = new LabelField("PropertiesManager");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
+        LabelField labelField = LabelField.createBoldHeaderLabel("PropertiesManager", 20);
         formPanel.addFormField(labelField);
 
-        labelField = createSimpleLabelField("<html>Almost every application exposes properties for application<br>" +
-                                                    "settings and preferences to the user. But why rewrite the UI code for this for<br>" +
-                                                    "each new application? What if there was a way to easily specify the properties<br>" +
-                                                    "for your application in code, and have a PropertiesManager and a<br>" +
-                                                    "PropertiesDialog that could just generate the UI for you? Well, there is!</html>");
-        formPanel.addFormField(labelField);
+        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+                "<html>Almost every application exposes properties for application settings and<br>" +
+                        "preferences to the user. But why rewrite the UI code for this for each<br>" +
+                        "new application? What if there was a way to easily specify the properties for your<br>" +
+                        "application in code, and have a PropertiesManager and a PropertiesDialog that<br>" +
+                        "could just generate the UI for you? Well, there is!</html>", 14));
 
         List<String> options = new ArrayList<>();
         for (FormPanel.Alignment option : FormPanel.Alignment.values()) {

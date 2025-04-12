@@ -81,32 +81,52 @@ public final class LabelField extends FormField {
     /**
      * A static convenience factory method to create a bold header label with sensible
      * defaults for a section header label. The default values are 16 point bold black
-     * text with a slightly larger top and bottom margin.
+     * text with a slightly larger top margin and normal bottom margin.
      *
      * @param text The label text
      * @return A LabelField suitable for use as a header.
      */
     public static LabelField createBoldHeaderLabel(String text) {
-        LabelField label = new LabelField(text);
-        label.setFont(DEFAULT_HEADER_FONT);
-        label.setTopMargin(label.getTopMargin() + 10);
-        return label;
+        return createHeaderLabel(text, DEFAULT_HEADER_FONT, 14, 4);
+    }
+
+    public static LabelField createBoldHeaderLabel(String text, int fontSize) {
+        return createHeaderLabel(text, DEFAULT_HEADER_FONT.deriveFont((float)fontSize), 14, 4);
     }
 
     /**
      * A static convenience factory method to create a "normal" header label with sensible
      * defaults for a form label. The default values are 12 point plain black text
-     * with an extra 4 pixel top and bottom margin.
+     * with an 8 pixel top and bottom margin.
      *
      * @param text The label text
      * @return A LabelField suitable for use as a regular header label.
      */
     public static LabelField createPlainHeaderLabel(String text) {
+        return createHeaderLabel(text, DEFAULT_LABEL_FONT, 8, 8);
+    }
+
+    public static LabelField createPlainHeaderLabel(String text, int fontSize) {
+        return createHeaderLabel(text, DEFAULT_LABEL_FONT.deriveFont((float)fontSize), 8, 8);
+    }
+
+    /**
+     * A static convenience factory method to create a header label with the
+     * specified font and margin properties.
+     *
+     * @param text         The text to display.
+     * @param font         The font.
+     * @param topMargin    The top margin (default is 4).
+     * @param bottomMargin The bottom margin (default is 4).
+     * @return A header label with the specified properties.
+     */
+    public static LabelField createHeaderLabel(String text, Font font, int topMargin, int bottomMargin) {
         LabelField label = new LabelField(text);
-        label.setFont(DEFAULT_LABEL_FONT);
-        label.setTopMargin(label.getTopMargin() + 4);
-        label.setBottomMargin(label.getBottomMargin() + 4);
+        label.setFont(font);
+        label.setTopMargin(topMargin);
+        label.setBottomMargin(bottomMargin);
         return label;
+
     }
 
     /**

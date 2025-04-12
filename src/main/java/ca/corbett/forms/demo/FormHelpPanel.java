@@ -1,26 +1,25 @@
-package ca.corbett.forms.demo.panels;
+package ca.corbett.forms.demo;
 
+import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.TextField;
 
 import javax.swing.JPanel;
-import java.awt.Font;
 
-public class HelpPanel extends PanelBuilder {
+public class FormHelpPanel extends PanelBuilder {
     @Override
     public String getTitle() {
-        return "Help";
+        return "Forms: help tooltips";
     }
 
     @Override
     public JPanel build() {
-        FormPanel panel = new FormPanel();
+        FormPanel panel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        panel.setStandardLeftMargin(24);
 
-        LabelField headerLabel = new LabelField("Form fields can have help text!");
-        headerLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        headerLabel.setTopMargin(24);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have help text!", 20);
         headerLabel.setBottomMargin(24);
         panel.addFormField(headerLabel);
 
@@ -37,12 +36,12 @@ public class HelpPanel extends PanelBuilder {
         textBox.setExpandMultiLineTextBoxHorizontally(true);
         panel.addFormField(textBox);
 
-        LabelField label = LabelField.createPlainHeaderLabel("This is a form label.");
+        LabelField label = LabelField.createPlainHeaderLabel("This is a form label.", 14);
         label.setHelpText(
                 "<html>Wow, even labels can help text if you want<br>And they can be multiline<br>and as long as you need them to be<br><br>Even if you like them really long and wordy</html>");
         panel.addFormField(label);
 
-        label = LabelField.createPlainHeaderLabel("If no help text is given, the icon remains hidden.");
+        label = LabelField.createPlainHeaderLabel("If no help text is given, the icon remains hidden.", 14);
         panel.addFormField(label);
 
         panel.render();
