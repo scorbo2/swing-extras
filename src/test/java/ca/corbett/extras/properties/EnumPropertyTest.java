@@ -82,7 +82,7 @@ class EnumPropertyTest {
 
         // THEN we should see a valid form field with expected options:
         assertInstanceOf(ComboField.class, formField);
-        ComboField comboField = (ComboField) formField;
+        ComboField comboField = (ComboField)formField;
         assertEquals(0, comboField.getSelectedIndex());
         assertEquals(TestEnum1.VALUE1.name(), comboField.getSelectedItem());
     }
@@ -97,7 +97,7 @@ class EnumPropertyTest {
 
         // THEN we should see a valid form field with expected options:
         assertInstanceOf(ComboField.class, formField);
-        ComboField comboField = (ComboField) formField;
+        ComboField comboField = (ComboField)formField;
         assertEquals(0, comboField.getSelectedIndex());
         assertEquals(TestEnumWithLabels.VALUE1.toString(), comboField.getSelectedItem());
     }
@@ -105,14 +105,15 @@ class EnumPropertyTest {
     @Test
     public void generateFormField_withValidEnumWithLabelsUsingName_shouldSucceed() {
         // GIVEN an EnumProperty that has labels, but configured to ignore them and use names:
-        EnumProperty<TestEnumWithLabels> testProp = new EnumProperty<>("test1", "test1", TestEnumWithLabels.VALUE1, true);
+        EnumProperty<TestEnumWithLabels> testProp = new EnumProperty<>("test1", "test1", TestEnumWithLabels.VALUE1,
+                                                                       true);
 
         // WHEN we generate a form field from it:
         FormField formField = testProp.generateFormField();
 
         // THEN we should see a valid form field with expected options:
         assertInstanceOf(ComboField.class, formField);
-        ComboField comboField = (ComboField) formField;
+        ComboField comboField = (ComboField)formField;
         assertEquals(0, comboField.getSelectedIndex());
         assertEquals(TestEnumWithLabels.VALUE1.name(), comboField.getSelectedItem());
     }
@@ -154,7 +155,8 @@ class EnumPropertyTest {
     @Test
     public void saveToProps_withLabel_shouldIgnoreLabelAndUseName() {
         // GIVEN an enum that has labels:
-        EnumProperty<TestEnumWithLabels> enumProperty = new EnumProperty<>("my.test.field", "hello", TestEnumWithLabels.VALUE3);
+        EnumProperty<TestEnumWithLabels> enumProperty = new EnumProperty<>("my.test.field", "hello",
+                                                                           TestEnumWithLabels.VALUE3);
 
         // WHEN we save it to a properties object:
         Properties props = new Properties();

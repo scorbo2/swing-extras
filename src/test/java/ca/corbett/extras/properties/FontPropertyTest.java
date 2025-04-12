@@ -16,7 +16,7 @@ class FontPropertyTest {
         FontProperty prop = new FontProperty("fontProperty", "Font");
 
         // WHEN we generate a form field:
-        FontField formField = (FontField) prop.generateFormField();
+        FontField formField = (FontField)prop.generateFormField();
 
         // THEN it should not have any colors in it:
         assertNull(formField.getTextColor());
@@ -29,7 +29,7 @@ class FontPropertyTest {
         FontProperty prop = new FontProperty("fontProperty", "Font", Color.RED, Color.YELLOW);
 
         // WHEN we generate a form field:
-        FontField formField = (FontField) prop.generateFormField();
+        FontField formField = (FontField)prop.generateFormField();
 
         // THEN it should contain colors:
         assertEquals(Color.RED, formField.getTextColor());

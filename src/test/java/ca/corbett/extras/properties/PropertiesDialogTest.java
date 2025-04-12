@@ -22,8 +22,8 @@ class PropertiesDialogTest {
         PropertiesDialog dialog = propsManager.generateDialog(new JFrame(), "Test");
 
         // WHEN we search for specific fields:
-        LabelField labelField = (LabelField) dialog.findFormField("test.test.label2");
-        TextField textField = (TextField) dialog.findFormField("test.test.text1");
+        LabelField labelField = (LabelField)dialog.findFormField("test.test.label2");
+        TextField textField = (TextField)dialog.findFormField("test.test.text1");
         FormField formField = dialog.findFormField("this.field.does.not.exist");
 
         // THEN we should see expected results:

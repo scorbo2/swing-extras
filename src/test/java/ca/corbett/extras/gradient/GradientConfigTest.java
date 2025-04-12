@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.awt.Color;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Unit tests for the GradientConfig class.

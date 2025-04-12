@@ -2,10 +2,10 @@ package ca.corbett.extras.audio;
 
 import ca.corbett.extras.properties.Properties;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 
 import java.awt.Color;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for WaveformConfig.

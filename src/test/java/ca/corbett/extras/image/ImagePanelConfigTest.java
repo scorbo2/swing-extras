@@ -1,8 +1,10 @@
 package ca.corbett.extras.image;
 
 import ca.corbett.extras.properties.Properties;
-import java.awt.Color;
 import org.junit.jupiter.api.Test;
+
+import java.awt.Color;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**

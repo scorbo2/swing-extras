@@ -44,11 +44,11 @@ public class LogConsoleTest {
     public void testUnregisterTheme_withMultipleCustomThemes_shouldUnregister() {
         LogConsoleTheme theme = LogConsoleTheme.createPaperStyledTheme();
         for (int i = 0; i < 5; i++) {
-            LogConsole.getInstance().registerTheme("testTheme"+i, theme);
+            LogConsole.getInstance().registerTheme("testTheme" + i, theme);
         }
         assertEquals(8, LogConsole.getInstance().getRegisteredThemeNames().size());
         for (int i = 0; i < 5; i++) {
-            LogConsole.getInstance().unregisterTheme("testTheme"+i);
+            LogConsole.getInstance().unregisterTheme("testTheme" + i);
         }
         assertEquals(3, LogConsole.getInstance().getRegisteredThemeNames().size());
     }

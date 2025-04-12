@@ -1,5 +1,7 @@
 package ca.corbett.extras.properties;
 
+import org.junit.jupiter.api.Test;
+
 import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -7,7 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,7 +22,7 @@ public class FileBasedPropertiesTest {
 
     @Test
     public void testFileBasedProps() throws IOException {
-        File file = File.createTempFile("test",".test");
+        File file = File.createTempFile("test", ".test");
         file.deleteOnExit();
         FileBasedProperties props = new FileBasedProperties(file);
         props.setCommentHeader("Blah blah blah");
@@ -54,7 +56,7 @@ public class FileBasedPropertiesTest {
         lines.add("fullGrey=" + fullGrey);
         lines.add("invisibleGrey=" + invisibleGrey);
         lines.add("noAlphaSpecified=" + noAlphaSpecified);
-        try ( BufferedWriter writer = new BufferedWriter(new FileWriter(tmpFile))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(tmpFile))) {
             for (String line : lines) {
                 writer.append(line);
                 writer.newLine();

@@ -1,13 +1,14 @@
 package ca.corbett.extras.io;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for FileSystemUtil.
@@ -60,8 +61,9 @@ public class FileSystemUtilTest {
             dummy.createNewFile();
             dummy = new File(nestedDir2, "test.txt");
             dummy.createNewFile();
-        } catch (Exception e) {
-            System.out.println("Unable to initialize FileSystemUtilTest: "+e.getMessage());
+        }
+        catch (Exception e) {
+            System.out.println("Unable to initialize FileSystemUtilTest: " + e.getMessage());
         }
     }
 
@@ -77,7 +79,7 @@ public class FileSystemUtilTest {
      * @param f Either a file or a directory to be deleted.
      */
     static private void delete(File f) {
-        if (f == null || ! f.exists()) {
+        if (f == null || !f.exists()) {
             return;
         }
         if (f.isDirectory()) {

@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: ca.corbett.extras.demo.DemoAppLauncher
-SplashScreen-Image: swing-extras/images/swing-extras-logo.jpg
