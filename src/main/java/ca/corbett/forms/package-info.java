@@ -4,11 +4,6 @@
  * basic form panels with optional validation rules without having to write
  * a bunch of GridBagLayout code, which I hate.
  * <p>
- * For example usage and capabilities, look at the included demo application.
- * This jar file itself is executable and will launch the demo application
- * when run.
- * </p>
- * <p>
  * Using only the included FormField implementation in the "fields" package
  * and the example FieldValidator implementations in the "validators" package,
  * you can create reasonably complex forms quite easily, without ever

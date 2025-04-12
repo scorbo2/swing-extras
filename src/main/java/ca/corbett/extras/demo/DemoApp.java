@@ -23,7 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A quick application to show off the features contained in this library.
+ * A built-in demo application which shows off the features and components
+ * contained in this library. The jar-with-dependencies that is produced
+ * from a maven build is executable, and when launched, will show this
+ * demo app.
  *
  * @author scorbo2
  * @since 2025-03-09
@@ -42,7 +45,7 @@ public class DemoApp extends JFrame {
 
     private DemoApp() {
         super(Version.FULL_NAME + " demo");
-        setSize(800, 800);
+        setSize(900, 800);
         setMinimumSize(new Dimension(800, 800));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -64,6 +67,7 @@ public class DemoApp extends JFrame {
 
         setLayout(new BorderLayout());
         JTabbedPane tabPane = new JTabbedPane();
+        tabPane.setTabPlacement(JTabbedPane.);
         for (PanelBuilder builder : panels) {
             tabPane.addTab(builder.getTitle(), builder.build());
         }
