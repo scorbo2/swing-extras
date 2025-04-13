@@ -13,7 +13,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * A FormField implementation for selecting either a a color.
+ * A FormField implementation for selecting a solid color.
+ * See also GradientColorField in ca.corbett.extras.gradient package.
  *
  * @author scorbo2
  */

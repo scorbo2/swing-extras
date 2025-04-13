@@ -9,9 +9,11 @@ import ca.corbett.extras.demo.panels.DirTreeDemoPanel;
 import ca.corbett.extras.demo.panels.ImageTextUtilDemoPanel;
 import ca.corbett.extras.demo.panels.ImageUtilDemoPanel;
 import ca.corbett.extras.demo.panels.IntroPanel;
+import ca.corbett.extras.demo.panels.LogConsolePanel;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.demo.panels.ProgressDemoPanel;
 import ca.corbett.extras.demo.panels.PropertiesDemoPanel;
+import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.demo.BasicFormPanel;
 import ca.corbett.forms.demo.CustomFormFieldPanel;
@@ -35,6 +37,7 @@ import java.awt.CardLayout;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -82,7 +85,9 @@ public class DemoApp extends JFrame {
 
         URL url = getClass().getResource("/swing-extras/images/swing-extras-icon.jpg");
         if (url != null) {
-            setIconImage(Toolkit.getDefaultToolkit().createImage(url));
+            Image image = Toolkit.getDefaultToolkit().createImage(url);
+            setIconImage(image);
+            LogConsole.getInstance().setIconImage(image);
         }
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, buildListPanel(), buildDemoPanel());
@@ -105,6 +110,7 @@ public class DemoApp extends JFrame {
         addDemoPanel(new CustomFormFieldPanel());
         addDemoPanel(new FormHelpPanel());
         addDemoPanel(new ExtensionsOverviewPanel());
+        addDemoPanel(new LogConsolePanel());
         addDemoPanel(new AboutDemoPanel());
         cardList.setSelectedIndex(0);
     }
