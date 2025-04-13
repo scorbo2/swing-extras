@@ -47,8 +47,11 @@ public class BasicFormPanel extends PanelBuilder {
         formPanel.addFormField(new ColorField("Color chooser:", Color.BLUE));
 
         LabelField labelField = LabelField.createPlainHeaderLabel(
-                "Label fields like this don't allow input, but can help organize the form.");
+                "Label fields like this one don't allow input, but can help organize the form.");
         labelField.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        labelField.setTopMargin(24);
+        labelField.setBottomMargin(18);
+        labelField.setColor(Color.BLUE);
         formPanel.addFormField(labelField);
 
         formPanel.addFormField(new FileField("File chooser:", null, 15, FileField.SelectionType.ExistingFile));

@@ -38,7 +38,7 @@ public class FormHelpPanel extends PanelBuilder {
 
         LabelField label = LabelField.createPlainHeaderLabel("This is a form label.", 14);
         label.setHelpText(
-                "<html>Wow, even labels can help text if you want<br>And they can be multiline<br>and as long as you need them to be<br><br>Even if you like them really long and wordy</html>");
+                "<html>Wow, even labels can have help text if you want<br>And they can be multiline<br>and as long as you need them to be<br><br>Even if you like them really long and wordy</html>");
         panel.addFormField(label);
 
         label = LabelField.createPlainHeaderLabel("If no help text is given, the icon remains hidden.", 14);

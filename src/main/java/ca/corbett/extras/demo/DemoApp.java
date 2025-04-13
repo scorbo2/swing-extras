@@ -20,6 +20,7 @@ import ca.corbett.forms.demo.FormHelpPanel;
 import ca.corbett.forms.demo.FormsOverviewPanel;
 import ca.corbett.forms.demo.FormsValidationPanel;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -31,10 +32,15 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
+import java.util.logging.Logger;
 
 /**
  * A built-in demo application which shows off the features and components
@@ -47,12 +53,18 @@ import java.net.URL;
  */
 public class DemoApp extends JFrame {
 
+    private static final Logger logger = Logger.getLogger(DemoApp.class.getName());
     AudioDemoPanel audioDemoPanel = new AudioDemoPanel();
     private static DemoApp instance;
+    private static final Desktop desktop;
 
     private DefaultListModel<String> cardListModel;
     private JList<String> cardList;
     private JPanel demoPanel;
+
+    static {
+        desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+    }
 
     public static DemoApp getInstance() {
         if (instance == null) {
@@ -154,5 +166,35 @@ public class DemoApp extends JFrame {
         demoPanel = new JPanel();
         demoPanel.setLayout(new CardLayout());
         return demoPanel;
+    }
+
+    public static class BrowseAction extends AbstractAction {
+        private final URI uri;
+
+        public BrowseAction(URI uri) {
+            this.uri = uri;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (isBrowsingSupported()) {
+                try {
+                    desktop.browse(uri);
+                }
+                catch (IOException ioe) {
+                    logger.warning("Unable to browse URI: " + ioe.getMessage());
+                }
+            }
+        }
+    }
+
+    ;
+
+    public static boolean isBrowsingSupported() {
+        return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);
+    }
+
+    public static boolean isUrl(String url) {
+        return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }
 }

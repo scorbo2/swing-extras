@@ -1,5 +1,6 @@
 package ca.corbett.extras.about;
 
+import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
@@ -10,7 +11,6 @@ import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 
-import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -21,13 +21,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -54,7 +52,6 @@ public final class AboutPanel extends JPanel {
     private static final Logger logger = Logger.getLogger(AboutPanel.class.getName());
     private LabelField memoryUsageField;
     private final Map<String, LabelField> customFields;
-    private final Desktop desktop;
 
     public AboutPanel(AboutInfo info) {
         this(info, FormPanel.Alignment.TOP_CENTER, 24);
@@ -67,8 +64,6 @@ public final class AboutPanel extends JPanel {
      */
     public AboutPanel(AboutInfo info, FormPanel.Alignment alignment, int leftMargin) {
         super();
-
-        desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
 
         customFields = new HashMap<>();
         info.registerAboutPanel(this);
@@ -156,9 +151,9 @@ public final class AboutPanel extends JPanel {
         if (info.projectUrl != null && !info.projectUrl.isBlank()) {
             labelField = new LabelField(info.projectUrl);
             labelField.setFont(labelFont);
-            if (isBrowsingSupported() && isUrl(info.projectUrl)) {
+            if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.projectUrl)) {
                 try {
-                    labelField.setHyperlink(new BrowseAction(URI.create(info.projectUrl)));
+                    labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.projectUrl)));
                 }
                 catch (IllegalArgumentException e) {
                     logger.warning("Project URL is not well-formed.");
@@ -171,9 +166,9 @@ public final class AboutPanel extends JPanel {
         if (info.license != null && !info.license.isBlank()) {
             labelField = new LabelField(info.license);
             labelField.setFont(labelFont);
-            if (isBrowsingSupported() && isUrl(info.license)) {
+            if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.license)) {
                 try {
-                    labelField.setHyperlink(new BrowseAction(URI.create(info.license)));
+                    labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.license)));
                 }
                 catch (IllegalArgumentException e) {
                     logger.warning("License URL is not well-formed.");
@@ -335,35 +330,5 @@ public final class AboutPanel extends JPanel {
         config.setFontByFamilyName("Sans-Serif");
         config.setAutoSize(true);
         return LogoGenerator.generateImage(name, config);
-    }
-
-    private class BrowseAction extends AbstractAction {
-        private final URI uri;
-
-        public BrowseAction(URI uri) {
-            this.uri = uri;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (isBrowsingSupported()) {
-                try {
-                    desktop.browse(uri);
-                }
-                catch (IOException ioe) {
-                    logger.warning("Unable to browse URI: " + ioe.getMessage());
-                }
-            }
-        }
-    }
-
-    ;
-
-    private boolean isBrowsingSupported() {
-        return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);
-    }
-
-    private boolean isUrl(String url) {
-        return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }
 }
