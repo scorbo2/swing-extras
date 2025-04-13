@@ -46,7 +46,7 @@ swing-extras is made available under the MIT license: https://opensource.org/lic
 ## Revision history
 
 The swing-extras library came together slowly as part of various side projects from around 2012
-until around 2023, but was not made available on github until recently. Version `1.9.0` 
-is the first publicly available version of the library.
+until around 2023, but was not made available on GitHub until recently. Version `1.9.0` 
+was the first publicly available version of the library.
 
 View the [full release notes and version history](src/main/resources/swing-extras/releaseNotes.txt)
