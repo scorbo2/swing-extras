@@ -17,7 +17,9 @@ import java.util.Set;
  */
 public final class AboutInfo {
 
-    /** Used to determine how to display the application logo image on the AboutPanel. */
+    /**
+     * Used to determine how to display the application logo image on the AboutPanel.
+     */
     public enum LogoDisplayMode {
 
         /** Will stretch the logo image to fit its container panel. **/
@@ -28,7 +30,7 @@ public final class AboutInfo {
 
         /** Same as AS_IS but with a panel border around the container. **/
         AS_IS_WITH_BORDER
-    };
+    }
 
     /** The user-friendly name of the application, typically taken from Version.NAME. */
     public String applicationName;
@@ -133,7 +135,7 @@ public final class AboutInfo {
      * If the value of a custom field has changed since the AboutPanel or AboutDialog was
      * rendered, use updateCustomField instead.
      *
-     * @param name Any String which uniquely identifies this field. Will not be shown.
+     * @param name  Any String which uniquely identifies this field. Will not be shown.
      * @param value The String value to display.
      */
     public void addCustomField(String name, String value) {
@@ -144,7 +146,7 @@ public final class AboutInfo {
      * Modifies the value of a custom field, identified by "name". This can be invoked after this
      * AboutInfo has been rendered, and will update the containing AboutPanel accordingly.
      *
-     * @param name The String which identifies the field to update.
+     * @param name  The String which identifies the field to update.
      * @param value The new value for the field.
      */
     public void updateCustomField(String name, String value) {

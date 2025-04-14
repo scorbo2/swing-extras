@@ -2,6 +2,11 @@ package ca.corbett.extras.image;
 
 import ca.corbett.extras.RedispatchingMouseAdapter;
 
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -18,11 +23,6 @@ import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 
 /**
  * A custom JPanel extension that can display an image in configurable ways, with optional
@@ -30,8 +30,8 @@ import javax.swing.SwingUtilities;
  * all configuration options. Alternatively, you can create an ImagePanelConfig
  * instance and override some or all of those defaults.
  *
- * @see ca.corbett.extras.image.ImagePanelConfig
  * @author scorbo2
+ * @see ca.corbett.extras.image.ImagePanelConfig
  * @since 2012-09-22 (originally for StegPng, later generified for ca.corbett.util.ui)
  */
 public class ImagePanel extends JPanel implements MouseListener, MouseWheelListener, MouseMotionListener {
@@ -163,7 +163,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
     /**
      * Creates an ImagePanel with the given ImageIcon and ImagePanelConfig.
      *
-     * @param icon The ImageIcon to display in this panel. Can be null.
+     * @param icon  The ImageIcon to display in this panel. Can be null.
      * @param props The ImagePanelConfig specifying our panel configuration.
      */
     public ImagePanel(ImageIcon icon, ImagePanelConfig props) {
@@ -175,7 +175,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
      * or the given ImageIcon - one of those two must be null, as both can't be displayed.
      *
      * @param image A BufferedImage to display. Must be null if icon is set.
-     * @param icon An ImageIcon to display. Must be null if image is set.
+     * @param icon  An ImageIcon to display. Must be null if image is set.
      * @param props The ImagePanelConfig to use. Can be null for default configuration.
      */
     protected ImagePanel(BufferedImage image, ImageIcon icon, ImagePanelConfig props) {
@@ -210,16 +210,13 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         thisPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
+                //@formatter:off
                 switch (thisPanel.originalProperties.getDisplayMode()) {
-                    case BEST_FIT:
-                        thisPanel.zoomBestFit();
-                        break;
-                    case STRETCH:
-                        thisPanel.stretchImage();
-                        break;
+                    case BEST_FIT: thisPanel.zoomBestFit(); break;
+                    case STRETCH: thisPanel.stretchImage(); break;
                 }
+                //@formatter:on
             }
-
         });
     }
 
@@ -241,13 +238,11 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         this.setBackground(properties.getBgColor());
 
         // Update zoom settings if needed:
+        //@formatter:off
         switch (properties.getDisplayMode()) {
-            case BEST_FIT:
-                zoomBestFit();
-                break;
-            case STRETCH:
-                stretchImage();
-                break;
+            case BEST_FIT: zoomBestFit(); break;
+            case STRETCH: stretchImage(); break;
+
             case CENTER:
             case NONE:
             case CUSTOM:
@@ -256,6 +251,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
                 resetZoomCenter();
                 break;
         }
+        //@formatter:on
 
         // Set cursor as appropriate:
         if ((properties.isEnableZoomOnMouseClick()
@@ -277,7 +273,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
      * Sets an optional "extra attribute", which can be anything caller-defined. Can be retrieved
      * later by getExtraAttribute.
      *
-     * @param name The name of this extra attribute. Case insensitive.
+     * @param name  The name of this extra attribute. Case insensitive.
      * @param value The value of this extra attribute. Accepted as-is and not modified by this class.
      */
     public void setExtraAttribute(String name, Object value) {
@@ -500,17 +496,13 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             setComponentPopupMenu(popupMenu);
         }
 
+        //@formatter:off
         switch (originalProperties.getDisplayMode()) {
-            case BEST_FIT:
-                zoomBestFit();
-                break;
-            case STRETCH:
-                stretchImage();
-                break;
-            default:
-                setZoomFactor(1.0);
-                break;
+            case BEST_FIT: zoomBestFit(); break;
+            case STRETCH: stretchImage(); break;
+            default: setZoomFactor(1.0); break;
         }
+        //@formatter:on
 
         repaint();
     }
@@ -533,17 +525,13 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             imageIconLabel.setComponentPopupMenu(popupMenu);
         }
 
+        //@formatter:off
         switch (originalProperties.getDisplayMode()) {
-            case BEST_FIT:
-                zoomBestFit();
-                break;
-            case STRETCH:
-                stretchImage();
-                break;
-            default:
-                setZoomFactor(1.0);
-                break;
+            case BEST_FIT: zoomBestFit(); break;
+            case STRETCH: stretchImage(); break;
+            default: setZoomFactor(1.0); break;
         }
+        //@formatter:on
 
         repaint();
     }
@@ -698,7 +686,8 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         }
         else {
             if (lastRenderedImageWidth != imgWidth || lastRenderedImageHeight != imgHeight) {
-                imageIconLabel.setIcon(new ImageIcon(imageIcon.getImage().getScaledInstance(imgWidth, imgHeight, Image.SCALE_DEFAULT)));
+                imageIconLabel.setIcon(new ImageIcon(
+                        imageIcon.getImage().getScaledInstance(imgWidth, imgHeight, Image.SCALE_DEFAULT)));
                 lastRenderedImageWidth = imgWidth;
                 lastRenderedImageHeight = imgHeight;
             }
@@ -717,21 +706,21 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         switch (properties.getRenderingQuality()) {
             case SLOW_AND_ACCURATE: {
                 graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
                 graphics2D.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                        RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+                                            RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
                 graphics2D.setRenderingHint(RenderingHints.KEY_RENDERING,
-                        RenderingHints.VALUE_RENDER_QUALITY);
+                                            RenderingHints.VALUE_RENDER_QUALITY);
             }
             break;
 
             case QUICK_AND_DIRTY: {
                 graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                        RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                                            RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
                 graphics2D.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                        RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+                                            RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
                 graphics2D.setRenderingHint(RenderingHints.KEY_RENDERING,
-                        RenderingHints.VALUE_RENDER_SPEED);
+                                            RenderingHints.VALUE_RENDER_SPEED);
             }
             break;
         }

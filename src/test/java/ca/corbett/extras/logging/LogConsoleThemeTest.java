@@ -39,7 +39,7 @@ public class LogConsoleThemeTest {
     public void testThemeSaveAndLoad_withCustomStyle_shouldSaveAndRestore() throws IOException {
         LogConsoleTheme theme = LogConsoleTheme.createDefaultStyledTheme();
         theme.setStyle("testStyle", createTestStyle());
-        File tmpFile = File.createTempFile("test","theme");
+        File tmpFile = File.createTempFile("test", "theme");
         tmpFile.deleteOnExit();
         FileBasedProperties test = new FileBasedProperties(tmpFile);
         test.setEagerSave(true);

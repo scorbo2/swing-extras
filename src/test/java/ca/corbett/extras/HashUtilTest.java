@@ -1,12 +1,14 @@
 package ca.corbett.extras;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-import org.junit.jupiter.api.Test;
 
 
 /**

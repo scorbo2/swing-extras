@@ -1,9 +1,9 @@
 package ca.corbett.extras;
 
+import javax.swing.JOptionPane;
 import java.awt.Component;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 
 /**
  * Simple utility class to show messages to the user via JOptionPane while also simultaneously
@@ -90,7 +90,7 @@ public final class MessageUtil {
     /**
      * Shows an error message to the user, and also logs it if a Logger was provided.
      *
-     * @param title The title for the dialog.
+     * @param title   The title for the dialog.
      * @param message The error message to show.
      */
     public void error(String title, String message) {
@@ -105,7 +105,7 @@ public final class MessageUtil {
      * Shows an error message to the user, and also logs it if a Logger was provided.
      *
      * @param message The error message to show.
-     * @param ex An Exception which will be handed to the Logger.
+     * @param ex      An Exception which will be handed to the Logger.
      */
     public void error(String message, Throwable ex) {
         error(defaultErrorTitle, message, ex);
@@ -114,9 +114,9 @@ public final class MessageUtil {
     /**
      * Shows an error message to the user, and also logs it if a Logger was provided.
      *
-     * @param title The title for the dialog.
+     * @param title   The title for the dialog.
      * @param message The error message to show.
-     * @param ex An Exception which will be handed to the Logger.
+     * @param ex      An Exception which will be handed to the Logger.
      */
     public void error(String title, String message, Throwable ex) {
         error(title, message);
@@ -135,7 +135,7 @@ public final class MessageUtil {
     /**
      * Shows an info message to the user, and also logs it if a Logger was provided.
      *
-     * @param title The title for the dialog.
+     * @param title   The title for the dialog.
      * @param message The info message to show.
      */
     public void info(String title, String message) {
@@ -158,7 +158,7 @@ public final class MessageUtil {
     /**
      * Shows a warning message to the user, and also logs it if a Logger was provided.
      *
-     * @param title The title for the dialog.
+     * @param title   The title for the dialog.
      * @param message The warning message to show.
      */
     public void warning(String title, String message) {

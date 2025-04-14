@@ -23,7 +23,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -54,19 +53,16 @@ public class ProgressDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel();
+        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(24);
 
-        LabelField labelField = new LabelField("MultiProgressDialog");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
-        labelField.setTopMargin(18);
-        labelField.setBottomMargin(6);
+        LabelField labelField = LabelField.createBoldHeaderLabel("MultiProgressDialog", 20);
         formPanel.addFormField(labelField);
 
-        labelField = createSimpleLabelField("<html>Java Swing comes with the ProgressMonitor class,<br>" +
-                "which is great for simple scenarios. But, sometimes it's<br>" +
-                "useful to be able to show major and minor progress for a<br>" +
-                "more complicated task. Meet the MultiProgressDialog!</html>");
-        formPanel.addFormField(labelField);
+        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+                "<html>Java Swing comes with the ProgressMonitor class, which is great for<br>" +
+                        "simple scenarios. But, sometimes it's useful to be able to show major and<br>" +
+                        "minor progress for a more complicated task. Meet the MultiProgressDialog!</html>", 14));
 
         majorProgressTextField = new TextField("Major progress label: ", 16, 1, false);
         majorProgressTextField.setText("Some major task");
@@ -83,7 +79,7 @@ public class ProgressDemoPanel extends PanelBuilder {
         formPanel.addFormField(minorProgressStepsField);
 
         PanelField panelField = new PanelField();
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
+        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         JButton btn = new JButton("Show multi-progress dialog");
         btn.addActionListener(new ActionListener() {
             @Override
@@ -95,18 +91,14 @@ public class ProgressDemoPanel extends PanelBuilder {
         panelField.setBottomMargin(24);
         formPanel.addFormField(panelField);
 
-        labelField = new LabelField("SplashProgress");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
-        labelField.setTopMargin(4);
-        labelField.setBottomMargin(6);
+        labelField = LabelField.createBoldHeaderLabel("SplashProgress", 20);
         formPanel.addFormField(labelField);
 
-        labelField = createSimpleLabelField("<html>Java offers the SplashScreen class for showing a splash<br>" +
-                "screen as your application starts up. But sometimes,<br>" +
-                "your application startup may involve some complex loading<br>" +
-                "and you want to show a progress bar during startup.<br>" +
-                "Let's look at SplashProgressWindow!");
-        formPanel.addFormField(labelField);
+        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+                "<html>Java offers the SplashScreen class for showing a splash screen as your application<br>" +
+                        "starts up. But sometimes, your application startup may involve some complex loading<br>" +
+                        "and you want to show a progress bar during startup. Let's look at SplashProgressWindow!</html>",
+                14));
 
         splashAppNameField = new TextField("Application name:", 15, 1, false);
         splashAppNameField.setText(Version.NAME);
@@ -132,7 +124,7 @@ public class ProgressDemoPanel extends PanelBuilder {
         formPanel.addFormField(splashBorderWidthField);
 
         panelField = new PanelField();
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
+        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         btn = new JButton("Show splash progress dialog");
         btn.addActionListener(new ActionListener() {
             @Override
@@ -148,10 +140,12 @@ public class ProgressDemoPanel extends PanelBuilder {
     }
 
     private void showMultiProgress() {
-        String majorText = majorProgressTextField.getText().isBlank() ? "Major progress" : majorProgressTextField.getText();
-        String minorText = minorProgressTextField.getText().isBlank() ? "Minor progress" : minorProgressTextField.getText();
-        int majorSteps = (Integer) majorProgressStepsField.getCurrentValue();
-        int minorSteps = (Integer) minorProgressStepsField.getCurrentValue();
+        String majorText = majorProgressTextField.getText()
+                                                 .isBlank() ? "Major progress" : majorProgressTextField.getText();
+        String minorText = minorProgressTextField.getText()
+                                                 .isBlank() ? "Minor progress" : minorProgressTextField.getText();
+        int majorSteps = (Integer)majorProgressStepsField.getCurrentValue();
+        int minorSteps = (Integer)minorProgressStepsField.getCurrentValue();
 
         MultiProgressDummyWorker worker = new MultiProgressDummyWorker(majorText, majorSteps, minorText, minorSteps);
         worker.addProgressListener(new MultiProgressAdapter() {
@@ -176,18 +170,19 @@ public class ProgressDemoPanel extends PanelBuilder {
         Object something = splashBgColorField.getSelectedValue();
         if (something instanceof GradientConfig) {
             config.setBgColorType(LogoConfig.ColorType.GRADIENT);
-            config.setBgGradient((GradientConfig) something);
-        } else {
+            config.setBgGradient((GradientConfig)something);
+        }
+        else {
             config.setBgColorType(LogoConfig.ColorType.SOLID);
-            config.setBgColor((Color) something);
+            config.setBgColor((Color)something);
         }
         config.setTextColorType(LogoConfig.ColorType.SOLID);
         config.setTextColor(splashFgColorField.getColor());
         config.setBorderColorType(LogoConfig.ColorType.SOLID);
         config.setBorderColor(splashFgColorField.getColor());
-        config.setBorderWidth((Integer) splashBorderWidthField.getCurrentValue());
-        config.setLogoWidth((Integer) splashWidthField.getCurrentValue());
-        config.setLogoHeight((Integer) splashHeightField.getCurrentValue());
+        config.setBorderWidth((Integer)splashBorderWidthField.getCurrentValue());
+        config.setLogoWidth((Integer)splashWidthField.getCurrentValue());
+        config.setLogoHeight((Integer)splashHeightField.getCurrentValue());
         new SplashProgressWindow(DemoApp.getInstance(), appName, config).showFakeProgress(5, 666);
     }
 
@@ -222,7 +217,8 @@ public class ProgressDemoPanel extends PanelBuilder {
                     wasCanceled = !fireMinorProgressUpdate(curMajorStep, curMinorStep, minorText);
                     try {
                         Thread.sleep(STEP_DURATION_MS);
-                    } catch (InterruptedException ex) {
+                    }
+                    catch (InterruptedException ex) {
                         wasCanceled = true;
                     }
                 }
@@ -230,7 +226,8 @@ public class ProgressDemoPanel extends PanelBuilder {
             }
             if (wasCanceled) {
                 fireProgressCanceled();
-            } else {
+            }
+            else {
                 fireProgressComplete();
             }
         }

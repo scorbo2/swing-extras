@@ -30,7 +30,7 @@ public class GradientColorField extends FormField {
     /**
      * Creates a ColorField that can be used to select a solid color only.
      *
-     * @param label The label to use with the field.
+     * @param label        The label to use with the field.
      * @param initialColor The starting colour.
      */
     public GradientColorField(String label, Color initialColor) {
@@ -40,7 +40,7 @@ public class GradientColorField extends FormField {
     /**
      * Creates a ColorField that can be used to select a color gradient only.
      *
-     * @param label The label to use with the field.
+     * @param label           The label to use with the field.
      * @param initialGradient The starting gradient.
      */
     public GradientColorField(String label, GradientConfig initialGradient) {
@@ -51,11 +51,11 @@ public class GradientColorField extends FormField {
      * Creates a ColorField that can be used to select either a solid color or
      * a color gradient.
      *
-     * @param label The label to use with the field.
-     * @param initialColor The starting solid color.
-     * @param initialGradient The starting gradient.
+     * @param label                   The label to use with the field.
+     * @param initialColor            The starting solid color.
+     * @param initialGradient         The starting gradient.
      * @param showSolidColorInitially If both initialColor and initialGradient are supplied, this
-     * parameter decides which is shown initially.
+     *                                parameter decides which is shown initially.
      */
     public GradientColorField(String label, Color initialColor, GradientConfig initialGradient, boolean showSolidColorInitially) {
         // Wonky case, if you pass null for both initial values, we'll assume you're okay with either:
@@ -104,7 +104,8 @@ public class GradientColorField extends FormField {
                 GradientColorChooser colorChooser = new GradientColorChooser(selectionMode);
                 final Color theColor = colorPanel.getImage() == null ? selectedColor : null;
                 final GradientConfig theGradient = colorPanel.getImage() == null ? null : selectedGradient;
-                if (colorChooser.showDialog(colorPanel, "Choose colour", theColor, theGradient, false) == GradientColorChooser.OK) {
+                if (colorChooser.showDialog(colorPanel, "Choose colour", theColor, theGradient,
+                                            false) == GradientColorChooser.OK) {
                     Object value = colorChooser.getSelectedValue();
                     if (value instanceof Color) {
                         selectedColor = (Color)value;
@@ -199,7 +200,7 @@ public class GradientColorField extends FormField {
     /**
      * Renders this field into the given container.
      *
-     * @param container The containing form panel.
+     * @param container   The containing form panel.
      * @param constraints The GridBagConstraints to use.
      */
     @Override

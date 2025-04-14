@@ -41,7 +41,9 @@ public final class LogoConfig implements ConfigObject {
             return null;
         }
 
-    };
+    }
+
+    ;
 
     private ColorType bgColorType;
     private Color bgColor;
@@ -388,8 +390,9 @@ public final class LogoConfig implements ConfigObject {
     public void setFontPointSize(int fontPointSize) {
         if (fontPointSize <= 0) {
             autoSize = true;
-        } else {
-            font = font.deriveFont((float) fontPointSize);
+        }
+        else {
+            font = font.deriveFont((float)fontPointSize);
         }
     }
 
@@ -464,7 +467,7 @@ public final class LogoConfig implements ConfigObject {
      * "waveform1.enableOutline". If you specify null or an empty string, property names
      * will be specified as-is, and will overwrite any previous value.
      *
-     * @param props The Properties instance from which to load.
+     * @param props  The Properties instance from which to load.
      * @param prefix An optional string prefix to apply to all property names, or null.
      */
     @Override
@@ -500,7 +503,7 @@ public final class LogoConfig implements ConfigObject {
      * "waveform1.enableOutline". If you specify null or an empty string, property names
      * will be specified as-is, and will overwrite any previous value.
      *
-     * @param props The Properties instance to which to save.
+     * @param props  The Properties instance to which to save.
      * @param prefix An optional string prefix to apply to all property names, or null.
      */
     @Override

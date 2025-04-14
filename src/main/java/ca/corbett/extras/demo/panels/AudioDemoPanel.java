@@ -71,6 +71,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         wavePrefs = new WaveformConfig();
         wavePrefs.setXScale(DEFAULT_XSCALE);
         wavePrefs.setYScale(DEFAULT_YSCALE);
+        PlaybackThread.setUpdateIntervalMs(75); // super fast updates
 
         waveformLabel = new JLabel("(not yet generated)");
 
@@ -84,7 +85,8 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
             out.close();
         }
         catch (IOException ioe) {
-            Logger.getLogger(AudioDemoPanel.class.getName()).log(Level.SEVERE, "Unable to load example audio file.", ioe);
+            Logger.getLogger(AudioDemoPanel.class.getName())
+                  .log(Level.SEVERE, "Unable to load example audio file.", ioe);
         }
     }
 
@@ -95,20 +97,10 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
 
     @Override
     public JPanel build() {
+        final int leftMargin = 24;
         panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
-
-        JLabel spacer = new JLabel("");
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.weightx = 0.5;
-        panel.add(spacer, constraints);
-
-        spacer = new JLabel("");
-        constraints.gridx = 3;
-        panel.add(spacer, constraints);
 
         waveformPanel = new AudioWaveformPanel();
         waveformPanel.addAudioPanelListener(this);
@@ -119,7 +111,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         constraints.gridx = 1;
         constraints.gridwidth = 1;
         constraints.gridy++;
-        constraints.insets = new Insets(12, 2, 2, 2);
+        constraints.insets = new Insets(12, leftMargin, 2, 2);
         constraints.weightx = 0;
         constraints.fill = GridBagConstraints.BOTH;
         panel.add(audioPanelPrefsPanel, constraints);
@@ -133,28 +125,28 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         constraints.gridx = 1;
         constraints.gridy++;
         constraints.gridheight = 1;
-        constraints.insets = new Insets(2, 2, 2, 2);
+        constraints.insets = new Insets(2, leftMargin, 2, 2);
         panel.add(controlPanel, constraints);
 
         constraints.gridy++;
         waveformPanel.setPreferredSize(new Dimension(100, 120));
         waveformPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
         constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.insets = new Insets(20, 10, 4, 10);
+        constraints.insets = new Insets(20, leftMargin, 4, 10);
         constraints.gridwidth = 2;
         panel.add(waveformPanel, constraints);
 
         constraints.gridx = 1;
         constraints.gridy++;
-        constraints.insets = new Insets(4, 4, 4, 4);
+        constraints.insets = new Insets(4, leftMargin + 10, 4, 4);
         constraints.anchor = GridBagConstraints.WEST;
         panel.add(waveformLabel, constraints);
 
-        spacer = new JLabel("");
-        constraints.gridx = 0;
-        constraints.gridwidth = 5;
+        JLabel spacer = new JLabel("");
+        constraints.gridx = 3;
         constraints.gridy = 99;
         constraints.fill = GridBagConstraints.BOTH;
+        constraints.weightx = 1;
         constraints.weighty = 1;
         panel.add(spacer, constraints);
 
@@ -168,7 +160,6 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
                 waveformPanel.setWaveformPreferences(wavePrefs);
                 waveformPanel.setAudioClip(exampleAudioFile);
             }
-
             else if (audioSourceCombo.getSelectedIndex() == 1) {
                 if (selectedAudioFile == null || !selectedAudioFile.exists() || !selectedAudioFile.canRead()) {
                     return;
@@ -177,9 +168,8 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
                 waveformPanel.setWaveformPreferences(wavePrefs);
                 waveformPanel.setAudioClip(selectedAudioFile);
             }
-
             else {
-                if (recordedAudioFile == null || !recordedAudioFile.exists() || ! recordedAudioFile.canRead()) {
+                if (recordedAudioFile == null || !recordedAudioFile.exists() || !recordedAudioFile.canRead()) {
                     return;
                 }
 
@@ -190,7 +180,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
             Dimension dim = waveformPanel.getWaveformDimensions();
             if (dim != null) {
                 waveformLabel.setText("Waveform image size: "
-                        + ((int)dim.getWidth()) + "x" + ((int)dim.getHeight()) + " pixels");
+                                              + ((int)dim.getWidth()) + "x" + ((int)dim.getHeight()) + " pixels");
             }
             else {
                 waveformLabel.setText("");
@@ -314,10 +304,10 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
             AudioUtil.saveAudioFile(tempFile, waveformPanel.getAudioData());
             recordedAudioFile = tempFile;
             audioSourceCombo.setSelectedIndex(2);
-            System.out.println("Write recorded audio to "+tempFile.getAbsolutePath());
+            System.out.println("Write recorded audio to " + tempFile.getAbsolutePath());
         }
         catch (IOException ioe) {
-            getMessageUtil().warning("Problem generating recording: "+ioe.getMessage());
+            getMessageUtil().warning("Problem generating recording: " + ioe.getMessage());
         }
     }
 

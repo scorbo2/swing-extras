@@ -2,6 +2,18 @@ package ca.corbett.extras.image;
 
 import ca.corbett.extras.config.ConfigPanel;
 import ca.corbett.extras.properties.Properties;
+
+import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.border.BevelBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -14,17 +26,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JColorChooser;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Provides a ConfigPanel implementation for viewing/editing ImagePanelConfig instances.
@@ -100,16 +101,11 @@ public class ImagePanelConfigPanel extends ConfigPanel<ImagePanelConfig> {
             modelObject.setZoomFactorIncrement(obj.getZoomFactorIncrement());
         }
 
+        //@formatter:off
         switch (obj.getDisplayMode()) {
-            case CENTER:
-                displayModeCombo.setSelectedIndex(1);
-                break;
-            case BEST_FIT:
-                displayModeCombo.setSelectedIndex(2);
-                break;
-            case STRETCH:
-                displayModeCombo.setSelectedIndex(3);
-                break;
+            case CENTER:   displayModeCombo.setSelectedIndex(1); break;
+            case BEST_FIT: displayModeCombo.setSelectedIndex(2); break;
+            case STRETCH:  displayModeCombo.setSelectedIndex(3); break;
 
             case NONE:
             default:
@@ -118,13 +114,10 @@ public class ImagePanelConfigPanel extends ConfigPanel<ImagePanelConfig> {
         }
 
         switch (obj.getRenderingQuality()) {
-            case QUICK_AND_DIRTY:
-                renderQualityCombo.setSelectedIndex(0);
-                break;
-            case SLOW_AND_ACCURATE:
-                renderQualityCombo.setSelectedIndex(1);
-                break;
+            case QUICK_AND_DIRTY:   renderQualityCombo.setSelectedIndex(0); break;
+            case SLOW_AND_ACCURATE: renderQualityCombo.setSelectedIndex(1); break;
         }
+        //@formatter:on
 
         bgColorPanel.setBackground(obj.getBgColor());
         mouseCursorCheckBox.setSelected(obj.isEnableMouseCursor());
@@ -198,22 +191,16 @@ public class ImagePanelConfigPanel extends ConfigPanel<ImagePanelConfig> {
         displayModeCombo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (modelObject != null) {
+                if (modelObject != null && displayModeCombo.getSelectedItem() != null) {
                     String value = (String)displayModeCombo.getSelectedItem();
+                    //@formatter:off
                     switch (value) {
-                        case "None":
-                            modelObject.setDisplayMode(ImagePanelConfig.DisplayMode.NONE);
-                            break;
-                        case "Center":
-                            modelObject.setDisplayMode(ImagePanelConfig.DisplayMode.CENTER);
-                            break;
-                        case "Best fit":
-                            modelObject.setDisplayMode(ImagePanelConfig.DisplayMode.BEST_FIT);
-                            break;
-                        case "Stretch":
-                            modelObject.setDisplayMode(ImagePanelConfig.DisplayMode.STRETCH);
-                            break;
+                        case "None":    modelObject.setDisplayMode(ImagePanelConfig.DisplayMode.NONE); break;
+                        case "Center":  modelObject.setDisplayMode(ImagePanelConfig.DisplayMode.CENTER); break;
+                        case "Best fit":modelObject.setDisplayMode(ImagePanelConfig.DisplayMode.BEST_FIT); break;
+                        case "Stretch": modelObject.setDisplayMode(ImagePanelConfig.DisplayMode.STRETCH); break;
                     }
+                    //@formatter:on
                     notifyChangeListeners();
                 }
             }

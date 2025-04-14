@@ -1,5 +1,10 @@
 package ca.corbett.extras.about;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -9,11 +14,6 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.border.BevelBorder;
 
 /**
  * Provides a reusable and consistent AboutDialog that can be used in any application.
@@ -33,7 +33,7 @@ public final class AboutDialog extends JDialog implements KeyEventDispatcher {
      * Creates a new AboutDialog instance with the given parent window and application info,
      *
      * @param parent The JComponent that owns this dialog.
-     * @param info An AboutInfo instance containing the description of this application.
+     * @param info   An AboutInfo instance containing the description of this application.
      */
     public AboutDialog(Frame parent, AboutInfo info) {
         super(parent, "About " + info.applicationName, JDialog.ModalityType.APPLICATION_MODAL);
@@ -120,5 +120,4 @@ public final class AboutDialog extends JDialog implements KeyEventDispatcher {
 
         return true;
     }
-
 }

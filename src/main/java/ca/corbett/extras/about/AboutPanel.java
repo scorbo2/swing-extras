@@ -1,5 +1,6 @@
 package ca.corbett.extras.about;
 
+import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
@@ -10,7 +11,6 @@ import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 
-import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -21,13 +21,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -54,28 +52,31 @@ public final class AboutPanel extends JPanel {
     private static final Logger logger = Logger.getLogger(AboutPanel.class.getName());
     private LabelField memoryUsageField;
     private final Map<String, LabelField> customFields;
-    private final Desktop desktop;
+
+    public AboutPanel(AboutInfo info) {
+        this(info, FormPanel.Alignment.TOP_CENTER, 24);
+    }
 
     /**
      * Creates a new AboutPanel with the given AboutInfo object.
      *
      * @param info The AboutInfo object to display.
      */
-    public AboutPanel(AboutInfo info) {
+    public AboutPanel(AboutInfo info, FormPanel.Alignment alignment, int leftMargin) {
         super();
-
-        desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
 
         customFields = new HashMap<>();
         info.registerAboutPanel(this);
         setLayout(new BorderLayout());
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_CENTER);
+        FormPanel formPanel = new FormPanel(alignment);
+        formPanel.setStandardLeftMargin(leftMargin);
 
         BufferedImage logoImage = getLogoImage(info);
         PanelField logoPanel = new PanelField();
 
         if (info.logoDisplayMode != AboutInfo.LogoDisplayMode.STRETCH) {
-            logoPanel.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
+            logoPanel.getPanel().setLayout(
+                    new FlowLayout(formPanel.getAlignment().isLeftAligned() ? FlowLayout.LEFT : FlowLayout.CENTER));
 
             if (info.logoDisplayMode == AboutInfo.LogoDisplayMode.AS_IS_WITH_BORDER) {
                 logoPanel.getPanel().setBorder(new LineBorder(Color.BLACK, 1));
@@ -98,7 +99,6 @@ public final class AboutPanel extends JPanel {
                 });
             }
         }
-
         else {
             logoPanel.setMargins(8, 8, 8, 8, 0);
             logoPanel.getPanel().setLayout(new BorderLayout());
@@ -131,7 +131,7 @@ public final class AboutPanel extends JPanel {
         formPanel.addFormField(labelField);
 
         Font labelFont = new Font("SansSerif", Font.PLAIN, 12);
-        if (info.shortDescription != null && ! info.shortDescription.isBlank()) {
+        if (info.shortDescription != null && !info.shortDescription.isBlank()) {
             String desc = (info.shortDescription.length() > 60)
                     ? info.shortDescription.substring(0, 60) + "..."
                     : info.shortDescription;
@@ -141,19 +141,19 @@ public final class AboutPanel extends JPanel {
             formPanel.addFormField(labelField);
         }
 
-        if (info.copyright != null && ! info.copyright.isBlank()) {
+        if (info.copyright != null && !info.copyright.isBlank()) {
             labelField = new LabelField(info.copyright);
             labelField.setFont(labelFont);
             labelField.setMargins(2, 8, 2, 2, 0);
             formPanel.addFormField(labelField);
         }
 
-        if (info.projectUrl != null && ! info.projectUrl.isBlank()) {
+        if (info.projectUrl != null && !info.projectUrl.isBlank()) {
             labelField = new LabelField(info.projectUrl);
             labelField.setFont(labelFont);
-            if (isBrowsingSupported() && isUrl(info.projectUrl)) {
+            if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.projectUrl)) {
                 try {
-                    labelField.setHyperlink(new BrowseAction(URI.create(info.projectUrl)));
+                    labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.projectUrl)));
                 }
                 catch (IllegalArgumentException e) {
                     logger.warning("Project URL is not well-formed.");
@@ -163,12 +163,12 @@ public final class AboutPanel extends JPanel {
             formPanel.addFormField(labelField);
         }
 
-        if (info.license != null && ! info.license.isBlank()) {
+        if (info.license != null && !info.license.isBlank()) {
             labelField = new LabelField(info.license);
             labelField.setFont(labelFont);
-            if (isBrowsingSupported() && isUrl(info.license)) {
+            if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.license)) {
                 try {
-                    labelField.setHyperlink(new BrowseAction(URI.create(info.license)));
+                    labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.license)));
                 }
                 catch (IllegalArgumentException e) {
                     logger.warning("License URL is not well-formed.");
@@ -192,7 +192,7 @@ public final class AboutPanel extends JPanel {
         }
 
         String releaseNotes = getReleaseNotesText(info);
-        if (releaseNotes != null && ! releaseNotes.isBlank()) {
+        if (releaseNotes != null && !releaseNotes.isBlank()) {
             PanelField releaseNotesField = new PanelField();
             releaseNotesField.getPanel().setLayout(new BorderLayout());
             releaseNotesField.setMargins(12, 0, 0, 0, 4);
@@ -214,7 +214,9 @@ public final class AboutPanel extends JPanel {
             constraints.fill = GridBagConstraints.BOTH;
             constraints.weightx = 0.5;
             constraints.weighty = 0.5;
-            wrapperPanel.add(dummy1, constraints);
+            if (formPanel.getAlignment().isCentered()) {
+                wrapperPanel.add(dummy1, constraints);
+            }
             constraints.gridx = 2;
             wrapperPanel.add(dummy2, constraints);
             constraints = new GridBagConstraints();
@@ -251,11 +253,11 @@ public final class AboutPanel extends JPanel {
     }
 
     private String getReleaseNotesText(AboutInfo info) {
-        if (info.releaseNotesText != null && ! info.releaseNotesText.isBlank()) {
+        if (info.releaseNotesText != null && !info.releaseNotesText.isBlank()) {
             return info.releaseNotesText;
         }
 
-        if (info.releaseNotesLocation != null && ! info.releaseNotesLocation.isBlank()) {
+        if (info.releaseNotesLocation != null && !info.releaseNotesLocation.isBlank()) {
             try (InputStream inStream = getClass().getResourceAsStream(info.releaseNotesLocation)) {
                 if (inStream != null) {
                     BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
@@ -303,10 +305,12 @@ public final class AboutPanel extends JPanel {
         String appName = info.applicationName == null || info.applicationName.isBlank() ? "About" : info.applicationName;
         if (info.logoImageLocation == null || info.logoImageLocation.isBlank()) {
             image = generateLogoImage(450, 90, appName);
-        } else {
+        }
+        else {
             try {
                 image = ImageUtil.loadImage(getClass().getResource(info.logoImageLocation));
-            } catch (IOException ioe) {
+            }
+            catch (IOException ioe) {
                 logger.log(Level.SEVERE, "Error loading logo image: " + ioe.getMessage(), ioe);
                 image = generateLogoImage(450, 90, appName);
             }
@@ -326,33 +330,5 @@ public final class AboutPanel extends JPanel {
         config.setFontByFamilyName("Sans-Serif");
         config.setAutoSize(true);
         return LogoGenerator.generateImage(name, config);
-    }
-
-    private class BrowseAction extends AbstractAction {
-        private final URI uri;
-
-        public BrowseAction(URI uri) {
-            this.uri = uri;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (isBrowsingSupported()) {
-                try {
-                    desktop.browse(uri);
-                }
-                catch (IOException ioe) {
-                    logger.warning("Unable to browse URI: "+ioe.getMessage());
-                }
-            }
-        }
-    };
-
-    private boolean isBrowsingSupported() {
-        return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);
-    }
-
-    private boolean isUrl(String url) {
-        return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }
 }

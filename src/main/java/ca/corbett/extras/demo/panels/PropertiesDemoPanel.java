@@ -72,23 +72,24 @@ public class PropertiesDemoPanel extends PanelBuilder {
         try {
             File propsFile = File.createTempFile("temp", ".props");
             propsManager = new PropertiesManager(propsFile, buildProps(), "Test properties");
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             logger.log(Level.WARNING, "Unable to create temp file for PropertiesManager.", ioe);
             propsManager = new PropertiesManager(new Properties(), buildProps(), "Test properties");
         }
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_CENTER);
+        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(24);
 
-        LabelField labelField = new LabelField("PropertiesManager");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
+        LabelField labelField = LabelField.createBoldHeaderLabel("PropertiesManager", 20);
         formPanel.addFormField(labelField);
 
-        labelField = createSimpleLabelField("<html>Almost every application exposes properties for application<br>" +
-                "settings and preferences to the user. But why rewrite the UI code for this for<br>" +
-                "each new application? What if there was a way to easily specify the properties<br>" +
-                "for your application in code, and have a PropertiesManager and a<br>" +
-                "PropertiesDialog that could just generate the UI for you? Well, there is!</html>");
-        formPanel.addFormField(labelField);
+        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+                "<html>Almost every application exposes properties for application settings and<br>" +
+                        "preferences to the user. But why rewrite the UI code for this for each<br>" +
+                        "new application? What if there was a way to easily specify the properties for your<br>" +
+                        "application in code, and have a PropertiesManager and a PropertiesDialog that<br>" +
+                        "could just generate the UI for you? Well, there is!</html>", 14));
 
         List<String> options = new ArrayList<>();
         for (FormPanel.Alignment option : FormPanel.Alignment.values()) {
@@ -105,10 +106,13 @@ public class PropertiesDemoPanel extends PanelBuilder {
             public void actionPerformed(ActionEvent e) {
                 try {
                     propsManager.load();
-                } catch (Exception ex) {
+                }
+                catch (Exception ex) {
                     logger.log(Level.SEVERE, "Couldn't load properties.", ex);
                 }
-                PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(), "Test properties", FormPanel.Alignment.valueOf(alignmentField.getSelectedItem()), 16);
+                PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(), "Test properties",
+                                                                      FormPanel.Alignment.valueOf(
+                                                                              alignmentField.getSelectedItem()), 16);
                 dialog.setVisible(true);
                 if (dialog.wasOkayed()) {
                     propsManager.save();
@@ -125,7 +129,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
     private List<AbstractProperty> buildProps() {
         List<AbstractProperty> props = new ArrayList<>();
 
-        props.add(new LabelProperty("Intro.Overview.label1", "All of the props on this dialog were generated in code."));
+        props.add(
+                new LabelProperty("Intro.Overview.label1", "All of the props on this dialog were generated in code."));
         props.add(new LabelProperty("Intro.Overview.label2", "No UI code was required to generate this dialog!"));
 
         props.add(new BooleanProperty("Intro.Overview.checkbox1", "Property types correspond to form field types"));
@@ -136,7 +141,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new ComboProperty("Intro.Overview.combo1", "ComboProperty:", options, 1, false));
 
         props.add(new LabelProperty("Intro.Labels.someLabelProperty", "You can add labels, too!"));
-        LabelProperty testLabel = new LabelProperty("Intro.Labels.someLabelProperty2", "You can set label font properties");
+        LabelProperty testLabel = new LabelProperty("Intro.Labels.someLabelProperty2",
+                                                    "You can set label font properties");
         testLabel.setFont(new Font("Monospaced", Font.ITALIC, 14));
         testLabel.setColor(Color.BLUE);
         props.add(testLabel);
@@ -144,12 +150,15 @@ public class PropertiesDemoPanel extends PanelBuilder {
         for (int i = 0; i < 10; i++) {
             props.add(new LabelProperty("Intro.Labels.scroll" + i, "Scroll down!"));
         }
-        props.add(new LabelProperty("Intro.Labels.scrollSummary", "Long properties forms will automatically get scrollbars (horizontal and vertical as needed) so you can scroll to view everything - even long lines like this!"));
+        props.add(new LabelProperty("Intro.Labels.scrollSummary",
+                                    "Long properties forms will automatically get scrollbars (horizontal and vertical as needed) so you can scroll to view everything - even long lines like this!"));
 
         props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorProperty.ColorType.SOLID, Color.RED));
         props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorProperty.ColorType.GRADIENT));
         props.add(new ColorProperty("Colors.someMultiColor", "Both:", ColorProperty.ColorType.BOTH));
-        FontProperty fontProperty = new FontProperty("Colors.fontColor", "Font with color:", new Font(Font.SANS_SERIF, Font.PLAIN, 14), Color.CYAN, Color.DARK_GRAY);
+        FontProperty fontProperty = new FontProperty("Colors.fontColor", "Font with color:",
+                                                     new Font(Font.SANS_SERIF, Font.PLAIN, 14), Color.CYAN,
+                                                     Color.DARK_GRAY);
         fontProperty.setAllowSizeSelection(false);
         props.add(fontProperty);
 
@@ -158,7 +167,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
 
         props.add(new TextProperty("Text.Single line.someTextProp1", "Text property1:", "hello"));
         props.add(new TextProperty("Text.Single line.someTextProp2", "Text property2:", ""));
-        props.add(new TextProperty("Text.Multi line.someMultiLineTextProp", "Text entry:", "You can support long text as well.", 40, 4));
+        props.add(new TextProperty("Text.Multi line.someMultiLineTextProp", "Text entry:",
+                                   "You can support long text as well.", 40, 4));
 
         // This property is readable and settable by the client application but it won't show up in the user dialog:
         IntegerProperty hiddenProp = new IntegerProperty("Hidden.someHiddenProp", "hiddenProp", 77);
@@ -167,7 +177,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
 
         props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));
         props.add(new EnumProperty<TestEnum>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
-        props.add(new LabelProperty("Enums.Enums.label2", "Alternatively, you can use the enum names instead of toString():"));
+        props.add(new LabelProperty("Enums.Enums.label2",
+                                    "Alternatively, you can use the enum names instead of toString():"));
         props.add(new EnumProperty<>("Enums.Enums.enumField2", "Choose:", TestEnum.VALUE1, true));
 
         String explanation = "<html>Either way, your code deals natively with instances of your enum<br>" +

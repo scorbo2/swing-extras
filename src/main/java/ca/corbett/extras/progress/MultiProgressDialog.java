@@ -59,305 +59,308 @@ import java.util.List;
  */
 public final class MultiProgressDialog extends JDialog {
 
-  private static final int LABEL_LENGTH_CUTOFF = 50;
-  private LabelField majorProgressLabel;
-  private LabelField minorProgressLabel;
-  private JProgressBar majorProgressBar;
-  private JProgressBar minorProgressBar;
-  private boolean isCanceled;
+    private static final int LABEL_LENGTH_CUTOFF = 50;
+    private LabelField majorProgressLabel;
+    private LabelField minorProgressLabel;
+    private JProgressBar majorProgressBar;
+    private JProgressBar minorProgressBar;
+    private boolean isCanceled;
 
-  /**
-   * Creates a new, blank MultiProgressDialog with the specified owner frame
-   * and window title. Closing the progress dialog will act the same
-   * as though the cancel button had been clicked. Call isCanceled()
-   * at any time to see if the operation should continue or not (that is,
-   * if the user has clicked the cancel button on the progress dialog).
-   *
-   * @param owner The JFrame that will own this MultiProgressDialog
-   * @param title The window title
-   */
-  public MultiProgressDialog(JFrame owner, String title) {
-    super(owner, title);
-    initComponents();
-    resetProgress();
-    setLocationRelativeTo(owner);
-  }
-
-  /**
-   * Creates a new, blank MultiProgressDialog with the specified owner dialog
-   * and window title. Closing the progress dialog will act the same
-   * as though the cancel button had been clicked. Call isCanceled()
-   * at any time to see if the operation should continue or not (that is,
-   * if the user has clicked the cancel button on the progress dialog).
-   *
-   * @param owner The JDialog that will own this MultiProgressDialog
-   * @param title The window title
-   */
-  public MultiProgressDialog(JDialog owner, String title) {
-    super(owner, title);
-    initComponents();
-    resetProgress();
-    setLocationRelativeTo(owner);
-  }
-
-  /**
-   * Resets to a blank, default state. Also resets the isCanceled flag.
-   */
-  public void resetProgress() {
-    majorProgressLabel.setText("");
-    minorProgressLabel.setText("");
-    majorProgressBar.setValue(0);
-    minorProgressBar.setValue(0);
-    setMajorProgressBounds(0, 100);
-    setMinorProgressBounds(0, 100);
-    isCanceled = false;
-  }
-
-  /**
-   * Executes the given Runnable and auto-wires all progress events to this dialog.
-   * This is a very easy way to simply implement some runnable that can fire progress
-   * events, and pass it to this method to handle the UI aspect automatically.
-   * Progress errors are simply ignored here. You can add your own MultiProgressAdapter
-   * to the worker before passing it in here if you wish to respond to errors.
-   *
-   * @param worker Any MultiProgressWorker implementation that can perform some task.
-   * @param disposeWhenComplete, if true, will dispose() this dialog when complete. Otherwise,
-   * hides the dialog.
-   */
-  public void runWorker(final MultiProgressWorker worker, final boolean disposeWhenComplete) {
-    final MultiProgressDialog progressDialog = this;
-    final MultiProgressListener listener = new MultiProgressAdapter() {
-      private int totalMajorSteps;
-      private int totalMinorSteps;
-
-      @Override
-      public void progressBegins(int totalMajorSteps) {
-        this.totalMajorSteps = totalMajorSteps;
-        progressDialog.setMajorProgressBounds(0, totalMajorSteps);
-        progressDialog.setVisible(true);
-      }
-
-      @Override
-      public boolean majorProgressUpdate(int majorStep, int totalMinorSteps, String message) {
-        this.totalMinorSteps = totalMinorSteps;
-        progressDialog.setMinorProgressBounds(0, totalMinorSteps);
-        progressDialog.setMajorProgress(majorStep + 1, message + " (" + (majorStep + 1) + " of " + totalMajorSteps + ")");
-        progressDialog.setMinorProgress(0, "");
-        return !isCanceled;
-      }
-
-      @Override
-      public boolean minorProgressUpdate(int majorStep, int minorStep, String message) {
-        progressDialog.setMinorProgress(minorStep + 1, message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
-        return !isCanceled;
-      }
-
-      @Override
-      public void progressComplete() {
-        if (disposeWhenComplete) {
-          progressDialog.dispose();
-        }
-        else {
-          progressDialog.setVisible(false);
-        }
-      }
-
-      @Override
-      public void progressCanceled() {
-        if (disposeWhenComplete) {
-          progressDialog.dispose();
-        } else {
-          progressDialog.setVisible(false);
-        }
-      }
-
-    };
-
-    worker.addProgressListener(listener);
-    new Thread(worker).start();
-  }
-
-  /**
-   * Sets the minimum and maximum bounds of the major progress bar.This will also set the major
-   * progress value to "minimum".
-   *
-   * @param minimum The minimum value of the major progress bar (typically 0).
-   * @param maximum The maximum value of the major progress bar.
-   */
-  public void setMajorProgressBounds(int minimum, int maximum) {
-    majorProgressBar.setMinimum(minimum);
-    majorProgressBar.setMaximum(maximum);
-    setMajorProgress(minimum);
-  }
-
-  /**
-   * Sets the minimum and maximum bounds of the minor progress bar.This will also set the minor
-   * progress value to "minimum".
-   *
-   * @param minimum The minimum value of the minor progress bar (typically 0).
-   * @param maximum The maximum value of the minor progress bar.
-   */
-  public void setMinorProgressBounds(int minimum, int maximum) {
-    minorProgressBar.setMinimum(minimum);
-    minorProgressBar.setMaximum(maximum);
-    setMinorProgress(minimum);
-  }
-
-  /**
-   * Sets the progress value for the major progress bar without updating the progress label.
-   * See also setMajorProgress(int,String)
-   *
-   * @param progress The new value for the major progress bar.
-   */
-  public void setMajorProgress(int progress) {
-    setMajorProgress(progress, null);
-  }
-
-  /**
-   * Sets the progress value for the major progress bar and updates
-   * the major progress label with the given message.
-   *
-   * @param progress The new value for the major progress bar.
-   * @param message The new message to show in the major progress label (ignored if null).
-   */
-  public void setMajorProgress(int progress, String message) {
-    if (message != null) {
-      majorProgressLabel.setText(truncString(message));
+    /**
+     * Creates a new, blank MultiProgressDialog with the specified owner frame
+     * and window title. Closing the progress dialog will act the same
+     * as though the cancel button had been clicked. Call isCanceled()
+     * at any time to see if the operation should continue or not (that is,
+     * if the user has clicked the cancel button on the progress dialog).
+     *
+     * @param owner The JFrame that will own this MultiProgressDialog
+     * @param title The window title
+     */
+    public MultiProgressDialog(JFrame owner, String title) {
+        super(owner, title);
+        initComponents();
+        resetProgress();
+        setLocationRelativeTo(owner);
     }
-    majorProgressBar.setValue(progress);
-  }
 
-  /**
-   * Sets the progress value for the minor progress bar without updating the progress label.
-   * See also setMajorProgress(int,String)
-   *
-   * @param progress The new value for the minor progress bar.
-   */
-  public void setMinorProgress(int progress) {
-    setMinorProgress(progress, null);
-  }
-
-  /**
-   * Sets the progress value for the minor progress bar and updates
-   * the major progress label with the given message.
-   *
-   * @param progress The new value for the minor progress bar.
-   * @param message The new message to show in the minor progress label (ignored if null).
-   */
-  public void setMinorProgress(int progress, String message) {
-    if (message != null) {
-      minorProgressLabel.setText(truncString(message));
+    /**
+     * Creates a new, blank MultiProgressDialog with the specified owner dialog
+     * and window title. Closing the progress dialog will act the same
+     * as though the cancel button had been clicked. Call isCanceled()
+     * at any time to see if the operation should continue or not (that is,
+     * if the user has clicked the cancel button on the progress dialog).
+     *
+     * @param owner The JDialog that will own this MultiProgressDialog
+     * @param title The window title
+     */
+    public MultiProgressDialog(JDialog owner, String title) {
+        super(owner, title);
+        initComponents();
+        resetProgress();
+        setLocationRelativeTo(owner);
     }
-    minorProgressBar.setValue(progress);
-  }
 
-  /**
-   * Indicates whether the cancel button has been clicked or not.
-   *
-   * @return True if the cancel button has been clicked.
-   */
-  public boolean isCanceled() {
-    return isCanceled;
-  }
-
-  /**
-   * Truncates the given string to a size of LABEL_LENGTH_CUTOFF if necessary.
-   *
-   * @param s The string to truncate.
-   * @return The truncated string, or null if input was null.
-   */
-  private String truncString(String s) {
-    if (s == null) {
-      return null;
+    /**
+     * Resets to a blank, default state. Also resets the isCanceled flag.
+     */
+    public void resetProgress() {
+        majorProgressLabel.setText("");
+        minorProgressLabel.setText("");
+        majorProgressBar.setValue(0);
+        minorProgressBar.setValue(0);
+        setMajorProgressBounds(0, 100);
+        setMinorProgressBounds(0, 100);
+        isCanceled = false;
     }
-    return (s.length() > LABEL_LENGTH_CUTOFF)
-            ? s.substring(0, LABEL_LENGTH_CUTOFF) + "..."
-            : s;
-  }
 
-  /**
-   * Invoked internally to lay out the form.
-   */
-  private void initComponents() {
-    setMinimumSize(new Dimension(500, 210));
-    setSize(new Dimension(500, 210));
-    setResizable(false);
-    setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-    addWindowListener(new WindowAdapter() {
-      @Override
-      public void windowClosing(WindowEvent e) {
-        isCanceled = true;
-      }
+    /**
+     * Executes the given Runnable and auto-wires all progress events to this dialog.
+     * This is a very easy way to simply implement some runnable that can fire progress
+     * events, and pass it to this method to handle the UI aspect automatically.
+     * Progress errors are simply ignored here. You can add your own MultiProgressAdapter
+     * to the worker before passing it in here if you wish to respond to errors.
+     *
+     * @param worker               Any MultiProgressWorker implementation that can perform some task.
+     * @param disposeWhenComplete, if true, will dispose() this dialog when complete. Otherwise,
+     *                             hides the dialog.
+     */
+    public void runWorker(final MultiProgressWorker worker, final boolean disposeWhenComplete) {
+        final MultiProgressDialog progressDialog = this;
+        final MultiProgressListener listener = new MultiProgressAdapter() {
+            private int totalMajorSteps;
+            private int totalMinorSteps;
 
-    });
+            @Override
+            public void progressBegins(int totalMajorSteps) {
+                this.totalMajorSteps = totalMajorSteps;
+                progressDialog.setMajorProgressBounds(0, totalMajorSteps);
+                progressDialog.setVisible(true);
+            }
 
-    addKeyListener(new KeyAdapter() {
-      @Override
-      public void keyReleased(KeyEvent e) {
-        switch (e.getKeyCode()) {
-          case KeyEvent.VK_ESCAPE: {
-            isCanceled = true;
-          }
-          break;
+            @Override
+            public boolean majorProgressUpdate(int majorStep, int totalMinorSteps, String message) {
+                this.totalMinorSteps = totalMinorSteps;
+                progressDialog.setMinorProgressBounds(0, totalMinorSteps);
+                progressDialog.setMajorProgress(majorStep + 1,
+                                                message + " (" + (majorStep + 1) + " of " + totalMajorSteps + ")");
+                progressDialog.setMinorProgress(0, "");
+                return !isCanceled;
+            }
+
+            @Override
+            public boolean minorProgressUpdate(int majorStep, int minorStep, String message) {
+                progressDialog.setMinorProgress(minorStep + 1,
+                                                message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
+                return !isCanceled;
+            }
+
+            @Override
+            public void progressComplete() {
+                if (disposeWhenComplete) {
+                    progressDialog.dispose();
+                }
+                else {
+                    progressDialog.setVisible(false);
+                }
+            }
+
+            @Override
+            public void progressCanceled() {
+                if (disposeWhenComplete) {
+                    progressDialog.dispose();
+                }
+                else {
+                    progressDialog.setVisible(false);
+                }
+            }
+
+        };
+
+        worker.addProgressListener(listener);
+        new Thread(worker).start();
+    }
+
+    /**
+     * Sets the minimum and maximum bounds of the major progress bar.This will also set the major
+     * progress value to "minimum".
+     *
+     * @param minimum The minimum value of the major progress bar (typically 0).
+     * @param maximum The maximum value of the major progress bar.
+     */
+    public void setMajorProgressBounds(int minimum, int maximum) {
+        majorProgressBar.setMinimum(minimum);
+        majorProgressBar.setMaximum(maximum);
+        setMajorProgress(minimum);
+    }
+
+    /**
+     * Sets the minimum and maximum bounds of the minor progress bar.This will also set the minor
+     * progress value to "minimum".
+     *
+     * @param minimum The minimum value of the minor progress bar (typically 0).
+     * @param maximum The maximum value of the minor progress bar.
+     */
+    public void setMinorProgressBounds(int minimum, int maximum) {
+        minorProgressBar.setMinimum(minimum);
+        minorProgressBar.setMaximum(maximum);
+        setMinorProgress(minimum);
+    }
+
+    /**
+     * Sets the progress value for the major progress bar without updating the progress label.
+     * See also setMajorProgress(int,String)
+     *
+     * @param progress The new value for the major progress bar.
+     */
+    public void setMajorProgress(int progress) {
+        setMajorProgress(progress, null);
+    }
+
+    /**
+     * Sets the progress value for the major progress bar and updates
+     * the major progress label with the given message.
+     *
+     * @param progress The new value for the major progress bar.
+     * @param message  The new message to show in the major progress label (ignored if null).
+     */
+    public void setMajorProgress(int progress, String message) {
+        if (message != null) {
+            majorProgressLabel.setText(truncString(message));
         }
-      }
+        majorProgressBar.setValue(progress);
+    }
 
-    });
+    /**
+     * Sets the progress value for the minor progress bar without updating the progress label.
+     * See also setMajorProgress(int,String)
+     *
+     * @param progress The new value for the minor progress bar.
+     */
+    public void setMinorProgress(int progress) {
+        setMinorProgress(progress, null);
+    }
 
-    setLayout(new BorderLayout());
-    List<FormField> formFields = new ArrayList<>();
+    /**
+     * Sets the progress value for the minor progress bar and updates
+     * the major progress label with the given message.
+     *
+     * @param progress The new value for the minor progress bar.
+     * @param message  The new message to show in the minor progress label (ignored if null).
+     */
+    public void setMinorProgress(int progress, String message) {
+        if (message != null) {
+            minorProgressLabel.setText(truncString(message));
+        }
+        minorProgressBar.setValue(progress);
+    }
 
-    majorProgressLabel = new LabelField("");
-    majorProgressLabel.setMargins(12, 0, 0, 0, 2);
-    formFields.add(majorProgressLabel);
+    /**
+     * Indicates whether the cancel button has been clicked or not.
+     *
+     * @return True if the cancel button has been clicked.
+     */
+    public boolean isCanceled() {
+        return isCanceled;
+    }
 
-    majorProgressBar = new JProgressBar();
-    majorProgressBar.setPreferredSize(new Dimension(450, 20));
-    majorProgressBar.setStringPainted(true);
-    majorProgressBar.setForeground(Color.BLUE);
-    PanelField panelField = new PanelField();
-    panelField.setMargins(0, 0, 0, 0, 0);
-    panelField.getPanel().setLayout(new BorderLayout());
-    panelField.getPanel().add(majorProgressBar, BorderLayout.CENTER);
-    formFields.add(panelField);
+    /**
+     * Truncates the given string to a size of LABEL_LENGTH_CUTOFF if necessary.
+     *
+     * @param s The string to truncate.
+     * @return The truncated string, or null if input was null.
+     */
+    private String truncString(String s) {
+        if (s == null) {
+            return null;
+        }
+        return (s.length() > LABEL_LENGTH_CUTOFF)
+                ? s.substring(0, LABEL_LENGTH_CUTOFF) + "..."
+                : s;
+    }
 
-    minorProgressLabel = new LabelField("");
-    minorProgressLabel.setMargins(16, 0, 0, 0, 2);
-    formFields.add(minorProgressLabel);
+    /**
+     * Invoked internally to lay out the form.
+     */
+    private void initComponents() {
+        setMinimumSize(new Dimension(500, 210));
+        setSize(new Dimension(500, 210));
+        setResizable(false);
+        setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                isCanceled = true;
+            }
 
-    minorProgressBar = new JProgressBar();
-    minorProgressBar.setStringPainted(true);
-    minorProgressBar.setForeground(Color.BLUE);
-    panelField = new PanelField();
-    panelField.setMargins(0, 0, 0, 0, 0);
-    panelField.getPanel().setLayout(new BorderLayout());
-    panelField.getPanel().add(minorProgressBar, BorderLayout.CENTER);
-    formFields.add(panelField);
+        });
 
-    FormPanel formPanel = new FormPanel(formFields, FormPanel.Alignment.TOP_CENTER);
-    formPanel.render();
-    add(formPanel, BorderLayout.CENTER);
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_ESCAPE: {
+                        isCanceled = true;
+                    }
+                    break;
+                }
+            }
 
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-    buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        });
 
-    final JButton button = new JButton("Cancel");
-    button.setPreferredSize(new Dimension(90, 23));
-    button.setFocusable(false);
-    buttonPanel.add(button);
+        setLayout(new BorderLayout());
+        List<FormField> formFields = new ArrayList<>();
 
-    add(buttonPanel, BorderLayout.SOUTH);
+        majorProgressLabel = new LabelField("");
+        majorProgressLabel.setMargins(12, 0, 0, 0, 2);
+        formFields.add(majorProgressLabel);
 
-    button.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        button.setEnabled(false);
-        isCanceled = true;
-      }
+        majorProgressBar = new JProgressBar();
+        majorProgressBar.setPreferredSize(new Dimension(450, 20));
+        majorProgressBar.setStringPainted(true);
+        majorProgressBar.setForeground(Color.BLUE);
+        PanelField panelField = new PanelField();
+        panelField.setMargins(0, 0, 0, 0, 0);
+        panelField.getPanel().setLayout(new BorderLayout());
+        panelField.getPanel().add(majorProgressBar, BorderLayout.CENTER);
+        formFields.add(panelField);
 
-    });
+        minorProgressLabel = new LabelField("");
+        minorProgressLabel.setMargins(16, 0, 0, 0, 2);
+        formFields.add(minorProgressLabel);
 
-  }
+        minorProgressBar = new JProgressBar();
+        minorProgressBar.setStringPainted(true);
+        minorProgressBar.setForeground(Color.BLUE);
+        panelField = new PanelField();
+        panelField.setMargins(0, 0, 0, 0, 0);
+        panelField.getPanel().setLayout(new BorderLayout());
+        panelField.getPanel().add(minorProgressBar, BorderLayout.CENTER);
+        formFields.add(panelField);
+
+        FormPanel formPanel = new FormPanel(formFields, FormPanel.Alignment.TOP_CENTER);
+        formPanel.render();
+        add(formPanel, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+        final JButton button = new JButton("Cancel");
+        button.setPreferredSize(new Dimension(90, 23));
+        button.setFocusable(false);
+        buttonPanel.add(button);
+
+        add(buttonPanel, BorderLayout.SOUTH);
+
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                button.setEnabled(false);
+                isCanceled = true;
+            }
+
+        });
+
+    }
 
 }

@@ -40,7 +40,7 @@ public class Properties {
     public List<String> getPropertyNames() {
         List<String> list = new ArrayList<>();
         for (Object key : props.keySet()) {
-            list.add((String) key);
+            list.add((String)key);
         }
         list.sort(String::compareTo);
         return list;
@@ -99,7 +99,8 @@ public class Properties {
         Integer value = defaultValue;
         try {
             value = Integer.valueOf(props.getProperty(name, Integer.toString(defaultValue)));
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non integer value.", e);
         }
         return value;
@@ -164,7 +165,8 @@ public class Properties {
         Float value = defaultValue;
         try {
             value = Float.valueOf(props.getProperty(name, Float.toString(defaultValue)));
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-float value.", e);
         }
         return value;
@@ -193,7 +195,8 @@ public class Properties {
         Double value = defaultValue;
         try {
             value = Double.valueOf(props.getProperty(name, Double.toString(defaultValue)));
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-double value.", e);
         }
         return value;
@@ -237,12 +240,14 @@ public class Properties {
                     else {
                         value = new Color(Long.decode(propValue).intValue());
                     }
-                } else {
+                }
+                else {
                     // backwards compatibility... we used to just take color.getRGB() as an int value
                     value = new Color(Integer.valueOf(propValue));
                 }
             }
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-colour value.", e);
         }
         return value;
@@ -316,7 +321,8 @@ public class Properties {
             }
             int pointSize = Integer.parseInt(props.getProperty(name + "_pointSize", Integer.toString(font.getSize())));
             font = new Font(faceName, fontStyle, pointSize);
-        } catch (NumberFormatException nfe) {
+        }
+        catch (NumberFormatException nfe) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-font value.", nfe);
         }
         return font;

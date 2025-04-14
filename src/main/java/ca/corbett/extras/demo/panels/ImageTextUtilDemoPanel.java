@@ -88,16 +88,15 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         panel.add(imagePanel, BorderLayout.CENTER);
 
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(12);
 
-        LabelField labelField = new LabelField("ImageTextUtil");
-        labelField.setTopMargin(18);
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 18f));
+        LabelField labelField = LabelField.createBoldHeaderLabel("ImageTextUtil", 20);
         formPanel.addFormField(labelField);
 
         labelField = new LabelField("<html>The ImageTextUtil class gives you a way<br>" +
-                "to write multiple lines of text to an image<br>" +
-                "with optional fill and outline properties.<br>" +
-                "Line wrapping can be handled automatically!</html>");
+                                            "to write multiple lines of text to an image<br>" +
+                                            "with optional fill and outline properties.<br>" +
+                                            "Line wrapping can be handled automatically!</html>");
         labelField.setBottomMargin(10);
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.PLAIN, 12f));
         formPanel.addFormField(labelField);
@@ -157,7 +156,8 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         Graphics2D graphics = image.createGraphics();
         if (bgGradient != null) {
             GradientUtil.fill(bgGradient, graphics, 0, 0, image.getWidth(), image.getHeight());
-        } else {
+        }
+        else {
             graphics.setColor(bgSolidColor);
             graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
         }
@@ -167,7 +167,9 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
             text = Version.NAME;
         }
 
-        ImageTextUtil.drawText(image, text, lineWrapAt, Properties.createFontFromAttributes(fontFamily, isBold, isItalic, 12), textAlign, outlineColor, outlineWidth, fillColor);
+        ImageTextUtil.drawText(image, text, lineWrapAt,
+                               Properties.createFontFromAttributes(fontFamily, isBold, isItalic, 12), textAlign,
+                               outlineColor, outlineWidth, fillColor);
         imagePanel.setImage(image);
     }
 
@@ -181,29 +183,24 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
             Object something = bgColorField.getSelectedValue();
             if (something instanceof Color) {
                 bgGradient = null;
-                bgSolidColor = (Color) something;
-            } else {
+                bgSolidColor = (Color)something;
+            }
+            else {
                 bgSolidColor = null;
-                bgGradient = (GradientConfig) something;
+                bgGradient = (GradientConfig)something;
             }
             fillColor = textFillColorField.getColor();
             outlineColor = textOutlineColorField.getColor();
+            //@formatter:off
             switch (outlineWidthField.getSelectedIndex()) {
-                case 0:
-                    outlineWidth = 0;
-                    break;
-                case 1:
-                    outlineWidth = 20;
-                    break;
-                case 2:
-                    outlineWidth = 12;
-                    break;
-                case 3:
-                    outlineWidth = 8;
-                    break;
+                case 0: outlineWidth = 0; break;
+                case 1: outlineWidth = 20; break;
+                case 2: outlineWidth = 12; break;
+                case 3: outlineWidth = 8; break;
             }
+            //@formatter:on
             textAlign = ImageTextUtil.TextAlign.fromLabel(textAlignField.getSelectedItem());
-            lineWrapAt = (Integer) lineWrapField.getCurrentValue();
+            lineWrapAt = (Integer)lineWrapField.getCurrentValue();
             render();
         }
     };

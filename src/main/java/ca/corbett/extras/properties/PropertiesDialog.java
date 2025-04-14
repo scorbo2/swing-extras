@@ -40,234 +40,235 @@ import java.util.logging.Logger;
  */
 public class PropertiesDialog extends JDialog {
 
-  private static final Logger logger = Logger.getLogger(PropertiesDialog.class.getName());
+    private static final Logger logger = Logger.getLogger(PropertiesDialog.class.getName());
 
-  protected final PropertiesManager propsManager;
-  protected final Frame ownerFrame;
-  protected final JTabbedPane tabPane;
-  protected final FormPanel formPanel;
-  protected boolean wasOkayed = false;
+    protected final PropertiesManager propsManager;
+    protected final Frame ownerFrame;
+    protected final JTabbedPane tabPane;
+    protected final FormPanel formPanel;
+    protected boolean wasOkayed = false;
 
-  public PropertiesDialog(PropertiesManager manager, Frame owner, String title, List<FormPanel> formPanelList) {
-    super(owner, title, true);
-    setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-    setLayout(new BorderLayout());
+    public PropertiesDialog(PropertiesManager manager, Frame owner, String title, List<FormPanel> formPanelList) {
+        super(owner, title, true);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout());
 
-    // If we got multiple form panels, use a tab pane:
-    if (formPanelList.size() > 1) {
-      tabPane = new JTabbedPane();
-      for (FormPanel formPanel : formPanelList) {
-        formPanel.render();
-        tabPane.addTab(formPanel.getName(), buildScrollPane(formPanel));
-      }
-      formPanel = null;
-      add(tabPane, BorderLayout.CENTER);
-    }
-
-    // If we got one form panel, use it directly:
-    else if (formPanelList.size() == 1) {
-      tabPane = null;
-      formPanel = formPanelList.get(0);
-      formPanel.render();
-      add(buildScrollPane(formPanel), BorderLayout.CENTER);
-    }
-
-    // If we didn't get any form panels, then I guess we're hooped:
-    else {
-      tabPane = null;
-      formPanel = new FormPanel();
-      add(formPanel, BorderLayout.CENTER);
-      logger.warning("PropertiesDialog was created with an empty list of FormPanels.");
-    }
-
-    add(buildButtonPanel(), BorderLayout.SOUTH);
-    this.propsManager = manager;
-    this.ownerFrame = owner;
-    setSize(640, 480);
-    setMinimumSize(new Dimension(400, 360));
-  }
-
-  /**
-   * Overridden to update our position if the owner window moves.
-   *
-   * @param visible Whether to show or hide the dialog.
-   */
-  @Override
-  public void setVisible(boolean visible) {
-    if (visible) {
-      setLocationRelativeTo(ownerFrame);
-    }
-    super.setVisible(visible);
-  }
-
-  /**
-   * Reports whether this dialog was closed via the OK button, meaning that the form
-   * was validated and all values are acceptable.
-   *
-   * @return true if the form was validated and closed via the OK button, false otherwise.
-   */
-  public boolean wasOkayed() {
-    return wasOkayed;
-  }
-
-  /**
-   * Returns the FormField with the given identifier if it exists on this dialog.
-   *
-   * @param identifier The string identifier of the field in question.
-   * @return A FormField instance representing that field, or null if not found.
-   */
-  public FormField findFormField(String identifier) {
-    List<FormField> allFields = new ArrayList<>();
-
-    if (formPanel != null) {
-      allFields.addAll(formPanel.getFormFields());
-    }
-
-    else {
-      for (int i = 0; i < tabPane.getTabCount(); i++) {
-        FormPanel formPanel = getFormPanelAt(i);
-        if (formPanel != null) {
-          allFields.addAll(formPanel.getFormFields());
-        } else {
-          logger.warning("PropertiesDialog.findFormField: couldn't find FormPanel at index " + i);
-        }
-      }
-    }
-
-    for (FormField field : allFields) {
-      if (field.getIdentifier() != null && field.getIdentifier().equals(identifier)) {
-        return field;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * A static convenience method to generate a JScrollPane with more sensible default values.
-   * Seriously, why is the default behaviour to scroll 1 pixel at a time when you mouse wheel?
-   *
-   * @param component Any Component that needs scrolling.
-   * @return A JScrollPane that won't take a million years to scroll through.
-   */
-  public static JScrollPane buildScrollPane(Component component) {
-    return buildScrollPane(component, 24);
-  }
-
-  /**
-   * A static convenience method to generate a JScrollPane with more sensible default values.
-   * Seriously, why is the default behaviour to scroll 1 pixel at a time when you mouse wheel?
-   *
-   * @param component     Any Component that needs scrolling.
-   * @param unitIncrement How much to scroll by (I believe this is a pixel value).
-   * @return A JScrollPane that won't take a million years to scroll through.
-   */
-  public static JScrollPane buildScrollPane(Component component, int unitIncrement) {
-    JScrollPane scrollPane = new JScrollPane(component);
-    scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
-    scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
-    return scrollPane;
-  }
-
-  /**
-   * Returns the FormPanel from the tab with the given index. If the tab is out of range,
-   * or if no FormPanel can be found on that tab for any reason, this returns null.
-   *
-   * @param index The tab index in question.
-   * @return A FormPanel instance, or null if not found.
-   */
-  public FormPanel getFormPanelAt(int index) {
-    // Special case: if we only have one, we won't have a tab pane at all:
-    if (index == 0 && tabPane == null && formPanel != null) {
-      return formPanel;
-    }
-
-    if (tabPane == null) {
-      return null;
-    }
-
-    if (index < 0 || index >= tabPane.getTabCount()) {
-      return null;
-    }
-
-    Object something = tabPane.getComponentAt(index);
-    if (!(something instanceof JScrollPane)) {
-      return null;
-    }
-
-    JScrollPane scrollPane = (JScrollPane) something;
-    if (!(scrollPane.getViewport().getView() instanceof FormPanel)) {
-      return null;
-    }
-
-    return (FormPanel) scrollPane.getViewport().getView();
-  }
-
-  protected void validateFormAndClose() {
-    // If we're wrapping a single FormPanel, validate it:
-    if (formPanel != null) {
-      if (!formPanel.isFormValid()) {
-        return;
-      }
-    }
-
-    // If we're wrapping a tab pane, validate all the forms:
-    else {
-      int firstTabWithErrors = -1;
-      for (int i = 0; i < tabPane.getTabCount(); i++) {
-        FormPanel form = getFormPanelAt(i);
-        if (form != null) {
-          if (!form.isFormValid()) {
-            if (firstTabWithErrors == -1) {
-              firstTabWithErrors = i;
+        // If we got multiple form panels, use a tab pane:
+        if (formPanelList.size() > 1) {
+            tabPane = new JTabbedPane();
+            for (FormPanel formPanel : formPanelList) {
+                formPanel.render();
+                tabPane.addTab(formPanel.getName(), buildScrollPane(formPanel));
             }
-          }
-        } else {
-          logger.warning("PropertiesDialog.validateFormAndClose: couldn't find FormPanel at index " + i);
+            formPanel = null;
+            add(tabPane, BorderLayout.CENTER);
         }
-      }
 
-      // If any of them had errors, switch to the first failed one and we're done.
-      if (firstTabWithErrors != -1) {
-        tabPane.setSelectedIndex(firstTabWithErrors);
-        return;
-      }
+        // If we got one form panel, use it directly:
+        else if (formPanelList.size() == 1) {
+            tabPane = null;
+            formPanel = formPanelList.get(0);
+            formPanel.render();
+            add(buildScrollPane(formPanel), BorderLayout.CENTER);
+        }
+
+        // If we didn't get any form panels, then I guess we're hooped:
+        else {
+            tabPane = null;
+            formPanel = new FormPanel();
+            add(formPanel, BorderLayout.CENTER);
+            logger.warning("PropertiesDialog was created with an empty list of FormPanels.");
+        }
+
+        add(buildButtonPanel(), BorderLayout.SOUTH);
+        this.propsManager = manager;
+        this.ownerFrame = owner;
+        setSize(640, 480);
+        setMinimumSize(new Dimension(400, 360));
     }
 
-    // If we get here, all forms are valid:
-    wasOkayed = true;
-    propsManager.updateFromDialog(this);
-    dispose();
-  }
+    /**
+     * Overridden to update our position if the owner window moves.
+     *
+     * @param visible Whether to show or hide the dialog.
+     */
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible) {
+            setLocationRelativeTo(ownerFrame);
+        }
+        super.setVisible(visible);
+    }
 
-  protected JPanel buildButtonPanel() {
-    JPanel panel = new JPanel();
-    panel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-    panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-    JButton btn = new JButton("OK");
-    btn.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        validateFormAndClose();
-      }
+    /**
+     * Reports whether this dialog was closed via the OK button, meaning that the form
+     * was validated and all values are acceptable.
+     *
+     * @return true if the form was validated and closed via the OK button, false otherwise.
+     */
+    public boolean wasOkayed() {
+        return wasOkayed;
+    }
 
-    });
-    btn.setPreferredSize(new Dimension(95, 24));
-    panel.add(btn);
+    /**
+     * Returns the FormField with the given identifier if it exists on this dialog.
+     *
+     * @param identifier The string identifier of the field in question.
+     * @return A FormField instance representing that field, or null if not found.
+     */
+    public FormField findFormField(String identifier) {
+        List<FormField> allFields = new ArrayList<>();
 
-    btn = new JButton("Cancel");
-    btn.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        wasOkayed = false;
+        if (formPanel != null) {
+            allFields.addAll(formPanel.getFormFields());
+        }
+        else {
+            for (int i = 0; i < tabPane.getTabCount(); i++) {
+                FormPanel formPanel = getFormPanelAt(i);
+                if (formPanel != null) {
+                    allFields.addAll(formPanel.getFormFields());
+                }
+                else {
+                    logger.warning("PropertiesDialog.findFormField: couldn't find FormPanel at index " + i);
+                }
+            }
+        }
+
+        for (FormField field : allFields) {
+            if (field.getIdentifier() != null && field.getIdentifier().equals(identifier)) {
+                return field;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * A static convenience method to generate a JScrollPane with more sensible default values.
+     * Seriously, why is the default behaviour to scroll 1 pixel at a time when you mouse wheel?
+     *
+     * @param component Any Component that needs scrolling.
+     * @return A JScrollPane that won't take a million years to scroll through.
+     */
+    public static JScrollPane buildScrollPane(Component component) {
+        return buildScrollPane(component, 24);
+    }
+
+    /**
+     * A static convenience method to generate a JScrollPane with more sensible default values.
+     * Seriously, why is the default behaviour to scroll 1 pixel at a time when you mouse wheel?
+     *
+     * @param component     Any Component that needs scrolling.
+     * @param unitIncrement How much to scroll by (I believe this is a pixel value).
+     * @return A JScrollPane that won't take a million years to scroll through.
+     */
+    public static JScrollPane buildScrollPane(Component component, int unitIncrement) {
+        JScrollPane scrollPane = new JScrollPane(component);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
+        return scrollPane;
+    }
+
+    /**
+     * Returns the FormPanel from the tab with the given index. If the tab is out of range,
+     * or if no FormPanel can be found on that tab for any reason, this returns null.
+     *
+     * @param index The tab index in question.
+     * @return A FormPanel instance, or null if not found.
+     */
+    public FormPanel getFormPanelAt(int index) {
+        // Special case: if we only have one, we won't have a tab pane at all:
+        if (index == 0 && tabPane == null && formPanel != null) {
+            return formPanel;
+        }
+
+        if (tabPane == null) {
+            return null;
+        }
+
+        if (index < 0 || index >= tabPane.getTabCount()) {
+            return null;
+        }
+
+        Object something = tabPane.getComponentAt(index);
+        if (!(something instanceof JScrollPane)) {
+            return null;
+        }
+
+        JScrollPane scrollPane = (JScrollPane)something;
+        if (!(scrollPane.getViewport().getView() instanceof FormPanel)) {
+            return null;
+        }
+
+        return (FormPanel)scrollPane.getViewport().getView();
+    }
+
+    protected void validateFormAndClose() {
+        // If we're wrapping a single FormPanel, validate it:
+        if (formPanel != null) {
+            if (!formPanel.isFormValid()) {
+                return;
+            }
+        }
+
+        // If we're wrapping a tab pane, validate all the forms:
+        else {
+            int firstTabWithErrors = -1;
+            for (int i = 0; i < tabPane.getTabCount(); i++) {
+                FormPanel form = getFormPanelAt(i);
+                if (form != null) {
+                    if (!form.isFormValid()) {
+                        if (firstTabWithErrors == -1) {
+                            firstTabWithErrors = i;
+                        }
+                    }
+                }
+                else {
+                    logger.warning("PropertiesDialog.validateFormAndClose: couldn't find FormPanel at index " + i);
+                }
+            }
+
+            // If any of them had errors, switch to the first failed one and we're done.
+            if (firstTabWithErrors != -1) {
+                tabPane.setSelectedIndex(firstTabWithErrors);
+                return;
+            }
+        }
+
+        // If we get here, all forms are valid:
+        wasOkayed = true;
+        propsManager.updateFromDialog(this);
         dispose();
-      }
+    }
 
-    });
-    btn.setPreferredSize(new Dimension(95, 24));
-    panel.add(btn);
+    protected JPanel buildButtonPanel() {
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+        panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        JButton btn = new JButton("OK");
+        btn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                validateFormAndClose();
+            }
 
-    return panel;
-  }
+        });
+        btn.setPreferredSize(new Dimension(95, 24));
+        panel.add(btn);
+
+        btn = new JButton("Cancel");
+        btn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                wasOkayed = false;
+                dispose();
+            }
+
+        });
+        btn.setPreferredSize(new Dimension(95, 24));
+        panel.add(btn);
+
+        return panel;
+    }
 
 }

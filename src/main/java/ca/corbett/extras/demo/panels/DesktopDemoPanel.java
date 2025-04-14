@@ -40,7 +40,8 @@ public class DesktopDemoPanel extends PanelBuilder {
         LogoConfig logoConfig = new LogoConfig("demo");
         logoConfig.setLogoHeight(80);
         BufferedImage logoImage = LogoGenerator.generateImage("Logo", logoConfig);
-        desktopPane = new CustomizableDesktopPane(logoImage, CustomizableDesktopPane.LogoPlacement.BOTTOM_RIGHT, 0.5f, gradient);
+        desktopPane = new CustomizableDesktopPane(logoImage, CustomizableDesktopPane.LogoPlacement.BOTTOM_RIGHT, 0.5f,
+                                                  gradient);
     }
 
     @Override
@@ -53,13 +54,12 @@ public class DesktopDemoPanel extends PanelBuilder {
         JPanel container = new JPanel();
         container.setLayout(new BorderLayout());
 
-        FormPanel formPanel = new FormPanel();
+        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel.setStandardLeftMargin(24);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("<html>If your application uses JDesktopPane,<br/>");
-        sb.append("you may be frustrated with the lack of<br/>");
-        sb.append("options for customization.<br/><br/>");
-        sb.append("Meet the CustomizableDesktopPane!</html>");
+        sb.append("<html>If your application uses JDesktopPane, you may be frustrated with the lack of<br/>");
+        sb.append("options for customization.  Meet the CustomizableDesktopPane!</html>");
         LabelField labelField = new LabelField(sb.toString());
         labelField.setTopMargin(14);
         labelField.setBottomMargin(18);
@@ -81,7 +81,6 @@ public class DesktopDemoPanel extends PanelBuilder {
             }
 
         });
-        bgColorField.setHelpText("You can choose a solid color or a gradient!");
         formPanel.addFormField(bgColorField);
 
         NumberField alphaField = new NumberField("Logo alpha:", 0.5, 0.0, 1.0, 0.1);
@@ -92,7 +91,6 @@ public class DesktopDemoPanel extends PanelBuilder {
             }
 
         });
-        alphaField.setHelpText("The logo can be partially transparent");
         formPanel.addFormField(alphaField);
 
         List<String> options = new ArrayList<>();
@@ -103,14 +101,15 @@ public class DesktopDemoPanel extends PanelBuilder {
         placementCombo.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                desktopPane.setLogoImagePlacement(CustomizableDesktopPane.LogoPlacement.fromLabel(placementCombo.getSelectedItem()));
+                desktopPane.setLogoImagePlacement(
+                        CustomizableDesktopPane.LogoPlacement.fromLabel(placementCombo.getSelectedItem()));
             }
 
         });
         formPanel.addFormField(placementCombo);
 
         PanelField buttonWrapper = new PanelField();
-        buttonWrapper.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
+        buttonWrapper.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         JButton button = new JButton("Add frame");
         button.addActionListener(new ActionListener() {
             @Override
@@ -138,7 +137,7 @@ public class DesktopDemoPanel extends PanelBuilder {
 
         formPanel.render();
 
-        container.add(formPanel, BorderLayout.WEST);
+        container.add(formPanel, BorderLayout.SOUTH);
         container.add(desktopPane, BorderLayout.CENTER);
         return container;
     }
