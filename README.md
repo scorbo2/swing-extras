@@ -13,7 +13,7 @@ utilities within swing-extras:
 
 You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
-- The [javadocs](http://www.corbett.ca/swing-extras-javadocs/2.0.0") are also available.
+- The [javadocs](http://www.corbett.ca/swing-extras-javadocs/2.0.0) are also available.
 
 ## How do I get it?
 
