@@ -277,7 +277,7 @@ public final class FontDialog extends JDialog {
         if (bgColor != null) {
             startingHeight += 22;
         }
-        setSize(new Dimension(280, startingHeight));
+        setSize(new Dimension(295, startingHeight));
         setResizable(false);
         setLayout(new BorderLayout());
         add(buildFontChooserPanel(textColor, bgColor), BorderLayout.CENTER);
