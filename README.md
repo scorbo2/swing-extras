@@ -17,14 +17,14 @@ You can browse the full documentation online:
 
 ## How do I get it?
 
-If you're using Maven, you can simply list it as a dependency:
+`swing-extras` is available in Maven Central, so you can simply list it as a dependency:
 
 ```xml
 <dependencies>
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
   </dependency>
 </dependencies>
 ```
@@ -36,7 +36,7 @@ for example to generate the javadocs locally, then you can clone the repo:
 git clone https://github.com/scorbo2/swing-extras.git
 cd swing-extras
 mvn package
-java -jar target/swing-extras-2.0.0-jar-with-dependencies.jar # Runs the built-in demo app
+java -jar target/swing-extras-2.1.0-jar-with-dependencies.jar # Runs the built-in demo app
 ```
 
 ## License

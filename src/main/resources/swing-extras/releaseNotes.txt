@@ -1,6 +1,9 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.1.0 [pending]
+  - TODO issue list
+
 Version 2.0.0 [2025-04-13]
   - Absorbed app-extensions library into swing-extras
   - Absorbed swing-forms library into swing-extras
