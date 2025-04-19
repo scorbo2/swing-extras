@@ -91,6 +91,9 @@ public abstract class AppProperties<T extends AppExtension> {
 
             // Also enable or disable any properties for this extension:
             List<AbstractProperty> disabledProps = extension.getConfigProperties();
+            if (disabledProps == null) {
+                continue;
+            }
             for (AbstractProperty prop : disabledProps) {
                 if (propsManager.getProperty(prop.getFullyQualifiedName()) != null) {
                     propsManager.getProperty(prop.getFullyQualifiedName()).setEnabled(isEnabled);
@@ -276,6 +279,9 @@ public abstract class AppProperties<T extends AppExtension> {
 
             // Also set the enabled status of each extension property:
             List<AbstractProperty> props = extension.getConfigProperties();
+            if (props == null) {
+                continue;
+            }
             for (AbstractProperty prop : props) {
                 if (propsManager.getProperty(prop.getFullyQualifiedName()) != null) {
                     propsManager.getProperty(prop.getFullyQualifiedName()).setEnabled(isEnabled);
