@@ -1,5 +1,6 @@
 package ca.corbett.forms;
 
+import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
@@ -10,6 +11,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -270,14 +272,14 @@ public final class FontDialog extends JDialog {
     private void initComponents(Font initialFont, Color textColor, Color bgColor) {
         selectedFont = initialFont;
         setModalityType(ModalityType.APPLICATION_MODAL);
-        int startingHeight = 380;
+        int startingHeight = 385;
         if (textColor != null) {
-            startingHeight += 22;
+            startingHeight += 25;
         }
         if (bgColor != null) {
-            startingHeight += 22;
+            startingHeight += 25;
         }
-        setSize(new Dimension(295, startingHeight));
+        setSize(new Dimension(305, startingHeight));
         setResizable(false);
         setLayout(new BorderLayout());
         add(buildFontChooserPanel(textColor, bgColor), BorderLayout.CENTER);
@@ -293,9 +295,9 @@ public final class FontDialog extends JDialog {
      *
      * @param textColor If not null, will create a text color chooser and set it to this value.
      * @param bgColor   If not null, will create a bg color chooser and set it to this value.
-     * @return A JPanel
+     * @return A JPanel wrapped in a scroll pane
      */
-    private JPanel buildFontChooserPanel(Color textColor, Color bgColor) {
+    private JComponent buildFontChooserPanel(Color textColor, Color bgColor) {
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
 
         AbstractAction changeAction = new AbstractAction() {
@@ -374,7 +376,7 @@ public final class FontDialog extends JDialog {
         }
 
         formPanel.render();
-        return formPanel;
+        return PropertiesDialog.buildScrollPane(formPanel);
     }
 
     /**
