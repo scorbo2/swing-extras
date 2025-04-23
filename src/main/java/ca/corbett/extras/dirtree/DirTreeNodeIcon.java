@@ -9,6 +9,19 @@ import java.awt.Graphics;
  * Shamelessly stolen from StackOverflow. Draws nice simple little + and - icons next to tree
  * nodes to indicate expand/collapse ability, instead of the horrible icons included
  * in every major look and feel.
+ * <p>
+ *     To use this code, you have to let the UIManager know about it:
+ * </p>
+ * <pre>
+ static {
+ UIManager.put("Tree.collapsedIcon", new DirTreeNodeIcon('+'));
+ UIManager.put("Tree.expandedIcon", new DirTreeNodeIcon('-'));
+ }
+ </pre>
+ * <p>
+ *     But a better option is to use LookAndFeelManager to switch the LookAndFeel to something
+ *     better than one of the Java built-in defaults. Then you won't need this at all.
+ * </p>
  *
  * @author StackOverflow
  * @since 2017-11-09
