@@ -1,5 +1,6 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.forms.FormPanel;
 
 import javax.swing.Action;
@@ -71,7 +72,7 @@ public final class LabelField extends FormField {
         }
         label = new JLabel(labelText);
         font = label.getFont();
-        color = Color.BLACK;
+        color = LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK);
         this.fieldLabel = new JLabel(fieldLabel);
         this.fieldLabel.setFont(fieldLabelFont);
         fieldComponent = label;
@@ -184,7 +185,7 @@ public final class LabelField extends FormField {
             label.setCursor(Cursor.getDefaultCursor());
         }
         else {
-            fieldLabel.setForeground(Color.BLACK);
+            fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
             fieldLabel.setFont(fieldLabelFont);
             fieldLabel.setCursor(Cursor.getDefaultCursor());
         }

@@ -1,5 +1,6 @@
 package ca.corbett.extras.properties;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 
@@ -64,7 +65,8 @@ public class LabelProperty extends AbstractProperty {
      * @return A LabelField suitable for use as a header.
      */
     public static LabelProperty createHeaderLabel(String name, String text) {
-        return new LabelProperty(name, text, DEFAULT_HEADER_FONT, Color.BLACK, 10, 0);
+        Color labelColor = LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK);
+        return new LabelProperty(name, text, DEFAULT_HEADER_FONT, labelColor, 10, 0);
     }
 
     /**
@@ -77,7 +79,8 @@ public class LabelProperty extends AbstractProperty {
      * @return A LabelField suitable for use as a regular form label.
      */
     public static LabelProperty createLabel(String name, String text) {
-        return new LabelProperty(name, text, DEFAULT_LABEL_FONT, Color.BLACK, 4, 4);
+        Color labelColor = LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK);
+        return new LabelProperty(name, text, DEFAULT_LABEL_FONT, labelColor, 4, 4);
     }
 
     @Override

@@ -1,13 +1,21 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.MessageUtil;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
+import ca.corbett.extras.properties.LookAndFeelProperty;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 
+import javax.swing.AbstractAction;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.net.URI;
 import java.util.logging.Logger;
 
@@ -33,7 +41,7 @@ public class IntroPanel extends PanelBuilder {
         introPanel.setStandardLeftMargin(24);
 
         LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-extras!", 24);
-        label.setColor(Color.BLUE);
+        label.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
         introPanel.addFormField(label);
 
         String txt = "<html>This is a library of components for Java Swing application. This collection has<br>" +
@@ -106,7 +114,29 @@ public class IntroPanel extends PanelBuilder {
         }
         introPanel.addFormField(labelField);
 
+        LookAndFeelProperty lafProperty = new LookAndFeelProperty("blah", "Change demo app look and feel:");
+        final ComboField lafCombo = (ComboField)lafProperty.generateFormField();
+        lafCombo.addValueChangedAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                LookAndFeelManager.switchLaf(lafProperty.getLafClass(lafCombo.getSelectedIndex()));
+            }
+        });
+        lafCombo.setTopMargin(38);
+        introPanel.addFormField(lafCombo);
+
         introPanel.render();
         return introPanel;
+    }
+
+    private void changeLookAndFeel(String className) {
+        try {
+            System.out.println("Changing to " + className);
+            UIManager.setLookAndFeel(className);
+            SwingUtilities.updateComponentTreeUI(DemoApp.getInstance());
+        }
+        catch (Exception e) {
+            new MessageUtil(DemoApp.getInstance(), logger).error("Unable to change look and feel!", e);
+        }
     }
 }

@@ -703,10 +703,8 @@ public final class AudioWaveformPanel extends JPanel {
      */
     private void buildControlPanels() {
         controlPanelMain = new JPanel();
-        controlPanelMain.setBackground(Color.GRAY);
         controlPanelMain.setLayout(new GridBagLayout());
         controlPanelExtra = new JPanel();
-        controlPanelExtra.setBackground(Color.GRAY);
         controlPanelExtra.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
 

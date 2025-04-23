@@ -47,6 +47,28 @@
             <artifactId>gson</artifactId>
             <version>2.12.1</version>
         </dependency>
+
+        <dependency>
+            <!-- https://github.com/JFormDesigner/FlatLaf -->
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.6</version>
+        </dependency>
+
+        <dependency>
+            <!-- https://github.com/JFormDesigner/FlatLaf/tree/main/flatlaf-intellij-themes -->
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-intellij-themes</artifactId>
+            <version>3.6</version>
+        </dependency>
+
+        <dependency>
+            <!-- An oldie but a goodie -->
+            <groupId>com.jtattoo</groupId>
+            <artifactId>JTattoo</artifactId>
+            <version>1.6.13</version>
+        </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>

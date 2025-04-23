@@ -1,5 +1,6 @@
 package ca.corbett.extras.image;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.properties.Properties;
 
@@ -103,7 +104,7 @@ public class ImagePanelConfig implements ConfigObject {
      * Resets all properties back to their default values.
      */
     public void resetToDefaults() {
-        bgColor = Color.DARK_GRAY;
+        bgColor = LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY);
         zoomFactorIncrement = 0.1;
         enableZoomOnMouseClick = true;
         enableZoomOnMouseWheel = true;

@@ -1,5 +1,6 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.extras.logging.LogConsoleTheme;
@@ -39,7 +40,7 @@ public class LogConsolePanel extends PanelBuilder {
         formPanel.setStandardLeftMargin(24);
 
         LabelField label = LabelField.createBoldHeaderLabel("LogConsole", 20);
-        label.setColor(Color.BLUE);
+        label.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
         formPanel.addFormField(label);
 
         label = LabelField.createPlainHeaderLabel(

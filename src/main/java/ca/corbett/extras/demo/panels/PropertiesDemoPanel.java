@@ -1,5 +1,6 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
@@ -144,7 +145,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
         LabelProperty testLabel = new LabelProperty("Intro.Labels.someLabelProperty2",
                                                     "You can set label font properties");
         testLabel.setFont(new Font("Monospaced", Font.ITALIC, 14));
-        testLabel.setColor(Color.BLUE);
+        testLabel.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
         props.add(testLabel);
         props.add(new LabelProperty("Intro.Labels.label3", "You can also add hidden properties."));
         for (int i = 0; i < 10; i++) {

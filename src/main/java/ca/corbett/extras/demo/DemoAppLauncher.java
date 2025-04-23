@@ -1,5 +1,8 @@
 package ca.corbett.extras.demo;
 
+import ca.corbett.extras.LookAndFeelManager;
+import com.formdev.flatlaf.FlatLightLaf;
+
 import java.awt.SplashScreen;
 
 /**
@@ -10,6 +13,10 @@ import java.awt.SplashScreen;
  */
 public class DemoAppLauncher {
     public static void main(String[] args) {
+
+        LookAndFeelManager.installExtraLafs();
+        LookAndFeelManager.switchLaf(FlatLightLaf.class.getName());
+
         // Get the splash screen if there is one:
         final SplashScreen splashScreen = SplashScreen.getSplashScreen();
         if (splashScreen != null) {

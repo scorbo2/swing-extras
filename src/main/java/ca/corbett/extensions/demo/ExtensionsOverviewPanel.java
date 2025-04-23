@@ -4,6 +4,7 @@ import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.AppExtensionInfo;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extensions.ui.ExtensionManagerDialog;
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.properties.AbstractProperty;
@@ -39,7 +40,7 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         formPanel.setStandardLeftMargin(24);
 
         LabelField label = LabelField.createBoldHeaderLabel("Welcome to app-extensions!", 24);
-        label.setColor(Color.BLUE);
+        label.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
         label.setBottomMargin(16);
         formPanel.addFormField(label);
 
