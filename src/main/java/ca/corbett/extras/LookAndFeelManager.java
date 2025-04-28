@@ -200,7 +200,6 @@ public class LookAndFeelManager {
         try {
             UIManager.setLookAndFeel(className);
             for (Window w : Window.getWindows()) {
-                System.out.println("Updating window "+w.getName());
                 SwingUtilities.updateComponentTreeUI(w);
             }
         }

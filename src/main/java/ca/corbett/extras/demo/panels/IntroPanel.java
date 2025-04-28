@@ -1,7 +1,6 @@
 package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.LookAndFeelManager;
-import ca.corbett.extras.MessageUtil;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.properties.LookAndFeelProperty;
@@ -11,8 +10,6 @@ import ca.corbett.forms.fields.LabelField;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -127,16 +124,5 @@ public class IntroPanel extends PanelBuilder {
 
         introPanel.render();
         return introPanel;
-    }
-
-    private void changeLookAndFeel(String className) {
-        try {
-            System.out.println("Changing to " + className);
-            UIManager.setLookAndFeel(className);
-            SwingUtilities.updateComponentTreeUI(DemoApp.getInstance());
-        }
-        catch (Exception e) {
-            new MessageUtil(DemoApp.getInstance(), logger).error("Unable to change look and feel!", e);
-        }
     }
 }
