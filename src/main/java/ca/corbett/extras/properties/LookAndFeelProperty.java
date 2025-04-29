@@ -66,9 +66,18 @@ public class LookAndFeelProperty extends AbstractProperty {
         }
     }
 
-    public int indexOf(String itemName) {
+    public int indexOfDisplayName(String itemName) {
         for (int i = 0; i < displayNames.size(); i++) {
             if (displayNames.get(i).equals(itemName)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int indexOfClassName(String itemName) {
+        for (int i = 0; i < classNames.size(); i++) {
+            if (classNames.get(i).equals(itemName)) {
                 return i;
             }
         }
@@ -90,10 +99,10 @@ public class LookAndFeelProperty extends AbstractProperty {
 
     @Override
     public void loadFromProps(Properties props) {
-        int index = indexOf(props.getString(fullyQualifiedName, getSelectedLafClass()));
+        int index = indexOfClassName(props.getString(fullyQualifiedName, getSelectedLafClass()));
         if (index == -1) {
             // If the one in props is not in our list, try to find our default item
-            index = indexOf(defaultClassName);
+            index = indexOfClassName(defaultClassName);
         }
         if (index == -1) {
             selectedIndex = 0; // fallback default
