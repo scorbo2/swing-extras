@@ -5,6 +5,8 @@ import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.properties.Properties;
 
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Point;
@@ -20,7 +22,7 @@ import java.awt.image.BufferedImage;
  * @author scorbett
  * @since 2017-11-07
  */
-public class ImagePanelConfig implements ConfigObject {
+public class ImagePanelConfig implements ConfigObject, ChangeListener {
 
     public enum DisplayMode {
         NONE, CENTER, BEST_FIT, STRETCH, CUSTOM
@@ -30,6 +32,7 @@ public class ImagePanelConfig implements ConfigObject {
         QUICK_AND_DIRTY, SLOW_AND_ACCURATE
     }
 
+    private boolean autoSetBackground = true;
     private Color bgColor;
     private Cursor magnifierCursor;
     private final Cursor nullCursor;
@@ -47,6 +50,7 @@ public class ImagePanelConfig implements ConfigObject {
     protected ImagePanelConfig() {
         nullCursor = Toolkit.getDefaultToolkit().createCustomCursor(
                 new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null");
+        LookAndFeelManager.addChangeListener(this);
     }
 
     /**
@@ -88,7 +92,8 @@ public class ImagePanelConfig implements ConfigObject {
         }
 
         ImagePanelConfig newProps = new ImagePanelConfig();
-        newProps.setBgColor(other.bgColor);
+        newProps.bgColor = other.bgColor;
+        newProps.autoSetBackground = other.autoSetBackground;
         newProps.setZoomFactorIncrement(other.getZoomFactorIncrement());
         newProps.setDisplayMode(other.getDisplayMode());
         newProps.setEnableZoomOnMouseClick(other.isEnableZoomOnMouseClick());
@@ -105,6 +110,7 @@ public class ImagePanelConfig implements ConfigObject {
      */
     public void resetToDefaults() {
         bgColor = LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY);
+        autoSetBackground = true;
         zoomFactorIncrement = 0.1;
         enableZoomOnMouseClick = true;
         enableZoomOnMouseWheel = true;
@@ -135,6 +141,7 @@ public class ImagePanelConfig implements ConfigObject {
         String pfx = (prefix == null) ? "" : prefix;
         resetToDefaults();
         bgColor = props.getColor(pfx + "bgColor", bgColor);
+        autoSetBackground = props.getBoolean(pfx + "autoSetBackground", autoSetBackground);
         zoomFactorIncrement = props.getDouble(pfx + "zoomFactorIncrement", zoomFactorIncrement);
         displayMode = DisplayMode.valueOf(props.getString(pfx + "displayMode", displayMode.name()));
         enableZoomOnMouseClick = props.getBoolean(pfx + "enableZoomOnMouseClick", enableZoomOnMouseClick);
@@ -163,6 +170,7 @@ public class ImagePanelConfig implements ConfigObject {
         }
 
         props.setColor(prefix + "bgColor", bgColor);
+        props.setBoolean(prefix + "autoSetBackground", autoSetBackground);
         props.setDouble(prefix + "zoomFactorIncrement", zoomFactorIncrement);
         props.setString(prefix + "displayMode", displayMode.name());
         props.setBoolean(prefix + "enableZoomOnMouseClick", enableZoomOnMouseClick);
@@ -202,14 +210,21 @@ public class ImagePanelConfig implements ConfigObject {
     }
 
     /**
-     * Sets the background colour of the panel, defaults to Color.DARK_GRAY. This can also be
+     * Sets the background colour of the panel, defaults to the panel bg color
+     * from the current Look and Feel. This can also be
      * set directly on the ImagePanel itself, as it is a JPanel property. It is here
      * as a convenience.
+     * <p>
+     *     Note that explicitly setting a bgcolor here will override the
+     *     current look and feel, and this instance will ignore any future
+     *     look and feel changes in favour of the given bg color.
+     * </p>
      *
      * @param bgColor The desired background colour.
      */
     public void setBgColor(Color bgColor) {
         this.bgColor = bgColor;
+        autoSetBackground = false;
     }
 
     /**
@@ -385,4 +400,17 @@ public class ImagePanelConfig implements ConfigObject {
         this.zoomFactorIncrement = zoomFactorIncrement;
     }
 
+    /**
+     * Invoked from LookAndFeelManager when the Look and Feel is changed.
+     * If we have never been given an explicit background color, then we'll
+     * auto-set it according to the new look and feel.
+     *
+     * @param e a ChangeEvent object
+     */
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (autoSetBackground) {
+            bgColor = LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY);
+        }
+    }
 }

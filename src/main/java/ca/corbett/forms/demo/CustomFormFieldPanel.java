@@ -1,5 +1,6 @@
 package ca.corbett.forms.demo;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FontDialog;
 import ca.corbett.forms.FormPanel;
@@ -20,7 +21,11 @@ public class CustomFormFieldPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         formPanel.setStandardLeftMargin(24);
 
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("Creating a custom FormField implementation", 20);
+        final LabelField headerLabel = LabelField.createBoldHeaderLabel("Creating a custom FormField implementation",
+                                                                        20);
+        headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         headerLabel.setBottomMargin(24);
         formPanel.addFormField(headerLabel);
 
@@ -28,8 +33,8 @@ public class CustomFormFieldPanel extends PanelBuilder {
                 + "and you need to build something custom.<br/><br/>"
                 + "Here is an example of a custom font field that allows the user to select<br/>"
                 + "various font properties all in one single FormField:</html>";
-        headerLabel = LabelField.createPlainHeaderLabel(text, 14);
-        formPanel.addFormField(headerLabel);
+        LabelField label = LabelField.createPlainHeaderLabel(text, 14);
+        formPanel.addFormField(label);
 
         FontField fontField = new FontField("Just font, no size:");
         fontField.setShowSizeField(false);
@@ -42,11 +47,11 @@ public class CustomFormFieldPanel extends PanelBuilder {
         formPanel.addFormField(
                 new FontField("Font and fg/bg color:", FontDialog.INITIAL_FONT, Color.BLUE, Color.ORANGE));
 
-        headerLabel = LabelField.createPlainHeaderLabel("Full source code for this component is included!", 14);
+        label = LabelField.createPlainHeaderLabel("Full source code for this component is included!", 14);
         headerLabel.setTopMargin(24);
-        formPanel.addFormField(headerLabel);
-        headerLabel = LabelField.createPlainHeaderLabel("See the README for a walkthrough of this form field.", 14);
-        formPanel.addFormField(headerLabel);
+        formPanel.addFormField(label);
+        label = LabelField.createPlainHeaderLabel("See the README for a walkthrough of this form field.", 14);
+        formPanel.addFormField(label);
 
         formPanel.render();
         return formPanel;

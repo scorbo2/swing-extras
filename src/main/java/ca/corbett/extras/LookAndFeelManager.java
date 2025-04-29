@@ -64,8 +64,12 @@ import com.jtattoo.plaf.texture.TextureLookAndFeel;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.Color;
 import java.awt.Window;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,6 +86,8 @@ import static javax.swing.UIManager.installLookAndFeel;
 public class LookAndFeelManager {
 
     private static final Logger logger = Logger.getLogger(LookAndFeelManager.class.getName());
+
+    private static final List<ChangeListener> changeListeners = new ArrayList<>();
 
     /**
      * Can be invoked (ideally at application startup before any GUI elements are shown)
@@ -202,6 +208,7 @@ public class LookAndFeelManager {
             for (Window w : Window.getWindows()) {
                 SwingUtilities.updateComponentTreeUI(w);
             }
+            fireChangedEvent();
         }
         catch (Exception e) {
             logger.log(Level.SEVERE, "Unable to change look and feel!", e);
@@ -215,5 +222,32 @@ public class LookAndFeelManager {
     public static Color getLafColor(String key, Color defaultColor) {
         Color c = UIManager.getColor(key);
         return c == null ? defaultColor : c;
+    }
+
+    /**
+     * If you wish to be informed when the current Look and Feel changes, because
+     * you have perhaps set some custom colors across your UI, you can subscribe
+     * to receive notification when it happens.
+     * <p>
+     * Note: you'll only receive a ChangeEvent if the Look and Feel was switched
+     * via this class. If your code talks to UIManager directly, then this
+     * class is cut out of the loop and the ChangeEvent will not fire.
+     * </p>
+     *
+     * @param listener A ChangeListener to receive a change event when LaF changes.
+     */
+    public static void addChangeListener(ChangeListener listener) {
+        changeListeners.add(listener);
+    }
+
+    public static void removeChangeListener(ChangeListener listener) {
+        changeListeners.remove(listener);
+    }
+
+    private static void fireChangedEvent() {
+        ChangeEvent event = new ChangeEvent("LookAndFeelManager");
+        for (ChangeListener listener : changeListeners) {
+            listener.stateChanged(event);
+        }
     }
 }

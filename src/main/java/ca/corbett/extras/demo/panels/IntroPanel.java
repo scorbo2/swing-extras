@@ -38,7 +38,9 @@ public class IntroPanel extends PanelBuilder {
         introPanel.setStandardLeftMargin(24);
 
         LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-extras!", 24);
-        label.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         introPanel.addFormField(label);
 
         String txt = "<html>This is a library of components for Java Swing application. This collection has<br>" +

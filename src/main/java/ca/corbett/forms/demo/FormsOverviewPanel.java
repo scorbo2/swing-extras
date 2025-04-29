@@ -29,7 +29,9 @@ public class FormsOverviewPanel extends PanelBuilder {
         introPanel.setStandardLeftMargin(24);
 
         LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-forms!", 24);
-        label.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         introPanel.addFormField(label);
 
         introPanel.addFormField(

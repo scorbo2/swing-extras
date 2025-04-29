@@ -232,7 +232,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             props = ImagePanelConfig.createDefaultProperties();
         }
         this.properties = ImagePanelConfig.cloneProperties(props); // make a copy
-        this.originalProperties = props; // store the original in case we need to much with our copy
+        this.originalProperties = props; // store the original in case we need to muck with our copy
 
         // Cosmetic properties:
         this.setBackground(properties.getBgColor());
@@ -586,6 +586,10 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         int myHeight = getHeight();
         int imgWidth = (int)(srcImgWidth * zoomFactor);
         int imgHeight = (int)(srcImgHeight * zoomFactor);
+
+        super.setBackground(properties.getBgColor());
+        graphics2D.setColor(properties.getBgColor());
+        graphics2D.fillRect(0, 0, myWidth, myHeight);
 
         // If best fit is enabled, we need to determine the zoom factor to use:
         if (properties.getDisplayMode() == ImagePanelConfig.DisplayMode.BEST_FIT) {

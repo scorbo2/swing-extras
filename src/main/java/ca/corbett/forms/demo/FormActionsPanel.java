@@ -1,5 +1,6 @@
 package ca.corbett.forms.demo;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
@@ -11,6 +12,7 @@ import ca.corbett.forms.fields.TextField;
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -41,6 +43,9 @@ public class FormActionsPanel extends PanelBuilder {
     public JPanel build() {
         LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have customizable Actions:", 20);
         headerLabel.setBottomMargin(24);
+        headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         formPanel.addFormField(headerLabel);
 
         formPanel.addFormField(buildAlignmentChooser());

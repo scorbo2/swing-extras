@@ -1,5 +1,6 @@
 package ca.corbett.forms.demo;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
@@ -7,6 +8,7 @@ import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.TextField;
 
 import javax.swing.JPanel;
+import java.awt.Color;
 
 public class FormHelpPanel extends PanelBuilder {
     @Override
@@ -21,6 +23,9 @@ public class FormHelpPanel extends PanelBuilder {
 
         LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have help text!", 20);
         headerLabel.setBottomMargin(24);
+        headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         panel.addFormField(headerLabel);
 
         TextField textField = new TextField("Text:", 12, 1, true);

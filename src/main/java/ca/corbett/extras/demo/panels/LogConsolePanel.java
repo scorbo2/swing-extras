@@ -39,16 +39,18 @@ public class LogConsolePanel extends PanelBuilder {
         formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         formPanel.setStandardLeftMargin(24);
 
-        LabelField label = LabelField.createBoldHeaderLabel("LogConsole", 20);
-        label.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
+        final LabelField label = LabelField.createBoldHeaderLabel("LogConsole", 24);
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         formPanel.addFormField(label);
 
-        label = LabelField.createPlainHeaderLabel(
+        LabelField labelField = LabelField.createPlainHeaderLabel(
                 "<html>We can create a custom live-updated view of a log file with<br>" +
                         "configurable styles that can be decide how to render the<br>" +
                         "log output based on string tokens within the log message.<br><br>" +
                         "This can make it visually easy to see what's going on!", 14);
-        formPanel.addFormField(label);
+        formPanel.addFormField(labelField);
 
         PanelField panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -58,9 +60,10 @@ public class LogConsolePanel extends PanelBuilder {
         panelField.getPanel().add(button);
         formPanel.addFormField(panelField);
 
-        label = LabelField.createPlainHeaderLabel("Regular log messages will use whatever log theme is selected.", 14);
-        label.setTopMargin(24);
-        formPanel.addFormField(label);
+        labelField = LabelField.createPlainHeaderLabel("Regular log messages will use whatever log theme is selected.",
+                                                       14);
+        labelField.setTopMargin(24);
+        formPanel.addFormField(labelField);
 
         panelField = new PanelField();
         panelField.setLeftMargin(32);
@@ -91,9 +94,9 @@ public class LogConsolePanel extends PanelBuilder {
         panelField.getPanel().add(button);
         formPanel.addFormField(panelField);
 
-        label = LabelField.createPlainHeaderLabel("We can create a custom swing-extras log theme!", 14);
-        label.setTopMargin(24);
-        formPanel.addFormField(label);
+        labelField = LabelField.createPlainHeaderLabel("We can create a custom swing-extras log theme!", 14);
+        labelField.setTopMargin(24);
+        formPanel.addFormField(labelField);
 
         tokenField = new TextField("Messages containing:", 20, 1, false);
         tokenField.setText("My custom message");

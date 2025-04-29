@@ -1,5 +1,6 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.gradient.GradientColorField;
 import ca.corbett.extras.gradient.GradientConfig;
@@ -90,10 +91,13 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         formPanel.setStandardLeftMargin(12);
 
-        LabelField labelField = LabelField.createBoldHeaderLabel("ImageTextUtil", 20);
-        formPanel.addFormField(labelField);
+        final LabelField label = LabelField.createBoldHeaderLabel("ImageTextUtil", 20);
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
+        formPanel.addFormField(label);
 
-        labelField = new LabelField("<html>The ImageTextUtil class gives you a way<br>" +
+        LabelField labelField = new LabelField("<html>The ImageTextUtil class gives you a way<br>" +
                                             "to write multiple lines of text to an image<br>" +
                                             "with optional fill and outline properties.<br>" +
                                             "Line wrapping can be handled automatically!</html>");

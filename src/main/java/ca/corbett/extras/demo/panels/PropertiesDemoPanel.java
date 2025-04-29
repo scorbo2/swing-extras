@@ -82,8 +82,11 @@ public class PropertiesDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         formPanel.setStandardLeftMargin(24);
 
-        LabelField labelField = LabelField.createBoldHeaderLabel("PropertiesManager", 20);
-        formPanel.addFormField(labelField);
+        final LabelField label = LabelField.createBoldHeaderLabel("PropertiesManager", 20);
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
+        formPanel.addFormField(label);
 
         formPanel.addFormField(LabelField.createPlainHeaderLabel(
                 "<html>Almost every application exposes properties for application settings and<br>" +

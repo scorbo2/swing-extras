@@ -20,32 +20,31 @@ import java.awt.Font;
  */
 public class LabelProperty extends AbstractProperty {
 
-    private static final int DEFAULT_TOP_MARGIN = 4;
-    private static final int DEFAULT_BOTTOM_MARGIN = 4;
-    private static final Font DEFAULT_HEADER_FONT = new Font(Font.DIALOG, Font.BOLD, 16);
-    private static final Font DEFAULT_LABEL_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
-
     private int extraTopMargin;
     private int extraBottomMargin;
     private Font labelFont;
     private Color labelColor;
 
     public LabelProperty(String name, String label) {
-        this(name, label, null, null, DEFAULT_TOP_MARGIN, DEFAULT_BOTTOM_MARGIN);
+        this(name, label, null, null, -1, -1);
     }
 
     public LabelProperty(String name, String label, Font font) {
-        this(name, label, font, null, DEFAULT_TOP_MARGIN, DEFAULT_BOTTOM_MARGIN);
+        this(name, label, font, null, -1, -1);
     }
 
     public LabelProperty(String name, String label, Font font, Color color) {
-        this(name, label, font, color, DEFAULT_TOP_MARGIN, DEFAULT_BOTTOM_MARGIN);
+        this(name, label, font, color, -1, -1);
     }
 
     public LabelProperty(String name, String label, Font font, Color color, int extraTopMargin, int extraBottomMargin) {
         super(name, label);
-        extraTopMargin = DEFAULT_TOP_MARGIN;
-        extraBottomMargin = DEFAULT_BOTTOM_MARGIN;
+        if (extraTopMargin < 0) {
+            extraTopMargin = LabelField.getExtraTopMarginNormal();
+        }
+        if (extraBottomMargin < 0) {
+            extraBottomMargin = LabelField.getExtraBottomMarginNormal();
+        }
         if (font != null) {
             setFont(font);
         }
@@ -59,6 +58,10 @@ public class LabelProperty extends AbstractProperty {
      * A static convenience factory method to create a "header" label with sensible
      * defaults for a section header label. The default values are 16 point bold black
      * text with a slightly larger top and bottom margin.
+     * <p>
+     *     You can control the extra margin above/below the generated label by using
+     *     LabelField.setHeaderLabelExtraMargins() before invoking this.
+     * </p>
      *
      * @param name The fully qualified field name
      * @param text The label text
@@ -66,13 +69,22 @@ public class LabelProperty extends AbstractProperty {
      */
     public static LabelProperty createHeaderLabel(String name, String text) {
         Color labelColor = LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK);
-        return new LabelProperty(name, text, DEFAULT_HEADER_FONT, labelColor, 10, 0);
+        return new LabelProperty(name,
+                                 text,
+                                 LabelField.getDefaultHeaderFont(),
+                                 labelColor,
+                                 LabelField.getExtraTopMarginHeader(),
+                                 LabelField.getExtraBottomMarginHeader());
     }
 
     /**
      * A static convenience factory method to create a "normal" label with sensible
      * defaults for a form label. The default values are 12 point plain black text
-     * with a 4 pixel top and bottom margin.
+     * with a slightly larger top and bottom margin.
+     * <p>
+     *     You can control the extra margin above/below the generated label by using
+     *     LabelField.setHeaderLabelExtraMargins() before invoking this.
+     * </p>
      *
      * @param name The fully qualified field name
      * @param text The label text
@@ -80,7 +92,12 @@ public class LabelProperty extends AbstractProperty {
      */
     public static LabelProperty createLabel(String name, String text) {
         Color labelColor = LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK);
-        return new LabelProperty(name, text, DEFAULT_LABEL_FONT, labelColor, 4, 4);
+        return new LabelProperty(name,
+                                 text,
+                                 LabelField.getDefaultLabelFont(),
+                                 labelColor,
+                                 LabelField.getExtraTopMarginNormal(),
+                                 LabelField.getExtraBottomMarginNormal());
     }
 
     @Override
@@ -92,6 +109,7 @@ public class LabelProperty extends AbstractProperty {
     public void loadFromProps(Properties props) {
         // Labels are static form fields, so there's literally nothing to do here.
     }
+
 
     public void setExtraMargins(int top, int bottom) {
         extraTopMargin = top;

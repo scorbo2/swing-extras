@@ -40,8 +40,9 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         formPanel.setStandardLeftMargin(24);
 
         LabelField label = LabelField.createBoldHeaderLabel("Welcome to app-extensions!", 24);
-        label.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
-        label.setBottomMargin(16);
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         formPanel.addFormField(label);
 
         String txt = "<html>ExtensionManager provides a way to allow your applications to be extended<br>" +
