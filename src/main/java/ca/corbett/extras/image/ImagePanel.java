@@ -1,5 +1,6 @@
 package ca.corbett.extras.image;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.RedispatchingMouseAdapter;
 
 import javax.swing.ImageIcon;
@@ -7,6 +8,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -216,6 +220,13 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
                     case STRETCH: thisPanel.stretchImage(); break;
                 }
                 //@formatter:on
+            }
+        });
+
+        LookAndFeelManager.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                ImagePanel.super.setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY));
             }
         });
     }
@@ -587,10 +598,6 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         int imgWidth = (int)(srcImgWidth * zoomFactor);
         int imgHeight = (int)(srcImgHeight * zoomFactor);
 
-        super.setBackground(properties.getBgColor());
-        graphics2D.setColor(properties.getBgColor());
-        graphics2D.fillRect(0, 0, myWidth, myHeight);
-
         // If best fit is enabled, we need to determine the zoom factor to use:
         if (properties.getDisplayMode() == ImagePanelConfig.DisplayMode.BEST_FIT) {
             imgWidth = srcImgWidth;
@@ -685,7 +692,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         if (dBuffer != null) {
             super.paintComponent(g);
             setRenderingQuality(graphics2D);
-            graphics2D.drawImage(dBuffer, imageX, imageY, imgWidth, imgHeight, this);
+            graphics2D.drawImage(dBuffer, imageX, imageY, imgWidth, imgHeight, null);
             graphics2D.dispose();
         }
         else {
