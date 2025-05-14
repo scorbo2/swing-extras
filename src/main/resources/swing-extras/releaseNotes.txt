@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.1 [TODO] - Migrate to git/maven
+  #35 - Fix high CPU usage in ImagePanel.paintComponent
   #34 - Fix ExtensionManager dependency load issues
   #31 - Add a way to listen for LaF changes
   #30 - LookAndFeelProperty not storing correctly
