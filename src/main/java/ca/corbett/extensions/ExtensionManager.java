@@ -443,6 +443,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 URL[] urls = {new URL("jar:file:" + jarFile.getAbsolutePath() + "!/")};
                 try (URLClassLoader cl = URLClassLoader.newInstance(urls)) {
 
+                    T result = null;
                     while (e.hasMoreElements()) {
                         JarEntry je = e.nextElement();
                         if (je.isDirectory() || !je.getName().endsWith(".class")) {
@@ -459,6 +460,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
                         }
 
                         // Load this class:
+                        logger.fine("ExtensionManager: loading class " + className + " from jar " + jarFile.getName());
                         Class candidate = cl.loadClass(className);
 
                         // What I want to do:
@@ -473,8 +475,12 @@ public abstract class ExtensionManager<T extends AppExtension> {
                             logger.log(Level.FINE, "Found qualifying AppExtension class: {0} in jar: {1}",
                                        new Object[]{candidate.getCanonicalName(),
                                                jarFile.getAbsolutePath()});
-                            return (T)candidate.newInstance();
+                            result = (T)candidate.newInstance();
                         }
+                    }
+
+                    if (result != null) {
+                        return result;
                     }
                 }
             }
