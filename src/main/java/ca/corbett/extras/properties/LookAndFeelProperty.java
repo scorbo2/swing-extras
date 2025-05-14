@@ -5,6 +5,8 @@ import ca.corbett.forms.fields.FormField;
 
 import javax.swing.UIManager;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,11 +34,12 @@ public class LookAndFeelProperty extends AbstractProperty {
         this.defaultClassName = defaultClassName;
 
         // Build out the list based on whatever is installed:
-        UIManager.LookAndFeelInfo[] lafs = UIManager.getInstalledLookAndFeels();
-        displayNames = new ArrayList<>(lafs.length);
-        classNames = new ArrayList<>(lafs.length);
+        List<UIManager.LookAndFeelInfo> list = Arrays.asList(UIManager.getInstalledLookAndFeels());
+        list.sort(Comparator.comparing(UIManager.LookAndFeelInfo::getName));
+        displayNames = new ArrayList<>(list.size());
+        classNames = new ArrayList<>(list.size());
         int index = 0;
-        for (UIManager.LookAndFeelInfo info : lafs) {
+        for (UIManager.LookAndFeelInfo info : list) {
             displayNames.add(info.getName());
             classNames.add(info.getClassName());
             if (info.getClassName().equals(defaultClassName)) {
