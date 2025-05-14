@@ -1,37 +1,47 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
-Version 2.1.0 [pending]
-  - TODO issue list
+Version 2.1 [TODO] - Migrate to git/maven
+  #34 - Fix ExtensionManager dependency load issues
+  #31 - Add a way to listen for LaF changes
+  #30 - LookAndFeelProperty not storing correctly
+  #29 - Make label top/bottom margins configurable
+  #28 - Support JTattoo LaF options
+  #27 - ImagePanel should support LaF
+  #26 - Odd JList behaviour when switching LaF
+  #24 - Support FlatLaf Laf options
+  #23 - ExtensionManagerDialog ignoring LaF
+  #22 - NullPointerException in AppProperties.load()
 
 Version 2.0.0 [2025-04-13]
-  - Absorbed app-extensions library into swing-extras
-  - Absorbed swing-forms library into swing-extras
   - New unified demo app
-  - Moved documentation to swing-extras-book and expanded
+  - Moved documentation to swing-extras-book and greatly expanded
+  #9 - Absorbed app-extensions library into swing-extras
+  #15 - Absorbed swing-forms library into swing-extras
 
 Version 1.9.4 [2025-04-10]
-  - Fix high CPU usage in PlaybackThread
-  - New FontField and FontProperty
-  - New help tooltip support in all form fields
-  - Fix cosmetic glitch in progress bars
   - Bug: FileField.setEnabled wasn't working
   - Bug: ComboBox's item listener was wrong
   - PanelField now responds to validation
+  #19 - Fix cosmetic glitch in progress bars
+  #17 - New help tooltip support in all form fields
+  #16 - New FontField and FontProperty
+  #14 - Fix high CPU usage in PlaybackThread
 
 Version 1.9.3 [2025-04-05]
-  - Fix ClassCastException introduced in 1.9.2
+  #12 - Fix ClassCastException introduced in 1.9.2
 
 Version 1.9.2 [2025-04-04]
-  - PropertiesDialog: add scrollbars to long forms
-  - LabelProperty should ignore saveToProps
-  - PropertiesManager: allow custom form logic pre-render
-  - Properties should allow read-only initial state
-  - PlaybackThread needs better reporting
+  #10 - PlaybackThread needs better reporting
+  #8 - LabelProperty should ignore saveToProps
+  #7 - Properties should allow read-only initial state
+  #6 - PropertiesDialog: add scrollbars to long forms
+  #5 - PropertiesManager.generateDialog can return null
+  #4 - PropertiesManager: allow custom form logic pre-render
 
 Version 1.9.1 [2025-03-26]
-  - Change ConfigObject from abstract class to interface
-  - Add EnumProperty for easier management of enum properties
+  #2 - Add EnumProperty for easier management of enum properties
+  #1 - Change ConfigObject from abstract class to interface
 
 Version 1.9 [2025-03-09]
   - Project moved to github
