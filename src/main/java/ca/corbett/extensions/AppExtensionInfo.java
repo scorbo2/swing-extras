@@ -90,6 +90,27 @@ public class AppExtensionInfo {
         }
     }
 
+    /**
+     * Attempts to use the given Class to read extInfo from the given jar resource. This is intended
+     * to be invoked by extension jars, where resources have to be loaded from the class that is present
+     * in the jar that contains them.
+     *
+     * @param extensionClass the extension class responsible for loading the resource.
+     * @param resource       the jar resource to be loaded (full resource path and name of extInfo.json)
+     * @return A parsed AppExtensionInfo object, or null if the resource could not be read.
+     */
+    public static AppExtensionInfo fromExtensionJar(Class<? extends AppExtension> extensionClass, String resource) {
+        try (InputStream in = extensionClass.getResourceAsStream(resource)) {
+            if (in != null) {
+                return fromStream(in);
+            }
+        }
+        catch (IOException ignored) {
+        }
+
+        return null;
+    }
+
     public String getName() {
         return name;
     }
