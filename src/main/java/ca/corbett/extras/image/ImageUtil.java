@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
@@ -110,6 +111,17 @@ public final class ImageUtil {
      */
     public static BufferedImage loadImage(final File file) throws IOException {
         return ImageIO.read(file);
+    }
+
+    /**
+     * Loads a BufferedImage from the specified input stream.
+     *
+     * @param inStream The input stream in question. Must contain an image in a format supported by javax.imageio.ImageIo.
+     * @return A BufferedImage containing the image data.
+     * @throws IOException on read/write error.
+     */
+    public static BufferedImage loadImage(final InputStream inStream) throws IOException {
+        return ImageIO.read(inStream);
     }
 
     /**
