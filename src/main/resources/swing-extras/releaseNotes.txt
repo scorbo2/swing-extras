@@ -2,6 +2,9 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.1 [TODO] - Migrate to git/maven
+  #38 - image icon loading/scaling convenience in ImageUtil
+  #37 - more image loading convenience methods in ImageUtil
+  #36 - make extInfo loading easier for extensions
   #35 - Fix high CPU usage in ImagePanel.paintComponent
   #34 - Fix ExtensionManager dependency load issues
   #31 - Add a way to listen for LaF changes
