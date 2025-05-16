@@ -95,16 +95,8 @@ public class ExtensionDetailsPanel extends JPanel {
         setLayout(new BorderLayout());
         formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
 
-        // Darken our background just a bit.
-        // TODO why was I doing this?
-//        Color bgColor = formPanel.getBackground();
-//        bgColor = new Color(bgColor.getRed() - 5, bgColor.getGreen() - 5, bgColor.getBlue() - 5);
-//        setBackground(bgColor);
-//        formPanel.setBackground(bgColor);
-
         PanelField panelField = new PanelField();
         JPanel panel = panelField.getPanel();
-        //panel.setBackground(bgColor);
         panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         enabledCheckBox = new JCheckBox("Enabled", isEnabled);
         enabledCheckBox.setOpaque(false);
@@ -150,7 +142,6 @@ public class ExtensionDetailsPanel extends JPanel {
 
         TextField descriptionField = new TextField("Description:", 40, 5, true);
         descriptionField.setEnabled(false);
-        //((JTextComponent)descriptionField.getFieldComponent()).setDisabledTextColor(Color.BLACK);
         ((JTextArea)descriptionField.getFieldComponent()).setLineWrap(true);
         descriptionField.setText(extInfo == null ? "" : extInfo.getLongDescription());
         ((JTextArea)descriptionField.getFieldComponent()).setCaretPosition(0); // scroll to top
@@ -160,7 +151,6 @@ public class ExtensionDetailsPanel extends JPanel {
 
         TextField releaseNotesField = new TextField("Release notes:", 40, 3, true);
         releaseNotesField.setEnabled(false);
-        //((JTextComponent)releaseNotesField.getFieldComponent()).setDisabledTextColor(Color.BLACK);
         ((JTextArea)releaseNotesField.getFieldComponent()).setLineWrap(true);
         releaseNotesField.setText(extInfo == null ? "" : extInfo.getReleaseNotes());
         ((JTextArea)releaseNotesField.getFieldComponent()).setCaretPosition(0); // scroll to top

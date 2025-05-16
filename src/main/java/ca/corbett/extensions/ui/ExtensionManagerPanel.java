@@ -271,8 +271,8 @@ public class ExtensionManagerPanel extends JPanel {
     }
 
     /**
-     * TODO I don't remember why this is needed...
-     *      I think I just wanted to make disabled extensions visually more obvious?
+     * Custom renderer so that we can show disabled extensions in a different font style to
+     * make it a little more clear that they are disabled.
      */
     protected static class ExtensionListRenderer extends JLabel implements ListCellRenderer<AppExtensionPlaceholder> {
 
