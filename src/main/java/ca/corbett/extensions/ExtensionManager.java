@@ -192,7 +192,13 @@ public abstract class ExtensionManager<T extends AppExtension> {
             }
             List<AbstractProperty> list = wrapper.extension.getConfigProperties();
             if (list != null) {
+                logger.fine(
+                        "ExtensionManager.getAllEnabledExtensionProperties(): extension \"" + wrapper.extension.getInfo().name + "\" returned " + list.size() + " properties.");
                 propList.addAll(list);
+            }
+            else {
+                logger.fine(
+                        "ExtensionManager.getAllEnabledExtensionProperties(): extension \"" + wrapper.extension.getInfo().name + "\" had no config properties.");
             }
         }
         return propList;
