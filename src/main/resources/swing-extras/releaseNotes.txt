@@ -1,7 +1,7 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
-Version 2.1 [TODO] - Migrate to git/maven
+Version 2.1 [2025-05-17] - LookAndFeel support
   #38 - image icon loading/scaling convenience in ImageUtil
   #37 - more image loading convenience methods in ImageUtil
   #36 - make extInfo loading easier for extensions
@@ -16,6 +16,7 @@ Version 2.1 [TODO] - Migrate to git/maven
   #24 - Support FlatLaf Laf options
   #23 - ExtensionManagerDialog ignoring LaF
   #22 - NullPointerException in AppProperties.load()
+  #21 - LookAndFeel support
 
 Version 2.0.0 [2025-04-13]
   - New unified demo app
