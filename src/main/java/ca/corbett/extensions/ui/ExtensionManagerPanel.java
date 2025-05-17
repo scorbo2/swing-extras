@@ -2,6 +2,7 @@ package ca.corbett.extensions.ui;
 
 import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.ExtensionManager;
+import ca.corbett.extras.LookAndFeelManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -270,8 +271,8 @@ public class ExtensionManagerPanel extends JPanel {
     }
 
     /**
-     * TODO I don't remember why this is needed...
-     *      I think I just wanted to make disabled extensions visually more obvious?
+     * Custom renderer so that we can show disabled extensions in a different font style to
+     * make it a little more clear that they are disabled.
      */
     protected static class ExtensionListRenderer extends JLabel implements ListCellRenderer<AppExtensionPlaceholder> {
 
@@ -279,15 +280,17 @@ public class ExtensionManagerPanel extends JPanel {
         public Component getListCellRendererComponent(JList<? extends AppExtensionPlaceholder> list, AppExtensionPlaceholder value, int index, boolean isSelected, boolean cellHasFocus) {
             setText(value.toString());
             setOpaque(true);
+            Color selectedFg = LookAndFeelManager.getLafColor("List.selectionForeground", Color.WHITE);
+            Color selectedBg = LookAndFeelManager.getLafColor("List.selectionBackground", Color.BLUE);
+            Color normalFg = LookAndFeelManager.getLafColor("List.foreground", Color.BLACK);
+            Color normalBg = LookAndFeelManager.getLafColor("List.background", Color.WHITE);
+            setForeground(isSelected ? selectedFg : normalFg);
+            setBackground(isSelected ? selectedBg : normalBg);
             if (value.isEnabled) {
-                setFont(new Font("Serif", Font.PLAIN, 14));
-                setForeground(isSelected ? Color.WHITE : Color.BLACK);
-                setBackground(isSelected ? Color.BLUE : Color.WHITE);
+                setFont(list.getFont().deriveFont(Font.PLAIN));
             }
             else {
-                setFont(new Font("Serif", Font.ITALIC, 14));
-                setForeground(isSelected ? Color.GRAY : Color.GRAY);
-                setBackground(isSelected ? Color.BLUE : Color.WHITE);
+                setFont(list.getFont().deriveFont(Font.ITALIC));
             }
             return this;
         }

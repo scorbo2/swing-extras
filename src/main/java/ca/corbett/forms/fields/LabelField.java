@@ -1,5 +1,6 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.forms.FormPanel;
 
 import javax.swing.Action;
@@ -41,6 +42,11 @@ import java.util.Map;
  */
 public final class LabelField extends FormField {
 
+    private static int extraTopMarginNormal = 8;
+    private static int extraBottomMarginNormal = 8;
+    private static int extraTopMarginHeader = 12;
+    private static int extraBottomMarginHeader = 8;
+
     private static final Font DEFAULT_HEADER_FONT = new Font(Font.DIALOG, Font.BOLD, 16);
     private static final Font DEFAULT_LABEL_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
 
@@ -71,7 +77,7 @@ public final class LabelField extends FormField {
         }
         label = new JLabel(labelText);
         font = label.getFont();
-        color = Color.BLACK;
+        color = LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK);
         this.fieldLabel = new JLabel(fieldLabel);
         this.fieldLabel.setFont(fieldLabelFont);
         fieldComponent = label;
@@ -87,27 +93,87 @@ public final class LabelField extends FormField {
      * @return A LabelField suitable for use as a header.
      */
     public static LabelField createBoldHeaderLabel(String text) {
-        return createHeaderLabel(text, DEFAULT_HEADER_FONT, 14, 4);
+        return createHeaderLabel(text, DEFAULT_HEADER_FONT, extraTopMarginHeader, extraBottomMarginHeader);
     }
 
     public static LabelField createBoldHeaderLabel(String text, int fontSize) {
-        return createHeaderLabel(text, DEFAULT_HEADER_FONT.deriveFont((float)fontSize), 14, 4);
+        return createHeaderLabel(text, DEFAULT_HEADER_FONT.deriveFont((float)fontSize), extraTopMarginHeader,
+                                 extraBottomMarginHeader);
     }
 
     /**
      * A static convenience factory method to create a "normal" header label with sensible
      * defaults for a form label. The default values are 12 point plain black text
-     * with an 8 pixel top and bottom margin.
+     * with top and bottom margin values read from our current margin properties.
+     * <p>
+     *     You can control the extra top and bottom margin for generated header
+     *     labels by invoking LabelField.setHeaderLabelExtraMargins() before
+     *     invoking this method.
+     * </p>
      *
      * @param text The label text
      * @return A LabelField suitable for use as a regular header label.
      */
     public static LabelField createPlainHeaderLabel(String text) {
-        return createHeaderLabel(text, DEFAULT_LABEL_FONT, 8, 8);
+        return createHeaderLabel(text, DEFAULT_LABEL_FONT, extraTopMarginNormal, extraBottomMarginNormal);
     }
 
+    /**
+     * A static convenience factory method to create a "normal" header label the
+     * given font size and with top and bottom margin values read from our current
+     * margin properties.
+     * <p>
+     * You can control the extra top and bottom margin for generated header
+     * labels by invoking LabelField.setHeaderLabelExtraMargins() before
+     * invoking this method.
+     * </p>
+     *
+     * @param text The label text
+     * @return A LabelField suitable for use as a regular header label.
+     */
     public static LabelField createPlainHeaderLabel(String text, int fontSize) {
-        return createHeaderLabel(text, DEFAULT_LABEL_FONT.deriveFont((float)fontSize), 8, 8);
+        return createHeaderLabel(text, DEFAULT_LABEL_FONT.deriveFont((float)fontSize), extraTopMarginNormal,
+                                 extraBottomMarginNormal);
+    }
+
+    /**
+     * Sets the extra top and bottom margin values that we use in this class when create*HeaderLabel
+     * convenience methods are invoked.
+     *
+     * @param normalTop    An extra pixel margin to apply above non-bolded header labels.
+     * @param normalBottom An extra pixel margin to apply below non-bolded header labels.
+     * @param headerTop    An extra pixel margin to apply above bold header labels.
+     * @param headerBottom An extra pixel margin to apply below bold header labels.
+     */
+    public static void setHeaderLabelExtraMargins(int normalTop, int normalBottom, int headerTop, int headerBottom) {
+        extraTopMarginNormal = Math.max(normalTop, 0);
+        extraBottomMarginNormal = Math.max(normalBottom, 0);
+        extraTopMarginHeader = Math.max(headerTop, 0);
+        extraBottomMarginHeader = Math.max(headerBottom, 0);
+    }
+
+    public static int getExtraTopMarginNormal() {
+        return extraTopMarginNormal;
+    }
+
+    public static int getExtraBottomMarginNormal() {
+        return extraBottomMarginNormal;
+    }
+
+    public static int getExtraTopMarginHeader() {
+        return extraTopMarginHeader;
+    }
+
+    public static int getExtraBottomMarginHeader() {
+        return extraBottomMarginHeader;
+    }
+
+    public static Font getDefaultHeaderFont() {
+        return DEFAULT_HEADER_FONT.deriveFont((float)DEFAULT_HEADER_FONT.getSize());
+    }
+
+    public static Font getDefaultLabelFont() {
+        return DEFAULT_LABEL_FONT.deriveFont((float)DEFAULT_LABEL_FONT.getSize());
     }
 
     /**
@@ -184,7 +250,7 @@ public final class LabelField extends FormField {
             label.setCursor(Cursor.getDefaultCursor());
         }
         else {
-            fieldLabel.setForeground(Color.BLACK);
+            fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
             fieldLabel.setFont(fieldLabelFont);
             fieldLabel.setCursor(Cursor.getDefaultCursor());
         }

@@ -1,5 +1,6 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.dirtree.DirTreeListener;
 import ca.corbett.forms.FormPanel;
@@ -12,6 +13,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -90,7 +92,11 @@ public class DirTreeDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         formPanel.setStandardLeftMargin(12);
 
-        formPanel.addFormField(LabelField.createBoldHeaderLabel("DirTree", 20));
+        LabelField label = LabelField.createBoldHeaderLabel("DirTree", 20);
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
+        formPanel.addFormField(label);
 
         StringBuilder sb = new StringBuilder();
         sb.append("<html>The <b>DirTree</b> component gives you a read-only view<br>");

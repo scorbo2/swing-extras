@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
@@ -110,6 +111,56 @@ public final class ImageUtil {
      */
     public static BufferedImage loadImage(final File file) throws IOException {
         return ImageIO.read(file);
+    }
+
+    /**
+     * Loads a BufferedImage from the specified input stream.
+     *
+     * @param inStream The input stream in question. Must contain an image in a format supported by javax.imageio.ImageIo.
+     * @return A BufferedImage containing the image data.
+     * @throws IOException on read/write error.
+     */
+    public static BufferedImage loadImage(final InputStream inStream) throws IOException {
+        return ImageIO.read(inStream);
+    }
+
+    /**
+     * Attempts to load the given resource for the given class.
+     *
+     * @param loadingClass The class to be used for loading the resource.
+     * @param resourceName The fully qualified name of the resource to load. Must be a supported image format.
+     * @return The image.
+     * @throws IOException if something goes wrong.
+     */
+    public static BufferedImage loadFromResource(Class<?> loadingClass, String resourceName) throws IOException {
+        try (InputStream inStream = loadingClass.getResourceAsStream(resourceName)) {
+            return loadImage(inStream);
+        }
+    }
+
+    /**
+     * Attempts to load the given resource as an image, and also scales it to the given dimensions.
+     * The image scale will be done with transparency. Scaling is skipped if the image dimensions
+     * match the given dimensions.
+     *
+     * @param loadingClass The class to be used for loading the resource.
+     * @param resourceName The fully qualified name of the resource to load. Must be a supported image format.
+     * @param width        The desired width of the image.
+     * @param height       The desired height of the image.
+     * @return The requested image.
+     * @throws IOException If something goes wrong.
+     */
+    public static BufferedImage loadFromResource(Class<?> loadingClass, String resourceName, int width, int height)
+            throws IOException {
+        BufferedImage image;
+        try (InputStream inStream = loadingClass.getResourceAsStream(resourceName)) {
+            image = loadImage(inStream);
+            if (image.getWidth() != width || image.getHeight() != height) {
+                image = generateThumbnailWithTransparency(image, width, height);
+            }
+        }
+
+        return image;
     }
 
     /**

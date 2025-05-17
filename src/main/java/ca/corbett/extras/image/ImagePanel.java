@@ -1,5 +1,6 @@
 package ca.corbett.extras.image;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.RedispatchingMouseAdapter;
 
 import javax.swing.ImageIcon;
@@ -7,6 +8,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -218,6 +222,13 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
                 //@formatter:on
             }
         });
+
+        LookAndFeelManager.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                ImagePanel.super.setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY));
+            }
+        });
     }
 
     /**
@@ -232,7 +243,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             props = ImagePanelConfig.createDefaultProperties();
         }
         this.properties = ImagePanelConfig.cloneProperties(props); // make a copy
-        this.originalProperties = props; // store the original in case we need to much with our copy
+        this.originalProperties = props; // store the original in case we need to muck with our copy
 
         // Cosmetic properties:
         this.setBackground(properties.getBgColor());
@@ -681,7 +692,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         if (dBuffer != null) {
             super.paintComponent(g);
             setRenderingQuality(graphics2D);
-            graphics2D.drawImage(dBuffer, imageX, imageY, imgWidth, imgHeight, this);
+            graphics2D.drawImage(dBuffer, imageX, imageY, imgWidth, imgHeight, null);
             graphics2D.dispose();
         }
         else {

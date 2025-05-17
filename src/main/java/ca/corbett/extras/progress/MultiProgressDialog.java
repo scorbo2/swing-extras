@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -317,7 +316,7 @@ public final class MultiProgressDialog extends JDialog {
         majorProgressBar = new JProgressBar();
         majorProgressBar.setPreferredSize(new Dimension(450, 20));
         majorProgressBar.setStringPainted(true);
-        majorProgressBar.setForeground(Color.BLUE);
+        //majorProgressBar.setForeground(Color.BLUE);
         PanelField panelField = new PanelField();
         panelField.setMargins(0, 0, 0, 0, 0);
         panelField.getPanel().setLayout(new BorderLayout());
@@ -330,7 +329,7 @@ public final class MultiProgressDialog extends JDialog {
 
         minorProgressBar = new JProgressBar();
         minorProgressBar.setStringPainted(true);
-        minorProgressBar.setForeground(Color.BLUE);
+        //minorProgressBar.setForeground(Color.BLUE);
         panelField = new PanelField();
         panelField.setMargins(0, 0, 0, 0, 0);
         panelField.getPanel().setLayout(new BorderLayout());

@@ -1,5 +1,6 @@
 package ca.corbett.forms.demo;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
@@ -28,7 +29,9 @@ public class FormsOverviewPanel extends PanelBuilder {
         introPanel.setStandardLeftMargin(24);
 
         LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-forms!", 24);
-        label.setColor(Color.BLUE);
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         introPanel.addFormField(label);
 
         introPanel.addFormField(

@@ -1,5 +1,6 @@
 package ca.corbett.forms.demo;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
@@ -36,12 +37,15 @@ public class FormsValidationPanel extends PanelBuilder {
         final FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         formPanel.setStandardLeftMargin(24);
 
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form validation is super easy!", 20);
+        final LabelField headerLabel = LabelField.createBoldHeaderLabel("Form validation is super easy!", 20);
         headerLabel.setBottomMargin(12);
+        headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         formPanel.addFormField(headerLabel);
-        headerLabel = LabelField.createPlainHeaderLabel("You can use built-in validators or make your own!", 14);
-        headerLabel.setBottomMargin(18);
-        formPanel.addFormField(headerLabel);
+        LabelField label = LabelField.createPlainHeaderLabel("You can use built-in validators or make your own!", 14);
+        label.setBottomMargin(18);
+        formPanel.addFormField(label);
 
         String sb = "<html>Oops! Looks like there are form validation errors!<br/>" +
                 "No problem, just hover over the validation error<br/>" +

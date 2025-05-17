@@ -1,5 +1,6 @@
 package ca.corbett.extras.about;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
@@ -80,7 +81,7 @@ public final class AboutPanel extends JPanel {
 
             if (info.logoDisplayMode == AboutInfo.LogoDisplayMode.AS_IS_WITH_BORDER) {
                 logoPanel.getPanel().setBorder(new LineBorder(Color.BLACK, 1));
-                logoPanel.getPanel().setBackground(Color.DARK_GRAY);
+                logoPanel.getPanel().setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY));
             }
 
             ImageIcon icon = new ImageIcon(logoImage);

@@ -1,5 +1,6 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.gradient.GradientConfig;
 import ca.corbett.extras.gradient.GradientUtil;
@@ -46,12 +47,13 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         FormPanel controlPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         controlPanel.setStandardLeftMargin(12);
 
-        LabelField labelField = new LabelField("ImageUtil");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 20f));
-        labelField.setTopMargin(18);
-        controlPanel.addFormField(labelField);
+        final LabelField label = LabelField.createBoldHeaderLabel("ImageUtil", 20);
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
+        controlPanel.addFormField(label);
 
-        labelField = new LabelField("<html>ImageUtil and the associated color<br>"
+        LabelField labelField = new LabelField("<html>ImageUtil and the associated color<br>"
                                             + "gradient classes can generate images with<br>"
                                             + "a variety of options. Here are just a few!</html>");
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.PLAIN, 12f));

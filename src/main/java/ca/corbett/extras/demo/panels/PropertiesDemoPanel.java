@@ -1,5 +1,6 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
@@ -81,8 +82,11 @@ public class PropertiesDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         formPanel.setStandardLeftMargin(24);
 
-        LabelField labelField = LabelField.createBoldHeaderLabel("PropertiesManager", 20);
-        formPanel.addFormField(labelField);
+        final LabelField label = LabelField.createBoldHeaderLabel("PropertiesManager", 20);
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
+        formPanel.addFormField(label);
 
         formPanel.addFormField(LabelField.createPlainHeaderLabel(
                 "<html>Almost every application exposes properties for application settings and<br>" +
@@ -144,7 +148,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
         LabelProperty testLabel = new LabelProperty("Intro.Labels.someLabelProperty2",
                                                     "You can set label font properties");
         testLabel.setFont(new Font("Monospaced", Font.ITALIC, 14));
-        testLabel.setColor(Color.BLUE);
+        testLabel.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
         props.add(testLabel);
         props.add(new LabelProperty("Intro.Labels.label3", "You can also add hidden properties."));
         for (int i = 0; i < 10; i++) {

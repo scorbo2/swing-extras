@@ -1,5 +1,6 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.gradient.GradientColorField;
@@ -56,8 +57,11 @@ public class ProgressDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         formPanel.setStandardLeftMargin(24);
 
-        LabelField labelField = LabelField.createBoldHeaderLabel("MultiProgressDialog", 20);
-        formPanel.addFormField(labelField);
+        final LabelField label = LabelField.createBoldHeaderLabel("MultiProgressDialog", 20);
+        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
+        formPanel.addFormField(label);
 
         formPanel.addFormField(LabelField.createPlainHeaderLabel(
                 "<html>Java Swing comes with the ProgressMonitor class, which is great for<br>" +
@@ -91,7 +95,10 @@ public class ProgressDemoPanel extends PanelBuilder {
         panelField.setBottomMargin(24);
         formPanel.addFormField(panelField);
 
-        labelField = LabelField.createBoldHeaderLabel("SplashProgress", 20);
+        final LabelField labelField = LabelField.createBoldHeaderLabel("SplashProgress", 20);
+        labelField.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> labelField.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         formPanel.addFormField(labelField);
 
         formPanel.addFormField(LabelField.createPlainHeaderLabel(

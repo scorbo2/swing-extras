@@ -304,7 +304,6 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
             AudioUtil.saveAudioFile(tempFile, waveformPanel.getAudioData());
             recordedAudioFile = tempFile;
             audioSourceCombo.setSelectedIndex(2);
-            System.out.println("Write recorded audio to " + tempFile.getAbsolutePath());
         }
         catch (IOException ioe) {
             getMessageUtil().warning("Problem generating recording: " + ioe.getMessage());

@@ -1,5 +1,6 @@
 package ca.corbett.forms.demo;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
@@ -35,6 +36,9 @@ public class BasicFormPanel extends PanelBuilder {
 
         LabelField headerLabel = LabelField.createBoldHeaderLabel("Looking for basic Swing components? No problem!",
                                                                   20);
+        headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         formPanel.addFormField(headerLabel);
 
         formPanel.addFormField(new TextField("Single-line text:", 15, 1, true));
