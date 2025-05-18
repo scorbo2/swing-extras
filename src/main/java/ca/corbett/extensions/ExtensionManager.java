@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -201,7 +203,21 @@ public abstract class ExtensionManager<T extends AppExtension> {
                         "ExtensionManager.getAllEnabledExtensionProperties(): extension \"" + wrapper.extension.getInfo().name + "\" had no config properties.");
             }
         }
-        return propList;
+
+        // Issue #39 - Weed out duplicates based on fully qualified name:
+        Set<String> nonDuplicateIds = new HashSet<>(propList.size());
+        List<AbstractProperty> nonDuplicateProps = new ArrayList<>(propList.size());
+        for (AbstractProperty prop : propList) {
+            String name = prop.getFullyQualifiedName();
+            if (nonDuplicateIds.contains(name)) {
+                logger.fine("ExtensionManager: ignoring duplicate extension config property \"" + name + "\"");
+                continue;
+            }
+            nonDuplicateIds.add(name);
+            nonDuplicateProps.add(prop);
+        }
+
+        return nonDuplicateProps;
     }
 
     /**

@@ -1,6 +1,9 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.1.1 [TODO] - Maintenance release
+  #39 - Allow extensions to share config properties
+
 Version 2.1 [2025-05-17] - LookAndFeel support
   #38 - image icon loading/scaling convenience in ImageUtil
   #37 - more image loading convenience methods in ImageUtil

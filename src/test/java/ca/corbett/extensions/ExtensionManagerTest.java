@@ -98,6 +98,16 @@ public class ExtensionManagerTest {
     }
 
     @Test
+    public void testAddDuplicateProperties_shouldFilterDuplicates() {
+        // Issue #39 - let's allow extensions to share configuration properties
+        assertEquals(0, extManager.getAllEnabledExtensionProperties().size());
+        extManager.addExtension(ext2, true);
+        assertEquals(1, extManager.getAllEnabledExtensionProperties().size());
+        extManager.addExtension(new AppExtensionImpl2WithDuplicateConfigProperty("dupe"), true);
+        assertEquals(1, extManager.getAllEnabledExtensionProperties().size()); // shouldn't change
+    }
+
+    @Test
     public void testUnloadExtension() {
         extManager.addExtension(ext1, true);
         extManager.addExtension(ext2, true);
@@ -172,6 +182,49 @@ public class ExtensionManagerTest {
                     .setTargetAppVersion("1.1")
                     .setShortDescription("Just a test2")
                     .setLongDescription("Just a test of AppExtension2")
+                    .setReleaseNotes("v1.1 - initial release")
+                    .build();
+        }
+
+        @Override
+        public List<AbstractProperty> getConfigProperties() {
+            List<AbstractProperty> list = new ArrayList<>();
+            list.add(new IntegerProperty("testProperty", "testProperty", 1));
+            return list;
+        }
+
+        @Override
+        public void onActivate() {
+
+        }
+
+        @Override
+        public void onDeactivate() {
+
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    public static class AppExtensionImpl2WithDuplicateConfigProperty implements AppExtension {
+
+        private final String name;
+
+        public AppExtensionImpl2WithDuplicateConfigProperty(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public AppExtensionInfo getInfo() {
+            return new AppExtensionInfo.Builder("Test2 with duplicate config property")
+                    .setAuthor("me2")
+                    .setVersion("1.1")
+                    .setTargetAppName("Test app")
+                    .setTargetAppVersion("1.1")
+                    .setShortDescription("Just a test2")
+                    .setLongDescription("Just a test of AppExtension2 with duplicate config property")
                     .setReleaseNotes("v1.1 - initial release")
                     .build();
         }
