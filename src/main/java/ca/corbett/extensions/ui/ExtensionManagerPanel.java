@@ -59,13 +59,7 @@ public class ExtensionManagerPanel extends JPanel {
             extensions.add(new AppExtensionPlaceholder(extension,
                                                        extension.getInfo().getName(),
                                                        extManager.isExtensionEnabled(extension.getClass().getName())));
-            extensions.sort(new Comparator<AppExtensionPlaceholder>() {
-                @Override
-                public int compare(AppExtensionPlaceholder o1, AppExtensionPlaceholder o2) {
-                    return o1.extension.getInfo().getName().compareTo(o2.extension.getInfo().getName());
-                }
-
-            });
+            extensions.sort(Comparator.comparing(o -> o.extension.getInfo().getName()));
         }
         initComponents();
     }

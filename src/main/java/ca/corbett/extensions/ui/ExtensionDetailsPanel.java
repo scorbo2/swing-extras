@@ -149,14 +149,6 @@ public class ExtensionDetailsPanel extends JPanel {
         descriptionField.setMargins(10, 4, 4, 4, 4);
         formPanel.addFormField(descriptionField);
 
-        TextField releaseNotesField = new TextField("Release notes:", 40, 3, true);
-        releaseNotesField.setEnabled(false);
-        ((JTextArea)releaseNotesField.getFieldComponent()).setLineWrap(true);
-        releaseNotesField.setText(extInfo == null ? "" : extInfo.getReleaseNotes());
-        ((JTextArea)releaseNotesField.getFieldComponent()).setCaretPosition(0); // scroll to top
-        releaseNotesField.setScrollPanePreferredSize(460, 70);
-        formPanel.addFormField(releaseNotesField);
-
         formPanel.render();
         add(formPanel, BorderLayout.CENTER);
     }
