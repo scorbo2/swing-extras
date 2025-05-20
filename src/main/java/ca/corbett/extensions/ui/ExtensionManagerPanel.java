@@ -181,6 +181,7 @@ public class ExtensionManagerPanel extends JPanel {
         // And we have our layout:
         add(leftPanel, BorderLayout.WEST);
         JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         add(scrollPane, BorderLayout.CENTER);
 

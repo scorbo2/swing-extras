@@ -14,8 +14,6 @@ import javax.swing.JTextArea;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,39 +102,38 @@ public class ExtensionDetailsPanel extends JPanel {
             enabledCheckBox.setSelected(false);
             enabledCheckBox.setEnabled(false);
         }
-        enabledCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fireEnableChangeEvent();
-            }
-
-        });
+        enabledCheckBox.addActionListener(e -> fireEnableChangeEvent());
         panel.add(enabledCheckBox);
         panelField.setMargins(0, 0, 0, 0, 2);
         formPanel.addFormField(panelField);
 
         AppExtensionInfo extInfo = extension == null ? null : extension.getInfo();
-        String name = extInfo == null ? "" : extInfo.getName();
-        if (name.length() > 40) {
-            name = name.substring(0, 40) + "...";
-        }
+        String name = extInfo == null ? "" : trimString(extInfo.getName(), 40);
         LabelField nameField = new LabelField(name);
         nameField.setFont(nameField.getFieldLabelFont().deriveFont(Font.BOLD, 16f));
         nameField.setMargins(0, 4, 6, 0, 0);
         formPanel.addFormField(nameField);
 
+        File jarFile = getSourceJar();
         formPanel.addFormField(new LabelField("Type:", extInfo == null ? "" : determineExtensionType()));
-        formPanel.addFormField(new LabelField("Version:", extInfo == null ? "" : extInfo.getVersion()));
-        if (extInfo != null && extInfo.getTargetAppName() != null && extInfo.getTargetAppVersion() != null) {
-            formPanel.addFormField(
-                    new LabelField("Requires:", extInfo.getTargetAppName() + " " + extInfo.getTargetAppVersion()));
+        if (jarFile != null) {
+            String location = trimString(jarFile.getParentFile().getAbsolutePath());
+            formPanel.addFormField(new LabelField("Location:", location));
+            formPanel.addFormField(new LabelField("Jar file:", trimString(jarFile.getName())));
         }
-        formPanel.addFormField(new LabelField("Author:", extInfo == null ? "" : extInfo.getAuthor()));
+        formPanel.addFormField(new LabelField("Version:", extInfo == null ? "" : trimString(extInfo.getVersion())));
+        if (extInfo != null && extInfo.getTargetAppName() != null && extInfo.getTargetAppVersion() != null) {
+            String requires = trimString(extInfo.getTargetAppName() + " " + extInfo.getTargetAppVersion());
+            formPanel.addFormField(new LabelField("Requires:", requires));
+        }
+        formPanel.addFormField(new LabelField("Author:", extInfo == null ? "" : trimString(extInfo.getAuthor())));
 
         if (extInfo != null && !extInfo.getCustomFieldNames().isEmpty()) {
             List<String> customFieldNames = extInfo.getCustomFieldNames();
             for (String fieldName : customFieldNames) {
-                formPanel.addFormField(new LabelField(fieldName + ":", extInfo.getCustomFieldValue(fieldName)));
+                String fieldNameShort = trimString(fieldName, 20);
+                String fieldValueShort = trimString(extInfo.getCustomFieldValue(fieldName));
+                formPanel.addFormField(new LabelField(fieldNameShort + ":", fieldValueShort));
             }
         }
 
@@ -181,7 +178,7 @@ public class ExtensionDetailsPanel extends JPanel {
         if (extension == null) {
             return "";
         }
-        File sourceJar = extManager.getSourceJar(extension.getClass().getName());
+        File sourceJar = getSourceJar();
         if (sourceJar == null) {
             return "Application built-in";
         }
@@ -192,4 +189,30 @@ public class ExtensionDetailsPanel extends JPanel {
         return "User extension";
     }
 
+    /**
+     * Returns the source jar file from which this extension was loaded, or null if there isn't one
+     * (which will be the case for built-in extensions, which are not loaded from external jar files).
+     *
+     * @return A File representing the jar file from which this extension was loaded, or null.
+     */
+    protected File getSourceJar() {
+        if (extension == null) {
+            return null;
+        }
+        return extManager.getSourceJar(extension.getClass().getName());
+    }
+
+    protected String trimString(String input) {
+        return trimString(input, 50);
+    }
+
+    protected String trimString(String input, final int LIMIT) {
+        if (input == null) {
+            return null;
+        }
+        if (input.length() >= LIMIT) {
+            input = input.substring(0, LIMIT) + "...";
+        }
+        return input;
+    }
 }
