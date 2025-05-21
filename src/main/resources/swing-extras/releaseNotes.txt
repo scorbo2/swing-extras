@@ -2,7 +2,11 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.1.1 [TODO] - Maintenance release
+  #43 - PropertiesDialog should have a way to force subcat labels
+  #42 - hide release notes on extension manager dialog
   #39 - Allow extensions to share config properties
+  #33 - view extension config in ExtensionManagerDialog
+  #32 - show source dir and jar file on extension manager dialog
 
 Version 2.1 [2025-05-17] - LookAndFeel support
   #38 - image icon loading/scaling convenience in ImageUtil
