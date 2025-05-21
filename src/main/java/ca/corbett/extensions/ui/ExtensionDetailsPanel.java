@@ -3,17 +3,24 @@ package ca.corbett.extensions.ui;
 import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.AppExtensionInfo;
 import ca.corbett.extensions.ExtensionManager;
+import ca.corbett.extras.properties.AbstractProperty;
+import ca.corbett.extras.properties.LabelProperty;
+import ca.corbett.extras.properties.Properties;
+import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.TextField;
 
+import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +36,7 @@ import java.util.List;
  */
 public class ExtensionDetailsPanel extends JPanel {
 
+    protected final Window owner;
     protected final ExtensionManager extManager;
     protected final List<ExtensionDetailsPanelListener> listeners;
     protected final AppExtension extension;
@@ -40,11 +48,13 @@ public class ExtensionDetailsPanel extends JPanel {
      * Creates a new ExtensionDetailsPanel for the given AppExtension, which can be null - if
      * null, an empty disabled panel will be generated.
      *
+     * @param owner The Window that owns this panel.
      * @param manager   The ExtensionManager that's managing this extension.
      * @param extension Any AppExtension, or null to generate a disabled empty details panel.
      * @param isEnabled Whether the given extension is enabled (ignored if extension is null).
      */
-    public ExtensionDetailsPanel(ExtensionManager manager, AppExtension extension, boolean isEnabled) {
+    public ExtensionDetailsPanel(Window owner, ExtensionManager manager, AppExtension extension, boolean isEnabled) {
+        this.owner = owner;
         listeners = new ArrayList<>();
         this.extension = extension;
         this.extManager = manager;
@@ -127,6 +137,22 @@ public class ExtensionDetailsPanel extends JPanel {
             formPanel.addFormField(new LabelField("Requires:", requires));
         }
         formPanel.addFormField(new LabelField("Author:", extInfo == null ? "" : trimString(extInfo.getAuthor())));
+
+        if (extension != null) {
+            final List<AbstractProperty> configProps = extension.getConfigProperties();
+            if (hasVisibleProps(configProps)) {
+                boolean isPlural = configProps.size() > 1;
+                String labelText = configProps.size() + " " + (isPlural ? "properties" : "property");
+                LabelField labelField = new LabelField("Config:", labelText);
+                labelField.setHyperlink(new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        showConfigPreview(configProps);
+                    }
+                });
+                formPanel.addFormField(labelField);
+            }
+        }
 
         if (extInfo != null && !extInfo.getCustomFieldNames().isEmpty()) {
             List<String> customFieldNames = extInfo.getCustomFieldNames();
@@ -214,5 +240,47 @@ public class ExtensionDetailsPanel extends JPanel {
             input = input.substring(0, LIMIT) + "...";
         }
         return input;
+    }
+
+    /**
+     * Returns true if the given list of properties is not null, not empty, and has at least
+     * one config property that is exposed to the user.
+     *
+     * @param configProps The list of props to check. Can be null.
+     * @return True if there's at least one user-exposed config property in the list.
+     */
+    protected boolean hasVisibleProps(List<AbstractProperty> configProps) {
+        if (configProps == null || configProps.isEmpty()) {
+            return false;
+        }
+        for (AbstractProperty prop : configProps) {
+            if (prop.isExposed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Shows a read-only preview of the given properties list, with default values populated.
+     * Note that any form visibility logic will NOT be reflected here, as the code at this level
+     * has absolutely no idea what fields should be visible by default (that logic lives at the
+     * application level).
+     * <p>
+     * All props will be shown here read-only, as there's nowhere to save any changes.
+     * </p>
+     *
+     * @param configProps A list of AbstractProperty instances to show.
+     */
+    protected void showConfigPreview(final List<AbstractProperty> configProps) {
+        List<AbstractProperty> copy = new ArrayList<>(configProps);
+        for (AbstractProperty prop : copy) {
+            prop.setReadOnly(true);
+        }
+        copy.add(new LabelProperty("Preview note.Config preview.label1",
+                                   "Read-only config preview generated by ExtensionManager."));
+        PropertiesManager manager = new PropertiesManager(new Properties(), copy, "preview");
+        manager.setAlwaysShowSubcategoryLabels(true);
+        manager.generateDialog(owner, "Config preview").setVisible(true);
     }
 }

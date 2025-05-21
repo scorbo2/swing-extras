@@ -344,13 +344,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
             return 0;
         }
         List<File> jarList = new ArrayList<>(map.keySet());
-        jarList.sort(new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
-            }
-
-        });
+        jarList.sort(Comparator.comparing(File::getAbsolutePath));
         int extensionsLoaded = 0;
         for (File jarFile : jarList) {
             T extension = loadExtensionFromJar(jarFile, extClass);
