@@ -3,7 +3,9 @@ package ca.corbett.extensions;
 import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.extras.properties.AbstractProperty;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -40,6 +42,8 @@ import java.util.logging.Logger;
 public abstract class ExtensionManager<T extends AppExtension> {
 
     protected static final Logger logger = Logger.getLogger(ExtensionManager.class.getName());
+
+    private final String LOAD_ORDER_FILE = "ext-load-order.txt";
 
     private final Map<String, ExtensionWrapper> loadedExtensions;
 
@@ -343,8 +347,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
         if (map.isEmpty()) {
             return 0;
         }
-        List<File> jarList = new ArrayList<>(map.keySet());
-        jarList.sort(Comparator.comparing(File::getAbsolutePath));
+        List<File> jarList = sortExtensionJarSet(directory, map.keySet());
         int extensionsLoaded = 0;
         for (File jarFile : jarList) {
             T extension = loadExtensionFromJar(jarFile, extClass);
@@ -562,6 +565,67 @@ public abstract class ExtensionManager<T extends AppExtension> {
                    "ExtensionManager.extractExtInfo: jar file {0} does not contain an extInfo.json file.",
                    jarFile.getAbsolutePath());
         return null;
+    }
+
+    /**
+     * Given a Set of jar files in a given directory, this method looks for an optional load order
+     * control file and will attempt to obey any sorting directives it contains. If the file is missing
+     * or incomplete, the input set will be sorted by filename. If the load order file mentions any
+     * jar files that don't exist in that directory, those directives are ignored.
+     * <p>
+     * <b>Formatting the load order file</b><br>
+     * Blank lines and lines starting with a hash character are ignored. All other lines in the file are
+     * assumed to be the name (without path) of a single jar file. The order in which those jars are listed
+     * in this file is the order that the extension jars will be loaded.
+     * </p>
+     * <p>
+     * <b>SPECIAL NOTE:</b> application built-in extensions are generally loaded first by convention!
+     * That can't be overridden in the load order control file.
+     * </p>
+     *
+     * @param directory The directory to scan
+     * @param jarSet    The Set of jar files to consider within that directory
+     * @return A sorted List of jar files. This list.size() will always match the input Set's size.
+     */
+    protected List<File> sortExtensionJarSet(File directory, Set<File> jarSet) {
+        List<File> unsortedJars = new ArrayList<>(jarSet);
+        List<File> sortedJars = new ArrayList<>(jarSet.size());
+
+        // Do we have a load order control file?
+        File loadOrderFile = new File(directory, LOAD_ORDER_FILE);
+        if (loadOrderFile.exists() && loadOrderFile.isFile() && loadOrderFile.canRead()) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(loadOrderFile));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+
+                    // Skip blank lines and comment lines:
+                    if (line.isEmpty() || line.startsWith("#")) {
+                        continue;
+                    }
+
+                    // Assume anything else will be a jar file name:
+                    File candidate = new File(directory, line);
+
+                    // If it exists and hasn't yet been sorted, do it:
+                    if (candidate.exists() && unsortedJars.contains(candidate) && !sortedJars.contains(candidate)) {
+                        unsortedJars.remove(candidate);
+                        sortedJars.add(candidate);
+                    }
+                }
+            }
+            catch (IOException ioe) {
+                logger.log(Level.WARNING, "ExtensionManager: Problem reading extension load order: " + ioe.getMessage(),
+                           ioe);
+            }
+        }
+
+        // Add whatever's left in alphabetical order:
+        unsortedJars.sort(Comparator.comparing(File::getAbsolutePath));
+        sortedJars.addAll(unsortedJars);
+
+        return sortedJars;
     }
 
     /**
