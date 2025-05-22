@@ -610,6 +610,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
                     // If it exists and hasn't yet been sorted, do it:
                     if (candidate.exists() && unsortedJars.contains(candidate) && !sortedJars.contains(candidate)) {
+                        logger.log(Level.INFO, "ExtensionManager: sort priority for jar: " + candidate.getName());
                         unsortedJars.remove(candidate);
                         sortedJars.add(candidate);
                     }
