@@ -63,6 +63,8 @@ public abstract class ExtensionManager<T extends AppExtension> {
     /**
      * Reports whether an extension with the given class name is currently loaded.
      * Note you can also do getLoadedExtension(className) and check for null.
+     * Even if this method returns true, the extension might not be enabled!
+     * Use isExtensionEnabled() to determine if the extension is actually enabled.
      *
      * @param className The fully qualified name of the extension to look for.
      * @return True if the named extension has been loaded by this manager.
