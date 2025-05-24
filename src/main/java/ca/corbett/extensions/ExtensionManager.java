@@ -228,10 +228,11 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * Programmatically adds an extension to our list - this was originally intended for testing
      * purposes, but might be useful as a way for applications to supply built-in extensions
      * without having to package them in separate jar files with the distribution. Remember that
-     * extension load order matters! If you are supplying built-in extensions, it's probably
-     * better to invoke this before you load extensions from jar files on disk. This is so that
-     * getAllExtensionProperties can work as intended - i.e. extensions have the ability to
-     * overwrite config properties from earlier-loaded extensions.
+     * extension load order matters! If more than one extension provides the same functionality,
+     * it's up to the application to decide which extension's version of it should be used.
+     * By convention, the first loaded extension that supplies a given piece of functionality is
+     * the one that will be used. You can use the ext-load-order.txt file in your extension
+     * jar directory to explicitly decide which extensions are loaded in which order.
      * <p>
      * The extension will not receive an onActivate() notification from this method.
      * Use activateAll() to start up extensions.
@@ -245,6 +246,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
         wrapper.isEnabled = isEnabled;
         wrapper.extension = extension;
         loadedExtensions.put(extension.getClass().getName(), wrapper);
+        logger.info("Extension loaded internally: " + extension.getInfo().name);
     }
 
     /**
@@ -358,6 +360,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 wrapper.isEnabled = true;
                 loadedExtensions.put(extension.getClass().getName(), wrapper);
                 extensionsLoaded++;
+                logger.info("Extension loaded externally: " + extension.getInfo().name);
             }
         }
         return extensionsLoaded;
@@ -610,14 +613,16 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
                     // If it exists and hasn't yet been sorted, do it:
                     if (candidate.exists() && unsortedJars.contains(candidate) && !sortedJars.contains(candidate)) {
-                        logger.log(Level.INFO, "ExtensionManager: sort priority for jar: " + candidate.getName());
+                        logger.log(Level.FINE,
+                                   "ExtensionManager: detected sort priority for jar: " + candidate.getName());
                         unsortedJars.remove(candidate);
                         sortedJars.add(candidate);
                     }
                 }
             }
             catch (IOException ioe) {
-                logger.log(Level.WARNING, "ExtensionManager: Problem reading extension load order: " + ioe.getMessage(),
+                logger.log(Level.WARNING, "ExtensionManager: Problem reading extension load order: " + ioe.getMessage()
+                                   + " - extension load order will use jar file name sort order.",
                            ioe);
             }
         }
