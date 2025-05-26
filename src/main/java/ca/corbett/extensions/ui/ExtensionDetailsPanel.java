@@ -193,10 +193,13 @@ public class ExtensionDetailsPanel extends JPanel {
     }
 
     /**
-     * TODO this is a goofy holdover from sc-util and should probably be removed or at least
-     * adjusted. The concept of a "system extension" versus a "user extension" will probably
-     * no longer exist. I do like the idea of differentiating user-supplied (i.e. loaded
-     * from a jar file) extensions versus built-in (loaded by the application itself) ones though.
+     * If an extension jar exists in a read-only directory, we consider it a "system" extension,
+     * and if it is in a readable directory, it is a "user" extension - there is a third class
+     * of extensions called "application built-in" which are those provided directly by an application
+     * without being externally loaded from a jar file. Applications can decide how to package
+     * and install extensions, and users can decide where to put their own extension jars.
+     * This classification, or "extension type" is displayed in the ExtensionDetailsPanel for
+     * informational purposes, but it doesn't change the way we interact with those extensions.
      *
      * @return A String describing the type of extension: System, User, or Application built-in.
      */
