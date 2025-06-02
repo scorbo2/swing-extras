@@ -172,7 +172,7 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        extPanel = new ExtensionManagerPanel(extManager);
+        extPanel = new ExtensionManagerPanel(this, extManager);
         add(extPanel, BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
     }

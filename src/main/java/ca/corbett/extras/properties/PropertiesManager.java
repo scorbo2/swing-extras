@@ -3,7 +3,7 @@ package ca.corbett.extras.properties;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 
-import java.awt.Frame;
+import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,10 +29,11 @@ public class PropertiesManager {
     protected final Properties propertiesInstance;
     protected final List<AbstractProperty> properties;
     protected final String name;
+    private boolean alwaysShowSubcategoryLabels = false;
 
     /**
      * Creates a PropertiesManager instance backed onto the given File object, and a list
-     * of AbstractProperty objects thatwe will manage.
+     * of AbstractProperty objects that we will manage.
      *
      * @param propsFile The properties file. Does not need to exist - will be created on save()
      * @param props     A List of AbstractProperty instances to be managed by this class.
@@ -220,14 +221,40 @@ public class PropertiesManager {
     }
 
     /**
+     * Controls whether subcategory labels should always be shown, even if there is only one
+     * subcategory in a given category. The default behavior is to hide subcategory labels
+     * if there is only one subcategory.
+     * <p>
+     * If there is more than one subcategory in a category, then the subcategory labels
+     * will be shown regardless of the value of this property.
+     * </p>
+     *
+     * @param value Force subcategory labels to always show even if there's only one.
+     */
+    public void setAlwaysShowSubcategoryLabels(boolean value) {
+        alwaysShowSubcategoryLabels = value;
+    }
+
+    /**
+     * If true, subcategory header labels will be generated even if there's only one
+     * subcategory in a given category. By default, this is false, meaning that subcategory
+     * header labels will be hidden if there's only one.
+     *
+     * @return Whether subcategory header labels are always generated.
+     */
+    public boolean isAlwaysShowSubcategoryLabels() {
+        return alwaysShowSubcategoryLabels;
+    }
+
+    /**
      * Generates a PropertiesDialog for the current properties list with default dialog values.
      * That is, a left-aligned dialog with an 8 pixel left margin.
      *
-     * @param owner       The owner frame for the dialog.
+     * @param owner       The owner Window for the dialog.
      * @param dialogTitle The title of the dialog.
      * @return A PropertiesDialog instance, populated and ready to be shown.
      */
-    public PropertiesDialog generateDialog(Frame owner, String dialogTitle) {
+    public PropertiesDialog generateDialog(Window owner, String dialogTitle) {
         return generateDialog(owner, dialogTitle, FormPanel.Alignment.TOP_LEFT, 8);
     }
 
@@ -266,38 +293,46 @@ public class PropertiesManager {
      * the dialog is shown based on current form values.
      * </p>
      *
-     * @param owner       The owner frame for the dialog.
+     * @param owner       The owner Window for the dialog.
      * @param dialogTitle The title of the dialog.
      * @param alignment   How the form panel(s) on the generated dialog should align themselves.
      * @param leftMargin  If form panels are left aligned, you can apply a pixel margin to the form's left side.
      * @return A PropertiesDialog instance, populated and ready to be shown.
      */
-    public PropertiesDialog generateDialog(Frame owner, String dialogTitle, FormPanel.Alignment alignment, int leftMargin) {
+    public PropertiesDialog generateDialog(Window owner, String dialogTitle, FormPanel.Alignment alignment, int leftMargin) {
         List<FormPanel> formPanelList = generateUnrenderedFormPanels(alignment, leftMargin);
         return new PropertiesDialog(this, owner, dialogTitle, formPanelList);
     }
 
     public List<FormPanel> generateUnrenderedFormPanels() {
-        return generateUnrenderedFormPanels(properties, FormPanel.Alignment.TOP_LEFT, 8);
+        return generateUnrenderedFormPanels(properties, FormPanel.Alignment.TOP_LEFT, 8, alwaysShowSubcategoryLabels);
     }
 
     public List<FormPanel> generateUnrenderedFormPanels(FormPanel.Alignment alignment) {
-        return generateUnrenderedFormPanels(properties, alignment, 8);
+        return generateUnrenderedFormPanels(properties, alignment, 8, alwaysShowSubcategoryLabels);
     }
 
     public List<FormPanel> generateUnrenderedFormPanels(FormPanel.Alignment alignment, int leftMargin) {
-        return generateUnrenderedFormPanels(properties, alignment, leftMargin);
+        return generateUnrenderedFormPanels(properties, alignment, leftMargin, alwaysShowSubcategoryLabels);
     }
 
     public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props) {
-        return generateUnrenderedFormPanels(props, FormPanel.Alignment.TOP_LEFT, 8);
+        return generateUnrenderedFormPanels(props, FormPanel.Alignment.TOP_LEFT, 8, false);
+    }
+
+    public static List<FormPanel> generateUnrenderedFormPanel(List<AbstractProperty> props, boolean alwaysShowSubcategoryLabels) {
+        return generateUnrenderedFormPanels(props, FormPanel.Alignment.TOP_LEFT, 8, alwaysShowSubcategoryLabels);
     }
 
     public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, FormPanel.Alignment alignment) {
-        return generateUnrenderedFormPanels(props, alignment, 8);
+        return generateUnrenderedFormPanels(props, alignment, 8, false);
     }
 
-    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, FormPanel.Alignment alignment, int leftMargin) {
+    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, FormPanel.Alignment alignment, boolean alwaysShowSubcategoryLabels) {
+        return generateUnrenderedFormPanels(props, alignment, 8, alwaysShowSubcategoryLabels);
+    }
+
+    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, FormPanel.Alignment alignment, int leftMargin, boolean alwaysShowSubcategoryLabels) {
         List<String> categories = getCategories(props);
 
         // Our list of categories might be empty if all properties are hidden or disabled,
@@ -316,7 +351,7 @@ public class PropertiesManager {
             formPanel.setName(category);
             for (String subCategory : subCategories) {
                 // Show a subcategory label header if there's more than one subcategory:
-                if (subCategories.size() > 1) {
+                if (subCategories.size() > 1 || alwaysShowSubcategoryLabels) {
                     FormField field = LabelProperty
                             .createHeaderLabel(category + "." + subCategory + ".autoGeneratedHeaderLabel", subCategory)
                             .generateFormField();

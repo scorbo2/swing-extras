@@ -3,7 +3,9 @@ package ca.corbett.extensions;
 import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.extras.properties.AbstractProperty;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -11,8 +13,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -39,6 +43,8 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
     protected static final Logger logger = Logger.getLogger(ExtensionManager.class.getName());
 
+    private final String LOAD_ORDER_FILE = "ext-load-order.txt";
+
     private final Map<String, ExtensionWrapper> loadedExtensions;
 
     public ExtensionManager() {
@@ -57,6 +63,8 @@ public abstract class ExtensionManager<T extends AppExtension> {
     /**
      * Reports whether an extension with the given class name is currently loaded.
      * Note you can also do getLoadedExtension(className) and check for null.
+     * Even if this method returns true, the extension might not be enabled!
+     * Use isExtensionEnabled() to determine if the extension is actually enabled.
      *
      * @param className The fully qualified name of the extension to look for.
      * @return True if the named extension has been loaded by this manager.
@@ -201,17 +209,32 @@ public abstract class ExtensionManager<T extends AppExtension> {
                         "ExtensionManager.getAllEnabledExtensionProperties(): extension \"" + wrapper.extension.getInfo().name + "\" had no config properties.");
             }
         }
-        return propList;
+
+        // Issue #39 - Weed out duplicates based on fully qualified name:
+        Set<String> nonDuplicateIds = new HashSet<>(propList.size());
+        List<AbstractProperty> nonDuplicateProps = new ArrayList<>(propList.size());
+        for (AbstractProperty prop : propList) {
+            String name = prop.getFullyQualifiedName();
+            if (nonDuplicateIds.contains(name)) {
+                logger.fine("ExtensionManager: ignoring duplicate extension config property \"" + name + "\"");
+                continue;
+            }
+            nonDuplicateIds.add(name);
+            nonDuplicateProps.add(prop);
+        }
+
+        return nonDuplicateProps;
     }
 
     /**
      * Programmatically adds an extension to our list - this was originally intended for testing
      * purposes, but might be useful as a way for applications to supply built-in extensions
      * without having to package them in separate jar files with the distribution. Remember that
-     * extension load order matters! If you are supplying built-in extensions, it's probably
-     * better to invoke this before you load extensions from jar files on disk. This is so that
-     * getAllExtensionProperties can work as intended - i.e. extensions have the ability to
-     * overwrite config properties from earlier-loaded extensions.
+     * extension load order matters! If more than one extension provides the same functionality,
+     * it's up to the application to decide which extension's version of it should be used.
+     * By convention, the first loaded extension that supplies a given piece of functionality is
+     * the one that will be used. You can use the ext-load-order.txt file in your extension
+     * jar directory to explicitly decide which extensions are loaded in which order.
      * <p>
      * The extension will not receive an onActivate() notification from this method.
      * Use activateAll() to start up extensions.
@@ -225,6 +248,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
         wrapper.isEnabled = isEnabled;
         wrapper.extension = extension;
         loadedExtensions.put(extension.getClass().getName(), wrapper);
+        logger.info("Extension loaded internally: " + extension.getInfo().name);
     }
 
     /**
@@ -327,14 +351,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
         if (map.isEmpty()) {
             return 0;
         }
-        List<File> jarList = new ArrayList<>(map.keySet());
-        jarList.sort(new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
-            }
-
-        });
+        List<File> jarList = sortExtensionJarSet(directory, map.keySet());
         int extensionsLoaded = 0;
         for (File jarFile : jarList) {
             T extension = loadExtensionFromJar(jarFile, extClass);
@@ -345,6 +362,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 wrapper.isEnabled = true;
                 loadedExtensions.put(extension.getClass().getName(), wrapper);
                 extensionsLoaded++;
+                logger.info("Extension loaded externally: " + extension.getInfo().name);
             }
         }
         return extensionsLoaded;
@@ -552,6 +570,70 @@ public abstract class ExtensionManager<T extends AppExtension> {
                    "ExtensionManager.extractExtInfo: jar file {0} does not contain an extInfo.json file.",
                    jarFile.getAbsolutePath());
         return null;
+    }
+
+    /**
+     * Given a Set of jar files in a given directory, this method looks for an optional load order
+     * control file and will attempt to obey any sorting directives it contains. If the file is missing
+     * or incomplete, the input set will be sorted by filename. If the load order file mentions any
+     * jar files that don't exist in that directory, those directives are ignored.
+     * <p>
+     * <b>Formatting the load order file</b><br>
+     * Blank lines and lines starting with a hash character are ignored. All other lines in the file are
+     * assumed to be the name (without path) of a single jar file. The order in which those jars are listed
+     * in this file is the order that the extension jars will be loaded.
+     * </p>
+     * <p>
+     * <b>SPECIAL NOTE:</b> application built-in extensions are generally loaded first by convention!
+     * That can't be overridden in the load order control file.
+     * </p>
+     *
+     * @param directory The directory to scan
+     * @param jarSet    The Set of jar files to consider within that directory
+     * @return A sorted List of jar files. This list.size() will always match the input Set's size.
+     */
+    protected List<File> sortExtensionJarSet(File directory, Set<File> jarSet) {
+        List<File> unsortedJars = new ArrayList<>(jarSet);
+        List<File> sortedJars = new ArrayList<>(jarSet.size());
+
+        // Do we have a load order control file?
+        File loadOrderFile = new File(directory, LOAD_ORDER_FILE);
+        if (loadOrderFile.exists() && loadOrderFile.isFile() && loadOrderFile.canRead()) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(loadOrderFile));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+
+                    // Skip blank lines and comment lines:
+                    if (line.isEmpty() || line.startsWith("#")) {
+                        continue;
+                    }
+
+                    // Assume anything else will be a jar file name:
+                    File candidate = new File(directory, line);
+
+                    // If it exists and hasn't yet been sorted, do it:
+                    if (candidate.exists() && unsortedJars.contains(candidate) && !sortedJars.contains(candidate)) {
+                        logger.log(Level.FINE,
+                                   "ExtensionManager: detected sort priority for jar: " + candidate.getName());
+                        unsortedJars.remove(candidate);
+                        sortedJars.add(candidate);
+                    }
+                }
+            }
+            catch (IOException ioe) {
+                logger.log(Level.WARNING, "ExtensionManager: Problem reading extension load order: " + ioe.getMessage()
+                                   + " - extension load order will use jar file name sort order.",
+                           ioe);
+            }
+        }
+
+        // Add whatever's left in alphabetical order:
+        unsortedJars.sort(Comparator.comparing(File::getAbsolutePath));
+        sortedJars.addAll(unsortedJars);
+
+        return sortedJars;
     }
 
     /**

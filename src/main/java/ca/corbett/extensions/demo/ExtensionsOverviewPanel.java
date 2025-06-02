@@ -8,6 +8,8 @@ import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.properties.AbstractProperty;
+import ca.corbett.extras.properties.LabelProperty;
+import ca.corbett.extras.properties.TextProperty;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
@@ -16,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExtensionsOverviewPanel extends PanelBuilder {
@@ -159,7 +162,13 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
 
         @Override
         public List<AbstractProperty> getConfigProperties() {
-            return List.of();
+            List<AbstractProperty> props = new ArrayList<>();
+            props.add(new LabelProperty("FakeExtension3.General.label1",
+                                        "This extension defines some config properties"));
+            props.add(new TextProperty("FakeExtension3.General.text1", "Text field 1:", "Default value"));
+            props.add(new TextProperty("FakeExtension3.General.text2", "Text field 2:", "Hello"));
+            props.add(new LabelProperty("FakeExtension3.General.label2", "You can view the defaults here."));
+            return props;
         }
 
         @Override
