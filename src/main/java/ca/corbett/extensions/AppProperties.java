@@ -247,6 +247,10 @@ public abstract class AppProperties<T extends AppExtension> {
      * (And, of course, to reload your UI, as there may be many other changes
      * throughout your app as a result of enabling or disabling extensions).
      * </p>
+     * <p>
+     *     Note this method will end by invoking load() again to pick up
+     *     whatever values were previously persisted.
+     * </p>
      */
     public void reinitialize() {
         List<AbstractProperty> props = new ArrayList<>(createInternalProperties());
@@ -257,6 +261,11 @@ public abstract class AppProperties<T extends AppExtension> {
         props.addAll(extManager.getAllEnabledExtensionProperties());
 
         propsManager = new PropertiesManager(propsFile, props, appName + " application properties");
+
+        // Now force a load() so we can override the default values we just
+        // created in createInternalProperties() above with whatever values
+        // the user has in the saved properties file:
+        load();
     }
 
     /**

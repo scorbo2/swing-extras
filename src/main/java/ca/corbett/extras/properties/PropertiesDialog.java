@@ -14,7 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -43,13 +43,13 @@ public class PropertiesDialog extends JDialog {
     private static final Logger logger = Logger.getLogger(PropertiesDialog.class.getName());
 
     protected final PropertiesManager propsManager;
-    protected final Frame ownerFrame;
+    protected final Window owner;
     protected final JTabbedPane tabPane;
     protected final FormPanel formPanel;
     protected boolean wasOkayed = false;
 
-    public PropertiesDialog(PropertiesManager manager, Frame owner, String title, List<FormPanel> formPanelList) {
-        super(owner, title, true);
+    public PropertiesDialog(PropertiesManager manager, Window owner, String title, List<FormPanel> formPanelList) {
+        super(owner, title, ModalityType.APPLICATION_MODAL);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -82,7 +82,7 @@ public class PropertiesDialog extends JDialog {
 
         add(buildButtonPanel(), BorderLayout.SOUTH);
         this.propsManager = manager;
-        this.ownerFrame = owner;
+        this.owner = owner;
         setSize(640, 480);
         setMinimumSize(new Dimension(400, 360));
     }
@@ -95,7 +95,7 @@ public class PropertiesDialog extends JDialog {
     @Override
     public void setVisible(boolean visible) {
         if (visible) {
-            setLocationRelativeTo(ownerFrame);
+            setLocationRelativeTo(owner);
         }
         super.setVisible(visible);
     }

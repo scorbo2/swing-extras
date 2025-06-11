@@ -1,7 +1,17 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
-Version 2.1 [2025-05-17] - LookAndFeel support
+Version 2.2.0 [2024-06-10] - ExtensionManager enhancements
+  #47 - AppProperties.reinitialize() should also call load()
+  #46 - add extension load order to log output
+  #43 - PropertiesDialog should have a way to force subcat labels
+  #42 - hide release notes on extension manager dialog
+  #41 - add a way to control extension load order
+  #39 - Allow extensions to share config properties
+  #33 - view extension config in ExtensionManagerDialog
+  #32 - show source dir and jar file on extension manager dialog
+
+Version 2.1.0 [2025-05-17] - LookAndFeel support
   #38 - image icon loading/scaling convenience in ImageUtil
   #37 - more image loading convenience methods in ImageUtil
   #36 - make extInfo loading easier for extensions

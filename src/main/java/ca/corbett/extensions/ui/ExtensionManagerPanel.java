@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import java.util.Objects;
  */
 public class ExtensionManagerPanel extends JPanel {
 
+    protected final Window owner;
     protected final ExtensionManager<AppExtension> extManager;
     protected JList extList;
     protected DefaultListModel<AppExtensionPlaceholder> extListModel;
@@ -51,7 +53,8 @@ public class ExtensionManagerPanel extends JPanel {
     protected final Map<String, ExtensionDetailsPanel> detailsPanelMap;
     protected ExtensionDetailsPanel emptyPanel;
 
-    public ExtensionManagerPanel(ExtensionManager manager) {
+    public ExtensionManagerPanel(Window owner, ExtensionManager manager) {
+        this.owner = owner;
         extManager = manager;
         extensions = new ArrayList<>();
         detailsPanelMap = new HashMap<>();
@@ -59,13 +62,7 @@ public class ExtensionManagerPanel extends JPanel {
             extensions.add(new AppExtensionPlaceholder(extension,
                                                        extension.getInfo().getName(),
                                                        extManager.isExtensionEnabled(extension.getClass().getName())));
-            extensions.sort(new Comparator<AppExtensionPlaceholder>() {
-                @Override
-                public int compare(AppExtensionPlaceholder o1, AppExtensionPlaceholder o2) {
-                    return o1.extension.getInfo().getName().compareTo(o2.extension.getInfo().getName());
-                }
-
-            });
+            extensions.sort(Comparator.comparing(o -> o.extension.getInfo().getName()));
         }
         initComponents();
     }
@@ -105,7 +102,8 @@ public class ExtensionManagerPanel extends JPanel {
         }
         ExtensionDetailsPanel detailsPanel = detailsPanelMap.get(placeholder.extension.getClass().getName());
         if (detailsPanel == null) {
-            detailsPanel = new ExtensionDetailsPanel(extManager, placeholder.extension, placeholder.isEnabled);
+            detailsPanel = new ExtensionDetailsPanel(owner, extManager, placeholder.extension,
+                                                     placeholder.isEnabled);
             detailsPanel.addExtensionDetailsPanelListener(new ExtensionDetailsPanelListener() {
                 @Override
                 public void extensionEnabled(ExtensionDetailsPanel source, String className) {
@@ -148,7 +146,7 @@ public class ExtensionManagerPanel extends JPanel {
         setLayout(new BorderLayout());
 
         // The empty panel will be shown by default, or whenever the list selection is cleared.
-        emptyPanel = new ExtensionDetailsPanel(extManager, null, false);
+        emptyPanel = new ExtensionDetailsPanel(owner, extManager, null, false);
 
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BorderLayout());
@@ -187,6 +185,7 @@ public class ExtensionManagerPanel extends JPanel {
         // And we have our layout:
         add(leftPanel, BorderLayout.WEST);
         JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         add(scrollPane, BorderLayout.CENTER);
 
