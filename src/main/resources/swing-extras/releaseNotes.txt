@@ -1,6 +1,8 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.3.0 [TODO] - Maintenance release
+
 Version 2.2.0 [2024-06-10] - ExtensionManager enhancements
   #47 - AppProperties.reinitialize() should also call load()
   #46 - add extension load order to log output
