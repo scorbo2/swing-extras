@@ -57,12 +57,14 @@ public class ColorProperty extends AbstractProperty {
         return gradient;
     }
 
-    public void setColor(Color color) {
+    public ColorProperty setColor(Color color) {
         this.color = color == null ? Color.BLACK : color;
+        return this;
     }
 
-    public void setGradient(GradientConfig gradient) {
+    public ColorProperty setGradient(GradientConfig gradient) {
         this.gradient = gradient == null ? new GradientConfig() : gradient;
+        return this;
     }
 
     @Override

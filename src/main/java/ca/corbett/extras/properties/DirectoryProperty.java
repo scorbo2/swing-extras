@@ -39,16 +39,18 @@ public class DirectoryProperty extends AbstractProperty {
         return dir;
     }
 
-    public void setDirectory(File dir) {
+    public DirectoryProperty setDirectory(File dir) {
         this.dir = dir;
+        return this;
     }
 
     public int getColumns() {
         return columns;
     }
 
-    public void setColumns(int columns) {
+    public DirectoryProperty setColumns(int columns) {
         this.columns = columns;
+        return this;
     }
 
     @Override

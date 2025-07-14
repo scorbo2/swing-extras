@@ -176,8 +176,9 @@ public abstract class AbstractProperty {
      *
      * @param label The new label value.
      */
-    public void setPropertyLabel(String label) {
+    public AbstractProperty setPropertyLabel(String label) {
         propertyLabel = label;
+        return this;
     }
 
     /**
@@ -196,8 +197,9 @@ public abstract class AbstractProperty {
      *
      * @param expose True to expose this field in PropertiesDialog.
      */
-    public void setExposed(boolean expose) {
+    public AbstractProperty setExposed(boolean expose) {
         isExposed = expose;
+        return this;
     }
 
     /**
@@ -224,8 +226,9 @@ public abstract class AbstractProperty {
      *
      * @param enable Whether to enable or disable this property.
      */
-    public void setEnabled(boolean enable) {
+    public AbstractProperty setEnabled(boolean enable) {
         isEnabled = enable;
+        return this;
     }
 
     /**
@@ -268,8 +271,9 @@ public abstract class AbstractProperty {
      * on other form fields (for example, field B is only editable if field A contains
      * a specific value).
      */
-    public void setReadOnly(boolean readOnly) {
+    public AbstractProperty setReadOnly(boolean readOnly) {
         isReadOnly = readOnly;
+        return this;
     }
 
     /**
@@ -290,8 +294,9 @@ public abstract class AbstractProperty {
      *
      * @param helpText The new help text, or null to unset it.
      */
-    public void setHelpText(String helpText) {
+    public AbstractProperty setHelpText(String helpText) {
         this.helpText = (helpText == null) ? "" : helpText;
+        return this;
     }
 
     /**

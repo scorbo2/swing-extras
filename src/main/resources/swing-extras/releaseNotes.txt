@@ -3,6 +3,7 @@ Author: Steve Corbett
 
 Version 2.3.0 [TODO] - Maintenance release
   #56 - Add ImageUtil.scaleImageToFitSquareBounds
+  #54 - Use fluent-style setters for all AbstractProperties
 
 Version 2.2.0 [2024-06-10] - ExtensionManager enhancements
   #47 - AppProperties.reinitialize() should also call load()

@@ -28,24 +28,26 @@ public class ComboProperty extends AbstractProperty {
         this.isEditable = isEditable;
     }
 
-    public void setSelectedIndex(int index) {
+    public ComboProperty setSelectedIndex(int index) {
         if (index < 0 || index >= items.size()) {
-            return;
+            return this;
         }
         selectedIndex = index;
+        return this;
     }
 
     public int getSelectedIndex() {
         return selectedIndex;
     }
 
-    public void setSelectedItem(String item) {
+    public ComboProperty setSelectedItem(String item) {
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).equals(item)) {
                 selectedIndex = i;
                 break;
             }
         }
+        return this;
     }
 
     public int indexOf(String item) {

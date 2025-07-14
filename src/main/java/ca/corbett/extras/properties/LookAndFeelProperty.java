@@ -49,24 +49,26 @@ public class LookAndFeelProperty extends AbstractProperty {
         }
     }
 
-    public void setSelectedIndex(int index) {
+    public LookAndFeelProperty setSelectedIndex(int index) {
         if (index < 0 || index >= classNames.size()) {
-            return;
+            return this;
         }
         selectedIndex = index;
+        return this;
     }
 
     public int getSelectedIndex() {
         return selectedIndex;
     }
 
-    public void setSelectedItem(String item) {
+    public LookAndFeelProperty setSelectedItem(String item) {
         for (int i = 0; i < displayNames.size(); i++) {
             if (displayNames.get(i).equals(item)) {
                 selectedIndex = i;
                 break;
             }
         }
+        return this;
     }
 
     public int indexOfDisplayName(String itemName) {

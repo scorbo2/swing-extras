@@ -27,8 +27,9 @@ public class BooleanProperty extends AbstractProperty {
         value = initialValue;
     }
 
-    public void setValue(boolean val) {
+    public BooleanProperty setValue(boolean val) {
         value = val;
+        return this;
     }
 
     public boolean getValue() {

@@ -111,17 +111,20 @@ public class LabelProperty extends AbstractProperty {
     }
 
 
-    public void setExtraMargins(int top, int bottom) {
+    public LabelProperty setExtraMargins(int top, int bottom) {
         extraTopMargin = top;
         extraBottomMargin = bottom;
+        return this;
     }
 
-    public void setFont(Font f) {
+    public LabelProperty setFont(Font f) {
         labelFont = f;
+        return this;
     }
 
-    public void setColor(Color c) {
+    public LabelProperty setColor(Color c) {
         labelColor = c;
+        return this;
     }
 
     @Override
