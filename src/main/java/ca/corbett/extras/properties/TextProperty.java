@@ -89,12 +89,9 @@ public class TextProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
+    protected FormField generateFormFieldImpl() {
         TextField textField = new TextField(propertyLabel, columns, rows, allowBlank);
         textField.setText(value);
-        textField.setIdentifier(fullyQualifiedName);
-        textField.setEnabled(!isReadOnly);
-        textField.setHelpText(helpText);
         return textField;
     }
 

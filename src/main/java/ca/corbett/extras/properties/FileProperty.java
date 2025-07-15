@@ -85,15 +85,11 @@ public class FileProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
-        FileField field = new FileField(propertyLabel, file, columns,
+    protected FormField generateFormFieldImpl() {
+        return new FileField(propertyLabel, file, columns,
                                         allowBlank
                                                 ? ca.corbett.forms.fields.FileField.SelectionType.NonExistingFile
                                                 : ca.corbett.forms.fields.FileField.SelectionType.ExistingFile);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
     }
 
     @Override

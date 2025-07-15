@@ -84,12 +84,8 @@ public class ComboProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
-        ComboField field = new ComboField(propertyLabel, items, selectedIndex, isEditable);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
+    protected FormField generateFormFieldImpl() {
+        return new ComboField(propertyLabel, items, selectedIndex, isEditable);
     }
 
     @Override

@@ -128,7 +128,7 @@ public class LabelProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
+    protected FormField generateFormFieldImpl() {
         LabelField field = new LabelField(propertyLabel);
         field.setTopMargin(field.getTopMargin() + extraTopMargin);
         field.setBottomMargin(field.getBottomMargin() + extraBottomMargin);
@@ -138,9 +138,6 @@ public class LabelProperty extends AbstractProperty {
         if (labelColor != null) {
             ((JLabel)field.getFieldComponent()).setForeground(labelColor);
         }
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
         return field;
     }
 

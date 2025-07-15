@@ -2,6 +2,8 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.FormField;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -57,6 +59,7 @@ public abstract class AbstractProperty {
     protected boolean isExposed;
     protected boolean isEnabled;
     protected boolean isReadOnly;
+    protected final Map<String, Object> extraAttributes;
 
     /**
      * Each property has a fully qualified name that can optionally specify a
@@ -119,6 +122,7 @@ public abstract class AbstractProperty {
         this.isExposed = true; // arbitrary default
         this.isEnabled = true; // arbitrary default
         this.helpText = "";
+        this.extraAttributes = new HashMap<>();
     }
 
     /**
@@ -300,6 +304,73 @@ public abstract class AbstractProperty {
     }
 
     /**
+     * Set an arbitrary extra attribute to this property. The given value is not validated
+     * nor used within this class. It's just extra data that can be attached by the caller.
+     * Any extra attributes set here will be passed on as-is to any generated FormField.
+     * However, they are NOT persisted by saveToProps.
+     *
+     * @param name  The unique name of the value to set. Will overwrite any previous value by that name.
+     * @param value The value to set.
+     */
+    public AbstractProperty setExtraAttribute(String name, Object value) {
+        extraAttributes.put(name, value);
+        return this;
+    }
+
+    /**
+     * Returns a named extra attribute's value, if it exists.
+     *
+     * @param name The unique name of the value in question.
+     * @return The value associated with that name, or null if no such value.
+     */
+    public Object getExtraAttribute(String name) {
+        return extraAttributes.get(name);
+    }
+
+    /**
+     * Removes all extra attributes and their associated values from this AbstractProperty.
+     */
+    public void clearExtraAttributes() {
+        extraAttributes.clear();
+    }
+
+    /**
+     * Removes the value for the named extra attribute.
+     *
+     * @param name The unique name of the attribute in question.
+     */
+    public void clearExtraAttribute(String name) {
+        extraAttributes.remove(name);
+    }
+
+    /**
+     * Clears any extra attributes currently held by this AbstractProperty and then accepts
+     * the given list of attributes.
+     * Any extra attributes set here will be passed on as-is to any generated FormField.
+     * However, they are NOT persisted by saveToProps.
+     *
+     * @param newAttributes A map of String name to some arbitrary Object value.
+     */
+    public AbstractProperty setAllExtraAttributes(Map<String, Object> newAttributes) {
+        clearExtraAttributes();
+        extraAttributes.putAll(newAttributes);
+        return this;
+    }
+
+    /**
+     * Adds the map of extra attributes to our existing list. Any name conflicts will result
+     * in the existing values being overwritten by the new values.
+     * Any extra attributes set here will be passed on as-is to any generated FormField.
+     * However, they are NOT persisted by saveToProps.
+     *
+     * @param newAttributes A map of String name to some arbitrary Object value.
+     */
+    public AbstractProperty addAllExtraAttributes(Map<String, Object> newAttributes) {
+        extraAttributes.putAll(newAttributes);
+        return this;
+    }
+
+    /**
      * Saves the current value(s) of this property to the given Properties instance.
      *
      * @param props Any Properties instance which will receive the value(s) of this property.
@@ -316,14 +387,34 @@ public abstract class AbstractProperty {
     public abstract void loadFromProps(Properties props);
 
     /**
+     * Descendant classes must implement this method to generate a FormField associated
+     * with this property. The generateFormField() method in this class will call this
+     * abstract method to create the FormField, which will then be augmented with our
+     * fully qualified name, read-only state, help text, and extra attributes.
+     *
+     * @return A FormField associated with this property.
+     */
+    protected abstract FormField generateFormFieldImpl();
+
+    /**
      * Generates a FormField instance for this AbstractProperty, depending on our type.
      * The returned FormField will be populated based on the current value of this property.
      * There's no guarantee that it will pass form validation, though, as the default value
      * of the property is out of our control and may or may not actually be valid.
+     * <p>
+     *     Descendant classes should implement generateFormFieldImpl() and not this method.
+     * </p>
      *
      * @return A FormField representing this AbstractProperty.
      */
-    public abstract FormField generateFormField();
+    public final FormField generateFormField() {
+        FormField field = generateFormFieldImpl();
+        field.setIdentifier(fullyQualifiedName);
+        field.setEnabled(!isReadOnly);
+        field.setHelpText(helpText);
+        field.setAllExtraAttributes(extraAttributes);
+        return field;
+    }
 
     /**
      * Populates this Property's value(s) from the given form field, assuming the

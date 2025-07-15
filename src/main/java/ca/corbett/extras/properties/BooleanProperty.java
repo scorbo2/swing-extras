@@ -47,12 +47,8 @@ public class BooleanProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
-        CheckBoxField field = new CheckBoxField(propertyLabel, value);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
+    protected FormField generateFormFieldImpl() {
+        return new CheckBoxField(propertyLabel, value);
     }
 
     @Override

@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.3.0 [TODO] - Maintenance release
   #64 - Add max version check to ExtensionManager
   #61 - Add static peek() to AppProperties
+  #58 - Add extraAttributes to all properties/form fields
   #56 - Add ImageUtil.scaleImageToFitSquareBounds
   #54 - Use fluent-style setters for all AbstractProperties
 

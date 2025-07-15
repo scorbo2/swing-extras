@@ -135,13 +135,9 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
+    protected FormField generateFormFieldImpl() {
         List<String> options = useNamesInsteadOfLabels ? names : labels;
-        ComboField field = new ComboField(propertyLabel, options, selectedIndex, false);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
+        return new ComboField(propertyLabel, options, selectedIndex, false);
     }
 
     @Override

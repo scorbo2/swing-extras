@@ -91,7 +91,7 @@ public class ColorProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
+    protected FormField generateFormFieldImpl() {
         GradientColorField field;
 
         //@formatter:off
@@ -104,10 +104,7 @@ public class ColorProperty extends AbstractProperty {
                 field = new GradientColorField(propertyLabel, color, gradient, true);
         }
         //@formatter:on
-
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
+        
         return field;
     }
 

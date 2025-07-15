@@ -174,11 +174,8 @@ public class FontProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
+    protected FormField generateFormFieldImpl() {
         FontField field = new FontField(propertyLabel, getFont(), textColor, bgColor);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
         field.setShowSizeField(allowSizeSelection);
         return field;
     }

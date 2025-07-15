@@ -67,13 +67,8 @@ public class DirectoryProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
-        FileField field = new FileField(propertyLabel, dir, columns, FileField.SelectionType.ExistingDirectory,
-                                        allowBlank);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
+    protected FormField generateFormFieldImpl() {
+        return new FileField(propertyLabel, dir, columns, FileField.SelectionType.ExistingDirectory, allowBlank);
     }
 
     @Override

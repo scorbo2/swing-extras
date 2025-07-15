@@ -104,12 +104,8 @@ public class DecimalProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
-        NumberField field = new NumberField(propertyLabel, value, minValue, maxValue, stepValue);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
+    protected FormField generateFormFieldImpl() {
+        return new NumberField(propertyLabel, value, minValue, maxValue, stepValue);
     }
 
     @Override
