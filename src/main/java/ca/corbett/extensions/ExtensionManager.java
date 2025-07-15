@@ -343,11 +343,11 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * @param directory      The directory to scan.
      * @param extClass       The implementation class to look for.
      * @param appName        The application name to match against.
-     * @param minimumVersion The minimum application version that the extension must target.
+     * @param requiredVersion The required application version that the extension must target.
      * @return The count of extensions that were loaded by this operation.
      */
-    public int loadExtensions(File directory, Class<T> extClass, String appName, String minimumVersion) {
-        Map<File, AppExtensionInfo> map = findCandidateExtensionJars(directory, appName, minimumVersion);
+    public int loadExtensions(File directory, Class<T> extClass, String appName, String requiredVersion) {
+        Map<File, AppExtensionInfo> map = findCandidateExtensionJars(directory, appName, requiredVersion);
         if (map.isEmpty()) {
             return 0;
         }
@@ -370,22 +370,22 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
     /**
      * Scans the given directory looking for Jar files that contain an extInfo.json file, and
-     * if one is found, will check its parameters against the given appName and minimumVersion
+     * if one is found, will check its parameters against the given appName and requiredVersion
      * to make sure the extension would work for that application. The return is a Map of
      * File to AppExtensionInfo, which can then be loaded via one of the loadExtension methods.
      * Note that this method does not actually try to load the extension, it simply scans
      * to find which jar file would be good candidates for loading. This can therefore be
      * used for autodiscovery of extension jars in a given directory safely, without actually
-     * loading them. Note that both appName and minimumVersion are optional (you can pass null
+     * loading them. Note that both appName and requiredVersion are optional (you can pass null
      * to disable those checks), but the result may be jar files that contain extensions
      * for the wrong app, or for the wrong version of the app, or both.
      *
      * @param directory      The directory to scan (will be scanned recursively).
      * @param appName        The application name to check for, or null to skip this check.
-     * @param minimumVersion The minimum required app version, or null to skip this check.
+     * @param requiredVersion The required app version, or null to skip this check.
      * @return A Map of jar files to AppExtensionInfo objects.
      */
-    public Map<File, AppExtensionInfo> findCandidateExtensionJars(File directory, String appName, String minimumVersion) {
+    public Map<File, AppExtensionInfo> findCandidateExtensionJars(File directory, String appName, String requiredVersion) {
         Map<File, AppExtensionInfo> map = new HashMap<>();
 
         // Start by finding all jar files in the target directory:
@@ -397,7 +397,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
             if (extInfo == null) {
                 continue;
             }
-            if (jarFileMeetsRequirements(jarFile, extInfo, appName, minimumVersion)) {
+            if (jarFileMeetsRequirements(jarFile, extInfo, appName, requiredVersion)) {
                 map.put(jarFile, extInfo);
             }
         }
@@ -407,17 +407,17 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
     /**
      * Checks if the given jar file and extension info meet the given requirements (that is,
-     * that the application name and minimum version requirements are met). This does not guarantee
+     * that the application name and version requirements are met). This does not guarantee
      * that an extension can be successfully loaded out of the given jar file, but it is
      * a pretty good indicator.
      *
      * @param jarFile        The jar file in question.
      * @param extInfo        The extension info that was extracted from that jar via extractExtInfo
      * @param appName        The name of the application to check for.
-     * @param minimumVersion The minimum app version that the extension must target.
+     * @param requiredVersion The app version that the extension must target.
      * @return true if the jar file looks good, false otherwise.
      */
-    public boolean jarFileMeetsRequirements(File jarFile, AppExtensionInfo extInfo, String appName, String minimumVersion) {
+    public boolean jarFileMeetsRequirements(File jarFile, AppExtensionInfo extInfo, String appName, String requiredVersion) {
         // Check app name if one was given:
         if (appName != null && !appName.equals(extInfo.getTargetAppName())) {
             logger.log(Level.WARNING,
@@ -427,22 +427,28 @@ public abstract class ExtensionManager<T extends AppExtension> {
         }
 
         // Check minimum app version if one was given:
-        if (minimumVersion != null) {
+        if (requiredVersion != null) {
             try {
-                float minVersion = Float.parseFloat(minimumVersion);
+                float theVersion = Float.parseFloat(requiredVersion);
                 float extRequires = extInfo.getTargetAppVersion() == null ? -1 : Float.parseFloat(
                         extInfo.getTargetAppVersion());
-                if (extRequires < minVersion) {
+                if (extRequires < theVersion) {
                     logger.log(Level.WARNING,
                                "jarFileMeetsRequirements: Jar file {0} contains an older extension with version {1}, below the required version of {2}; skipping.",
-                               new Object[]{jarFile.getAbsolutePath(), extInfo.getTargetAppVersion(), minimumVersion});
+                               new Object[]{jarFile.getAbsolutePath(), extInfo.getTargetAppVersion(), requiredVersion});
+                    return false;
+                }
+                else if (extRequires > theVersion) {
+                    logger.log(Level.WARNING,
+                               "jarFileMeetsRequirements: Jar file {0} contains a newer extension with version {1}, above the required version of {2}; skipping.",
+                               new Object[]{jarFile.getAbsolutePath(), extInfo.getTargetAppVersion(), requiredVersion});
                     return false;
                 }
             }
             catch (NumberFormatException nfe) {
                 logger.log(Level.WARNING,
                            "jarFileMeetsRequirements: unable to parse version information for jar file {0}: App version: \"{1}\", extension targets version \"{2}\".",
-                           new Object[]{jarFile.getAbsolutePath(), minimumVersion, extInfo.getTargetAppVersion()});
+                           new Object[]{jarFile.getAbsolutePath(), requiredVersion, extInfo.getTargetAppVersion()});
                 return false;
             }
         }

@@ -241,6 +241,45 @@ public class ExtensionManagerTest {
         }
     }
 
+    @Test
+    public void testJarFileMeetsRequirements_givenOlderVersion_shouldFail() {
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testOld")
+                .setVersion("1.0")
+                .setTargetAppName("Test")
+                .setTargetAppVersion("1.0")
+                .build();
+
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), extInfo, "Test", "2.0");
+
+        assertFalse(actual);
+    }
+
+    @Test
+    public void testJarFileMeetsRequirements_givenNewerVersion_shouldFail() {
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testNew")
+                .setVersion("2.0")
+                .setTargetAppName("Test")
+                .setTargetAppVersion("2.0")
+                .build();
+
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), extInfo, "Test", "1.0");
+
+        assertFalse(actual);
+    }
+
+    @Test
+    public void testJarFileMeetsRequirements_withMatchingVersions_shouldSucceed() {
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testEqual")
+                .setVersion("3.0")
+                .setTargetAppName("Test")
+                .setTargetAppVersion("3.0")
+                .build();
+
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), extInfo, "Test", "3.0");
+
+        assertTrue(actual);
+    }
+
     public static class AppExtensionImpl1 implements AppExtension {
 
         private final String name;

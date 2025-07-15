@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.3.0 [TODO] - Maintenance release
+  #64 - Add max version check to ExtensionManager
   #56 - Add ImageUtil.scaleImageToFitSquareBounds
   #54 - Use fluent-style setters for all AbstractProperties
 
