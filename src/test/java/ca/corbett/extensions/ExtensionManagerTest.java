@@ -280,7 +280,7 @@ public class ExtensionManagerTest {
         assertTrue(actual);
     }
 
-    public static class AppExtensionImpl1 implements AppExtension {
+    public static class AppExtensionImpl1 extends AppExtension {
 
         private final String name;
 
@@ -302,16 +302,8 @@ public class ExtensionManagerTest {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             return null;
-        }
-
-        @Override
-        public void onActivate() {
-        }
-
-        @Override
-        public void onDeactivate() {
         }
 
         public String getName() {
@@ -319,7 +311,7 @@ public class ExtensionManagerTest {
         }
     }
 
-    public static class AppExtensionImpl2 implements AppExtension {
+    public static class AppExtensionImpl2 extends AppExtension {
 
         private final String name;
 
@@ -341,20 +333,10 @@ public class ExtensionManagerTest {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             List<AbstractProperty> list = new ArrayList<>();
             list.add(new IntegerProperty("testProperty", "testProperty", 1));
             return list;
-        }
-
-        @Override
-        public void onActivate() {
-
-        }
-
-        @Override
-        public void onDeactivate() {
-
         }
 
         public String getName() {
@@ -362,7 +344,7 @@ public class ExtensionManagerTest {
         }
     }
 
-    public static class AppExtensionImpl2WithDuplicateConfigProperty implements AppExtension {
+    public static class AppExtensionImpl2WithDuplicateConfigProperty extends AppExtension {
 
         private final String name;
 
@@ -384,20 +366,10 @@ public class ExtensionManagerTest {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             List<AbstractProperty> list = new ArrayList<>();
             list.add(new IntegerProperty("testProperty", "testProperty", 1));
             return list;
-        }
-
-        @Override
-        public void onActivate() {
-
-        }
-
-        @Override
-        public void onDeactivate() {
-
         }
 
         public String getName() {

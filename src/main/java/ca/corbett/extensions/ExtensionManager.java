@@ -201,7 +201,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 continue;
             }
             List<AbstractProperty> list = wrapper.extension.getConfigProperties();
-            if (list != null) {
+            if (!list.isEmpty()) { // AppExtension ensures it will never be null, but it may be empty
                 logger.fine(
                         "ExtensionManager.getAllEnabledExtensionProperties(): extension \"" + wrapper.extension.getInfo().name + "\" returned " + list.size() + " properties.");
                 propList.addAll(list);

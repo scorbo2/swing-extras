@@ -82,7 +82,7 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
 
     }
 
-    private static class FakeExtension1 implements AppExtension {
+    private static class FakeExtension1 extends AppExtension {
 
         @Override
         public AppExtensionInfo getInfo() {
@@ -101,20 +101,12 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             return List.of();
-        }
-
-        @Override
-        public void onActivate() {
-        }
-
-        @Override
-        public void onDeactivate() {
         }
     }
 
-    private static class FakeExtension2 implements AppExtension {
+    private static class FakeExtension2 extends AppExtension {
 
         @Override
         public AppExtensionInfo getInfo() {
@@ -130,20 +122,12 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             return List.of();
-        }
-
-        @Override
-        public void onActivate() {
-        }
-
-        @Override
-        public void onDeactivate() {
         }
     }
 
-    private static class FakeExtension3 implements AppExtension {
+    private static class FakeExtension3 extends AppExtension {
 
         @Override
         public AppExtensionInfo getInfo() {
@@ -161,7 +145,7 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             List<AbstractProperty> props = new ArrayList<>();
             props.add(new LabelProperty("FakeExtension3.General.label1",
                                         "This extension defines some config properties"));
@@ -169,14 +153,6 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
             props.add(new TextProperty("FakeExtension3.General.text2", "Text field 2:", "Hello"));
             props.add(new LabelProperty("FakeExtension3.General.label2", "You can view the defaults here."));
             return props;
-        }
-
-        @Override
-        public void onActivate() {
-        }
-
-        @Override
-        public void onDeactivate() {
         }
     }
 }
