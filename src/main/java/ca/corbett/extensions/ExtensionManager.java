@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -501,12 +503,33 @@ public abstract class ExtensionManager<T extends AppExtension> {
                         // T is just a compile-time convenience and it is discarded at runtime.
                         // So, we have to force callers to pass in the class even though we're already
                         // typed with it, sigh.
-                        if (extensionClass.isAssignableFrom(candidate)) {
-                            logger.log(Level.FINE, "Found qualifying AppExtension class: {0} in jar: {1}",
-                                       new Object[]{candidate.getCanonicalName(),
-                                               jarFile.getAbsolutePath()});
-                            result = (T)candidate.newInstance();
+                        if (!extensionClass.isAssignableFrom(candidate) || candidate.isInterface()) {
+                            //logger.warning("Class " + candidate.getName() + " is the wrong type.");
+                            // We actually don't care about this case - there may be many classes
+                            // in the jar file other than the extension class (support classes and such).
+                            // We don't need to log this warning for each one of them. Just ignore them.
+                            // BUT - we do need to execute the loadClass in the preceding code.
+                            // Otherwise, those support classes won't be available when the extension loads.
+                            continue;
                         }
+
+                        try {
+                            //noinspection unchecked
+                            Constructor<?> constructor = candidate.getDeclaredConstructor();
+                            //noinspection unchecked
+                            result = (T)constructor.newInstance();
+                        }
+                        catch (NoSuchMethodException ignored) {
+                            logger.warning("Class " + candidate.getName() + " has no default constructor - ignored.");
+                            continue;
+                        }
+                        catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+                            logger.log(Level.WARNING, "Failed to instantiate " + candidate.getName(), ex);
+                            continue;
+                        }
+                        logger.log(Level.FINE, "Found qualifying AppExtension class: {0} in jar: {1}",
+                                   new Object[]{candidate.getCanonicalName(),
+                                           jarFile.getAbsolutePath()});
                     }
 
                     if (result != null) {
