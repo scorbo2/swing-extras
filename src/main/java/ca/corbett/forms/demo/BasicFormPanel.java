@@ -8,9 +8,11 @@ import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.TextField;
 
+import javax.swing.JList;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Font;
@@ -62,6 +64,19 @@ public class BasicFormPanel extends PanelBuilder {
         formPanel.addFormField(
                 new FileField("Directory chooser:", null, 15, FileField.SelectionType.ExistingDirectory));
         formPanel.addFormField(new NumberField("Number chooser:", 0, 0, 100, 1));
+
+        ListField<String> listField1 = new ListField<>("Simple list:",
+                                                       List.of("One", "Two", "Three", "Four", "Five", "Six"));
+        listField1.setFixedCellWidth(80);
+        listField1.setVisibleRowCount(3);
+        formPanel.addFormField(listField1);
+
+        ListField<String> listField2 = new ListField<>("Wide list:",
+                                                       List.of("One", "Two", "Three", "Four", "Five", "Six"));
+        listField2.setLayoutOrientation(JList.VERTICAL_WRAP);
+        listField2.setFixedCellWidth(80);
+        listField2.setVisibleRowCount(3);
+        formPanel.addFormField(listField2);
 
         formPanel.render();
         return formPanel;
