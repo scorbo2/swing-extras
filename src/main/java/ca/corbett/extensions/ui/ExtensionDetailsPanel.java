@@ -164,10 +164,18 @@ public class ExtensionDetailsPanel extends JPanel {
         }
 
         TextField descriptionField = new TextField("Description:", 40, 5, true);
-        descriptionField.setEnabled(false);
-        ((JTextArea)descriptionField.getFieldComponent()).setLineWrap(true);
+
+        // Marking the TextField as disabled will unfortunately change the text color to something
+        // much lighter, which makes it very hard or almost impossible to read in some look and feels:
+        //descriptionField.setEnabled(false);
+
+        // So instead, we'll leave it as "enabled" but mark the JTextArea itself as read-only:
+        JTextArea jTextArea = (JTextArea)descriptionField.getFieldComponent();
+        jTextArea.setEditable(false);
+
+        jTextArea.setLineWrap(true);
         descriptionField.setText(extInfo == null ? "" : extInfo.getLongDescription());
-        ((JTextArea)descriptionField.getFieldComponent()).setCaretPosition(0); // scroll to top
+        jTextArea.setCaretPosition(0); // scroll to top
         descriptionField.setScrollPanePreferredSize(460, 100);
         descriptionField.setMargins(10, 4, 4, 4, 4);
         formPanel.addFormField(descriptionField);
