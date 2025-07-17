@@ -30,6 +30,7 @@ public class ListField<T> extends FormField {
         list = new JList<>(listModel);
         list.setVisibleRowCount(4);
         list.setFixedCellWidth(20);
+        fieldComponent = list;
     }
 
     /**
