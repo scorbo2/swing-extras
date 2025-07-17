@@ -3,10 +3,13 @@ Author: Steve Corbett
 
 Version 2.3.0 [TODO] - Maintenance release
   #64 - Add max version check to ExtensionManager
+  #62 - Ensure extension config properties are only created once
   #61 - Add static peek() to AppProperties
+  #59 - Fix cosmetic issue on ExtensionManagerDialog
   #58 - Add extraAttributes to all properties/form fields
   #56 - Add ImageUtil.scaleImageToFitSquareBounds
   #54 - Use fluent-style setters for all AbstractProperties
+  #52 - Clean up deprecation warning in ExtensionManager
 
 Version 2.2.0 [2024-06-10] - ExtensionManager enhancements
   #47 - AppProperties.reinitialize() should also call load()
