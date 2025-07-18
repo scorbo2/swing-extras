@@ -7,6 +7,7 @@ import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.FormPanel;
 
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +53,13 @@ public abstract class AppProperties<T extends AppExtension> {
 
     private final String appName;
     private final File propsFile;
+
+    // Subclasses can change these as they see fit:
+    protected int propertiesDialogInitialWidth = PropertiesDialog.INITIAL_WIDTH;
+    protected int propertiesDialogInitialHeight = PropertiesDialog.INITIAL_HEIGHT;
+    protected int propertiesDialogMinimumWidth = PropertiesDialog.MINIMUM_WIDTH;
+    protected int propertiesDialogMinimumHeight = PropertiesDialog.MINIMUM_HEIGHT;
+
 
     /**
      * If your application has an ExtensionManager, you can supply it here and this
@@ -176,6 +184,8 @@ public abstract class AppProperties<T extends AppExtension> {
     public boolean showPropertiesDialog(Frame owner, FormPanel.Alignment alignment) {
         reconcileExtensionEnabledStatus();
         PropertiesDialog dialog = propsManager.generateDialog(owner, appName + " properties", alignment, 24);
+        dialog.setSize(propertiesDialogInitialWidth, propertiesDialogInitialHeight);
+        dialog.setMinimumSize(new Dimension(propertiesDialogMinimumWidth, propertiesDialogMinimumHeight));
         dialog.setVisible(true);
 
         if (dialog.wasOkayed()) {

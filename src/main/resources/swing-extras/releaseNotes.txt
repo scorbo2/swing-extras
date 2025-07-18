@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.3.0 [TODO] - Maintenance release
+  #66 - Allow subclasses to control PropertiesDialog size
   #64 - Add max version check to ExtensionManager
   #62 - Ensure extension config properties are only created once
   #61 - Add static peek() to AppProperties
