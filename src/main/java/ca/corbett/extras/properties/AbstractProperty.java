@@ -63,7 +63,8 @@ public abstract class AbstractProperty {
     protected String propertyLabel;
     protected boolean isExposed;
     protected boolean isEnabled;
-    protected boolean isReadOnly;
+    protected boolean isInitiallyEditable;
+    protected boolean isInitiallyVisible;
     protected final Map<String, Object> extraAttributes;
     protected FormPanel formPanel;
 
@@ -129,6 +130,8 @@ public abstract class AbstractProperty {
         this.propertyLabel = label;
         this.isExposed = true; // arbitrary default
         this.isEnabled = true; // arbitrary default
+        this.isInitiallyVisible = true; // arbitrary default
+        this.isInitiallyEditable = true; // arbitrary default
         this.helpText = "";
         this.extraAttributes = new HashMap<>();
     }
@@ -259,7 +262,7 @@ public abstract class AbstractProperty {
      * <b>Question: Why would I want a property to be read only?</b> - a common
      * use case with forms is to make certain controls visible/editable only
      * if certain conditions are met elsewhere on the form. You can use
-     * isReadOnly to set the initial state of this property when it is added
+     * isInitiallyEditable to set the initial state of this property when it is added
      * to the PropertiesDialog (it can still be changed at runtime as a result
      * of action handlers on other form fields).
      * </p>
@@ -272,8 +275,8 @@ public abstract class AbstractProperty {
      * to and from properties.
      * </p>
      */
-    public boolean isReadOnly() {
-        return isReadOnly;
+    public boolean isInitiallyEditable() {
+        return isInitiallyEditable;
     }
 
     /**
@@ -283,8 +286,35 @@ public abstract class AbstractProperty {
      * on other form fields (for example, field B is only editable if field A contains
      * a specific value).
      */
-    public AbstractProperty setReadOnly(boolean readOnly) {
-        isReadOnly = readOnly;
+    public AbstractProperty setInitiallyEditable(boolean initiallyEditable) {
+        isInitiallyEditable = initiallyEditable;
+        return this;
+    }
+
+    /**
+     * Reports whether this property will be visible when added to the PropertiesDialog.
+     * <p>
+     * <b>Question: Why would I want a property to be invisible?</b> - a common
+     * use case with forms is to make certain controls visible/editable only
+     * if certain conditions are met elsewhere on the form. You can use
+     * isInitiallyVisible to set the initial state of this property when it is added
+     * to the PropertiesDialog (it can still be changed at runtime as a result
+     * of action handlers on other form fields).
+     * </p>
+     */
+    public boolean isInitiallyVisible() {
+        return isInitiallyVisible;
+    }
+
+    /**
+     * Sets whether this property is to be visible by default when shown on a
+     * PropertiesDialog. Note that this reflects the <b>initial</b> state of the property
+     * on the PropertiesDialog. This can be changed at runtime by action handlers
+     * on other form fields (for example, field B is only visible if field A contains
+     * a specific value).
+     */
+    public AbstractProperty setInitiallyVisible(boolean initiallyVisible) {
+        this.isInitiallyVisible = initiallyVisible;
         return this;
     }
 
@@ -420,7 +450,8 @@ public abstract class AbstractProperty {
         this.formPanel = formPanel;
         final FormField field = generateFormFieldImpl();
         field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
+        field.setEnabled(isInitiallyEditable);
+        field.setVisible(isInitiallyVisible);
         field.setHelpText(helpText);
         field.setAllExtraAttributes(extraAttributes);
 
@@ -480,8 +511,9 @@ public abstract class AbstractProperty {
         return formPanel;
     }
 
-    public void addFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
+    public AbstractProperty addFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
         changeListeners.add(listener);
+        return this;
     }
 
     public void removeFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
