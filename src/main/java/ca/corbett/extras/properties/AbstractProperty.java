@@ -1,8 +1,13 @@
 package ca.corbett.extras.properties;
 
+import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 
+import javax.swing.AbstractAction;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -60,6 +65,9 @@ public abstract class AbstractProperty {
     protected boolean isEnabled;
     protected boolean isReadOnly;
     protected final Map<String, Object> extraAttributes;
+    protected FormPanel formPanel;
+
+    private final List<PropertyFormFieldChangeListener> changeListeners = new ArrayList<>();
 
     /**
      * Each property has a fully qualified name that can optionally specify a
@@ -405,15 +413,33 @@ public abstract class AbstractProperty {
      *     Descendant classes should implement generateFormFieldImpl() and not this method.
      * </p>
      *
+     * @param formPanel The containing FormPanel for the generated FormField, if known (null is fine).
      * @return A FormField representing this AbstractProperty.
      */
-    public final FormField generateFormField() {
-        FormField field = generateFormFieldImpl();
+    public final FormField generateFormField(FormPanel formPanel) {
+        this.formPanel = formPanel;
+        final FormField field = generateFormFieldImpl();
         field.setIdentifier(fullyQualifiedName);
         field.setEnabled(!isReadOnly);
         field.setHelpText(helpText);
         field.setAllExtraAttributes(extraAttributes);
+
+        // Listen for changes on this field so we can notify our own listeners, if any:
+        field.addValueChangedAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fireFormFieldChangedEvent(field, e);
+            }
+        });
+
         return field;
+    }
+
+    /**
+     * Delegates to generateFormField(null).
+     */
+    public final FormField generateFormField() {
+        return generateFormField(null);
     }
 
     /**
@@ -444,5 +470,37 @@ public abstract class AbstractProperty {
         }
         final AbstractProperty other = (AbstractProperty)obj;
         return Objects.equals(this.fullyQualifiedName, other.fullyQualifiedName);
+    }
+
+    /**
+     * This will return the most recent FormPanel for which this property was asked to generate a FormField.
+     * It may be null if generateFormField has never yet been invoked.
+     */
+    public FormPanel getFormPanel() {
+        return formPanel;
+    }
+
+    public void addFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
+        changeListeners.add(listener);
+    }
+
+    public void removeFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
+        changeListeners.remove(listener);
+    }
+
+    public void removeAllListeners() {
+        changeListeners.clear();
+    }
+
+    protected void fireFormFieldChangedEvent(FormField field, ActionEvent changeEvent) {
+        if (changeListeners.isEmpty()) {
+            return;
+        }
+
+        PropertyFormFieldValueChangedEvent evt = new PropertyFormFieldValueChangedEvent(this, changeEvent, formPanel,
+                                                                                        field);
+        for (PropertyFormFieldChangeListener listener : changeListeners) {
+            listener.valueChanged(evt);
+        }
     }
 }
