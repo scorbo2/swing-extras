@@ -39,16 +39,18 @@ public class DirectoryProperty extends AbstractProperty {
         return dir;
     }
 
-    public void setDirectory(File dir) {
+    public DirectoryProperty setDirectory(File dir) {
         this.dir = dir;
+        return this;
     }
 
     public int getColumns() {
         return columns;
     }
 
-    public void setColumns(int columns) {
+    public DirectoryProperty setColumns(int columns) {
         this.columns = columns;
+        return this;
     }
 
     @Override
@@ -65,13 +67,8 @@ public class DirectoryProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
-        FileField field = new FileField(propertyLabel, dir, columns, FileField.SelectionType.ExistingDirectory,
-                                        allowBlank);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
+    protected FormField generateFormFieldImpl() {
+        return new FileField(propertyLabel, dir, columns, FileField.SelectionType.ExistingDirectory, allowBlank);
     }
 
     @Override

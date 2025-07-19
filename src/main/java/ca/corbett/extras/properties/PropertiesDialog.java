@@ -42,6 +42,11 @@ public class PropertiesDialog extends JDialog {
 
     private static final Logger logger = Logger.getLogger(PropertiesDialog.class.getName());
 
+    public static final int INITIAL_WIDTH = 640;
+    public static final int INITIAL_HEIGHT = 480;
+    public static final int MINIMUM_WIDTH = 400;
+    public static final int MINIMUM_HEIGHT = 360;
+
     protected final PropertiesManager propsManager;
     protected final Window owner;
     protected final JTabbedPane tabPane;
@@ -83,8 +88,8 @@ public class PropertiesDialog extends JDialog {
         add(buildButtonPanel(), BorderLayout.SOUTH);
         this.propsManager = manager;
         this.owner = owner;
-        setSize(640, 480);
-        setMinimumSize(new Dimension(400, 360));
+        setSize(INITIAL_WIDTH, INITIAL_HEIGHT);
+        setMinimumSize(new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT));
     }
 
     /**

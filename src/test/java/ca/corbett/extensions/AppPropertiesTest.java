@@ -45,7 +45,7 @@ class AppPropertiesTest {
         }
     }
 
-    public static class AppExtensionImpl1 implements AppExtension {
+    public static class AppExtensionImpl1 extends AppExtension {
 
         private final String name;
 
@@ -67,16 +67,8 @@ class AppPropertiesTest {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             return List.of();
-        }
-
-        @Override
-        public void onActivate() {
-        }
-
-        @Override
-        public void onDeactivate() {
         }
 
         public String getName() {
@@ -84,7 +76,7 @@ class AppPropertiesTest {
         }
     }
 
-    public static class AppExtensionImpl2 implements AppExtension {
+    public static class AppExtensionImpl2 extends AppExtension {
 
         private final String name;
 
@@ -106,20 +98,10 @@ class AppPropertiesTest {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             List<AbstractProperty> list = new ArrayList<>();
             list.add(new IntegerProperty("testProperty", "testProperty", 1));
             return list;
-        }
-
-        @Override
-        public void onActivate() {
-
-        }
-
-        @Override
-        public void onDeactivate() {
-
         }
 
         public String getName() {

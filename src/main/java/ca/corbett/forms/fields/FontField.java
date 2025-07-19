@@ -29,6 +29,7 @@ public final class FontField extends FormField {
 
     private final JLabel sampleLabel;
     private final JButton button;
+    private final JPanel wrapperPanel;
     private ActionListener actionListener;
     private Font selectedFont;
     private Color textColor;
@@ -83,11 +84,18 @@ public final class FontField extends FormField {
         this.bgColor = bgColor;
         fieldLabel = new JLabel(labelText);
         button = new JButton("Change");
+        button.setPreferredSize(new Dimension(95, 23));
+        button.setFont(button.getFont().deriveFont(Font.PLAIN));
+        wrapperPanel = new JPanel();
+        wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
         sampleLabel = new JLabel();
         sampleLabel.setOpaque(true);
         sampleLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         setSelectedFont(selectedFont);
         fieldComponent = button;
+        wrapperPanel.add(sampleLabel);
+        wrapperPanel.add(new JLabel(" ")); // spacer
+        wrapperPanel.add(button);
     }
 
     /**
@@ -174,6 +182,12 @@ public final class FontField extends FormField {
         updateSampleLabel();
     }
 
+    @Override
+    public void setVisible(boolean isVisible) {
+        super.setVisible(isVisible);
+        wrapperPanel.setVisible(isVisible);
+    }
+
     /**
      * Renders this field into the given container.
      *
@@ -189,15 +203,7 @@ public final class FontField extends FormField {
         container.add(fieldLabel, constraints);
 
         constraints.gridx = FormPanel.CONTROL_COLUMN;
-        button.setPreferredSize(new Dimension(95, 23));
-        button.setFont(button.getFont().deriveFont(Font.PLAIN));
-        JPanel wrapperPanel = new JPanel();
         wrapperPanel.setBackground(container.getBackground());
-        wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
-        wrapperPanel.add(sampleLabel);
-        wrapperPanel.add(new JLabel(" ")); // spacer
-        wrapperPanel.add(button);
-
         if (actionListener != null) {
             button.removeActionListener(actionListener);
         }

@@ -1,7 +1,14 @@
 package ca.corbett.extras.properties;
 
+import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 
+import javax.swing.AbstractAction;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -56,7 +63,12 @@ public abstract class AbstractProperty {
     protected String propertyLabel;
     protected boolean isExposed;
     protected boolean isEnabled;
-    protected boolean isReadOnly;
+    protected boolean isInitiallyEditable;
+    protected boolean isInitiallyVisible;
+    protected final Map<String, Object> extraAttributes;
+    protected FormPanel formPanel;
+
+    private final List<PropertyFormFieldChangeListener> changeListeners = new ArrayList<>();
 
     /**
      * Each property has a fully qualified name that can optionally specify a
@@ -118,7 +130,10 @@ public abstract class AbstractProperty {
         this.propertyLabel = label;
         this.isExposed = true; // arbitrary default
         this.isEnabled = true; // arbitrary default
+        this.isInitiallyVisible = true; // arbitrary default
+        this.isInitiallyEditable = true; // arbitrary default
         this.helpText = "";
+        this.extraAttributes = new HashMap<>();
     }
 
     /**
@@ -176,8 +191,9 @@ public abstract class AbstractProperty {
      *
      * @param label The new label value.
      */
-    public void setPropertyLabel(String label) {
+    public AbstractProperty setPropertyLabel(String label) {
         propertyLabel = label;
+        return this;
     }
 
     /**
@@ -196,8 +212,9 @@ public abstract class AbstractProperty {
      *
      * @param expose True to expose this field in PropertiesDialog.
      */
-    public void setExposed(boolean expose) {
+    public AbstractProperty setExposed(boolean expose) {
         isExposed = expose;
+        return this;
     }
 
     /**
@@ -224,8 +241,9 @@ public abstract class AbstractProperty {
      *
      * @param enable Whether to enable or disable this property.
      */
-    public void setEnabled(boolean enable) {
+    public AbstractProperty setEnabled(boolean enable) {
         isEnabled = enable;
+        return this;
     }
 
     /**
@@ -244,7 +262,7 @@ public abstract class AbstractProperty {
      * <b>Question: Why would I want a property to be read only?</b> - a common
      * use case with forms is to make certain controls visible/editable only
      * if certain conditions are met elsewhere on the form. You can use
-     * isReadOnly to set the initial state of this property when it is added
+     * isInitiallyEditable to set the initial state of this property when it is added
      * to the PropertiesDialog (it can still be changed at runtime as a result
      * of action handlers on other form fields).
      * </p>
@@ -257,8 +275,8 @@ public abstract class AbstractProperty {
      * to and from properties.
      * </p>
      */
-    public boolean isReadOnly() {
-        return isReadOnly;
+    public boolean isInitiallyEditable() {
+        return isInitiallyEditable;
     }
 
     /**
@@ -268,8 +286,36 @@ public abstract class AbstractProperty {
      * on other form fields (for example, field B is only editable if field A contains
      * a specific value).
      */
-    public void setReadOnly(boolean readOnly) {
-        isReadOnly = readOnly;
+    public AbstractProperty setInitiallyEditable(boolean initiallyEditable) {
+        isInitiallyEditable = initiallyEditable;
+        return this;
+    }
+
+    /**
+     * Reports whether this property will be visible when added to the PropertiesDialog.
+     * <p>
+     * <b>Question: Why would I want a property to be invisible?</b> - a common
+     * use case with forms is to make certain controls visible/editable only
+     * if certain conditions are met elsewhere on the form. You can use
+     * isInitiallyVisible to set the initial state of this property when it is added
+     * to the PropertiesDialog (it can still be changed at runtime as a result
+     * of action handlers on other form fields).
+     * </p>
+     */
+    public boolean isInitiallyVisible() {
+        return isInitiallyVisible;
+    }
+
+    /**
+     * Sets whether this property is to be visible by default when shown on a
+     * PropertiesDialog. Note that this reflects the <b>initial</b> state of the property
+     * on the PropertiesDialog. This can be changed at runtime by action handlers
+     * on other form fields (for example, field B is only visible if field A contains
+     * a specific value).
+     */
+    public AbstractProperty setInitiallyVisible(boolean initiallyVisible) {
+        this.isInitiallyVisible = initiallyVisible;
+        return this;
     }
 
     /**
@@ -290,8 +336,76 @@ public abstract class AbstractProperty {
      *
      * @param helpText The new help text, or null to unset it.
      */
-    public void setHelpText(String helpText) {
+    public AbstractProperty setHelpText(String helpText) {
         this.helpText = (helpText == null) ? "" : helpText;
+        return this;
+    }
+
+    /**
+     * Set an arbitrary extra attribute to this property. The given value is not validated
+     * nor used within this class. It's just extra data that can be attached by the caller.
+     * Any extra attributes set here will be passed on as-is to any generated FormField.
+     * However, they are NOT persisted by saveToProps.
+     *
+     * @param name  The unique name of the value to set. Will overwrite any previous value by that name.
+     * @param value The value to set.
+     */
+    public AbstractProperty setExtraAttribute(String name, Object value) {
+        extraAttributes.put(name, value);
+        return this;
+    }
+
+    /**
+     * Returns a named extra attribute's value, if it exists.
+     *
+     * @param name The unique name of the value in question.
+     * @return The value associated with that name, or null if no such value.
+     */
+    public Object getExtraAttribute(String name) {
+        return extraAttributes.get(name);
+    }
+
+    /**
+     * Removes all extra attributes and their associated values from this AbstractProperty.
+     */
+    public void clearExtraAttributes() {
+        extraAttributes.clear();
+    }
+
+    /**
+     * Removes the value for the named extra attribute.
+     *
+     * @param name The unique name of the attribute in question.
+     */
+    public void clearExtraAttribute(String name) {
+        extraAttributes.remove(name);
+    }
+
+    /**
+     * Clears any extra attributes currently held by this AbstractProperty and then accepts
+     * the given list of attributes.
+     * Any extra attributes set here will be passed on as-is to any generated FormField.
+     * However, they are NOT persisted by saveToProps.
+     *
+     * @param newAttributes A map of String name to some arbitrary Object value.
+     */
+    public AbstractProperty setAllExtraAttributes(Map<String, Object> newAttributes) {
+        clearExtraAttributes();
+        extraAttributes.putAll(newAttributes);
+        return this;
+    }
+
+    /**
+     * Adds the map of extra attributes to our existing list. Any name conflicts will result
+     * in the existing values being overwritten by the new values.
+     * Any extra attributes set here will be passed on as-is to any generated FormField.
+     * However, they are NOT persisted by saveToProps.
+     *
+     * @param newAttributes A map of String name to some arbitrary Object value.
+     */
+    public AbstractProperty addAllExtraAttributes(Map<String, Object> newAttributes) {
+        extraAttributes.putAll(newAttributes);
+        return this;
     }
 
     /**
@@ -311,14 +425,53 @@ public abstract class AbstractProperty {
     public abstract void loadFromProps(Properties props);
 
     /**
+     * Descendant classes must implement this method to generate a FormField associated
+     * with this property. The generateFormField() method in this class will call this
+     * abstract method to create the FormField, which will then be augmented with our
+     * fully qualified name, read-only state, help text, and extra attributes.
+     *
+     * @return A FormField associated with this property.
+     */
+    protected abstract FormField generateFormFieldImpl();
+
+    /**
      * Generates a FormField instance for this AbstractProperty, depending on our type.
      * The returned FormField will be populated based on the current value of this property.
      * There's no guarantee that it will pass form validation, though, as the default value
      * of the property is out of our control and may or may not actually be valid.
+     * <p>
+     *     Descendant classes should implement generateFormFieldImpl() and not this method.
+     * </p>
      *
+     * @param formPanel The containing FormPanel for the generated FormField, if known (null is fine).
      * @return A FormField representing this AbstractProperty.
      */
-    public abstract FormField generateFormField();
+    public final FormField generateFormField(FormPanel formPanel) {
+        this.formPanel = formPanel;
+        final FormField field = generateFormFieldImpl();
+        field.setIdentifier(fullyQualifiedName);
+        field.setEnabled(isInitiallyEditable);
+        field.setVisible(isInitiallyVisible);
+        field.setHelpText(helpText);
+        field.setAllExtraAttributes(extraAttributes);
+
+        // Listen for changes on this field so we can notify our own listeners, if any:
+        field.addValueChangedAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fireFormFieldChangedEvent(field, e);
+            }
+        });
+
+        return field;
+    }
+
+    /**
+     * Delegates to generateFormField(null).
+     */
+    public final FormField generateFormField() {
+        return generateFormField(null);
+    }
 
     /**
      * Populates this Property's value(s) from the given form field, assuming the
@@ -348,5 +501,38 @@ public abstract class AbstractProperty {
         }
         final AbstractProperty other = (AbstractProperty)obj;
         return Objects.equals(this.fullyQualifiedName, other.fullyQualifiedName);
+    }
+
+    /**
+     * This will return the most recent FormPanel for which this property was asked to generate a FormField.
+     * It may be null if generateFormField has never yet been invoked.
+     */
+    public FormPanel getFormPanel() {
+        return formPanel;
+    }
+
+    public AbstractProperty addFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
+        changeListeners.add(listener);
+        return this;
+    }
+
+    public void removeFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
+        changeListeners.remove(listener);
+    }
+
+    public void removeAllListeners() {
+        changeListeners.clear();
+    }
+
+    protected void fireFormFieldChangedEvent(FormField field, ActionEvent changeEvent) {
+        if (changeListeners.isEmpty()) {
+            return;
+        }
+
+        PropertyFormFieldValueChangedEvent evt = new PropertyFormFieldValueChangedEvent(this, changeEvent, formPanel,
+                                                                                        field);
+        for (PropertyFormFieldChangeListener listener : changeListeners) {
+            listener.valueChanged(evt);
+        }
     }
 }

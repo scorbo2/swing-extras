@@ -48,35 +48,39 @@ public class IntegerProperty extends AbstractProperty {
         return value;
     }
 
-    public void setValue(int value) {
+    public IntegerProperty setValue(int value) {
         if (value < minValue || value > maxValue) {
-            return;
+            return this;
         }
         this.value = value;
+        return this;
     }
 
     public int getMinValue() {
         return minValue;
     }
 
-    public void setMinValue(int minValue) {
+    public IntegerProperty setMinValue(int minValue) {
         this.minValue = minValue;
+        return this;
     }
 
     public int getMaxValue() {
         return maxValue;
     }
 
-    public void setMaxValue(int maxValue) {
+    public IntegerProperty setMaxValue(int maxValue) {
         this.maxValue = maxValue;
+        return this;
     }
 
     public int getStepValue() {
         return stepValue;
     }
 
-    public void setStepValue(int stepValue) {
+    public IntegerProperty setStepValue(int stepValue) {
         this.stepValue = stepValue;
+        return this;
     }
 
     @Override
@@ -100,12 +104,8 @@ public class IntegerProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
-        NumberField field = new NumberField(propertyLabel, value, minValue, maxValue, stepValue);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
+    protected FormField generateFormFieldImpl() {
+        return new NumberField(propertyLabel, value, minValue, maxValue, stepValue);
     }
 
     @Override

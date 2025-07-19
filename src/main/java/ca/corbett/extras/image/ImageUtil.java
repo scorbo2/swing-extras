@@ -453,4 +453,45 @@ public final class ImageUtil {
         return resizedImage;
     }
 
+    /**
+     * Scales an image up or down proportionally until it fits inside the square bounding area
+     * specified by maxDimension. The image is scaled based on its largest dimension.
+     * For example, a landscape image will be scaled so that its with matches maxDimension.
+     * A portrait image will be scaled so that its height matches maxDimension.
+     * A square image will be scaled until both width and height equals maxDimension.
+     *
+     * @param image        The image to scale.
+     * @param maxDimension The desired largest dimension of the scaled image.
+     * @return The scaled image.
+     */
+    public static BufferedImage scaleImageToFitSquareBounds(BufferedImage image, int maxDimension) {
+        int originalWidth = image.getWidth();
+        int originalHeight = image.getHeight();
+
+        // Calculate scaling factor based on the larger dimension
+        double scaleFactor;
+        if (originalWidth > originalHeight) {
+            // Landscape - scale based on width
+            scaleFactor = (double)maxDimension / originalWidth;
+        }
+        else {
+            // Portrait (or square) - scale based on height
+            scaleFactor = (double)maxDimension / originalHeight;
+        }
+
+        // Calculate new dimensions
+        int newWidth = (int)Math.round(originalWidth * scaleFactor);
+        int newHeight = (int)Math.round(originalHeight * scaleFactor);
+
+        // Create the scaled image
+        BufferedImage scaledImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = scaledImage.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.drawImage(image, 0, 0, newWidth, newHeight, null);
+        g.dispose();
+
+        return scaledImage;
+    }
 }

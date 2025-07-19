@@ -114,7 +114,7 @@ public class FormActionsPanel extends PanelBuilder {
         for (FormPanel.Alignment alignment : FormPanel.Alignment.values()) {
             options.add(alignment.name());
         }
-        final ComboField combo = new ComboField("Change form alignment:", options, 0, false);
+        final ComboField combo = new ComboField("Change form alignment:", options, 1, false);
         combo.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {

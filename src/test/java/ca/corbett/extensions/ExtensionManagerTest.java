@@ -241,7 +241,46 @@ public class ExtensionManagerTest {
         }
     }
 
-    public static class AppExtensionImpl1 implements AppExtension {
+    @Test
+    public void testJarFileMeetsRequirements_givenOlderVersion_shouldFail() {
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testOld")
+                .setVersion("1.0")
+                .setTargetAppName("Test")
+                .setTargetAppVersion("1.0")
+                .build();
+
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), extInfo, "Test", "2.0");
+
+        assertFalse(actual);
+    }
+
+    @Test
+    public void testJarFileMeetsRequirements_givenNewerVersion_shouldFail() {
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testNew")
+                .setVersion("2.0")
+                .setTargetAppName("Test")
+                .setTargetAppVersion("2.0")
+                .build();
+
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), extInfo, "Test", "1.0");
+
+        assertFalse(actual);
+    }
+
+    @Test
+    public void testJarFileMeetsRequirements_withMatchingVersions_shouldSucceed() {
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testEqual")
+                .setVersion("3.0")
+                .setTargetAppName("Test")
+                .setTargetAppVersion("3.0")
+                .build();
+
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), extInfo, "Test", "3.0");
+
+        assertTrue(actual);
+    }
+
+    public static class AppExtensionImpl1 extends AppExtension {
 
         private final String name;
 
@@ -263,16 +302,8 @@ public class ExtensionManagerTest {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             return null;
-        }
-
-        @Override
-        public void onActivate() {
-        }
-
-        @Override
-        public void onDeactivate() {
         }
 
         public String getName() {
@@ -280,7 +311,7 @@ public class ExtensionManagerTest {
         }
     }
 
-    public static class AppExtensionImpl2 implements AppExtension {
+    public static class AppExtensionImpl2 extends AppExtension {
 
         private final String name;
 
@@ -302,20 +333,10 @@ public class ExtensionManagerTest {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             List<AbstractProperty> list = new ArrayList<>();
             list.add(new IntegerProperty("testProperty", "testProperty", 1));
             return list;
-        }
-
-        @Override
-        public void onActivate() {
-
-        }
-
-        @Override
-        public void onDeactivate() {
-
         }
 
         public String getName() {
@@ -323,7 +344,7 @@ public class ExtensionManagerTest {
         }
     }
 
-    public static class AppExtensionImpl2WithDuplicateConfigProperty implements AppExtension {
+    public static class AppExtensionImpl2WithDuplicateConfigProperty extends AppExtension {
 
         private final String name;
 
@@ -345,20 +366,10 @@ public class ExtensionManagerTest {
         }
 
         @Override
-        public List<AbstractProperty> getConfigProperties() {
+        protected List<AbstractProperty> createConfigProperties() {
             List<AbstractProperty> list = new ArrayList<>();
             list.add(new IntegerProperty("testProperty", "testProperty", 1));
             return list;
-        }
-
-        @Override
-        public void onActivate() {
-
-        }
-
-        @Override
-        public void onDeactivate() {
-
         }
 
         public String getName() {

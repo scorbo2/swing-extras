@@ -105,8 +105,9 @@ public class FontProperty extends AbstractProperty {
         this.bgColor = bgColor;
     }
 
-    public void setFont(Font font) {
+    public FontProperty setFont(Font font) {
         this.font = font;
+        return this;
     }
 
     public Color getTextColor() {
@@ -117,8 +118,9 @@ public class FontProperty extends AbstractProperty {
         return bgColor;
     }
 
-    public void setTextColor(Color color) {
+    public FontProperty setTextColor(Color color) {
         textColor = color;
+        return this;
     }
 
     public void setBgColor(Color color) {
@@ -133,8 +135,9 @@ public class FontProperty extends AbstractProperty {
         return allowSizeSelection;
     }
 
-    public void setAllowSizeSelection(boolean allow) {
+    public FontProperty setAllowSizeSelection(boolean allow) {
         allowSizeSelection = allow;
+        return this;
     }
 
     @Override
@@ -171,11 +174,8 @@ public class FontProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
+    protected FormField generateFormFieldImpl() {
         FontField field = new FontField(propertyLabel, getFont(), textColor, bgColor);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
         field.setShowSizeField(allowSizeSelection);
         return field;
     }

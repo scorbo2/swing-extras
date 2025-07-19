@@ -2,12 +2,15 @@ package ca.corbett.extensions;
 
 import ca.corbett.extensions.ui.ExtensionManagerDialog;
 import ca.corbett.extras.properties.AbstractProperty;
+import ca.corbett.extras.properties.FileBasedProperties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.FormPanel;
 
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -51,6 +54,13 @@ public abstract class AppProperties<T extends AppExtension> {
     private final String appName;
     private final File propsFile;
 
+    // Subclasses can change these as they see fit:
+    protected int propertiesDialogInitialWidth = PropertiesDialog.INITIAL_WIDTH;
+    protected int propertiesDialogInitialHeight = PropertiesDialog.INITIAL_HEIGHT;
+    protected int propertiesDialogMinimumWidth = PropertiesDialog.MINIMUM_WIDTH;
+    protected int propertiesDialogMinimumHeight = PropertiesDialog.MINIMUM_HEIGHT;
+
+
     /**
      * If your application has an ExtensionManager, you can supply it here and this
      * class will handle loading and saving properties for all enabled extensions.
@@ -64,6 +74,34 @@ public abstract class AppProperties<T extends AppExtension> {
         this.propsFile = propsFile;
         this.extManager = extManager;
         reinitialize();
+    }
+
+    /**
+     * Offers a peek directly into the given props file without going through the usual loading mechanism.
+     * This allows direct access to properties (in String form only) exactly as they currently
+     * exist in the given props file. This can be useful in rare cases where an extension needs to know
+     * a property value in order to initialize some other property value. The normal load mechanism prevents
+     * this because property values cannot be read until the AppProperties instance is fully initialized,
+     * leading to a circular problem.
+     * <p>
+     * If the value does not exist or an error occurs while reading the props file, empty string is returned.
+     * </p>
+     *
+     * @param propsFile The properties file to read.
+     * @param propName  The fully qualified name of the property in question.
+     * @return The raw value in String form as it exists in the props file at the time of this call. May be empty.
+     */
+    public static String peek(File propsFile, String propName) {
+        String result = "";
+        try {
+            FileBasedProperties tempProps = new FileBasedProperties(propsFile);
+            tempProps.load();
+            result = tempProps.getString(propName, result);
+        }
+        catch (IOException ioe) {
+            logger.log(Level.WARNING, "AppProperties.peek(): encountered IOException: " + ioe.getMessage(), ioe);
+        }
+        return result;
     }
 
     /**
@@ -146,6 +184,8 @@ public abstract class AppProperties<T extends AppExtension> {
     public boolean showPropertiesDialog(Frame owner, FormPanel.Alignment alignment) {
         reconcileExtensionEnabledStatus();
         PropertiesDialog dialog = propsManager.generateDialog(owner, appName + " properties", alignment, 24);
+        dialog.setSize(propertiesDialogInitialWidth, propertiesDialogInitialHeight);
+        dialog.setMinimumSize(new Dimension(propertiesDialogMinimumWidth, propertiesDialogMinimumHeight));
         dialog.setVisible(true);
 
         if (dialog.wasOkayed()) {

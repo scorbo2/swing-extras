@@ -234,8 +234,8 @@ public final class LabelField extends FormField {
             @Override
             public void mouseClicked(MouseEvent e) {
                 action.actionPerformed(new ActionEvent(linkLabel, 0, ""));
+                fireValueChangedEvent(); // Also notify listeners that the action was triggered
             }
-
         });
     }
 
