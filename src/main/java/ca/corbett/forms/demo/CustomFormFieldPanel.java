@@ -50,7 +50,8 @@ public class CustomFormFieldPanel extends PanelBuilder {
         label = LabelField.createPlainHeaderLabel("Full source code for this component is included!", 14);
         headerLabel.setTopMargin(24);
         formPanel.addFormField(label);
-        label = LabelField.createPlainHeaderLabel("See the README for a walkthrough of this form field.", 14);
+        label = LabelField.createPlainHeaderLabel("See the swing-extras book for a walkthrough of this form field!",
+                                                  14);
         formPanel.addFormField(label);
 
         formPanel.render();
