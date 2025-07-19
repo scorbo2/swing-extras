@@ -4,6 +4,7 @@ import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 
+import javax.swing.Action;
 import javax.swing.JLabel;
 import java.awt.Color;
 import java.awt.Font;
@@ -24,6 +25,7 @@ public class LabelProperty extends AbstractProperty {
     private int extraBottomMargin;
     private Font labelFont;
     private Color labelColor;
+    private Action hyperlinkAction;
 
     public LabelProperty(String name, String label) {
         this(name, label, null, null, -1, -1);
@@ -110,6 +112,24 @@ public class LabelProperty extends AbstractProperty {
         // Labels are static form fields, so there's literally nothing to do here.
     }
 
+    /**
+     * Optionally sets a hyperlink action, which will convert the generated LabelField into
+     * a hyperlink field. When the user clicks the label, the specified Action will be invoked,
+     * and a change event will fire from this property (so listeners know that it was clicked).
+     * <p>
+     * <B>TO UPDATE THE FORM WHEN THE LINK IS CLICKED:</B> you can send in an empty Action
+     * and instead rely on the change event that will fire from this property. The
+     * PropertyFormFieldValueChangedEvent will contain the FormField and FormPanel that
+     * where the click happened, and you can use that FormPanel to look up other FormFields
+     * and take whatever action is necessary (show/hide fields, enable/disable fields, etc).
+     * </p>
+     *
+     * @param action any arbitrary Action.
+     */
+    public LabelProperty setHyperlink(Action action) {
+        hyperlinkAction = action;
+        return this;
+    }
 
     public LabelProperty setExtraMargins(int top, int bottom) {
         extraTopMargin = top;
@@ -137,6 +157,9 @@ public class LabelProperty extends AbstractProperty {
         }
         if (labelColor != null) {
             ((JLabel)field.getFieldComponent()).setForeground(labelColor);
+        }
+        if (hyperlinkAction != null) {
+            field.setHyperlink(hyperlinkAction);
         }
         return field;
     }
