@@ -10,6 +10,7 @@ Version 2.3.0 [TODO] - Maintenance release
   #60 - Add ListField and ListProperty for multi-select props
   #59 - Fix cosmetic issue on ExtensionManagerDialog
   #58 - Add extraAttributes to all properties/form fields
+  #57 - Add hyperlink option to LabelProperty
   #56 - Add ImageUtil.scaleImageToFitSquareBounds
   #54 - Use fluent-style setters for all AbstractProperties
   #52 - Clean up deprecation warning in ExtensionManager
