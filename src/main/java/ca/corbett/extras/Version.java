@@ -16,7 +16,7 @@ public final class Version {
 
     public static final String PROJECT_URL = "https://github.com/scorbo2/swing-extras";
 
-    public static final String COPYRIGHT = "Copyright © 2012 Steve Corbett";
+    public static final String COPYRIGHT = "Copyright © 2012-2025 Steve Corbett";
 
     public static final String LICENSE = "https://opensource.org/license/mit";
 
