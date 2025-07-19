@@ -3,10 +3,11 @@ Author: Steve Corbett
 
 Version 2.3.0 [TODO] - Maintenance release
   #66 - Allow subclasses to control PropertiesDialog size
+  #65 - FontField.setVisible() was not behaving as expected
   #64 - Add max version check to ExtensionManager
   #62 - Ensure extension config properties are only created once
   #61 - Add static peek() to AppProperties
-  #60 - Add ListField and ListProperty for multi-select
+  #60 - Add ListField and ListProperty for multi-select props
   #59 - Fix cosmetic issue on ExtensionManagerDialog
   #58 - Add extraAttributes to all properties/form fields
   #56 - Add ImageUtil.scaleImageToFitSquareBounds
