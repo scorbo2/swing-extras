@@ -15,6 +15,7 @@ Version 2.3.0 [TODO] - Maintenance release
   #55 - Promote the animation classes from ext-mp-scenery to here
   #54 - Use fluent-style setters for all AbstractProperties
   #52 - Clean up deprecation warning in ExtensionManager
+  #49 - Improvements to MultiProgressDialog
   #44 - Allow custom form logic with extension config
 
 Version 2.2.0 [2024-06-10] - ExtensionManager enhancements
