@@ -211,6 +211,10 @@ public class ImageScroller {
         reset();
     }
 
+    public BufferedImage getImage() {
+        return image;
+    }
+
     protected void reset() {
         zoomFactor = 0f;
         xOffset = 0;
