@@ -12,6 +12,7 @@ Version 2.3.0 [TODO] - Maintenance release
   #58 - Add extraAttributes to all properties/form fields
   #57 - Add hyperlink option to LabelProperty
   #56 - Add ImageUtil.scaleImageToFitSquareBounds
+  #55 - Promote the animation classes from ext-mp-scenery to here
   #54 - Use fluent-style setters for all AbstractProperties
   #52 - Clean up deprecation warning in ExtensionManager
   #44 - Allow custom form logic with extension config
