@@ -118,6 +118,10 @@ public final class MultiProgressDialog extends JDialog {
      * events, and pass it to this method to handle the UI aspect automatically.
      * Progress errors are simply ignored here. You can add your own MultiProgressAdapter
      * to the worker before passing it in here if you wish to respond to errors.
+     * This method will show both major and minor progress bars.
+     * It is intended for complex tasks that have subtasks. Use the overloaded
+     * runWorker that accepts a SimpleProgressWorker if you only need a single
+     * progress bar.
      *
      * @param worker               Any MultiProgressWorker implementation that can perform some task.
      * @param disposeWhenComplete, if true, will dispose() this dialog when complete. Otherwise,
@@ -186,10 +190,13 @@ public final class MultiProgressDialog extends JDialog {
      * Executes the given Runnable and auto-wires all progress events to this dialog.
      * This is a very easy way to simply implement some runnable that can fire progress
      * events, and pass it to this method to handle the UI aspect automatically.
-     * Progress errors are simply ignored here. You can add your own MultiProgressAdapter
+     * Progress errors are simply ignored here. You can add your own SimpleProgressAdapter
      * to the worker before passing it in here if you wish to respond to errors.
+     * This method will hide the "minor" progress bar and only show a single progress bar.
+     * It is intended for simple tasks. Use the overloaded runWorker that accepts
+     * a MultiProgressWorker to show both major and minor progress.
      *
-     * @param worker               Any MultiProgressWorker implementation that can perform some task.
+     * @param worker               Any SimpleProgressWorker implementation that can perform some task.
      * @param disposeWhenComplete, if true, will dispose() this dialog when complete. Otherwise,
      *                             hides the dialog.
      */
