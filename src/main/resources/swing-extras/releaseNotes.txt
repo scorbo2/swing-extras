@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.3.0 [TODO] - Maintenance release
+  #67 - Minor bug in extension config preview
   #66 - Allow subclasses to control PropertiesDialog size
   #65 - FontField.setVisible() was not behaving as expected
   #64 - Add max version check to ExtensionManager
