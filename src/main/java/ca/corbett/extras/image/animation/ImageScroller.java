@@ -27,7 +27,6 @@ import java.awt.image.BufferedImage;
  *     of the ScrollSpeed. Note that the image will scroll a minimum pixel value of 1 per frame regardless
  *     of minSpeedRatio. Fractional pixel values are rounded up to 1 to prevent the animation from freezing.
  * </ul>
- * </p>
  *
  * @author scorbo2 (with help from Claude!)
  * @since swing-extras 2.3
