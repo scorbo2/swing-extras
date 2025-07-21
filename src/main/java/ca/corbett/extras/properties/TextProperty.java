@@ -40,28 +40,32 @@ public class TextProperty extends AbstractProperty {
         return value;
     }
 
-    public void setValue(String value) {
+    public TextProperty setValue(String value) {
         this.value = value;
+        return this;
     }
 
     public int getColumns() {
         return columns;
     }
 
-    public void setColumns(int columns) {
+    public TextProperty setColumns(int columns) {
         this.columns = columns;
+        return this;
     }
 
     public int getRows() {
         return rows;
     }
 
-    public void setRows(int rows) {
+    public TextProperty setRows(int rows) {
         this.rows = rows;
+        return this;
     }
 
-    public void setAllowBlank(boolean allow) {
+    public TextProperty setAllowBlank(boolean allow) {
         allowBlank = allow;
+        return this;
     }
 
     public boolean isAllowBlank() {
@@ -85,12 +89,9 @@ public class TextProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
+    protected FormField generateFormFieldImpl() {
         TextField textField = new TextField(propertyLabel, columns, rows, allowBlank);
         textField.setText(value);
-        textField.setIdentifier(fullyQualifiedName);
-        textField.setEnabled(!isReadOnly);
-        textField.setHelpText(helpText);
         return textField;
     }
 

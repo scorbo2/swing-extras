@@ -3,6 +3,8 @@ package ca.corbett.extras.demo;
 import ca.corbett.extensions.demo.ExtensionsOverviewPanel;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.panels.AboutDemoPanel;
+import ca.corbett.extras.demo.panels.AnimationScrollDemoPanel;
+import ca.corbett.extras.demo.panels.AnimationTextDemoPanel;
 import ca.corbett.extras.demo.panels.AudioDemoPanel;
 import ca.corbett.extras.demo.panels.DesktopDemoPanel;
 import ca.corbett.extras.demo.panels.DirTreeDemoPanel;
@@ -101,6 +103,8 @@ public class DemoApp extends JFrame {
         addDemoPanel(new DirTreeDemoPanel());
         addDemoPanel(new ImageUtilDemoPanel());
         addDemoPanel(new ImageTextUtilDemoPanel());
+        addDemoPanel(new AnimationTextDemoPanel());
+        addDemoPanel(new AnimationScrollDemoPanel());
         addDemoPanel(new ProgressDemoPanel());
         addDemoPanel(new PropertiesDemoPanel());
         addDemoPanel(new FormsOverviewPanel());

@@ -48,35 +48,39 @@ public class DecimalProperty extends AbstractProperty {
         return value;
     }
 
-    public void setValue(double value) {
+    public DecimalProperty setValue(double value) {
         if (value < minValue || value > maxValue) {
-            return;
+            return this;
         }
         this.value = value;
+        return this;
     }
 
     public double getMinValue() {
         return minValue;
     }
 
-    public void setMinValue(double minValue) {
+    public DecimalProperty setMinValue(double minValue) {
         this.minValue = minValue;
+        return this;
     }
 
     public double getMaxValue() {
         return maxValue;
     }
 
-    public void setMaxValue(double maxValue) {
+    public DecimalProperty setMaxValue(double maxValue) {
         this.maxValue = maxValue;
+        return this;
     }
 
     public double getStepValue() {
         return stepValue;
     }
 
-    public void setStepValue(double stepValue) {
+    public DecimalProperty setStepValue(double stepValue) {
         this.stepValue = stepValue;
+        return this;
     }
 
     @Override
@@ -100,12 +104,8 @@ public class DecimalProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
-        NumberField field = new NumberField(propertyLabel, value, minValue, maxValue, stepValue);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
+    protected FormField generateFormFieldImpl() {
+        return new NumberField(propertyLabel, value, minValue, maxValue, stepValue);
     }
 
     @Override

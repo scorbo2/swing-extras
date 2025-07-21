@@ -1,6 +1,24 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.3.0 [2025-07-20] - Maintenance release
+  #67 - Minor bug in extension config preview
+  #66 - Allow subclasses to control PropertiesDialog size
+  #65 - FontField.setVisible() was not behaving as expected
+  #64 - Add max version check to ExtensionManager
+  #62 - Ensure extension config properties are only created once
+  #61 - Add static peek() to AppProperties
+  #60 - Add ListField and ListProperty for multi-select props
+  #59 - Fix cosmetic issue on ExtensionManagerDialog
+  #58 - Add extraAttributes to all properties/form fields
+  #57 - Add hyperlink option to LabelProperty
+  #56 - Add ImageUtil.scaleImageToFitSquareBounds
+  #55 - Promote the animation classes from ext-mp-scenery to here
+  #54 - Use fluent-style setters for all AbstractProperties
+  #52 - Clean up deprecation warning in ExtensionManager
+  #49 - Improvements to MultiProgressDialog
+  #44 - Allow custom form logic with extension config
+
 Version 2.2.0 [2024-06-10] - ExtensionManager enhancements
   #47 - AppProperties.reinitialize() should also call load()
   #46 - add extension load order to log output

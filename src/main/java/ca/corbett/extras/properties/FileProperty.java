@@ -42,8 +42,9 @@ public class FileProperty extends AbstractProperty {
         this.columns = 20;
     }
 
-    public void setAllowBlank(boolean allow) {
+    public FileProperty setAllowBlank(boolean allow) {
         allowBlank = allow;
+        return this;
     }
 
     public boolean isAllowBlank() {
@@ -54,16 +55,18 @@ public class FileProperty extends AbstractProperty {
         return file;
     }
 
-    public void setFile(File file) {
+    public FileProperty setFile(File file) {
         this.file = file;
+        return this;
     }
 
     public int getColumns() {
         return columns;
     }
 
-    public void setColumns(int columns) {
+    public FileProperty setColumns(int columns) {
         this.columns = columns;
+        return this;
     }
 
     @Override
@@ -82,15 +85,11 @@ public class FileProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
-        FileField field = new FileField(propertyLabel, file, columns,
+    protected FormField generateFormFieldImpl() {
+        return new FileField(propertyLabel, file, columns,
                                         allowBlank
                                                 ? ca.corbett.forms.fields.FileField.SelectionType.NonExistingFile
                                                 : ca.corbett.forms.fields.FileField.SelectionType.ExistingFile);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
     }
 
     @Override

@@ -57,12 +57,14 @@ public class ColorProperty extends AbstractProperty {
         return gradient;
     }
 
-    public void setColor(Color color) {
+    public ColorProperty setColor(Color color) {
         this.color = color == null ? Color.BLACK : color;
+        return this;
     }
 
-    public void setGradient(GradientConfig gradient) {
+    public ColorProperty setGradient(GradientConfig gradient) {
         this.gradient = gradient == null ? new GradientConfig() : gradient;
+        return this;
     }
 
     @Override
@@ -89,7 +91,7 @@ public class ColorProperty extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
+    protected FormField generateFormFieldImpl() {
         GradientColorField field;
 
         //@formatter:off
@@ -102,10 +104,7 @@ public class ColorProperty extends AbstractProperty {
                 field = new GradientColorField(propertyLabel, color, gradient, true);
         }
         //@formatter:on
-
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
+        
         return field;
     }
 

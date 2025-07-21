@@ -118,6 +118,10 @@ public final class MultiProgressDialog extends JDialog {
      * events, and pass it to this method to handle the UI aspect automatically.
      * Progress errors are simply ignored here. You can add your own MultiProgressAdapter
      * to the worker before passing it in here if you wish to respond to errors.
+     * This method will show both major and minor progress bars.
+     * It is intended for complex tasks that have subtasks. Use the overloaded
+     * runWorker that accepts a SimpleProgressWorker if you only need a single
+     * progress bar.
      *
      * @param worker               Any MultiProgressWorker implementation that can perform some task.
      * @param disposeWhenComplete, if true, will dispose() this dialog when complete. Otherwise,
@@ -125,6 +129,9 @@ public final class MultiProgressDialog extends JDialog {
      */
     public void runWorker(final MultiProgressWorker worker, final boolean disposeWhenComplete) {
         final MultiProgressDialog progressDialog = this;
+        minorProgressLabel.setVisible(true);
+        minorProgressBar.setVisible(true);
+        setSize(new Dimension(500, 210));
         final MultiProgressListener listener = new MultiProgressAdapter() {
             private int totalMajorSteps;
             private int totalMinorSteps;
@@ -150,6 +157,69 @@ public final class MultiProgressDialog extends JDialog {
             public boolean minorProgressUpdate(int majorStep, int minorStep, String message) {
                 progressDialog.setMinorProgress(minorStep + 1,
                                                 message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
+                return !isCanceled;
+            }
+
+            @Override
+            public void progressComplete() {
+                if (disposeWhenComplete) {
+                    progressDialog.dispose();
+                }
+                else {
+                    progressDialog.setVisible(false);
+                }
+            }
+
+            @Override
+            public void progressCanceled() {
+                if (disposeWhenComplete) {
+                    progressDialog.dispose();
+                }
+                else {
+                    progressDialog.setVisible(false);
+                }
+            }
+
+        };
+
+        worker.addProgressListener(listener);
+        new Thread(worker).start();
+    }
+
+    /**
+     * Executes the given Runnable and auto-wires all progress events to this dialog.
+     * This is a very easy way to simply implement some runnable that can fire progress
+     * events, and pass it to this method to handle the UI aspect automatically.
+     * Progress errors are simply ignored here. You can add your own SimpleProgressAdapter
+     * to the worker before passing it in here if you wish to respond to errors.
+     * This method will hide the "minor" progress bar and only show a single progress bar.
+     * It is intended for simple tasks. Use the overloaded runWorker that accepts
+     * a MultiProgressWorker to show both major and minor progress.
+     *
+     * @param worker               Any SimpleProgressWorker implementation that can perform some task.
+     * @param disposeWhenComplete, if true, will dispose() this dialog when complete. Otherwise,
+     *                             hides the dialog.
+     */
+    public void runWorker(final SimpleProgressWorker worker, final boolean disposeWhenComplete) {
+        final MultiProgressDialog progressDialog = this;
+        minorProgressLabel.setVisible(false);
+        minorProgressBar.setVisible(false);
+        setSize(new Dimension(500, 160));
+        final SimpleProgressListener listener = new SimpleProgressAdapter() {
+            private int totalSteps;
+
+            @Override
+            public void progressBegins(int totalSteps) {
+                this.totalSteps = totalSteps;
+                progressDialog.setMajorProgressBounds(0, totalSteps);
+                progressDialog.setVisible(true);
+            }
+
+            @Override
+            public boolean progressUpdate(int currentStep, String message) {
+                progressDialog.setMajorProgress(currentStep + 1,
+                                                message + " (" + (currentStep + 1) + " of " + totalSteps + ")");
+                progressDialog.setMinorProgress(0, "");
                 return !isCanceled;
             }
 
@@ -281,7 +351,7 @@ public final class MultiProgressDialog extends JDialog {
      * Invoked internally to lay out the form.
      */
     private void initComponents() {
-        setMinimumSize(new Dimension(500, 210));
+        setMinimumSize(new Dimension(500, 160));
         setSize(new Dimension(500, 210));
         setResizable(false);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);

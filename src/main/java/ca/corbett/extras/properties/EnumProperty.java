@@ -75,24 +75,26 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
         }
     }
 
-    public void setSelectedIndex(int index) {
+    public EnumProperty<T> setSelectedIndex(int index) {
         if (index < 0 || index >= names.size()) {
-            return;
+            return this;
         }
         selectedIndex = index;
+        return this;
     }
 
     public int getSelectedIndex() {
         return selectedIndex;
     }
 
-    public void setSelectedItem(T item) {
+    public EnumProperty<T> setSelectedItem(T item) {
         for (int i = 0; i < names.size(); i++) {
             if (names.get(i).equals(item.name())) {
                 selectedIndex = i;
                 break;
             }
         }
+        return this;
     }
 
     public int indexOf(String itemName) {
@@ -133,13 +135,9 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
     }
 
     @Override
-    public FormField generateFormField() {
+    protected FormField generateFormFieldImpl() {
         List<String> options = useNamesInsteadOfLabels ? names : labels;
-        ComboField field = new ComboField(propertyLabel, options, selectedIndex, false);
-        field.setIdentifier(fullyQualifiedName);
-        field.setEnabled(!isReadOnly);
-        field.setHelpText(helpText);
-        return field;
+        return new ComboField(propertyLabel, options, selectedIndex, false);
     }
 
     @Override

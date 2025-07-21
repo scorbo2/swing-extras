@@ -47,7 +47,7 @@ public class LogConsolePanel extends PanelBuilder {
 
         LabelField labelField = LabelField.createPlainHeaderLabel(
                 "<html>We can create a custom live-updated view of a log file with<br>" +
-                        "configurable styles that can be decide how to render the<br>" +
+                        "configurable styles that can decide how to render the<br>" +
                         "log output based on string tokens within the log message.<br><br>" +
                         "This can make it visually easy to see what's going on!", 14);
         formPanel.addFormField(labelField);

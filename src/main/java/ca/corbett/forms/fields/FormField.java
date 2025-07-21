@@ -13,7 +13,9 @@ import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An abstract base class for a form field. These form fields are intended to wrap common Swing
@@ -136,6 +138,8 @@ public abstract class FormField {
      * Indicates whether or not we're currently enabled *
      */
     protected boolean isEnabled = true;
+
+    protected final Map<String, Object> extraAttributes = new HashMap<>();
 
     /**
      * Adds the given FieldValidator to the list of validators for this field.
@@ -410,6 +414,64 @@ public abstract class FormField {
      */
     public JComponent getFieldComponent() {
         return fieldComponent;
+    }
+
+    /**
+     * Set an arbitrary extra attribute to this form field. The given value is not validated
+     * nor used within this class. It's just extra data that can be attached by the caller.
+     *
+     * @param name  The unique name of the value to set. Will overwrite any previous value by that name.
+     * @param value The value to set.
+     */
+    public void setExtraAttribute(String name, Object value) {
+        extraAttributes.put(name, value);
+    }
+
+    /**
+     * Returns a named extra attribute's value, if it exists.
+     *
+     * @param name The unique name of the value in question.
+     * @return The value associated with that name, or null if no such value.
+     */
+    public Object getExtraAttribute(String name) {
+        return extraAttributes.get(name);
+    }
+
+    /**
+     * Removes all extra attributes and their associated values from this FormField.
+     */
+    public void clearExtraAttributes() {
+        extraAttributes.clear();
+    }
+
+    /**
+     * Removes the value for the named extra attribute.
+     *
+     * @param name The unique name of the attribute in question.
+     */
+    public void clearExtraAttribute(String name) {
+        extraAttributes.remove(name);
+    }
+
+    /**
+     * Clears any extra attributes currently held by this form field and then accepts
+     * the given list of attributes.
+     *
+     * @param newAttributes A map of String name to some arbitrary Object value.
+     */
+    public void setAllExtraAttributes(Map<String, Object> newAttributes) {
+        clearExtraAttributes();
+        extraAttributes.putAll(newAttributes);
+    }
+
+    /**
+     * Adds the map of extra attributes to our existing list. Any name conflicts will result
+     * in the existing values being overwritten by the new values.
+     *
+     * @param newAttributes A map of String name to some arbitrary Object value.
+     */
+    public void addAllExtraAttributes(Map<String, Object> newAttributes) {
+        extraAttributes.putAll(newAttributes);
     }
 
     /**

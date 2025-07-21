@@ -10,6 +10,7 @@ import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.progress.MultiProgressAdapter;
 import ca.corbett.extras.progress.MultiProgressDialog;
 import ca.corbett.extras.progress.MultiProgressWorker;
+import ca.corbett.extras.progress.SimpleProgressAdapter;
 import ca.corbett.extras.progress.SimpleProgressWorker;
 import ca.corbett.extras.progress.SplashProgressWindow;
 import ca.corbett.forms.FormPanel;
@@ -35,6 +36,9 @@ import java.awt.event.ActionListener;
  */
 public class ProgressDemoPanel extends PanelBuilder {
 
+    private TextField simpleProgressTextField;
+    private NumberField simpleProgressStepsField;
+
     private TextField majorProgressTextField;
     private TextField minorProgressTextField;
     private NumberField majorProgressStepsField;
@@ -56,6 +60,34 @@ public class ProgressDemoPanel extends PanelBuilder {
     public JPanel build() {
         FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
         formPanel.setStandardLeftMargin(24);
+
+        final LabelField simpleLabel = LabelField.createBoldHeaderLabel("SimpleProgressDialog", 20);
+        simpleLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
+        LookAndFeelManager.addChangeListener(
+                e -> simpleLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
+        formPanel.addFormField(simpleLabel);
+
+        formPanel.addFormField(LabelField.createPlainHeaderLabel("A simple replacement for ProgressMonitor!", 14));
+
+        simpleProgressTextField = new TextField("Progress label:", 16, 1, false);
+        simpleProgressTextField.setText("Some task in progress...");
+        formPanel.addFormField(simpleProgressTextField);
+
+        simpleProgressStepsField = new NumberField("Progress steps:", 6, 1, 10, 1);
+        formPanel.addFormField(simpleProgressStepsField);
+
+        PanelField panelField = new PanelField();
+        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
+        JButton btn = new JButton("Show simple progress dialog");
+        btn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showSimpleProgress();
+            }
+        });
+        panelField.getPanel().add(btn);
+        panelField.setBottomMargin(24);
+        formPanel.addFormField(panelField);
 
         final LabelField label = LabelField.createBoldHeaderLabel("MultiProgressDialog", 20);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
@@ -82,9 +114,9 @@ public class ProgressDemoPanel extends PanelBuilder {
         minorProgressStepsField = new NumberField("Minor progress steps:", 5, 1, 15, 1);
         formPanel.addFormField(minorProgressStepsField);
 
-        PanelField panelField = new PanelField();
+        panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
-        JButton btn = new JButton("Show multi-progress dialog");
+        btn = new JButton("Show multi-progress dialog");
         btn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -146,6 +178,26 @@ public class ProgressDemoPanel extends PanelBuilder {
         return formPanel;
     }
 
+    private void showSimpleProgress() {
+        String text = simpleProgressTextField.getText().isBlank() ? "Progress" : simpleProgressTextField.getText();
+        int totalSteps = (Integer)simpleProgressStepsField.getCurrentValue();
+        SimpleProgressDummyWorker worker = new SimpleProgressDummyWorker(text, totalSteps);
+        worker.addProgressListener(new SimpleProgressAdapter() {
+            @Override
+            public void progressCanceled() {
+                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was canceled.");
+            }
+
+            @Override
+            public void progressComplete() {
+                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was completed.");
+            }
+        });
+
+        MultiProgressDialog dialog = new MultiProgressDialog(DemoApp.getInstance(), "Fake work in progress");
+        dialog.runWorker(worker, true);
+    }
+
     private void showMultiProgress() {
         String majorText = majorProgressTextField.getText()
                                                  .isBlank() ? "Major progress" : majorProgressTextField.getText();
@@ -191,6 +243,48 @@ public class ProgressDemoPanel extends PanelBuilder {
         config.setLogoWidth((Integer)splashWidthField.getCurrentValue());
         config.setLogoHeight((Integer)splashHeightField.getCurrentValue());
         new SplashProgressWindow(DemoApp.getInstance(), appName, config).showFakeProgress(5, 666);
+    }
+
+    private static class SimpleProgressDummyWorker extends SimpleProgressWorker {
+
+        public final int STEP_DURATION_MS = 750;
+        private final int totalSteps;
+        private final String text;
+        private boolean wasCanceled;
+
+        public SimpleProgressDummyWorker(String text, int totalSteps) {
+            this.totalSteps = totalSteps;
+            this.text = text;
+            this.wasCanceled = false;
+        }
+
+        public boolean wasCanceled() {
+            return wasCanceled;
+        }
+
+        @Override
+        public void run() {
+            fireProgressBegins(totalSteps);
+            int curStep = 0;
+            while (!wasCanceled && curStep < totalSteps) {
+                wasCanceled = !fireProgressUpdate(curStep, text);
+
+                try {
+                    Thread.sleep(STEP_DURATION_MS);
+                }
+                catch (InterruptedException ex) {
+                    wasCanceled = true;
+                }
+
+                curStep++;
+            }
+            if (wasCanceled) {
+                fireProgressCanceled();
+            }
+            else {
+                fireProgressComplete();
+            }
+        }
     }
 
     private static class MultiProgressDummyWorker extends MultiProgressWorker {
