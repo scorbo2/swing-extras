@@ -56,7 +56,7 @@ public class ListProperty<T> extends AbstractProperty {
     public List<T> getSelectedItems() {
         List<T> selected = new ArrayList<>();
         for (int i : selectedIndexes) {
-            selected.add(items.get(selectedIndexes[i]));
+            selected.add(items.get(i));
         }
         return selected;
     }
