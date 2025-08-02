@@ -49,7 +49,7 @@ public abstract class FormField {
     /**
      * You can specify a FieldValidator(s) that will check the value of this field. *
      */
-    protected final List<FieldValidator<FormField>> validators = new ArrayList<>();
+    protected final List<FieldValidator<? extends FormField>> validators = new ArrayList<>();
 
     /**
      * An internal name or id for this field; never shown to the user. *
@@ -149,7 +149,7 @@ public abstract class FormField {
      *
      * @param validator The FieldValidator to add to this field.
      */
-    public void addFieldValidator(FieldValidator<FormField> validator) {
+    public void addFieldValidator(FieldValidator<? extends FormField> validator) {
         // Some fields disable the validation label as they normally
         // aren't validated (eg. checkboxes). But, if we're adding a
         // field validator, we'll want to override that:
@@ -520,8 +520,10 @@ public abstract class FormField {
         }
 
         List<String> validationMessages = new ArrayList<>();
-        for (FieldValidator<FormField> validator : validators) {
-            ValidationResult validationResult = validator.validate();
+        for (FieldValidator<? extends FormField> validator : validators) {
+            //noinspection unchecked
+            FieldValidator<FormField> theValidator = (FieldValidator<FormField>)validator;
+            ValidationResult validationResult = theValidator.validate(this);
             isValid = isValid && validationResult.isValid();
             if (!validationResult.isValid()) {
                 validationMessages.add(validationResult.getMessage());

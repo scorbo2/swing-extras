@@ -8,16 +8,10 @@ package ca.corbett.forms.validators;
  */
 public class ValidationResult {
 
-    private boolean isValid;
-    private String message;
+    private static final ValidationResult VALID = new ValidationResult(true, "");
 
-    /**
-     * Creates a ValidationResult representing a valid result (no message).
-     */
-    public ValidationResult() {
-        isValid = true;
-        message = "";
-    }
+    private final boolean isValid;
+    private final String message;
 
     /**
      * Creates a ValidationResult with the given isValid value and message.
@@ -25,20 +19,17 @@ public class ValidationResult {
      * @param isValid Whether the field in question is considered valid.
      * @param message The validation message (should be blank if isValid==true).
      */
-    public ValidationResult(boolean isValid, String message) {
+    protected ValidationResult(boolean isValid, String message) {
         this.isValid = isValid;
         this.message = message;
     }
 
-    /**
-     * Sets the validation result according to the supplied parameters.
-     *
-     * @param isValid Whether the field in question is considered valid.
-     * @param message The validation message (should be blank if isValid==true).
-     */
-    public void setResult(boolean isValid, String message) {
-        this.isValid = isValid;
-        this.message = message;
+    public static ValidationResult valid() {
+        return VALID;
+    }
+
+    public static ValidationResult invalid(String msg) {
+        return new ValidationResult(false, msg);
     }
 
     /**

@@ -86,7 +86,7 @@ public final class TextField extends FormField {
         fieldComponent = textComponent;
         textComponent.getDocument().addDocumentListener(changeListener);
         if (!allowBlank) {
-            addFieldValidator(new NonBlankFieldValidator(this));
+            addFieldValidator(new NonBlankFieldValidator());
         }
         multiLineTextBoxLeftMargin = 0;
         multiLineTextBoxTopMargin = 0;

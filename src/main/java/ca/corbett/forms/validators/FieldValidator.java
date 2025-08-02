@@ -14,12 +14,6 @@ import ca.corbett.forms.fields.FormField;
  */
 public abstract class FieldValidator<T extends FormField> {
 
-    protected T field;
-
-    public FieldValidator(T field) {
-        this.field = field;
-    }
-
     /**
      * Performs validation on the field in question, and returns a ValidationResult as appropriate.
      * Here you can do whatever checks you need to do, either on the FormField in question, or
@@ -32,7 +26,8 @@ public abstract class FieldValidator<T extends FormField> {
      * <p>An example of good validation:</p>
      * <BLOCKQUOTE><PRE>return new ValidationResult(false, "Value must be less than 10.");</PRE></BLOCKQUOTE>
      *
-     * @return A ValidationResult which describes whether or not the current value in our field is valid.
+     * @param fieldToValidate The FormField to be validated.
+     * @return A ValidationResult which describes whether the current value in our field is valid.
      */
-    public abstract ValidationResult validate();
+    public abstract ValidationResult validate(T fieldToValidate);
 }

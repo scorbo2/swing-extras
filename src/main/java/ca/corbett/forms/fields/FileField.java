@@ -49,8 +49,6 @@ public final class FileField extends FormField {
         NonExistingFile
     }
 
-    ;
-
     private final JTextField textField;
     private final JFileChooser fileChooser;
     private JButton chooseButton;
@@ -130,19 +128,19 @@ public final class FileField extends FormField {
         }
         if (selectionType == SelectionType.ExistingFile || selectionType == SelectionType.ExistingDirectory) {
             removeAllFieldValidators();
-            addFieldValidator(new FileMustExistValidator(this));
-            addFieldValidator(new FileMustBeReadableValidator(this));
-            addFieldValidator(new FileMustBeWritableValidator(this));
+            addFieldValidator(new FileMustExistValidator());
+            addFieldValidator(new FileMustBeReadableValidator());
+            addFieldValidator(new FileMustBeWritableValidator());
 
         }
         else {
             removeAllFieldValidators();
-            addFieldValidator(new FileMustNotExistValidator(this));
-            addFieldValidator(new FileMustBeCreatableValidator(this));
+            addFieldValidator(new FileMustNotExistValidator());
+            addFieldValidator(new FileMustBeCreatableValidator());
         }
 
         if (!allowBlankValues) {
-            addFieldValidator(new FileMustBeSpecifiedValidator(this));
+            addFieldValidator(new FileMustBeSpecifiedValidator());
         }
     }
 

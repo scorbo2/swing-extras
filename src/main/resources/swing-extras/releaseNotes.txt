@@ -1,6 +1,12 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.4.0 [TODO] - swing-forms rewrite
+  #82 - Refactor FieldValidator
+  #80 - Refactor ValidationResult
+  #70 - Fix array index out of bounds in ListProperty
+  #69 - Fix uncaught exception during extension loading
+
 Version 2.3.0 [2025-07-20] - Maintenance release
   #67 - Minor bug in extension config preview
   #66 - Allow subclasses to control PropertiesDialog size

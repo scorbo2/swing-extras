@@ -527,6 +527,12 @@ public abstract class ExtensionManager<T extends AppExtension> {
                             logger.log(Level.WARNING, "Failed to instantiate " + candidate.getName(), ex);
                             continue;
                         }
+                        catch (IncompatibleClassChangeError ex) {
+                            logger.log(Level.WARNING,
+                                       "Ignoring extension with incompatible class version: " + candidate.getName(),
+                                       ex);
+                            continue;
+                        }
                         logger.log(Level.FINE, "Found qualifying AppExtension class: {0} in jar: {1}",
                                    new Object[]{candidate.getCanonicalName(),
                                            jarFile.getAbsolutePath()});

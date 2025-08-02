@@ -1,6 +1,5 @@
 package ca.corbett.forms.validators;
 
-import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.TextField;
 
 /**
@@ -9,19 +8,14 @@ import ca.corbett.forms.fields.TextField;
  * @author scorbo2
  * @since 2019-11-23
  */
-public class NonBlankFieldValidator extends FieldValidator<FormField> {
-
-    public NonBlankFieldValidator(TextField formField) {
-        super(formField);
-    }
+public class NonBlankFieldValidator extends FieldValidator<TextField> {
 
     @Override
-    public ValidationResult validate() {
-        ValidationResult result = new ValidationResult();
-        String currentStr = ((TextField)field).getText();
+    public ValidationResult validate(TextField fieldToValidate) {
+        String currentStr = fieldToValidate.getText();
         if (currentStr.trim().isEmpty()) {
-            result.setResult(false, "Value cannot be blank.");
+            return ValidationResult.invalid("Value cannot be blank.");
         }
-        return result;
+        return ValidationResult.valid();
     }
 }
