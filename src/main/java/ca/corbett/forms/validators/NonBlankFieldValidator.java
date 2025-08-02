@@ -12,11 +12,10 @@ public class NonBlankFieldValidator extends FieldValidator<TextField> {
 
     @Override
     public ValidationResult validate(TextField fieldToValidate) {
-        ValidationResult result = new ValidationResult();
         String currentStr = fieldToValidate.getText();
         if (currentStr.trim().isEmpty()) {
-            result.setResult(false, "Value cannot be blank.");
+            return ValidationResult.invalid("Value cannot be blank.");
         }
-        return result;
+        return ValidationResult.valid();
     }
 }

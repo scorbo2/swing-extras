@@ -17,15 +17,16 @@ public class FileMustBeReadableValidator extends FieldValidator<FileField> {
         // Blank values may be permissible:
         boolean allowBlank = fieldToValidate.isAllowBlankValues();
         if (fieldToValidate.getFile() == null) {
-            return allowBlank ? new ValidationResult() : new ValidationResult(false,
-                                                                              "Selected location must be readable.");
+            return allowBlank
+                    ? ValidationResult.valid()
+                    : ValidationResult.invalid("Value cannot be blank.");
         }
 
         File dir = fieldToValidate.getFile();
         if (!dir.canRead()) {
-            return new ValidationResult(false, "Selected location must be readable.");
+            return ValidationResult.invalid("Selected location must be readable.");
         }
 
-        return new ValidationResult();
+        return ValidationResult.valid();
     }
 }

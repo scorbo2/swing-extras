@@ -58,11 +58,10 @@ public class FormsValidationPanel extends PanelBuilder {
         textField.addFieldValidator(new FieldValidator<TextField>() {
             @Override
             public ValidationResult validate(TextField fieldToValidate) {
-                ValidationResult result = new ValidationResult();
                 if (fieldToValidate.getText().length() < 3) {
-                    result.setResult(false, "Text must be at least three characters!");
+                    return ValidationResult.invalid("Text must be at least three characters!");
                 }
-                return result;
+                return ValidationResult.valid();
             }
         });
         formPanel.addFormField(textField);
@@ -71,11 +70,10 @@ public class FormsValidationPanel extends PanelBuilder {
         colorField.addFieldValidator(new FieldValidator<ColorField>() {
             @Override
             public ValidationResult validate(ColorField fieldToValidate) {
-                ValidationResult result = new ValidationResult();
                 if (Color.BLACK.equals(fieldToValidate.getColor())) {
-                    result.setResult(false, "I said DON'T choose black!");
+                    return ValidationResult.invalid("I said DON'T choose black!");
                 }
-                return result;
+                return ValidationResult.valid();
             }
         });
         formPanel.addFormField(colorField);
@@ -84,11 +82,10 @@ public class FormsValidationPanel extends PanelBuilder {
         checkbox.addFieldValidator(new FieldValidator<CheckBoxField>() {
             @Override
             public ValidationResult validate(CheckBoxField fieldToValidate) {
-                ValidationResult result = new ValidationResult();
                 if (fieldToValidate.isChecked() && Color.BLACK.equals(colorField.getColor())) {
-                    result.setResult(false, "You broke your promise!");
+                    return ValidationResult.invalid("You broke your promise!");
                 }
-                return result;
+                return ValidationResult.valid();
             }
         });
         formPanel.addFormField(checkbox);

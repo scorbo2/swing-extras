@@ -21,8 +21,8 @@ public class FileMustBeSpecifiedValidator extends FieldValidator<FileField> {
     public ValidationResult validate(FileField fieldToValidate) {
         JTextField textField = (JTextField)fieldToValidate.getFieldComponent();
         if (textField.getText().trim().isEmpty()) {
-            return new ValidationResult(false, "Value cannot be blank.");
+            return ValidationResult.invalid("Value cannot be blank.");
         }
-        return new ValidationResult();
+        return ValidationResult.valid();
     }
 }

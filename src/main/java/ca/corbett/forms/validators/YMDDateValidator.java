@@ -23,18 +23,17 @@ public class YMDDateValidator extends FieldValidator<TextField> {
 
     @Override
     public ValidationResult validate(TextField fieldToValidate) {
-        ValidationResult result = new ValidationResult();
         String currentStr = fieldToValidate.getText().trim();
         if (currentStr.isEmpty() && allowBlankValues) {
-            return result;
+            return ValidationResult.valid();
         }
         try {
             format.parse(currentStr);
         }
         catch (ParseException e) {
-            result.setResult(false, "Value must be in format: yyyy-mm-dd");
+            return ValidationResult.invalid("Value must be in format: yyyy-mm-dd");
         }
-        return result;
+        return ValidationResult.valid();
     }
 
 }

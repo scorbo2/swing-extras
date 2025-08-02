@@ -17,19 +17,21 @@ public class FileMustExistValidator extends FieldValidator<FileField> {
         // Blank values may be permissible:
         boolean allowBlank = fieldToValidate.isAllowBlankValues();
         if (fieldToValidate.getFile() == null) {
-            return allowBlank ? new ValidationResult() : new ValidationResult(false, "Value cannot be blank.");
+            return allowBlank
+                    ? ValidationResult.valid()
+                    : ValidationResult.invalid("Value cannot be blank.");
         }
 
         File file = fieldToValidate.getFile();
         if (!file.exists()) {
-            return new ValidationResult(false, "File or directory must exist.");
+            return ValidationResult.invalid("File or directory must exist.");
         }
         if (fieldToValidate.getSelectionType() == FileField.SelectionType.ExistingDirectory && !file.isDirectory()) {
-            return new ValidationResult(false, "Input must be a directory, not a file.");
+            return ValidationResult.invalid("Input must be a directory, not a file.");
         }
         if (fieldToValidate.getSelectionType() == FileField.SelectionType.ExistingFile && file.isDirectory()) {
-            return new ValidationResult(false, "Input must be a file, not a directory.");
+            return ValidationResult.invalid("Input must be a file, not a directory.");
         }
-        return new ValidationResult();
+        return ValidationResult.valid();
     }
 }

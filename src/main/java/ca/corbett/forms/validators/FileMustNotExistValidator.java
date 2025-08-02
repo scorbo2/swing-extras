@@ -18,13 +18,15 @@ public class FileMustNotExistValidator extends FieldValidator<FileField> {
         // Blank values may be permissible:
         boolean allowBlank = fieldToValidate.isAllowBlankValues();
         if (fieldToValidate.getFile() == null) {
-            return allowBlank ? new ValidationResult() : new ValidationResult(false, "Value cannot be empty.");
+            return allowBlank
+                    ? ValidationResult.valid()
+                    : ValidationResult.invalid("Value cannot be empty.");
         }
 
         File file = fieldToValidate.getFile();
         if (file.exists()) {
-            return new ValidationResult(false, "File or directory already exists.");
+            return ValidationResult.invalid("File or directory already exists.");
         }
-        return new ValidationResult();
+        return ValidationResult.valid();
     }
 }

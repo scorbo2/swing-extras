@@ -17,15 +17,16 @@ public class FileMustBeWritableValidator extends FieldValidator<FileField> {
         // Blank values may be permissible:
         boolean allowBlank = fieldToValidate.isAllowBlankValues();
         if (fieldToValidate.getFile() == null) {
-            return allowBlank ? new ValidationResult() : new ValidationResult(false,
-                                                                              "Selected location must be writable.");
+            return allowBlank
+                    ? ValidationResult.valid()
+                    : ValidationResult.invalid("Selected location must be writable.");
         }
 
         File file = fieldToValidate.getFile();
         if (file == null || !file.canWrite()) {
-            return new ValidationResult(false, "Selected location must be writable.");
+            return ValidationResult.invalid("Selected location must be writable.");
         }
 
-        return new ValidationResult();
+        return ValidationResult.valid();
     }
 }
