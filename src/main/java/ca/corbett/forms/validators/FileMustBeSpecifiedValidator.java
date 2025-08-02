@@ -1,7 +1,6 @@
 package ca.corbett.forms.validators;
 
 import ca.corbett.forms.fields.FileField;
-import ca.corbett.forms.fields.FormField;
 
 import javax.swing.JTextField;
 
@@ -16,15 +15,11 @@ import javax.swing.JTextField;
  * @author scorbo2
  * @since 2020-10-13
  */
-public class FileMustBeSpecifiedValidator extends FieldValidator<FormField> {
-
-    public FileMustBeSpecifiedValidator(FileField field) {
-        super(field);
-    }
+public class FileMustBeSpecifiedValidator extends FieldValidator<FileField> {
 
     @Override
-    public ValidationResult validate() {
-        JTextField textField = (JTextField)field.getFieldComponent();
+    public ValidationResult validate(FileField fieldToValidate) {
+        JTextField textField = (JTextField)fieldToValidate.getFieldComponent();
         if (textField.getText().trim().isEmpty()) {
             return new ValidationResult(false, "Value cannot be blank.");
         }

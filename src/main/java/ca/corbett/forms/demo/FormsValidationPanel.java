@@ -5,7 +5,6 @@ import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ColorField;
-import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.TextField;
@@ -56,11 +55,11 @@ public class FormsValidationPanel extends PanelBuilder {
 
         final TextField textField = new TextField("Must be 3+ chars long: ", 15, 1, false);
         textField.setText("Example");
-        textField.addFieldValidator(new FieldValidator<FormField>(textField) {
+        textField.addFieldValidator(new FieldValidator<TextField>() {
             @Override
-            public ValidationResult validate() {
+            public ValidationResult validate(TextField fieldToValidate) {
                 ValidationResult result = new ValidationResult();
-                if (((TextField)field).getText().length() < 3) {
+                if (fieldToValidate.getText().length() < 3) {
                     result.setResult(false, "Text must be at least three characters!");
                 }
                 return result;
@@ -69,11 +68,11 @@ public class FormsValidationPanel extends PanelBuilder {
         formPanel.addFormField(textField);
 
         final ColorField colorField = new ColorField("Don't choose black!", Color.BLACK);
-        colorField.addFieldValidator(new FieldValidator<FormField>(colorField) {
+        colorField.addFieldValidator(new FieldValidator<ColorField>() {
             @Override
-            public ValidationResult validate() {
+            public ValidationResult validate(ColorField fieldToValidate) {
                 ValidationResult result = new ValidationResult();
-                if (Color.BLACK.equals(((ColorField)field).getColor())) {
+                if (Color.BLACK.equals(fieldToValidate.getColor())) {
                     result.setResult(false, "I said DON'T choose black!");
                 }
                 return result;
@@ -82,11 +81,11 @@ public class FormsValidationPanel extends PanelBuilder {
         formPanel.addFormField(colorField);
 
         final CheckBoxField checkbox = new CheckBoxField("I promise I didn't choose black.", true);
-        checkbox.addFieldValidator(new FieldValidator<FormField>(checkbox) {
+        checkbox.addFieldValidator(new FieldValidator<CheckBoxField>() {
             @Override
-            public ValidationResult validate() {
+            public ValidationResult validate(CheckBoxField fieldToValidate) {
                 ValidationResult result = new ValidationResult();
-                if (((CheckBoxField)field).isChecked() && Color.BLACK.equals(colorField.getColor())) {
+                if (fieldToValidate.isChecked() && Color.BLACK.equals(colorField.getColor())) {
                     result.setResult(false, "You broke your promise!");
                 }
                 return result;

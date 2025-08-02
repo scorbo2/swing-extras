@@ -1,7 +1,6 @@
 package ca.corbett.forms.validators;
 
 import ca.corbett.forms.fields.FileField;
-import ca.corbett.forms.fields.FormField;
 
 import java.io.File;
 
@@ -11,24 +10,18 @@ import java.io.File;
  * @author scorbo2
  * @since 2019-11-24
  */
-public class FileMustBeWritableValidator extends FieldValidator<FormField> {
-
-    public FileMustBeWritableValidator(FileField field) {
-        super(field);
-    }
+public class FileMustBeWritableValidator extends FieldValidator<FileField> {
 
     @Override
-    public ValidationResult validate() {
-        FileField ourField = (FileField)field;
-
+    public ValidationResult validate(FileField fieldToValidate) {
         // Blank values may be permissible:
-        boolean allowBlank = ourField.isAllowBlankValues();
-        if (ourField.getFile() == null) {
+        boolean allowBlank = fieldToValidate.isAllowBlankValues();
+        if (fieldToValidate.getFile() == null) {
             return allowBlank ? new ValidationResult() : new ValidationResult(false,
                                                                               "Selected location must be writable.");
         }
 
-        File file = ((FileField)field).getFile();
+        File file = fieldToValidate.getFile();
         if (file == null || !file.canWrite()) {
             return new ValidationResult(false, "Selected location must be writable.");
         }

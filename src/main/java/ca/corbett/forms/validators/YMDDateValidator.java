@@ -17,19 +17,14 @@ public class YMDDateValidator extends FieldValidator<TextField> {
     private final boolean allowBlankValues;
     private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
-    public YMDDateValidator(TextField textField) {
-        this(textField, false);
-    }
-
-    public YMDDateValidator(TextField textField, boolean allowBlankValues) {
-        super(textField);
+    public YMDDateValidator(boolean allowBlankValues) {
         this.allowBlankValues = allowBlankValues;
     }
 
     @Override
-    public ValidationResult validate() {
+    public ValidationResult validate(TextField fieldToValidate) {
         ValidationResult result = new ValidationResult();
-        String currentStr = field.getText().trim();
+        String currentStr = fieldToValidate.getText().trim();
         if (currentStr.isEmpty() && allowBlankValues) {
             return result;
         }

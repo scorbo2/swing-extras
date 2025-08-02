@@ -1,7 +1,6 @@
 package ca.corbett.forms.validators;
 
 import ca.corbett.forms.fields.FileField;
-import ca.corbett.forms.fields.FormField;
 
 import java.io.File;
 
@@ -11,30 +10,24 @@ import java.io.File;
  * @author scorbo2
  * @since 2019-11-24
  */
-public class FileMustExistValidator extends FieldValidator<FormField> {
-
-    public FileMustExistValidator(FileField field) {
-        super(field);
-    }
+public class FileMustExistValidator extends FieldValidator<FileField> {
 
     @Override
-    public ValidationResult validate() {
-        FileField ourField = (FileField)field;
-
+    public ValidationResult validate(FileField fieldToValidate) {
         // Blank values may be permissible:
-        boolean allowBlank = ourField.isAllowBlankValues();
-        if (ourField.getFile() == null) {
+        boolean allowBlank = fieldToValidate.isAllowBlankValues();
+        if (fieldToValidate.getFile() == null) {
             return allowBlank ? new ValidationResult() : new ValidationResult(false, "Value cannot be blank.");
         }
 
-        File file = ourField.getFile();
+        File file = fieldToValidate.getFile();
         if (!file.exists()) {
             return new ValidationResult(false, "File or directory must exist.");
         }
-        if (ourField.getSelectionType() == FileField.SelectionType.ExistingDirectory && !file.isDirectory()) {
+        if (fieldToValidate.getSelectionType() == FileField.SelectionType.ExistingDirectory && !file.isDirectory()) {
             return new ValidationResult(false, "Input must be a directory, not a file.");
         }
-        if (ourField.getSelectionType() == FileField.SelectionType.ExistingFile && file.isDirectory()) {
+        if (fieldToValidate.getSelectionType() == FileField.SelectionType.ExistingFile && file.isDirectory()) {
             return new ValidationResult(false, "Input must be a file, not a directory.");
         }
         return new ValidationResult();
