@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.4.0 [TODO] - swing-forms rewrite
+  #86 - Clean up resource handling in swing-forms
   #82 - Refactor FieldValidator
   #80 - Refactor ValidationResult
   #78 - Refactor FormPanel
