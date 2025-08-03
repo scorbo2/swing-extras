@@ -12,9 +12,7 @@ import ca.corbett.forms.fields.TextField;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,23 +113,11 @@ public class FormActionsPanel extends PanelBuilder {
         for (Alignment alignment : Alignment.values()) {
             options.add(alignment.name());
         }
-        final ComboField combo = new ComboField("Change form alignment:", options, 1, false);
+        final ComboField combo = new ComboField("Change form alignment:", options, 0, false);
         combo.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 formPanel.setAlignment(Alignment.valueOf(combo.getSelectedItem()));
-                formPanel.render();
-                final Component component = formPanel;
-
-                // swing wonkiness... changing layouts requires rejiggering the container:
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        component.invalidate();
-                        component.revalidate();
-                        component.repaint();
-                    }
-                });
             }
         });
         return combo;

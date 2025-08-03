@@ -125,8 +125,7 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Overridden here to also clear our list of FormField instances.
-     * The result is that this FormPanel is reverted to an empty state.
+     * Removes all FormFields from this FormPanel and re-renders it.
      */
     public void removeAllFormFields() {
         formFields.clear();
