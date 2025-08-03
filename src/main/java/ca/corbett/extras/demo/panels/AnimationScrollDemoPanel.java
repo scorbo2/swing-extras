@@ -65,7 +65,7 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         formPanel.addFormField(headerLabel);
 
         List<String> options = new ArrayList<>(List.of("Very slow", "Slow", "Medium", "Fast", "Very fast"));
-        speedField = new ComboField("Scroll speed:", options, 1, false);
+        speedField = new ComboField<>("Scroll speed:", options, 1, false);
         speedField.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -75,7 +75,7 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         formPanel.addFormField(speedField);
 
         options = List.of("None", "Linear", "Quadratic", "Cubic");
-        bounceTypeField = new ComboField("Bounce type:", options, 1, false);
+        bounceTypeField = new ComboField<>("Bounce type:", options, 1, false);
         bounceTypeField.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -85,7 +85,7 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         formPanel.addFormField(bounceTypeField);
 
         options = List.of("Small", "Medium", "Large");
-        bounceMarginField = new ComboField("Bounce margin:", options, 1, false);
+        bounceMarginField = new ComboField<>("Bounce margin:", options, 1, false);
         bounceMarginField.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {

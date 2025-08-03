@@ -53,7 +53,7 @@ public class FormActionsPanel extends PanelBuilder {
         options.add("This option has no extra settings");
         options.add("This option has 1 extra setting");
         options.add("This option has lot of extra settings");
-        mainComboField = new ComboField("Show/hide extra fields:", options, 0, false);
+        mainComboField = new ComboField<>("Show/hide extra fields:", options, 0, false);
         formPanel.addFormField(mainComboField);
 
         final CheckBoxField extraField1 = new CheckBoxField("Extra setting", false);
@@ -108,16 +108,13 @@ public class FormActionsPanel extends PanelBuilder {
         return formPanel;
     }
 
-    private ComboField buildAlignmentChooser() {
-        List<String> options = new ArrayList<>();
-        for (Alignment alignment : Alignment.values()) {
-            options.add(alignment.name());
-        }
-        final ComboField combo = new ComboField("Change form alignment:", options, 0, false);
+    private ComboField<Alignment> buildAlignmentChooser() {
+        final ComboField<Alignment> combo = new ComboField<>("Change form alignment:",
+                                                             List.of(Alignment.values()), 0, false);
         combo.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                formPanel.setAlignment(Alignment.valueOf(combo.getSelectedItem()));
+                formPanel.setAlignment(combo.getSelectedItem());
             }
         });
         return combo;

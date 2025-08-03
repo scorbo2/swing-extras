@@ -98,11 +98,11 @@ public class BasicFormPanel extends PanelBuilder {
         return formPanel;
     }
 
-    private ComboField buildComboField() {
+    private ComboField<String> buildComboField() {
         List<String> options = new ArrayList<>();
         options.add("Option 1");
         options.add("Option 2");
         options.add("Option 3");
-        return new ComboField("Comboboxes:", options, 0, false);
+        return new ComboField<>("Comboboxes:", options, 0, false);
     }
 }

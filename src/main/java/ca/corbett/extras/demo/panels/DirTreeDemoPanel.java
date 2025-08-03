@@ -115,11 +115,12 @@ public class DirTreeDemoPanel extends PanelBuilder {
         for (FileSystem system : fileSystems) {
             options.add(system.getClass().getSimpleName());
         }
-        ComboField comboField = new ComboField("File system:", options, 0, false);
+        ComboField<String> comboField = new ComboField<>("File system:", options, 0, false);
         comboField.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedIndex = ((ComboField)e.getSource()).getSelectedIndex();
+                //noinspection unchecked
+                int selectedIndex = ((ComboField<String>)e.getSource()).getSelectedIndex();
                 changeFileSystem(selectedIndex);
             }
         });
@@ -131,11 +132,12 @@ public class DirTreeDemoPanel extends PanelBuilder {
                 options.add(file.getAbsolutePath());
             }
         }
-        comboField = new ComboField("Root node:", options, 0, false);
+        comboField = new ComboField<>("Root node:", options, 0, false);
         comboField.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedIndex = ((ComboField)e.getSource()).getSelectedIndex();
+                //noinspection unchecked
+                int selectedIndex = ((ComboField<String>)e.getSource()).getSelectedIndex();
                 changeRootNode(selectedIndex);
             }
         });

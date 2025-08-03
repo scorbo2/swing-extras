@@ -98,7 +98,7 @@ public class DesktopDemoPanel extends PanelBuilder {
         for (CustomizableDesktopPane.LogoPlacement placement : CustomizableDesktopPane.LogoPlacement.values()) {
             options.add(placement.toString());
         }
-        ComboField placementCombo = new ComboField("Logo placement:", options, 4, false);
+        ComboField<String> placementCombo = new ComboField<>("Logo placement:", options, 4, false);
         placementCombo.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {

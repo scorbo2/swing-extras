@@ -310,7 +310,7 @@ public final class FontDialog extends JDialog {
         List<String> options = new ArrayList<>();
         options.add("Java built-in fonts");
         options.add("System installed fonts");
-        typeField = new ComboField("Type:", options, 0, false);
+        typeField = new ComboField<>("Type:", options, 0, false);
         typeField.setTopMargin(16);
         typeField.addValueChangedAction(new AbstractAction() {
             @Override
@@ -337,7 +337,7 @@ public final class FontDialog extends JDialog {
         options.add("Bold");
         options.add("Italic");
         options.add("Bold+Italic");
-        styleField = new ComboField("Style:", options, 0, false);
+        styleField = new ComboField<>("Style:", options, 0, false);
         styleField.addValueChangedAction(changeAction);
         formPanel.addFormField(styleField);
 

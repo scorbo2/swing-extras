@@ -74,7 +74,7 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         options.add("Center");
         options.add("Best fit");
         options.add("Stretch");
-        ComboField displayModeChooser = new ComboField("Display mode:", options, 0, false);
+        ComboField<String> displayModeChooser = new ComboField<>("Display mode:", options, 0, false);
         displayModeChooser.setBottomMargin(24);
         displayModeChooser.addValueChangedAction(new AbstractAction() {
             @Override

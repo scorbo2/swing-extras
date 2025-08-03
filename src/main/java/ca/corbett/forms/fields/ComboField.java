@@ -18,9 +18,10 @@ import java.util.List;
  * @author scorbo2
  * @since 2019-11-24
  */
-public class ComboField extends FormField {
+public class ComboField<T> extends FormField {
 
-    private final JComboBox<String> comboBox;
+    private final JComboBox<T> comboBox;
+    private final DefaultComboBoxModel<T> comboModel;
     private final ItemListener itemListener = e -> {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             fireValueChangedEvent();
@@ -35,10 +36,12 @@ public class ComboField extends FormField {
      * @param selectedIndex The index to select by default.
      * @param isEditable    Whether to allow editing of the field.
      */
-    public ComboField(String label, List<String> options, int selectedIndex, boolean isEditable) {
+    public ComboField(String label, List<T> options, int selectedIndex, boolean isEditable) {
         fieldLabel = new JLabel(label);
         fieldLabel.setFont(fieldLabelFont);
-        comboBox = new JComboBox<>(options.toArray(new String[]{}));
+        comboModel = new DefaultComboBoxModel<>();
+        comboModel.addAll(options);
+        comboBox = new JComboBox<>(comboModel);
         comboBox.setFont(fieldLabelFont);
         comboBox.setSelectedIndex(selectedIndex);
         comboBox.setEditable(isEditable);
@@ -53,8 +56,9 @@ public class ComboField extends FormField {
      * @param options       The options to display in the dropdown.
      * @param selectedIndex The index to select by default.
      */
-    public void setOptions(List<String> options, int selectedIndex) {
-        comboBox.setModel(new DefaultComboBoxModel<>(options.toArray(new String[]{})));
+    public void setOptions(List<T> options, int selectedIndex) {
+        comboModel.removeAllElements();
+        comboModel.addAll(options);
         comboBox.setSelectedIndex(selectedIndex);
     }
 
@@ -63,8 +67,9 @@ public class ComboField extends FormField {
      *
      * @return The current item.
      */
-    public String getSelectedItem() {
-        return (String)comboBox.getSelectedItem();
+    public T getSelectedItem() {
+        //noinspection unchecked
+        return (T)comboBox.getSelectedItem();
     }
 
     /**
@@ -81,7 +86,7 @@ public class ComboField extends FormField {
      *
      * @param item The item to select.
      */
-    public void setSelectedItem(String item) {
+    public void setSelectedItem(T item) {
         comboBox.setSelectedItem(item);
     }
 

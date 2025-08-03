@@ -44,8 +44,8 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
     private GradientColorField bgColorField;
     private ColorField textFillColorField;
     private ColorField textOutlineColorField;
-    private ComboField outlineWidthField;
-    private ComboField textAlignField;
+    private ComboField<String> outlineWidthField;
+    private ComboField<ImageTextUtil.TextAlign> textAlignField;
     private NumberField lineWrapField;
 
     private String text;
@@ -132,7 +132,8 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         for (ImageTextUtil.TextAlign align : ImageTextUtil.TextAlign.values()) {
             options.add(align.toString());
         }
-        textAlignField = new ComboField("Text align:", options, 4, false);
+        textAlignField = new ComboField<>("Text align:",
+                                          List.of(ImageTextUtil.TextAlign.values()), 4, false);
         textAlignField.addValueChangedAction(changeAction);
         formPanel.addFormField(textAlignField);
 
@@ -141,7 +142,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         options.add("Thin");
         options.add("Medium");
         options.add("Thick");
-        outlineWidthField = new ComboField("Outline width:", options, 1, false);
+        outlineWidthField = new ComboField<>("Outline width:", options, 1, false);
         outlineWidthField.addValueChangedAction(changeAction);
         formPanel.addFormField(outlineWidthField);
 
@@ -204,7 +205,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
                 case 3: outlineWidth = 8; break;
             }
             //@formatter:on
-            textAlign = ImageTextUtil.TextAlign.fromLabel(textAlignField.getSelectedItem());
+            textAlign = textAlignField.getSelectedItem();
             lineWrapAt = (Integer)lineWrapField.getCurrentValue();
             render();
         }

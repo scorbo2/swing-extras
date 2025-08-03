@@ -19,7 +19,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,7 +32,7 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
     private ImagePanel previewPanel;
     private GradientColorField color1Field;
     private GradientColorField color2Field;
-    private ComboField gradientTypeCombo;
+    private ComboField<GradientUtil.GradientType> gradientTypeCombo;
 
     public GradientConfigPanel(String title) {
         this(title, new GradientConfig());
@@ -89,7 +88,7 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
         if (color1Field != null) {
             color1Field.setColor(obj.getColor1());
             color2Field.setColor(obj.getColor2());
-            gradientTypeCombo.setSelectedItem(obj.getGradientType().toString());
+            gradientTypeCombo.setSelectedItem(obj.getGradientType());
             updatePreview();
         }
         isModified = false;
@@ -104,15 +103,11 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 14f));
         formPanel.addFormField(labelField);
 
-        List<String> options = new ArrayList<>();
-        for (GradientUtil.GradientType gradientType : GradientUtil.GradientType.values()) {
-            options.add(gradientType.toString());
-        }
-        gradientTypeCombo = new ComboField("Type:", options, 0, false);
+        gradientTypeCombo = new ComboField<>("Type:", List.of(GradientUtil.GradientType.values()), 0, false);
         gradientTypeCombo.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                modelObject.setGradientType(GradientUtil.GradientType.fromLabel(gradientTypeCombo.getSelectedItem()));
+                modelObject.setGradientType(gradientTypeCombo.getSelectedItem());
                 updatePreview();
             }
 

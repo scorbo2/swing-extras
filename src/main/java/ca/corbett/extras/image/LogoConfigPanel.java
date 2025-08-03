@@ -198,7 +198,7 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
         List<String> options = new ArrayList<>();
         options.add("Auto-scale to image");
         options.add("Use size from font chooser");
-        fontSizeChooser = new ComboField("Font size:", options, 0, false);
+        fontSizeChooser = new ComboField<>("Font size:", options, 0, false);
         fontSizeChooser.setSelectedIndex(modelObject.isAutoSize() ? 0 : 1);
         fontSizeChooser.addValueChangedAction(fontFieldChangedAction);
         formPanel.addFormField(fontSizeChooser);

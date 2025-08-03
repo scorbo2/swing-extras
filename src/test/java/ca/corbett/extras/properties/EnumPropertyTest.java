@@ -4,7 +4,6 @@ import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FormField;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -121,11 +120,7 @@ class EnumPropertyTest {
     @Test
     public void loadFromFormField_givenValidFormField_shouldSucceed() {
         // GIVEN a FormField of the correct type with the correct options:
-        List<String> options = new ArrayList<>();
-        for (TestEnum1 value : TestEnum1.values()) {
-            options.add(value.name());
-        }
-        ComboField comboField = new ComboField("Test", options, 2, false);
+        ComboField<TestEnum1> comboField = new ComboField<>("Test", List.of(TestEnum1.values()), 2, false);
         comboField.setIdentifier("my.field.test1");
 
         // WHEN we try to load an EnumProperty from that field:

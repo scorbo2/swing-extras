@@ -96,11 +96,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
                         "application in code, and have a PropertiesManager and a PropertiesDialog that<br>" +
                         "could just generate the UI for you? Well, there is!</html>", 14));
 
-        List<String> options = new ArrayList<>();
-        for (Alignment option : Alignment.values()) {
-            options.add(option.name());
-        }
-        final ComboField alignmentField = new ComboField("Form alignment:", options, 1, false);
+        final ComboField<Alignment> alignmentField = new ComboField<>("Form alignment:",
+                                                                      List.of(Alignment.values()), 1, false);
         formPanel.addFormField(alignmentField);
 
         PanelField panelField = new PanelField();
@@ -116,8 +113,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
                     logger.log(Level.SEVERE, "Couldn't load properties.", ex);
                 }
                 PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(), "Test properties",
-                                                                      Alignment.valueOf(
-                                                                              alignmentField.getSelectedItem()), 16);
+                                                                      alignmentField.getSelectedItem(), 16);
                 dialog.setVisible(true);
                 if (dialog.wasOkayed()) {
                     propsManager.save();
@@ -143,7 +139,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
         options.add("Option 1");
         options.add("Option 2 (default)");
         options.add("Option 3");
-        props.add(new ComboProperty("Intro.Overview.combo1", "ComboProperty:", options, 1, false));
+        props.add(new ComboProperty<>("Intro.Overview.combo1", "ComboProperty:", options, 1, false));
 
         props.add(new LabelProperty("Intro.Labels.someLabelProperty", "You can add labels, too!"));
         LabelProperty testLabel = new LabelProperty("Intro.Labels.someLabelProperty2",
@@ -181,7 +177,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(hiddenProp);
 
         props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));
-        props.add(new EnumProperty<TestEnum>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
+        props.add(new EnumProperty<>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
         props.add(new LabelProperty("Enums.Enums.label2",
                                     "Alternatively, you can use the enum names instead of toString():"));
         props.add(new EnumProperty<>("Enums.Enums.enumField2", "Choose:", TestEnum.VALUE1, true));

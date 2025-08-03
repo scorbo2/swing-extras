@@ -119,7 +119,7 @@ public class LookAndFeelProperty extends AbstractProperty {
 
     @Override
     protected FormField generateFormFieldImpl() {
-        return new ComboField(propertyLabel, displayNames, selectedIndex, false);
+        return new ComboField<>(propertyLabel, displayNames, selectedIndex, false);
     }
 
     @Override

@@ -137,7 +137,7 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
     @Override
     protected FormField generateFormFieldImpl() {
         List<String> options = useNamesInsteadOfLabels ? names : labels;
-        return new ComboField(propertyLabel, options, selectedIndex, false);
+        return new ComboField<>(propertyLabel, options, selectedIndex, false);
     }
 
     @Override
@@ -150,6 +150,7 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
             return;
         }
 
-        selectedIndex = ((ComboField)field).getSelectedIndex();
+        //noinspection unchecked
+        selectedIndex = ((ComboField<String>)field).getSelectedIndex();
     }
 }
