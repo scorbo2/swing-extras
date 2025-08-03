@@ -4,6 +4,7 @@ import ca.corbett.extras.config.ConfigPanel;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
@@ -97,7 +98,7 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
     private void initComponents() {
         setLayout(new BorderLayout());
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_CENTER);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
 
         LabelField labelField = new LabelField("Gradient configuration");
         labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 14f));

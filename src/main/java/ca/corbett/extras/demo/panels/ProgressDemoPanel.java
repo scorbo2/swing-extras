@@ -13,6 +13,7 @@ import ca.corbett.extras.progress.MultiProgressWorker;
 import ca.corbett.extras.progress.SimpleProgressAdapter;
 import ca.corbett.extras.progress.SimpleProgressWorker;
 import ca.corbett.extras.progress.SplashProgressWindow;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.LabelField;
@@ -58,8 +59,8 @@ public class ProgressDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
         final LabelField simpleLabel = LabelField.createBoldHeaderLabel("SimpleProgressDialog", 20);
         simpleLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));

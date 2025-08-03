@@ -9,6 +9,7 @@ import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageTextUtil;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
@@ -88,8 +89,8 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         imagePanel = new ImagePanel(image, ImagePanelConfig.createDefaultProperties());
         panel.add(imagePanel, BorderLayout.CENTER);
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(12);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(12);
 
         final LabelField label = LabelField.createBoldHeaderLabel("ImageTextUtil", 20);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));

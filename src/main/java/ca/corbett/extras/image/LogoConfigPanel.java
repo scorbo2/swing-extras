@@ -4,6 +4,7 @@ import ca.corbett.extras.config.ConfigPanel;
 import ca.corbett.extras.gradient.GradientColorField;
 import ca.corbett.extras.gradient.GradientConfig;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
@@ -126,7 +127,7 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
 
         bgColorField = new GradientColorField("Background:", modelObject.getBgColor(), modelObject.getBgGradient(),
                                               modelObject.getBgColorType() == LogoConfig.ColorType.SOLID);

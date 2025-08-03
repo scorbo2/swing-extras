@@ -3,6 +3,7 @@ package ca.corbett.extras.demo.panels;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.dirtree.DirTreeListener;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
@@ -89,8 +90,8 @@ public class DirTreeDemoPanel extends PanelBuilder {
     }
 
     private FormPanel buildFormPanel() {
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(12);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(12);
 
         LabelField label = LabelField.createBoldHeaderLabel("DirTree", 20);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));

@@ -1,5 +1,6 @@
 package ca.corbett.extras.progress;
 
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
@@ -406,7 +407,8 @@ public final class MultiProgressDialog extends JDialog {
         panelField.getPanel().add(minorProgressBar, BorderLayout.CENTER);
         formFields.add(panelField);
 
-        FormPanel formPanel = new FormPanel(formFields, FormPanel.Alignment.TOP_CENTER);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
+        formPanel.addFormFields(formFields);
         formPanel.render();
         add(formPanel, BorderLayout.CENTER);
 

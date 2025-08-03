@@ -2,6 +2,7 @@ package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
@@ -30,8 +31,8 @@ public class FormActionsPanel extends PanelBuilder {
     private ComboField mainComboField;
 
     public FormActionsPanel() {
-        formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
     }
 
     @Override
@@ -111,14 +112,14 @@ public class FormActionsPanel extends PanelBuilder {
 
     private ComboField buildAlignmentChooser() {
         List<String> options = new ArrayList<>();
-        for (FormPanel.Alignment alignment : FormPanel.Alignment.values()) {
+        for (Alignment alignment : Alignment.values()) {
             options.add(alignment.name());
         }
         final ComboField combo = new ComboField("Change form alignment:", options, 1, false);
         combo.addValueChangedAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                formPanel.setAlignment(FormPanel.Alignment.valueOf(combo.getSelectedItem()));
+                formPanel.setAlignment(Alignment.valueOf(combo.getSelectedItem()));
                 formPanel.render();
                 final Component component = formPanel;
 

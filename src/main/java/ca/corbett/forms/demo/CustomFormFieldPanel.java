@@ -2,6 +2,7 @@ package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FontDialog;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FontField;
@@ -18,8 +19,8 @@ public class CustomFormFieldPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
         final LabelField headerLabel = LabelField.createBoldHeaderLabel("Creating a custom FormField implementation",
                                                                         20);

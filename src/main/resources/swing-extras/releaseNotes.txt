@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.4.0 [TODO] - swing-forms rewrite
   #82 - Refactor FieldValidator
   #80 - Refactor ValidationResult
+  #78 - Refactor FormPanel
   #70 - Fix array index out of bounds in ListProperty
   #69 - Fix uncaught exception during extension loading
 

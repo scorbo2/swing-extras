@@ -29,7 +29,8 @@ class FormPanelTest {
     public void testGetFormField_successScenarios() {
         NumberField numberField = new NumberField("Number:", 1, 0, 2, 1);
         numberField.setIdentifier("numberField1");
-        FormPanel formPanel = new FormPanel(List.of(numberField));
+        FormPanel formPanel = new FormPanel();
+        formPanel.addFormFields(List.of(numberField));
         assertNotNull(formPanel.getFormField("numberField1"));
 
         TextField textField = new TextField("Text:", 12, 1, true);

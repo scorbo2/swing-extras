@@ -16,6 +16,7 @@ import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.extras.properties.TextProperty;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
@@ -79,8 +80,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
             propsManager = new PropertiesManager(new Properties(), buildProps(), "Test properties");
         }
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
         final LabelField label = LabelField.createBoldHeaderLabel("PropertiesManager", 20);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
@@ -96,7 +97,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
                         "could just generate the UI for you? Well, there is!</html>", 14));
 
         List<String> options = new ArrayList<>();
-        for (FormPanel.Alignment option : FormPanel.Alignment.values()) {
+        for (Alignment option : Alignment.values()) {
             options.add(option.name());
         }
         final ComboField alignmentField = new ComboField("Form alignment:", options, 1, false);
@@ -115,7 +116,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
                     logger.log(Level.SEVERE, "Couldn't load properties.", ex);
                 }
                 PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(), "Test properties",
-                                                                      FormPanel.Alignment.valueOf(
+                                                                      Alignment.valueOf(
                                                                               alignmentField.getSelectedItem()), 16);
                 dialog.setVisible(true);
                 if (dialog.wasOkayed()) {

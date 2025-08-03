@@ -2,6 +2,7 @@ package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
@@ -18,8 +19,8 @@ public class FormHelpPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel panel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        panel.setStandardLeftMargin(24);
+        FormPanel panel = new FormPanel(Alignment.TOP_LEFT);
+        panel.setBorderMargin(24);
 
         LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have help text!", 20);
         headerLabel.setBottomMargin(24);

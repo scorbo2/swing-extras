@@ -6,6 +6,7 @@ import ca.corbett.extras.gradient.GradientConfig;
 import ca.corbett.extras.gradient.GradientUtil;
 import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
@@ -54,8 +55,8 @@ public class DesktopDemoPanel extends PanelBuilder {
         JPanel container = new JPanel();
         container.setLayout(new BorderLayout());
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
         StringBuilder sb = new StringBuilder();
         sb.append("<html>If your application uses JDesktopPane, you may be frustrated with the lack of<br/>");

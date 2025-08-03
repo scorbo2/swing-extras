@@ -2,6 +2,7 @@ package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.TextField;
@@ -25,8 +26,8 @@ public class FormsOverviewPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel introPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        introPanel.setStandardLeftMargin(24);
+        FormPanel introPanel = new FormPanel(Alignment.TOP_LEFT);
+        introPanel.setBorderMargin(24);
 
         LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-forms!", 24);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));

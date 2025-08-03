@@ -298,7 +298,7 @@ public final class FontDialog extends JDialog {
      * @return A JPanel wrapped in a scroll pane
      */
     private JComponent buildFontChooserPanel(Color textColor, Color bgColor) {
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
 
         AbstractAction changeAction = new AbstractAction() {
             @Override

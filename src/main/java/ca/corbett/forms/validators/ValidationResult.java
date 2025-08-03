@@ -1,7 +1,7 @@
 package ca.corbett.forms.validators;
 
 /**
- * A value class that can store the results of validation on a particular field.
+ * A value class that can store the results of validation on a particular FormField.
  *
  * @author scorbo2
  * @since 2019-11-23
@@ -24,28 +24,30 @@ public class ValidationResult {
         this.message = message;
     }
 
+    /**
+     * Returns a valid ValidationResult with no validation message.
+     */
     public static ValidationResult valid() {
         return VALID;
     }
 
+    /**
+     * Creates and returns an invalid ValidationResult with the given message.
+     */
     public static ValidationResult invalid(String msg) {
         return new ValidationResult(false, msg);
     }
 
     /**
-     * Returns whether the validation result is okay or not.
-     *
-     * @return True if the field in question is valid, false if not (see getMessage() also).
+     * Returns whether the ValidationResult is valid.
      */
     public boolean isValid() {
         return isValid;
     }
 
     /**
-     * Returns a validation message if the validation result is not valid.
-     * Will be an empty string if the validation result is valid.
-     *
-     * @return A String containing a validation message (or empty).
+     * Returns the message associated with this ValidationResult, or empty string if it
+     * contains no message.
      */
     public String getMessage() {
         return message;

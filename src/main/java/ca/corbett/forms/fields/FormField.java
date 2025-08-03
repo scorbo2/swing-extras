@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * An abstract base class for a form field. These form fields are intended to wrap common Swing
@@ -569,5 +570,35 @@ public abstract class FormField {
         for (AbstractAction action : valueChangedActions) {
             action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_FIRST, "valueChanged"));
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof FormField)) {
+            return false;
+        }
+
+        FormField formField = (FormField)o;
+        return isExtraLabelRenderedByField == formField.isExtraLabelRenderedByField
+                && topMargin == formField.topMargin
+                && bottomMargin == formField.bottomMargin
+                && leftMargin == formField.leftMargin
+                && rightMargin == formField.rightMargin
+                && componentSpacing == formField.componentSpacing
+                && showValidationLabel == formField.showValidationLabel
+                && isVisible == formField.isVisible
+                && isEnabled == formField.isEnabled && Objects.equals(identifier, formField.identifier)
+                && Objects.equals(fieldLabel, formField.fieldLabel)
+                && Objects.equals(fieldLabelFont, formField.fieldLabelFont)
+                && Objects.equals(fieldComponent, formField.fieldComponent)
+                && Objects.equals(validationLabel, formField.validationLabel)
+                && Objects.equals(helpLabel, formField.helpLabel)
+                && Objects.equals(helpText, formField.helpText);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(identifier, helpText, topMargin, bottomMargin, leftMargin, rightMargin, componentSpacing,
+                            showValidationLabel, isVisible, isEnabled);
     }
 }

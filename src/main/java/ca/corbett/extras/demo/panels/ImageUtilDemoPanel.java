@@ -9,6 +9,7 @@ import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoConfigPanel;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
@@ -44,8 +45,8 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
 
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BorderLayout());
-        FormPanel controlPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        controlPanel.setStandardLeftMargin(12);
+        FormPanel controlPanel = new FormPanel(Alignment.TOP_LEFT);
+        controlPanel.setBorderMargin(12);
 
         final LabelField label = LabelField.createBoldHeaderLabel("ImageUtil", 20);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));

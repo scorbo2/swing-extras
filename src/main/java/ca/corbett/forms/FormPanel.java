@@ -5,6 +5,8 @@ import ca.corbett.forms.fields.FormField;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -33,25 +35,6 @@ import java.util.List;
  */
 public final class FormPanel extends JPanel {
 
-    public enum Alignment {
-        TOP_CENTER,
-        TOP_LEFT,
-        CENTER_LEFT,
-        CENTER;
-
-        public boolean isLeftAligned() {
-            return this == TOP_LEFT || this == CENTER_LEFT;
-        }
-
-        public boolean isTopAligned() {
-            return this == TOP_LEFT || this == TOP_CENTER;
-        }
-
-        public boolean isCentered() {
-            return this == CENTER_LEFT || this == CENTER;
-        }
-    }
-
     public static final URL helpImageUrl = FormPanel.class.getResource(
             "/ca/corbett/swing-forms/images/formfield-help.png");
 
@@ -63,66 +46,53 @@ public final class FormPanel extends JPanel {
     public static final int VALIDATION_COLUMN = 4;
     public static final int RIGHT_SPACER_COLUMN = 5;
 
-    private final List<FormField> formFields;
+    private final List<FormField> formFields = new ArrayList<>();
     private Alignment alignment;
-    private int standardLeftMargin = 0;
+    private int borderMargin = 0;
 
     /**
-     * Creates a new, blank FormPanel that will default to the TOP_CENTER Alignment.
+     * Creates a new, empty FormPanel with TOP_CENTER Alignment.
      */
     public FormPanel() {
-        this(new ArrayList<FormField>(), Alignment.TOP_CENTER);
+        this(Alignment.TOP_CENTER);
     }
 
     /**
-     * Creates a new, blank FormPanel with the given Alignment.
-     *
-     * @param alignment Describes how FormFields should be laid out on this FormPanel.
+     * Creates a new, empty FormPanel with the given Alignment.
      */
     public FormPanel(Alignment alignment) {
-        this(new ArrayList<FormField>(), alignment);
-    }
-
-    /**
-     * Creates a new FormPanel with the given FormFields and a default TOP_CENTER Alignment.
-     *
-     * @param formFields A list of FormFields to add to this form.
-     */
-    public FormPanel(List<FormField> formFields) {
-        this(formFields, Alignment.TOP_CENTER);
-    }
-
-    /**
-     * Creates a new FormPanel with the given FormFields and Alignment parameters.
-     *
-     * @param formFields A list of FormFields to add to this form.
-     * @param alignment  Describes how FormFields should be laid out on this FormPanel.
-     */
-    public FormPanel(List<FormField> formFields, Alignment alignment) {
-        this.formFields = new ArrayList<>();
-        this.formFields.addAll(formFields);
         this.alignment = alignment;
     }
 
     /**
-     * For left-aligned forms, you can apply a standard margin to keep the form fields a bit
-     * away from the left edge of the FormPanel. Does nothing for center-aligned forms.
-     * This must be invoked before render()!
+     * An optional pixel margin that will be applied to FormFields as necessary to keep them
+     * away from whichever form border is directly adjacent. For example, for left-aligned
+     * forms, this margin will be applied to the left edge of all FormFields. For top-aligned
+     * forms, this margin will be applied to the topmost FormField to keep it away from the
+     * top border. For bottom-right aligned forms, this margin will be applied to the right
+     * side of each FormField to keep them from the right border, and also to the bottom
+     * FormField to keep it away from the bottom border. If the form is centered both horizontally
+     * and vertically, then it touches no border, and so this value will be ignored.
+     * <p>
+     * The default value is zero, meaning no extra margins will be applied.
+     * </p>
+     * <p>
+     * Note that any value given here is added to whatever margins are already present on
+     * each FormField. This value does not replace those values.
+     * </p>
      *
-     * @param margin The margin, in pixels, to apply to the left of all form fields.
+     * @param margin The margin, in pixels, to apply to FormFields as needed. Negative values are treated as 0.
      */
-    public void setStandardLeftMargin(int margin) {
-        standardLeftMargin = margin;
+    public FormPanel setBorderMargin(int margin) {
+        borderMargin = Math.max(0, margin); // Reject negative values
+        return this;
     }
 
     /**
-     * Returns the left margin to apply to all form fields if the current alignment is
-     * left-aligned.
-     *
-     * @return A left margin value in pixels.
+     * Returns the optional border margin to be applied as described in setBorderMargin.
      */
-    public int getStandardLeftMargin() {
-        return standardLeftMargin;
+    public int getBorderMargin() {
+        return borderMargin;
     }
 
     /**
@@ -155,7 +125,8 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Removes all FormField instances from this FormPanel and re-renders it.
+     * Overridden here to also clear our list of FormField instances.
+     * The result is that this FormPanel is reverted to an empty state.
      */
     public void removeAllFormFields() {
         formFields.clear();
@@ -170,9 +141,9 @@ public final class FormPanel extends JPanel {
      */
     public void addFormFields(List<FormField> fields) {
         this.formFields.addAll(fields);
-        if (alignment.isLeftAligned() && standardLeftMargin > 0) {
+        if (alignment.isLeftAligned() && borderMargin > 0) {
             for (FormField field : fields) {
-                field.setLeftMargin(field.getLeftMargin() + standardLeftMargin);
+                field.setLeftMargin(field.getLeftMargin() + borderMargin);
             }
         }
     }
@@ -185,8 +156,8 @@ public final class FormPanel extends JPanel {
      */
     public void addFormField(FormField field) {
         this.formFields.add(field);
-        if (alignment.isLeftAligned() && standardLeftMargin > 0) {
-            field.setLeftMargin(field.getLeftMargin() + standardLeftMargin);
+        if (alignment.isLeftAligned() && borderMargin > 0) {
+            field.setLeftMargin(field.getLeftMargin() + borderMargin);
         }
     }
 
@@ -230,11 +201,24 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Changes the Alignment property of this FormPanel - remember to invoke render() again
-     * if this FormPanel has already been rendered!
+     * Changes the Alignment property of this FormPanel and re-renders it.
      */
-    public void setAlignment(Alignment alignment) {
+    public FormPanel setAlignment(Alignment alignment) {
         this.alignment = alignment;
+        render();
+
+        // swing wonkiness... changing layouts requires rejiggering the container:
+        final Component component = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                component.invalidate();
+                component.revalidate();
+                component.repaint();
+            }
+        });
+
+        return this;
     }
 
     /**

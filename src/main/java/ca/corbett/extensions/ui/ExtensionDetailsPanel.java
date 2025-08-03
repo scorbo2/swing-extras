@@ -7,6 +7,7 @@ import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesManager;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
@@ -103,7 +104,7 @@ public class ExtensionDetailsPanel extends JPanel {
 
     protected void initComponents(boolean isEnabled) {
         setLayout(new BorderLayout());
-        formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel = new FormPanel(Alignment.TOP_LEFT);
 
         PanelField panelField = new PanelField();
         JPanel panel = panelField.getPanel();

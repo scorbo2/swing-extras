@@ -8,6 +8,7 @@ import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.extras.logging.LogConsole;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
@@ -55,7 +56,7 @@ public final class AboutPanel extends JPanel {
     private final Map<String, LabelField> customFields;
 
     public AboutPanel(AboutInfo info) {
-        this(info, FormPanel.Alignment.TOP_CENTER, 24);
+        this(info, Alignment.TOP_CENTER, 24);
     }
 
     /**
@@ -63,14 +64,14 @@ public final class AboutPanel extends JPanel {
      *
      * @param info The AboutInfo object to display.
      */
-    public AboutPanel(AboutInfo info, FormPanel.Alignment alignment, int leftMargin) {
+    public AboutPanel(AboutInfo info, Alignment alignment, int leftMargin) {
         super();
 
         customFields = new HashMap<>();
         info.registerAboutPanel(this);
         setLayout(new BorderLayout());
         FormPanel formPanel = new FormPanel(alignment);
-        formPanel.setStandardLeftMargin(leftMargin);
+        formPanel.setBorderMargin(leftMargin);
 
         BufferedImage logoImage = getLogoImage(info);
         PanelField logoPanel = new PanelField();
@@ -215,7 +216,8 @@ public final class AboutPanel extends JPanel {
             constraints.fill = GridBagConstraints.BOTH;
             constraints.weightx = 0.5;
             constraints.weighty = 0.5;
-            if (formPanel.getAlignment().isCentered()) {
+            if (formPanel.getAlignment().isCenteredHorizontally()
+                    || formPanel.getAlignment().isCenteredVertically()) {
                 wrapperPanel.add(dummy1, constraints);
             }
             constraints.gridx = 2;

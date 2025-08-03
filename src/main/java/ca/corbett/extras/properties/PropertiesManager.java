@@ -1,5 +1,6 @@
 package ca.corbett.extras.properties;
 
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 
@@ -255,7 +256,7 @@ public class PropertiesManager {
      * @return A PropertiesDialog instance, populated and ready to be shown.
      */
     public PropertiesDialog generateDialog(Window owner, String dialogTitle) {
-        return generateDialog(owner, dialogTitle, FormPanel.Alignment.TOP_LEFT, 8);
+        return generateDialog(owner, dialogTitle, Alignment.TOP_LEFT, 8);
     }
 
     /**
@@ -299,40 +300,40 @@ public class PropertiesManager {
      * @param leftMargin  If form panels are left aligned, you can apply a pixel margin to the form's left side.
      * @return A PropertiesDialog instance, populated and ready to be shown.
      */
-    public PropertiesDialog generateDialog(Window owner, String dialogTitle, FormPanel.Alignment alignment, int leftMargin) {
+    public PropertiesDialog generateDialog(Window owner, String dialogTitle, Alignment alignment, int leftMargin) {
         List<FormPanel> formPanelList = generateUnrenderedFormPanels(alignment, leftMargin);
         return new PropertiesDialog(this, owner, dialogTitle, formPanelList);
     }
 
     public List<FormPanel> generateUnrenderedFormPanels() {
-        return generateUnrenderedFormPanels(properties, FormPanel.Alignment.TOP_LEFT, 8, alwaysShowSubcategoryLabels);
+        return generateUnrenderedFormPanels(properties, Alignment.TOP_LEFT, 8, alwaysShowSubcategoryLabels);
     }
 
-    public List<FormPanel> generateUnrenderedFormPanels(FormPanel.Alignment alignment) {
+    public List<FormPanel> generateUnrenderedFormPanels(Alignment alignment) {
         return generateUnrenderedFormPanels(properties, alignment, 8, alwaysShowSubcategoryLabels);
     }
 
-    public List<FormPanel> generateUnrenderedFormPanels(FormPanel.Alignment alignment, int leftMargin) {
+    public List<FormPanel> generateUnrenderedFormPanels(Alignment alignment, int leftMargin) {
         return generateUnrenderedFormPanels(properties, alignment, leftMargin, alwaysShowSubcategoryLabels);
     }
 
     public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props) {
-        return generateUnrenderedFormPanels(props, FormPanel.Alignment.TOP_LEFT, 8, false);
+        return generateUnrenderedFormPanels(props, Alignment.TOP_LEFT, 8, false);
     }
 
     public static List<FormPanel> generateUnrenderedFormPanel(List<AbstractProperty> props, boolean alwaysShowSubcategoryLabels) {
-        return generateUnrenderedFormPanels(props, FormPanel.Alignment.TOP_LEFT, 8, alwaysShowSubcategoryLabels);
+        return generateUnrenderedFormPanels(props, Alignment.TOP_LEFT, 8, alwaysShowSubcategoryLabels);
     }
 
-    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, FormPanel.Alignment alignment) {
+    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, Alignment alignment) {
         return generateUnrenderedFormPanels(props, alignment, 8, false);
     }
 
-    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, FormPanel.Alignment alignment, boolean alwaysShowSubcategoryLabels) {
+    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, Alignment alignment, boolean alwaysShowSubcategoryLabels) {
         return generateUnrenderedFormPanels(props, alignment, 8, alwaysShowSubcategoryLabels);
     }
 
-    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, FormPanel.Alignment alignment, int leftMargin, boolean alwaysShowSubcategoryLabels) {
+    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, Alignment alignment, int leftMargin, boolean alwaysShowSubcategoryLabels) {
         List<String> categories = getCategories(props);
 
         // Our list of categories might be empty if all properties are hidden or disabled,

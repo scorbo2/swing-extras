@@ -4,6 +4,7 @@ import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.properties.LookAndFeelProperty;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
@@ -34,8 +35,8 @@ public class IntroPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel introPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        introPanel.setStandardLeftMargin(24);
+        FormPanel introPanel = new FormPanel(Alignment.TOP_LEFT);
+        introPanel.setBorderMargin(24);
 
         LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-extras!", 24);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
