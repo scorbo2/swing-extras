@@ -3,7 +3,7 @@ package ca.corbett.forms.fields;
 import ca.corbett.forms.FormPanel;
 
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -23,12 +23,19 @@ import java.awt.Insets;
 public final class CheckBoxField extends FormField {
 
     public CheckBoxField(String labelText, boolean isChecked) {
-        fieldLabel = new JLabel();
-        fieldLabel.setFont(fieldLabelFont);
+        fieldLabel.setFont(DEFAULT_FONT);
         fieldComponent = new JCheckBox(labelText, isChecked);
-        fieldComponent.setFont(fieldLabelFont);
+        fieldComponent.setFont(DEFAULT_FONT);
         ((JCheckBox)fieldComponent).addItemListener(e -> fireValueChangedEvent());
-        showValidationLabel = false;
+    }
+
+    /**
+     * Overridden here as we generally don't want to show a validation label on a checkbox.
+     * Will return true only if one or more FieldValidators have been explicitly assigned.
+     */
+    @Override
+    public boolean hasValidationLabel() {
+        return !fieldValidators.isEmpty();
     }
 
     public boolean isChecked() {
@@ -38,6 +45,7 @@ public final class CheckBoxField extends FormField {
     public void setChecked(boolean checked) {
         ((JCheckBox)fieldComponent).setSelected(checked);
     }
+
 
     @Override
     public void render(JPanel container, GridBagConstraints constraints) {
@@ -51,5 +59,10 @@ public final class CheckBoxField extends FormField {
         constraints.fill = GridBagConstraints.NONE;
         fieldComponent.setFont(fieldLabelFont);
         container.add(fieldComponent, constraints);
+    }
+
+    @Override
+    protected JComponent buildFieldComponent() {
+        return fieldComponent; // already built in constructor
     }
 }

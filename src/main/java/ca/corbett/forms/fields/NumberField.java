@@ -1,17 +1,11 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 
 /**
  * A FormField that wraps a JSpinner to allow numeric input.
@@ -70,27 +64,16 @@ public final class NumberField extends FormField {
         });
         fieldComponent = spinner;
         fieldComponent.setPreferredSize(new Dimension(60, 22)); // arbitrary default value
-        fieldLabel = new JLabel(labelText);
+        fieldLabel.setText(labelText);
     }
 
     public Number getCurrentValue() {
         return (Number)spinner.getValue();
     }
 
-    public void setCurrentValue(Number value) {
+    public NumberField setCurrentValue(Number value) {
         spinner.setValue(value);
+        return this;
     }
 
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(fieldComponent, constraints);
-    }
 }

@@ -1,14 +1,9 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
-
 import javax.swing.JColorChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -36,8 +31,7 @@ public class ColorField extends FormField {
         }
 
         // Initialize our UI components:
-        fieldLabel = new JLabel(label);
-        fieldLabel.setFont(fieldLabelFont);
+        fieldLabel.setText(label);
         colorPanel = new JPanel();
         fieldComponent = colorPanel;
         colorPanel.setPreferredSize(new Dimension(30, 20));
@@ -72,30 +66,9 @@ public class ColorField extends FormField {
      *
      * @param color The new color.
      */
-    public void setColor(Color color) {
+    public ColorField setColor(Color color) {
         selectedColor = color;
         colorPanel.setBackground(color);
-    }
-
-    /**
-     * Renders this field into the given container.
-     *
-     * @param container   The containing form panel.
-     * @param constraints The GridBagConstraints to use.
-     */
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.fill = GridBagConstraints.NONE;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(colorPanel, constraints);
+        return this;
     }
 }

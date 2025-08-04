@@ -1,7 +1,6 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.forms.FontDialog;
-import ca.corbett.forms.FormPanel;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -11,8 +10,6 @@ import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -27,9 +24,9 @@ import java.awt.event.ActionListener;
  */
 public final class FontField extends FormField {
 
-    private final JLabel sampleLabel;
-    private final JButton button;
-    private final JPanel wrapperPanel;
+    private JLabel sampleLabel;
+    private JButton button;
+    private JPanel wrapperPanel;
     private ActionListener actionListener;
     private Font selectedFont;
     private Color textColor;
@@ -82,7 +79,7 @@ public final class FontField extends FormField {
         selectedFont = (initialFont == null) ? FontDialog.INITIAL_FONT : initialFont;
         this.textColor = textColor;
         this.bgColor = bgColor;
-        fieldLabel = new JLabel(labelText);
+        fieldLabel.setText(labelText);
         button = new JButton("Change");
         button.setPreferredSize(new Dimension(95, 23));
         button.setFont(button.getFont().deriveFont(Font.PLAIN));
@@ -92,7 +89,7 @@ public final class FontField extends FormField {
         sampleLabel.setOpaque(true);
         sampleLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         setSelectedFont(selectedFont);
-        fieldComponent = button;
+        fieldComponent = wrapperPanel;
         wrapperPanel.add(sampleLabel);
         wrapperPanel.add(new JLabel(" ")); // spacer
         wrapperPanel.add(button);
@@ -188,31 +185,14 @@ public final class FontField extends FormField {
         wrapperPanel.setVisible(isVisible);
     }
 
-    /**
-     * Renders this field into the given container.
-     *
-     * @param container   The containing form panel.
-     * @param constraints The GridBagConstraints to use.
-     */
     @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
+    public void preRender(JPanel container) {
         wrapperPanel.setBackground(container.getBackground());
         if (actionListener != null) {
             button.removeActionListener(actionListener);
         }
         actionListener = getActionListener(container);
         button.addActionListener(actionListener); // UTIL-147 avoid adding it twice
-
-        constraints.fill = 0;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(wrapperPanel, constraints);
     }
 
     /**

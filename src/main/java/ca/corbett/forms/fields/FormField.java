@@ -1,17 +1,14 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.forms.Margins;
+import ca.corbett.forms.Resources;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.ValidationResult;
 
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.event.ActionEvent;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,213 +27,109 @@ import java.util.Objects;
  */
 public abstract class FormField {
 
-    /**
-     * A reference to a checkmark icon for showing next to validated form fields. *
-     */
-    protected static final URL validImageUrl = FormField.class.getResource(
-            "/ca/corbett/swing-forms/images/formfield-valid.png");
+    protected static final Font DEFAULT_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
 
-    /**
-     * A reference to an X icon for showing next to invalid form fields. *
-     */
-    protected static final URL invalidImageUrl = FormField.class.getResource(
-            "/ca/corbett/swing-forms/images/formfield-invalid.png");
+    protected final List<FormFieldValueChangedListener> valueChangedListeners = new ArrayList<>();
+    protected final List<FieldValidator<? extends FormField>> fieldValidators = new ArrayList<>();
 
-    /**
-     * You can specify an Action(s) that will be invoked when the field value is modified. *
-     */
-    protected final List<AbstractAction> valueChangedActions = new ArrayList<>();
-
-    /**
-     * You can specify a FieldValidator(s) that will check the value of this field. *
-     */
-    protected final List<FieldValidator<? extends FormField>> validators = new ArrayList<>();
-
-    /**
-     * An internal name or id for this field; never shown to the user. *
-     */
     protected String identifier;
 
-    /**
-     * A JLabel component to show a label for this field. *
-     */
-    protected JLabel fieldLabel;
-
-    /**
-     * The Font to use for the field label. *
-     */
-    protected Font fieldLabelFont = new Font("SansSerif", Font.PLAIN, 12);
-
-    /**
-     * The actual JComponent that we wrap. *
-     */
+    protected final JLabel fieldLabel = new JLabel();
     protected JComponent fieldComponent;
-
-    /**
-     * A JLabel component to show the validation results for this field. *
-     */
     protected final JLabel validationLabel = new JLabel();
-
-    /**
-     * Most of the time, the FormPanel itself can deal with the rendering of
-     * the validation and help labels, and individual FormField implementations
-     * don't need to worry about it. But, some fields (like multi-line text
-     * fields for example) want to render the extra labels themselves in
-     * a nonstandard way. So, if a FormField implementation sets this flag
-     * to true, the FormPanel will leave the rendering of the validation
-     * and help labels up to the FormField.
-     */
-    protected boolean isExtraLabelRenderedByField = false;
-
-    /**
-     * A JLabel to show help text for this field.
-     */
     protected final JLabel helpLabel = new JLabel();
 
-    /**
-     * Optional help text for this field.
-     */
-    protected String helpText = "";
+    protected final Margins margins = new Margins();
 
-    /**
-     * Margin to apply above the field. *
-     */
-    protected int topMargin = 4;
-
-    /**
-     * Margin to apply below the field. *
-     */
-    protected int bottomMargin = 4;
-
-    /**
-     * Margin to apply to the left of the field. *
-     */
-    protected int leftMargin = 4;
-
-    /**
-     * Margin to apply to the right of the field. *
-     */
-    protected int rightMargin = 4;
-
-    /**
-     * Margin to apply within the field (that is, margin between the label and component and
-     * validation label) *
-     */
-    protected int componentSpacing = 4;
-
-    /**
-     * Whether to show or hide the validation label (makes no sense for some components, like labels
-     * or checkboxes)
-     */
-    protected boolean showValidationLabel = true;
-
-    /**
-     * Indicates whether or not we're currently visible *
-     */
     protected boolean isVisible = true;
-
-    /**
-     * Indicates whether or not we're currently enabled *
-     */
     protected boolean isEnabled = true;
 
     protected final Map<String, Object> extraAttributes = new HashMap<>();
 
-    /**
-     * Adds the given FieldValidator to the list of validators for this field.
-     * All validators assigned to a field must return a valid response in order
-     * for the field value to be considered valid. All validators are invoked
-     * in no particular order when validate() is invoked.
-     *
-     * @param validator The FieldValidator to add to this field.
-     */
-    public void addFieldValidator(FieldValidator<? extends FormField> validator) {
-        // Some fields disable the validation label as they normally
-        // aren't validated (eg. checkboxes). But, if we're adding a
-        // field validator, we'll want to override that:
-        showValidationLabel = true;
-
-        if (!validators.contains(validator)) {
-            validators.add(validator);
-        }
+    public FormField() {
+        fieldLabel.setFont(DEFAULT_FONT);
+        helpLabel.setIcon(Resources.getHelpIcon());
     }
 
     /**
-     * You can remove a particular FieldValidator from this field, if present.
-     *
-     * @param validator The FieldValidator to remove.
+     * By default, all FormFields will show a validation label when validation results
+     * are available. Some descendant classes might override this method to return
+     * false if a validation label is not applicable (for example, for a LabelField).
+     * <p>
+     * It is recommended that even if a FormField implementing class does not want
+     * to show the validation label, it should still return true here if one or
+     * more FieldValidator instances have been added to this field. Otherwise,
+     * validation errors on the field won't be visible to the user.
+     * </p>
+     */
+    public boolean hasValidationLabel() {
+        return true;
+    }
+
+    /**
+     * Any FormField that has help text set will return true here to indicate that
+     * a help label is available. If help text is unset, will return false;
+     */
+    public boolean hasHelpLabel() {
+        return !helpLabel.getToolTipText().isBlank();
+    }
+
+    /**
+     * A FormField can have an associated field label which describes the field.
+     * To enable this, simply set the fieldLabel's text to a non-blank value.
+     * Setting the fieldLabel text to blank or empty will cause this method to
+     * return false, indicating the field does not have or want a fieldLabel.
+     * For example, a CheckBox field likely does not require an explicit
+     * field label, because the checkbox control itself contains a label.
+     */
+    public boolean hasFieldLabel() {
+        return !fieldLabel.getText().isBlank();
+    }
+
+    public JLabel getFieldLabel() {
+        return fieldLabel;
+    }
+
+    /**
+     * Adds a FieldValidator to this FormField.
+     */
+    public FormField addFieldValidator(FieldValidator<? extends FormField> validator) {
+        fieldValidators.add(validator);
+        return this;
+    }
+
+    /**
+     * Removes the given FieldValidator from this FormField.
      */
     public void removeFieldValidator(FieldValidator<FormField> validator) {
-        validators.remove(validator);
+        fieldValidators.remove(validator);
     }
 
     /**
      * Remove all validators from this FormField.
      */
     public void removeAllFieldValidators() {
-        validators.clear();
+        fieldValidators.clear();
     }
 
     /**
-     * Adds an Action that will be invoked when the field value is changed.
-     * You can use this to update the value of some other form field, or some other
-     * component outside of this form.
-     *
-     * @param action An Action to be invoked when this field's value changes.
+     * Adds a value changed listener that will be invoked when the field value is changed.
      */
-    public void addValueChangedAction(AbstractAction action) {
-        valueChangedActions.add(action);
+    public FormField addValueChangedListener(FormFieldValueChangedListener listener) {
+        valueChangedListeners.add(listener);
+        return this;
     }
 
     /**
-     * You can remove a particular Action from this field if it is no longer needed.
-     *
-     * @param action The Action to remove. Will no longer receive updates from this field.
+     * Removes the given value changed listener from this FormField.
      */
-    public void removeValueChangedAction(AbstractAction action) {
-        valueChangedActions.remove(action);
-    }
-
-    /**
-     * Controls whether the validation label will be shown or not when the form field is validated.
-     * Some controls may wish to turn this off as it may make no sense (eg. labels or checkboxes).
-     * The label will only be shown if a validation error is present for that field.
-     *
-     * @param show Whether to show or hide the validation label.
-     */
-    public void setShowValidationLabel(boolean show) {
-        showValidationLabel = show;
-    }
-
-    /**
-     * Reports whether the validation label will be shown or not when the form field is validated.
-     * Some controls may wish to turn this off as it may make no sense (eg. labels or checkboxes).
-     * The label will only be shown if a validation error is present for that field.
-     *
-     * @return Whether to show or hide the validation label.
-     */
-    public boolean getShowValidationLabel() {
-        return showValidationLabel;
-    }
-
-    /**
-     * Most of the time, the FormPanel itself can deal with the rendering of
-     * the validation and help labels, and individual FormField implementations
-     * don't need to worry about it. But, some fields (like multi-line text
-     * fields for example) want to render the extra labels themselves in
-     * a nonstandard way. So, if a FormField implementation sets this flag
-     * to true, the FormPanel will leave the rendering of the validation
-     * and help labels up to the FormField.
-     */
-    public boolean isExtraLabelRenderedByField() {
-        return isExtraLabelRenderedByField;
+    public void removeValueChangedListener(FormFieldValueChangedListener listener) {
+        valueChangedListeners.remove(listener);
     }
 
     /**
      * Returns the validation label for this FormField.
      * This is needed by FormPanel in the render() method.
-     *
-     * @return A JLabel.
      */
     public JLabel getValidationLabel() {
         return validationLabel;
@@ -244,23 +137,19 @@ public abstract class FormField {
 
     /**
      * Returns the help text associated with this field, if any is set.
-     *
-     * @return Help text for this field, or an empty string if no help text is set.
      */
     public String getHelpText() {
-        return helpText;
+        return helpLabel.getToolTipText();
     }
 
     /**
      * Sets optional help text for this field. If present, the field may show
      * the helpLabel to allow the user to get help for the field. Note that
      * some fields may decide not to render the helpLabel even if helpText
-     * is set for the field. It's up to each FormField implementation.
-     *
-     * @param helpText The help text to show, or null for no help text.
+     * is set for the field.
      */
     public void setHelpText(String helpText) {
-        this.helpText = (helpText == null) ? "" : helpText;
+        helpLabel.setToolTipText((helpText == null) ? "" : helpText);
     }
 
     /**
@@ -273,90 +162,13 @@ public abstract class FormField {
         return helpLabel;
     }
 
-    /**
-     * Returns the Font used for the field label.
-     *
-     * @return The Font used for the field label.
-     */
-    public Font getFieldLabelFont() {
-        return fieldLabelFont;
+    public FormField setMargins(Margins margins) {
+        this.margins.copy(margins);
+        return this;
     }
 
-    /**
-     * Set the label text to appear beside the form field.
-     *
-     * @param newText The label text.
-     */
-    public void setFieldLabelText(String newText) {
-        if (fieldLabel != null) {
-            fieldLabel.setText(newText);
-        }
-    }
-
-    /**
-     * Sets the Font to use for the field label. Be sure to invoke this before rendering.
-     *
-     * @param font The Font to use.
-     */
-    public void setFieldLabelFont(Font font) {
-        fieldLabelFont = font;
-    }
-
-    /**
-     * Sets the margin to apply around the field and in between components of the field.
-     *
-     * @param top    Margin to set above all components in this field.
-     * @param left   Margin to apply to the left of the leftmost component of this field.
-     * @param bottom Margin to set below all components of this field.
-     * @param right  Margin to apply to the right of the rightmost component of this field.
-     * @param inner  Margin to apply in between components of this field.
-     */
-    public void setMargins(int top, int left, int bottom, int right, int inner) {
-        topMargin = top;
-        leftMargin = left;
-        bottomMargin = bottom;
-        rightMargin = right;
-        componentSpacing = inner;
-    }
-
-    public void setLeftMargin(int margin) {
-        leftMargin = margin;
-    }
-
-    public void setTopMargin(int margin) {
-        topMargin = margin;
-    }
-
-    public void setRightMargin(int margin) {
-        rightMargin = margin;
-    }
-
-    public void setBottomMargin(int margin) {
-        bottomMargin = margin;
-    }
-
-    public void setComponentSpacing(int spacing) {
-        componentSpacing = spacing;
-    }
-
-    public int getLeftMargin() {
-        return leftMargin;
-    }
-
-    public int getRightMargin() {
-        return rightMargin;
-    }
-
-    public int getTopMargin() {
-        return topMargin;
-    }
-
-    public int getBottomMargin() {
-        return bottomMargin;
-    }
-
-    public int getComponentSpacing() {
-        return componentSpacing;
+    public Margins getMargins() {
+        return margins;
     }
 
     /**
@@ -367,7 +179,9 @@ public abstract class FormField {
     public void setVisible(boolean visible) {
         isVisible = visible;
         fieldLabel.setVisible(visible);
-        fieldComponent.setVisible(visible);
+        if (fieldComponent != null) {
+            fieldComponent.setVisible(visible);
+        }
         validationLabel.setVisible(visible);
         helpLabel.setVisible(visible);
     }
@@ -380,7 +194,9 @@ public abstract class FormField {
     public void setEnabled(boolean enabled) {
         isEnabled = enabled;
         fieldLabel.setEnabled(enabled);
-        fieldComponent.setEnabled(enabled);
+        if (fieldComponent != null) {
+            fieldComponent.setEnabled(enabled);
+        }
         validationLabel.setEnabled(enabled);
         helpLabel.setEnabled(enabled);
     }
@@ -394,8 +210,9 @@ public abstract class FormField {
      *
      * @param id Any String which hopefully uniquely identifies this field. No validity checks.
      */
-    public void setIdentifier(String id) {
+    public FormField setIdentifier(String id) {
         this.identifier = id;
+        return this;
     }
 
     /**
@@ -408,12 +225,15 @@ public abstract class FormField {
     }
 
     /**
-     * Returns the actual JComponent that is wrapped by this field. It is usually
-     * better to go through a more specific method in the implementation class.
+     * Returns the actual JComponent that is wrapped by this field.
      *
      * @return The JComponent that this field wraps.
      */
     public JComponent getFieldComponent() {
+        if (fieldComponent != null) {
+            fieldComponent.setVisible(isVisible);
+            fieldComponent.setEnabled(isEnabled);
+        }
         return fieldComponent;
     }
 
@@ -424,8 +244,9 @@ public abstract class FormField {
      * @param name  The unique name of the value to set. Will overwrite any previous value by that name.
      * @param value The value to set.
      */
-    public void setExtraAttribute(String name, Object value) {
+    public FormField setExtraAttribute(String name, Object value) {
         extraAttributes.put(name, value);
+        return this;
     }
 
     /**
@@ -460,9 +281,10 @@ public abstract class FormField {
      *
      * @param newAttributes A map of String name to some arbitrary Object value.
      */
-    public void setAllExtraAttributes(Map<String, Object> newAttributes) {
+    public FormField setAllExtraAttributes(Map<String, Object> newAttributes) {
         clearExtraAttributes();
         extraAttributes.putAll(newAttributes);
+        return this;
     }
 
     /**
@@ -471,30 +293,10 @@ public abstract class FormField {
      *
      * @param newAttributes A map of String name to some arbitrary Object value.
      */
-    public void addAllExtraAttributes(Map<String, Object> newAttributes) {
+    public FormField addAllExtraAttributes(Map<String, Object> newAttributes) {
         extraAttributes.putAll(newAttributes);
+        return this;
     }
-
-    /**
-     * Invoke this to render this field into the given containing panel using the given
-     * GridBagConstraints object. You are likely better off going through the render()
-     * method in FormPanel rather than manually rendering individual FormFields, but you
-     * could use this to render a FormField into some other container if you need to.
-     * <p>
-     * Note for those creating a new FormField implementation: the GridBagConstraints
-     * object that you are given here is ready to go. You have two options
-     * for gridx: FormPanel.LABEL_COLUMN and FormPanel.CONTROL_COLUMN. You should
-     * avoid rendering into any other gridx value. You <b>can</b> increment
-     * gridy if you really want a multi-row component, but beware that you
-     * will likely have to handle the rendering of the "extra" labels (validation
-     * and help) yourself. See the multi-line TextField implementation for
-     * a reference.
-     * </p>
-     *
-     * @param container   The containing form panel.
-     * @param constraints The GridBagConstraints object to use.
-     */
-    public abstract void render(JPanel container, GridBagConstraints constraints);
 
     /**
      * Invoke this to clear the validation label off any previously validated field.
@@ -521,7 +323,7 @@ public abstract class FormField {
         }
 
         List<String> validationMessages = new ArrayList<>();
-        for (FieldValidator<? extends FormField> validator : validators) {
+        for (FieldValidator<? extends FormField> validator : fieldValidators) {
             //noinspection unchecked
             FieldValidator<FormField> theValidator = (FieldValidator<FormField>)validator;
             ValidationResult validationResult = theValidator.validate(this);
@@ -535,19 +337,15 @@ public abstract class FormField {
             StringBuilder message = new StringBuilder();
             for (String msg : validationMessages) {
                 message.append(msg);
-                message.append(" \n ");
+                message.append("\n");
             }
             String toolTip = message.substring(0, message.length() - 1);
-            if (invalidImageUrl != null) {
-                validationLabel.setIcon(new ImageIcon(invalidImageUrl));
-                validationLabel.setToolTipText(toolTip);
-            }
+            validationLabel.setIcon(Resources.getInvalidIcon());
+            validationLabel.setToolTipText(toolTip);
         }
-        else if (showValidationLabel) { // skip if the control normally doesn't show validation labels
-            if (validImageUrl != null) {
-                validationLabel.setIcon(new ImageIcon(validImageUrl));
-                validationLabel.setToolTipText(null);
-            }
+        else {
+            validationLabel.setIcon(Resources.getValidIcon());
+            validationLabel.setToolTipText(null);
         }
 
         return isValid;
@@ -563,12 +361,20 @@ public abstract class FormField {
     }
 
     /**
+     * Invoke before rendering this FormField to a container, in case the FormField needs
+     * to do some initialization specific to its new container (for example, matching
+     * the container's background color or using the container's location for a popup dialog).
+     */
+    public void preRender(JPanel container) {
+    }
+
+    /**
      * Invoked internally to notify all registered actions about a change
      * in the value of this field.
      */
     protected void fireValueChangedEvent() {
-        for (AbstractAction action : valueChangedActions) {
-            action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_FIRST, "valueChanged"));
+        for (FormFieldValueChangedListener listener : valueChangedListeners) {
+            listener.formFieldValueChanged(this);
         }
     }
 
@@ -579,26 +385,18 @@ public abstract class FormField {
         }
 
         FormField formField = (FormField)o;
-        return isExtraLabelRenderedByField == formField.isExtraLabelRenderedByField
-                && topMargin == formField.topMargin
-                && bottomMargin == formField.bottomMargin
-                && leftMargin == formField.leftMargin
-                && rightMargin == formField.rightMargin
-                && componentSpacing == formField.componentSpacing
-                && showValidationLabel == formField.showValidationLabel
+        return Objects.equals(margins, formField.getMargins())
                 && isVisible == formField.isVisible
-                && isEnabled == formField.isEnabled && Objects.equals(identifier, formField.identifier)
+                && isEnabled == formField.isEnabled
+                && Objects.equals(identifier, formField.identifier)
                 && Objects.equals(fieldLabel, formField.fieldLabel)
-                && Objects.equals(fieldLabelFont, formField.fieldLabelFont)
                 && Objects.equals(fieldComponent, formField.fieldComponent)
                 && Objects.equals(validationLabel, formField.validationLabel)
-                && Objects.equals(helpLabel, formField.helpLabel)
-                && Objects.equals(helpText, formField.helpText);
+                && Objects.equals(helpLabel, formField.helpLabel);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(identifier, helpText, topMargin, bottomMargin, leftMargin, rightMargin, componentSpacing,
-                            showValidationLabel, isVisible, isEnabled);
+        return Objects.hash(identifier, margins, isVisible, isEnabled, fieldLabel, fieldComponent);
     }
 }

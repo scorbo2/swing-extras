@@ -102,7 +102,8 @@ public final class AboutPanel extends JPanel {
             }
         }
         else {
-            logoPanel.setMargins(8, 8, 8, 8, 0);
+            logoPanel.getMargins().setAll(8);
+            logoPanel.getMargins().setInternalSpacing(0);
             logoPanel.getPanel().setLayout(new BorderLayout());
             ImagePanelConfig ipc = ImagePanelConfig.createDefaultProperties();
             ipc.setDisplayMode(ImagePanelConfig.DisplayMode.STRETCH);
@@ -124,13 +125,14 @@ public final class AboutPanel extends JPanel {
                 });
             }
         }
-        formPanel.addFormField(logoPanel);
+        formPanel.add(logoPanel);
 
         String labelText = info.applicationName + " " + info.applicationVersion;
         LabelField labelField = new LabelField(labelText);
         labelField.setFont(new Font("SansSerif", Font.BOLD, 24));
-        labelField.setMargins(2, 8, 2, 2, 0);
-        formPanel.addFormField(labelField);
+        labelField.getMargins().setAll(2);
+        labelField.getMargins().setTop(8);
+        formPanel.add(labelField);
 
         Font labelFont = new Font("SansSerif", Font.PLAIN, 12);
         if (info.shortDescription != null && !info.shortDescription.isBlank()) {
@@ -139,15 +141,15 @@ public final class AboutPanel extends JPanel {
                     : info.shortDescription;
             labelField = new LabelField("\"" + desc + "\"");
             labelField.setFont(labelFont);
-            labelField.setMargins(2, 8, 2, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setAll(2).setTop(8);
+            formPanel.add(labelField);
         }
 
         if (info.copyright != null && !info.copyright.isBlank()) {
             labelField = new LabelField(info.copyright);
             labelField.setFont(labelFont);
-            labelField.setMargins(2, 8, 2, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setAll(2).setTop(8);
+            formPanel.add(labelField);
         }
 
         if (info.projectUrl != null && !info.projectUrl.isBlank()) {
@@ -161,8 +163,8 @@ public final class AboutPanel extends JPanel {
                     logger.warning("Project URL is not well-formed.");
                 }
             }
-            labelField.setMargins(2, 8, 2, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setAll(2).setTop(8);
+            formPanel.add(labelField);
         }
 
         if (info.license != null && !info.license.isBlank()) {
@@ -176,20 +178,20 @@ public final class AboutPanel extends JPanel {
                     logger.warning("License URL is not well-formed.");
                 }
             }
-            labelField.setMargins(2, 8, 2, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setAll(2).setTop(8);
+            formPanel.add(labelField);
         }
 
         memoryUsageField = new LabelField(getMemoryStats());
         memoryUsageField.setFont(labelFont);
-        memoryUsageField.setMargins(2, 8, 2, 2, 0);
-        formPanel.addFormField(memoryUsageField);
+        memoryUsageField.getMargins().setAll(2).setTop(8);
+        formPanel.add(memoryUsageField);
 
         for (String customField : info.getCustomFieldNames()) {
             labelField = new LabelField(customField, info.getCustomFieldValue(customField));
             labelField.setFont(labelFont);
-            labelField.setMargins(4, 8, 4, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setAll(4).setTop(8).setBottom(2);
+            formPanel.add(labelField);
             customFields.put(customField, labelField);
         }
 
@@ -197,7 +199,7 @@ public final class AboutPanel extends JPanel {
         if (releaseNotes != null && !releaseNotes.isBlank()) {
             PanelField releaseNotesField = new PanelField();
             releaseNotesField.getPanel().setLayout(new BorderLayout());
-            releaseNotesField.setMargins(12, 0, 0, 0, 4);
+            releaseNotesField.getMargins().setAll(0).setLeft(12).setInternalSpacing(4);
             JTextArea textArea = new JTextArea();
             textArea.setLineWrap(true);
             textArea.setWrapStyleWord(true);
@@ -236,7 +238,7 @@ public final class AboutPanel extends JPanel {
             constraints.fill = GridBagConstraints.BOTH;
             wrapperPanel.add(dummy1, constraints);
             releaseNotesField.getPanel().add(wrapperPanel, BorderLayout.CENTER);
-            formPanel.addFormField(releaseNotesField);
+            formPanel.add(releaseNotesField);
             textArea.setCaretPosition(0);
         }
 

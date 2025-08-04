@@ -1,16 +1,12 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.LookAndFeelManager;
-import ca.corbett.forms.FormPanel;
 
 import javax.swing.Action;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -48,7 +44,7 @@ public final class LabelField extends FormField {
     private static int extraBottomMarginHeader = 8;
 
     private static final Font DEFAULT_HEADER_FONT = new Font(Font.DIALOG, Font.BOLD, 16);
-    private static final Font DEFAULT_LABEL_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
+    private static final Font DEFAULT_LABEL_FONT = DEFAULT_FONT;
 
     private final JLabel label;
     private Action hyperlinkAction;
@@ -68,20 +64,24 @@ public final class LabelField extends FormField {
      * Creates a label field in the format "fieldLabel:labelText". If fieldLabel
      * is null or blank, only "labelText" will be displayed.
      *
-     * @param fieldLabel The optional string to show as a prefix. Can be null or blank to omit.
+     * @param fieldLabelText The optional string to show as a prefix. Can be null or blank to omit.
      * @param labelText  The text of the actual label.
      */
-    public LabelField(String fieldLabel, String labelText) {
-        if (fieldLabel == null) {
-            fieldLabel = "";
-        }
-        label = new JLabel(labelText);
+    public LabelField(String fieldLabelText, String labelText) {
+        label = new JLabel(labelText == null ? "" : labelText);
         font = label.getFont();
         color = LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK);
-        this.fieldLabel = new JLabel(fieldLabel);
-        this.fieldLabel.setFont(fieldLabelFont);
+        fieldLabel.setText(fieldLabelText == null ? "" : fieldLabelText);
         fieldComponent = label;
-        showValidationLabel = false;
+    }
+
+    /**
+     * Overridden here as we generally don't want to show a validation label on a label.
+     * Will return true only if one or more FieldValidators have been explicitly assigned.
+     */
+    @Override
+    public boolean hasValidationLabel() {
+        return !fieldValidators.isEmpty();
     }
 
     /**
@@ -189,8 +189,7 @@ public final class LabelField extends FormField {
     public static LabelField createHeaderLabel(String text, Font font, int topMargin, int bottomMargin) {
         LabelField label = new LabelField(text);
         label.setFont(font);
-        label.setTopMargin(topMargin);
-        label.setBottomMargin(bottomMargin);
+        label.getMargins().setTop(topMargin).setBottom(bottomMargin);
         return label;
 
     }
@@ -200,7 +199,7 @@ public final class LabelField extends FormField {
      * is blank or empty, so instead of a fieldLabel:labeltext pairing, we just
      * have a formwidth-spanning labeltext instead.
      *
-     * @return true if this is a single bigass label instead of this:that style.
+     * @return true if this is a single label instead of this:that style.
      */
     public boolean isHeaderLabel() {
         return fieldLabel.getText().isEmpty();
@@ -251,7 +250,7 @@ public final class LabelField extends FormField {
         }
         else {
             fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
-            fieldLabel.setFont(fieldLabelFont);
+            fieldLabel.setFont(DEFAULT_FONT);
             fieldLabel.setCursor(Cursor.getDefaultCursor());
         }
     }
@@ -294,36 +293,5 @@ public final class LabelField extends FormField {
     public void setColor(Color c) {
         this.color = c;
         label.setForeground(c);
-    }
-
-    /**
-     * Renders this label field into the given container.
-     * This will either be in the format "(fieldLabel):(labelText)" in two columns,
-     * or just "(labelText)" spanning the width of the form, if "fieldLabel" is blank.
-     *
-     * @param container   The container into which to render
-     * @param constraints The GridBagConstraints to use.
-     */
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.gridy = constraints.gridy + 1;
-
-        if (!isHeaderLabel()) {
-            constraints.gridx = FormPanel.LABEL_COLUMN;
-            constraints.gridwidth = 1;
-            constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-            fieldLabel.setFont(fieldLabelFont);
-            container.add(fieldLabel, constraints);
-            constraints.gridx = FormPanel.CONTROL_COLUMN;
-            constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        }
-        else {
-            constraints.gridx = FormPanel.LABEL_COLUMN;
-            constraints.gridwidth = 2;
-            constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        }
-
-        label.setFont(font);
-        container.add(label, constraints);
     }
 }

@@ -5,7 +5,6 @@ import ca.corbett.forms.validators.NonBlankFieldValidator;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -69,8 +68,7 @@ public final class TextField extends FormField {
      * @param allowBlank If false, a FieldValidator will be attached to ensure the value isn't blank.
      */
     public TextField(String label, int cols, int rows, boolean allowBlank) {
-        fieldLabel = new JLabel(label);
-        fieldLabel.setFont(fieldLabelFont);
+        fieldLabel.setText(label);
         if (rows > 1) {
             textComponent = new JTextArea(rows, cols);
             ((JTextArea)textComponent).setLineWrap(true);

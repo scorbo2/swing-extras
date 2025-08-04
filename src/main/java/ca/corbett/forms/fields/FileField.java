@@ -1,6 +1,5 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.validators.FileMustBeCreatableValidator;
 import ca.corbett.forms.validators.FileMustBeReadableValidator;
 import ca.corbett.forms.validators.FileMustBeSpecifiedValidator;
@@ -16,8 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
 /**
@@ -77,14 +76,22 @@ public final class FileField extends FormField {
      * @param allowBlank    whether to allow blank values in the field.
      */
     public FileField(String label, File initialValue, int cols, SelectionType selectionType, boolean allowBlank) {
-        fieldLabel = new JLabel(label);
-        fieldLabel.setFont(fieldLabelFont);
+        fieldLabel.setText(label);
         textField = new JTextField(initialValue == null ? "" : initialValue.getAbsolutePath());
-        fieldComponent = textField;
         textField.setColumns(cols);
         fileChooser = new JFileChooser(initialValue);
         fileChooser.setMultiSelectionEnabled(false);
         setSelectionType(selectionType, allowBlank);
+        chooseButton = new JButton("Choose...");
+        chooseButton.setFont(DEFAULT_FONT);
+        JPanel dirPanel = new JPanel();
+        dirPanel.setLayout(new BoxLayout(dirPanel, BoxLayout.X_AXIS));
+        dirPanel.add(textField);
+        JLabel spacerLabel = new JLabel(" ");
+        dirPanel.add(spacerLabel);
+        chooseButton.setPreferredSize(new Dimension(105, 22));
+        dirPanel.add(chooseButton);
+        fieldComponent = dirPanel;
     }
 
     /**
@@ -220,45 +227,33 @@ public final class FileField extends FormField {
         fileChooser.setFileFilter(filter);
     }
 
-    /**
-     * Renders this field into the given container.
-     *
-     * @param container   The containing form panel.
-     * @param constraints The GridBagConstraints to use.
-     */
     @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        // UTIL-147: create new button every time render() is invoked to avoid duplicate action listeners
-        chooseButton = new JButton("Choose...");
-        chooseButton.setFont(fieldLabelFont);
-        chooseButton.setEnabled(isEnabled);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        JPanel dirPanel = new JPanel();
-        dirPanel.setBackground(container.getBackground());
-        dirPanel.setLayout(new BoxLayout(dirPanel, BoxLayout.X_AXIS));
-        dirPanel.add(textField);
-        JLabel spacerLabel = new JLabel(" ");
-        dirPanel.add(spacerLabel);
-        chooseButton.setPreferredSize(new Dimension(105, 22));
-        dirPanel.add(chooseButton);
-        final JPanel thisPanel = container;
-        chooseButton.addActionListener(e -> {
-            int result = fileChooser.showDialog(thisPanel, "Choose");
-            if (result == JFileChooser.APPROVE_OPTION) {
-                textField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-                fireValueChangedEvent();
+    public void preRender(JPanel container) {
+        fieldComponent.setBackground(container.getBackground());
+        for (ActionListener listener : chooseButton.getActionListeners()) {
+            if (listener instanceof ButtonActionListener) {
+                chooseButton.removeActionListener(listener);
             }
-        });
-        constraints.fill = GridBagConstraints.BOTH;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(dirPanel, constraints);
+        }
+        chooseButton.addActionListener(new ButtonActionListener(this, container));
     }
 
+    private static class ButtonActionListener implements ActionListener {
+        private final FileField ownerField;
+        private final JPanel container;
+
+        public ButtonActionListener(FileField ownerField, JPanel container) {
+            this.ownerField = ownerField;
+            this.container = container;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int result = ownerField.fileChooser.showDialog(container, "Choose");
+            if (result == JFileChooser.APPROVE_OPTION) {
+                ownerField.textField.setText(ownerField.fileChooser.getSelectedFile().getAbsolutePath());
+                ownerField.fireValueChangedEvent();
+            }
+        }
+    }
 }

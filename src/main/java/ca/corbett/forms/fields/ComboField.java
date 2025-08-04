@@ -1,15 +1,8 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
-
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.List;
 
 /**
@@ -22,11 +15,25 @@ public class ComboField<T> extends FormField {
 
     private final JComboBox<T> comboBox;
     private final DefaultComboBoxModel<T> comboModel;
-    private final ItemListener itemListener = e -> {
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            fireValueChangedEvent();
-        }
-    };
+
+    public ComboField(String label) {
+        fieldLabel.setText(label);
+        comboModel = new DefaultComboBoxModel<>();
+        comboBox = new JComboBox<>(comboModel);
+        comboBox.setEditable(false);
+        comboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                fireValueChangedEvent();
+            }
+        });
+        fieldComponent = comboBox;
+    }
+
+    public ComboField(String label, List<T> options, int selectedIndex) {
+        this(label);
+        comboModel.addAll(options);
+        comboBox.setSelectedIndex(selectedIndex);
+    }
 
     /**
      * Creates a new ComboField with the given parameters.
@@ -37,17 +44,17 @@ public class ComboField<T> extends FormField {
      * @param isEditable    Whether to allow editing of the field.
      */
     public ComboField(String label, List<T> options, int selectedIndex, boolean isEditable) {
-        fieldLabel = new JLabel(label);
-        fieldLabel.setFont(fieldLabelFont);
-        comboModel = new DefaultComboBoxModel<>();
-        comboModel.addAll(options);
-        comboBox = new JComboBox<>(comboModel);
-        comboBox.setFont(fieldLabelFont);
-        comboBox.setSelectedIndex(selectedIndex);
+        this(label, options, selectedIndex);
         comboBox.setEditable(isEditable);
-        comboBox.addItemListener(itemListener);
-        fieldComponent = comboBox;
-        showValidationLabel = false;
+    }
+
+    /**
+     * Overridden here as we generally don't want to show a validation label on a combo box.
+     * Will return true only if one or more FieldValidators have been explicitly assigned.
+     */
+    @Override
+    public boolean hasValidationLabel() {
+        return !fieldValidators.isEmpty();
     }
 
     /**
@@ -56,10 +63,11 @@ public class ComboField<T> extends FormField {
      * @param options       The options to display in the dropdown.
      * @param selectedIndex The index to select by default.
      */
-    public void setOptions(List<T> options, int selectedIndex) {
+    public ComboField<T> setOptions(List<T> options, int selectedIndex) {
         comboModel.removeAllElements();
         comboModel.addAll(options);
         comboBox.setSelectedIndex(selectedIndex);
+        return this;
     }
 
     /**
@@ -86,8 +94,9 @@ public class ComboField<T> extends FormField {
      *
      * @param item The item to select.
      */
-    public void setSelectedItem(T item) {
+    public ComboField<T> setSelectedItem(T item) {
         comboBox.setSelectedItem(item);
+        return this;
     }
 
     /**
@@ -95,27 +104,8 @@ public class ComboField<T> extends FormField {
      *
      * @param index The index to select.
      */
-    public void setSelectedIndex(int index) {
+    public ComboField<T> setSelectedIndex(int index) {
         comboBox.setSelectedIndex(index);
+        return this;
     }
-
-    /**
-     * Renders this field into the given container.
-     *
-     * @param container   The containing form panel.
-     * @param constraints The GridBagConstraints to use.
-     */
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(comboBox, constraints);
-    }
-
 }

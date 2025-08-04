@@ -1,15 +1,8 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.extras.properties.PropertiesDialog;
-import ca.corbett.forms.FormPanel;
-
 import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.util.List;
 
 /**
@@ -23,8 +16,7 @@ public class ListField<T> extends FormField {
     private final JList<T> list;
 
     public ListField(String label, List<T> items) {
-        fieldLabel = new JLabel(label);
-        fieldLabel.setFont(fieldLabelFont);
+        fieldLabel.setText(label);
         DefaultListModel<T> listModel = new DefaultListModel<>();
         listModel.addAll(items);
         list = new JList<>(listModel);
@@ -116,21 +108,5 @@ public class ListField<T> extends FormField {
      */
     public void setFixedCellWidth(int width) {
         list.setFixedCellWidth(width);
-    }
-
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        int oldAnchor = constraints.anchor;
-        constraints.anchor = GridBagConstraints.NORTHWEST;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-        constraints.anchor = oldAnchor;
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(PropertiesDialog.buildScrollPane(list), constraints);
     }
 }
