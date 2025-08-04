@@ -381,7 +381,7 @@ public final class MultiProgressDialog extends JDialog {
         List<FormField> formFields = new ArrayList<>();
 
         majorProgressLabel = new LabelField("");
-        majorProgressLabel.setMargins(12, 0, 0, 0, 2);
+        majorProgressLabel.getMargins().setAll(0).setLeft(12).setInternalSpacing(2);
         formFields.add(majorProgressLabel);
 
         majorProgressBar = new JProgressBar();
@@ -389,26 +389,26 @@ public final class MultiProgressDialog extends JDialog {
         majorProgressBar.setStringPainted(true);
         //majorProgressBar.setForeground(Color.BLUE);
         PanelField panelField = new PanelField();
-        panelField.setMargins(0, 0, 0, 0, 0);
+        panelField.getMargins().setAll(0);
         panelField.getPanel().setLayout(new BorderLayout());
         panelField.getPanel().add(majorProgressBar, BorderLayout.CENTER);
         formFields.add(panelField);
 
         minorProgressLabel = new LabelField("");
-        minorProgressLabel.setMargins(16, 0, 0, 0, 2);
+        minorProgressLabel.getMargins().setAll(0).setLeft(16).setInternalSpacing(2);
         formFields.add(minorProgressLabel);
 
         minorProgressBar = new JProgressBar();
         minorProgressBar.setStringPainted(true);
         //minorProgressBar.setForeground(Color.BLUE);
         panelField = new PanelField();
-        panelField.setMargins(0, 0, 0, 0, 0);
+        panelField.getMargins().setAll(0);
         panelField.getPanel().setLayout(new BorderLayout());
         panelField.getPanel().add(minorProgressBar, BorderLayout.CENTER);
         formFields.add(panelField);
 
         FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
-        formPanel.addFormFields(formFields);
+        formPanel.add(formFields);
         formPanel.render();
         add(formPanel, BorderLayout.CENTER);
 

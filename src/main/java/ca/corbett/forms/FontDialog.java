@@ -3,11 +3,12 @@ package ca.corbett.forms;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FormField;
+import ca.corbett.forms.fields.FormFieldValueChangedListener;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -28,7 +29,6 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -300,9 +300,9 @@ public final class FontDialog extends JDialog {
     private JComponent buildFontChooserPanel(Color textColor, Color bgColor) {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
 
-        AbstractAction changeAction = new AbstractAction() {
+        FormFieldValueChangedListener changeListener = new FormFieldValueChangedListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void formFieldValueChanged(FormField field) {
                 fontChanged();
             }
         };
@@ -311,14 +311,11 @@ public final class FontDialog extends JDialog {
         options.add("Java built-in fonts");
         options.add("System installed fonts");
         typeField = new ComboField<>("Type:", options, 0, false);
-        typeField.setTopMargin(16);
-        typeField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fontTypeChanged();
-            }
+        typeField.getMargins().setTop(16);
+        typeField.addValueChangedListener(field -> {
+            fontTypeChanged();
         });
-        formPanel.addFormField(typeField);
+        formPanel.add(typeField);
 
         PanelField panelField = new PanelField();
         JPanel panel = panelField.getPanel();
@@ -330,7 +327,7 @@ public final class FontDialog extends JDialog {
         JScrollPane scrollPane = new JScrollPane(fontList);
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
         panel.add(scrollPane, BorderLayout.CENTER);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         options = new ArrayList<>();
         options.add("Plain");
@@ -338,41 +335,35 @@ public final class FontDialog extends JDialog {
         options.add("Italic");
         options.add("Bold+Italic");
         styleField = new ComboField<>("Style:", options, 0, false);
-        styleField.addValueChangedAction(changeAction);
-        formPanel.addFormField(styleField);
+        styleField.addValueChangedListener(changeListener);
+        formPanel.add(styleField);
 
         sizeField = new NumberField("Size:", 12, 6, 300, 2);
-        sizeField.addValueChangedAction(changeAction);
-        formPanel.addFormField(sizeField);
+        sizeField.addValueChangedListener(changeListener);
+        formPanel.add(sizeField);
 
         sampleLabel = new LabelField("Sample:", "Sample text");
         sampleLabel.setFont(INITIAL_FONT.deriveFont(16f));
-        formPanel.addFormField(sampleLabel);
+        formPanel.add(sampleLabel);
 
         if (textColor != null) {
             textColorField = new ColorField("Text color:", textColor);
-            textColorField.addValueChangedAction(new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    colorChanged();
-                }
+            textColorField.addValueChangedListener(field -> {
+                colorChanged();
             });
             sampleLabel.setColor(textColor);
-            formPanel.addFormField(textColorField);
+            formPanel.add(textColorField);
         }
 
         if (bgColor != null) {
             bgColorField = new ColorField("Background:", bgColor);
-            bgColorField.addValueChangedAction(new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    colorChanged();
-                }
+            bgColorField.addValueChangedListener(field -> {
+                colorChanged();
             });
             ((JLabel)sampleLabel.getFieldComponent()).setOpaque(true);
             ((JLabel)sampleLabel.getFieldComponent()).setBackground(bgColor);
             ((JLabel)sampleLabel.getFieldComponent()).setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-            formPanel.addFormField(bgColorField);
+            formPanel.add(bgColorField);
         }
 
         formPanel.render();

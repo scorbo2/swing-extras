@@ -150,8 +150,8 @@ public class LabelProperty extends AbstractProperty {
     @Override
     protected FormField generateFormFieldImpl() {
         LabelField field = new LabelField(propertyLabel);
-        field.setTopMargin(field.getTopMargin() + extraTopMargin);
-        field.setBottomMargin(field.getBottomMargin() + extraBottomMargin);
+        field.getMargins().setTop(field.getMargins().getTop() + extraTopMargin);
+        field.getMargins().setBottom(field.getMargins().getBottom() + extraBottomMargin);
         if (labelFont != null) {
             field.setFont(labelFont);
         }

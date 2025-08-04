@@ -7,10 +7,10 @@ import ca.corbett.extras.properties.Properties;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -100,41 +100,29 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
         FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
 
         LabelField labelField = new LabelField("Gradient configuration");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.BOLD, 14f));
-        formPanel.addFormField(labelField);
+        labelField.setFont(FormField.DEFAULT_FONT.deriveFont(Font.BOLD, 14f));
+        formPanel.add(labelField);
 
         gradientTypeCombo = new ComboField<>("Type:", List.of(GradientUtil.GradientType.values()), 0, false);
-        gradientTypeCombo.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                modelObject.setGradientType(gradientTypeCombo.getSelectedItem());
-                updatePreview();
-            }
-
+        gradientTypeCombo.addValueChangedListener(field -> {
+            modelObject.setGradientType(gradientTypeCombo.getSelectedItem());
+            updatePreview();
         });
-        formPanel.addFormField(gradientTypeCombo);
+        formPanel.add(gradientTypeCombo);
 
         color1Field = new GradientColorField("Color 1:", modelObject.getColor1());
-        color1Field.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                modelObject.setColor1(color1Field.getColor());
-                updatePreview();
-            }
-
+        color1Field.addValueChangedListener(field -> {
+            modelObject.setColor1(color1Field.getColor());
+            updatePreview();
         });
-        formPanel.addFormField(color1Field);
+        formPanel.add(color1Field);
 
         color2Field = new GradientColorField("Color 2:", modelObject.getColor2());
-        color2Field.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                modelObject.setColor2(color2Field.getColor());
-                updatePreview();
-            }
-
+        color2Field.addValueChangedListener(field -> {
+            modelObject.setColor2(color2Field.getColor());
+            updatePreview();
         });
-        formPanel.addFormField(color2Field);
+        formPanel.add(color2Field);
 
         PanelField panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -153,7 +141,7 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
 
         });
         panelField.getPanel().add(button);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         formPanel.render();
         add(formPanel, BorderLayout.WEST);

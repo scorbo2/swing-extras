@@ -47,18 +47,18 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
         String txt = "<html>ExtensionManager provides a way to allow your applications to be extended<br>" +
                 "at runtime by providing extension classes in jar files that can be dynamically<br>" +
                 "interrogated and loaded. These extensions can take advantage of whatever<br>" +
                 "extension points you decide to add to your application!</html>";
-        formPanel.addFormField(LabelField.createPlainHeaderLabel(txt, 14));
+        formPanel.add(LabelField.createPlainHeaderLabel(txt, 14));
 
         txt = "<html>ExtensionManager comes with a built-in dialog that your users can use<br>" +
                 "to manage extensions at runtime, or to enable and disable them.<br>" +
                 "Try the simulated ExtensionManagerDialog below for an example:</html>";
-        formPanel.addFormField(LabelField.createPlainHeaderLabel(txt, 14));
+        formPanel.add(LabelField.createPlainHeaderLabel(txt, 14));
 
         PanelField field = new PanelField();
         JPanel panel = field.getPanel();
@@ -66,7 +66,7 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         JButton button = new JButton("Launch simulated ExtensionManagerDialog");
         button.addActionListener(e -> showExtensionDialog());
         panel.add(button);
-        formPanel.addFormField(field);
+        formPanel.add(field);
 
         formPanel.render();
         return formPanel;

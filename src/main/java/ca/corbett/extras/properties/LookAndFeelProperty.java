@@ -132,6 +132,7 @@ public class LookAndFeelProperty extends AbstractProperty {
             return;
         }
 
-        selectedIndex = ((ComboField)field).getSelectedIndex();
+        //noinspection unchecked
+        selectedIndex = ((ComboField<String>)field).getSelectedIndex();
     }
 }

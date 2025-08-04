@@ -1,12 +1,6 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
-
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 
 /**
  * A FormField to wrap a JCheckBox.
@@ -42,27 +36,8 @@ public final class CheckBoxField extends FormField {
         return ((JCheckBox)fieldComponent).isSelected();
     }
 
-    public void setChecked(boolean checked) {
+    public CheckBoxField setChecked(boolean checked) {
         ((JCheckBox)fieldComponent).setSelected(checked);
-    }
-
-
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        // Note we don't add the fieldLabel here because a checkbox has its own label built in.
-
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.gridwidth = 2;
-        constraints.gridy = constraints.gridy + 1;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.fill = GridBagConstraints.NONE;
-        fieldComponent.setFont(fieldLabelFont);
-        container.add(fieldComponent, constraints);
-    }
-
-    @Override
-    protected JComponent buildFieldComponent() {
-        return fieldComponent; // already built in constructor
+        return this;
     }
 }

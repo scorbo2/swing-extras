@@ -46,53 +46,51 @@ public class BasicFormPanel extends PanelBuilder {
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(headerLabel);
+        formPanel.add(headerLabel);
 
-        formPanel.addFormField(new TextField("Single-line text:", 15, 1, true));
+        formPanel.add(new TextField("Single-line text:", 15, 1, true));
         TextField textField = new TextField("Multi-line text:", 18, 4, true);
         textField.setAddScrollPaneWhenMultiLine(false);
-        textField.setBottomMargin(12);
-        formPanel.addFormField(textField);
-        formPanel.addFormField(new CheckBoxField("Checkboxes", true));
-        formPanel.addFormField(buildComboField());
-        formPanel.addFormField(new ColorField("Color chooser:", Color.BLUE));
+        textField.getMargins().setBottom(12);
+        formPanel.add(textField);
+        formPanel.add(new CheckBoxField("Checkboxes", true));
+        formPanel.add(buildComboField());
+        formPanel.add(new ColorField("Color chooser:", Color.BLUE));
 
         LabelField labelField = LabelField.createPlainHeaderLabel(
                 "Header fields help to organize the form.");
         labelField.setFont(new Font("SansSerif", Font.BOLD, 18));
-        labelField.setTopMargin(24);
-        labelField.setBottomMargin(18);
-        formPanel.addFormField(labelField);
+        labelField.getMargins().setTop(24).setBottom(18);
+        formPanel.add(labelField);
 
-        formPanel.addFormField(new FileField("File chooser:", null, 15, FileField.SelectionType.ExistingFile));
-        formPanel.addFormField(
+        formPanel.add(new FileField("File chooser:", null, 15, FileField.SelectionType.ExistingFile));
+        formPanel.add(
                 new FileField("Directory chooser:", null, 15, FileField.SelectionType.ExistingDirectory));
 
         LabelField linkField = new LabelField("Hyperlink:", "Yes, you can add hyperlinks to your forms!");
-        linkField.setTopMargin(10);
-        linkField.setBottomMargin(10);
+        linkField.getMargins().setTop(10).setBottom(10);
         linkField.setHyperlink(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(DemoApp.getInstance(), "You clicked the link! Hooray!");
             }
         });
-        formPanel.addFormField(linkField);
+        formPanel.add(linkField);
 
-        formPanel.addFormField(new NumberField("Number chooser:", 0, 0, 100, 1));
+        formPanel.add(new NumberField("Number chooser:", 0, 0, 100, 1));
 
         ListField<String> listField1 = new ListField<>("Simple list:",
                                                        List.of("One", "Two", "Three", "Four", "Five", "Six"));
         listField1.setFixedCellWidth(80);
         listField1.setVisibleRowCount(3);
-        formPanel.addFormField(listField1);
+        formPanel.add(listField1);
 
         ListField<String> listField2 = new ListField<>("Wide list:",
                                                        List.of("One", "Two", "Three", "Four", "Five", "Six"));
         listField2.setLayoutOrientation(JList.VERTICAL_WRAP);
         listField2.setFixedCellWidth(80);
         listField2.setVisibleRowCount(3);
-        formPanel.addFormField(listField2);
+        formPanel.add(listField2);
 
         formPanel.render();
         return formPanel;

@@ -27,7 +27,7 @@ import java.util.Objects;
  */
 public abstract class FormField {
 
-    protected static final Font DEFAULT_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
+    public static final Font DEFAULT_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
 
     protected final List<FormFieldValueChangedListener> valueChangedListeners = new ArrayList<>();
     protected final List<FieldValidator<? extends FormField>> fieldValidators = new ArrayList<>();

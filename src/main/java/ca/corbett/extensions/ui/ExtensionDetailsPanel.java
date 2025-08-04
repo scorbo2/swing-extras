@@ -9,6 +9,7 @@ import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.TextField;
@@ -117,29 +118,29 @@ public class ExtensionDetailsPanel extends JPanel {
         }
         enabledCheckBox.addActionListener(e -> fireEnableChangeEvent());
         panel.add(enabledCheckBox);
-        panelField.setMargins(0, 0, 0, 0, 2);
-        formPanel.addFormField(panelField);
+        panelField.getMargins().setAll(0).setInternalSpacing(2);
+        formPanel.add(panelField);
 
         AppExtensionInfo extInfo = extension == null ? null : extension.getInfo();
         String name = extInfo == null ? "" : trimString(extInfo.getName(), 40);
         LabelField nameField = new LabelField(name);
-        nameField.setFont(nameField.getFieldLabelFont().deriveFont(Font.BOLD, 16f));
-        nameField.setMargins(0, 4, 6, 0, 0);
-        formPanel.addFormField(nameField);
+        nameField.setFont(FontField.DEFAULT_FONT.deriveFont(Font.BOLD, 16f));
+        nameField.getMargins().setAll(0).setTop(4).setRight(6);
+        formPanel.add(nameField);
 
         File jarFile = getSourceJar();
-        formPanel.addFormField(new LabelField("Type:", extInfo == null ? "" : determineExtensionType()));
+        formPanel.add(new LabelField("Type:", extInfo == null ? "" : determineExtensionType()));
         if (jarFile != null) {
             String location = trimString(jarFile.getParentFile().getAbsolutePath());
-            formPanel.addFormField(new LabelField("Location:", location));
-            formPanel.addFormField(new LabelField("Jar file:", trimString(jarFile.getName())));
+            formPanel.add(new LabelField("Location:", location));
+            formPanel.add(new LabelField("Jar file:", trimString(jarFile.getName())));
         }
-        formPanel.addFormField(new LabelField("Version:", extInfo == null ? "" : trimString(extInfo.getVersion())));
+        formPanel.add(new LabelField("Version:", extInfo == null ? "" : trimString(extInfo.getVersion())));
         if (extInfo != null && extInfo.getTargetAppName() != null && extInfo.getTargetAppVersion() != null) {
             String requires = trimString(extInfo.getTargetAppName() + " " + extInfo.getTargetAppVersion());
-            formPanel.addFormField(new LabelField("Requires:", requires));
+            formPanel.add(new LabelField("Requires:", requires));
         }
-        formPanel.addFormField(new LabelField("Author:", extInfo == null ? "" : trimString(extInfo.getAuthor())));
+        formPanel.add(new LabelField("Author:", extInfo == null ? "" : trimString(extInfo.getAuthor())));
 
         if (extension != null) {
             final List<AbstractProperty> configProps = extension.getConfigProperties();
@@ -153,7 +154,7 @@ public class ExtensionDetailsPanel extends JPanel {
                         showConfigPreview(configProps);
                     }
                 });
-                formPanel.addFormField(labelField);
+                formPanel.add(labelField);
             }
         }
 
@@ -162,7 +163,7 @@ public class ExtensionDetailsPanel extends JPanel {
             for (String fieldName : customFieldNames) {
                 String fieldNameShort = trimString(fieldName, 20);
                 String fieldValueShort = trimString(extInfo.getCustomFieldValue(fieldName));
-                formPanel.addFormField(new LabelField(fieldNameShort + ":", fieldValueShort));
+                formPanel.add(new LabelField(fieldNameShort + ":", fieldValueShort));
             }
         }
 
@@ -180,8 +181,8 @@ public class ExtensionDetailsPanel extends JPanel {
         descriptionField.setText(extInfo == null ? "" : extInfo.getLongDescription());
         jTextArea.setCaretPosition(0); // scroll to top
         descriptionField.setScrollPanePreferredSize(460, 100);
-        descriptionField.setMargins(10, 4, 4, 4, 4);
-        formPanel.addFormField(descriptionField);
+        descriptionField.getMargins().setAll(4).setLeft(10);
+        formPanel.add(descriptionField);
 
         formPanel.render();
         add(formPanel, BorderLayout.CENTER);

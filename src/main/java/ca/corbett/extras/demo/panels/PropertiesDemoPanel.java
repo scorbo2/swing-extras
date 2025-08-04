@@ -87,9 +87,9 @@ public class PropertiesDemoPanel extends PanelBuilder {
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
-        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+        formPanel.add(LabelField.createPlainHeaderLabel(
                 "<html>Almost every application exposes properties for application settings and<br>" +
                         "preferences to the user. But why rewrite the UI code for this for each<br>" +
                         "new application? What if there was a way to easily specify the properties for your<br>" +
@@ -98,7 +98,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
 
         final ComboField<Alignment> alignmentField = new ComboField<>("Form alignment:",
                                                                       List.of(Alignment.values()), 1, false);
-        formPanel.addFormField(alignmentField);
+        formPanel.add(alignmentField);
 
         PanelField panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -121,7 +121,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
             }
         });
         panelField.getPanel().add(btn);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         formPanel.render();
         return formPanel;
