@@ -47,17 +47,17 @@ public class AnimationTextDemoPanel extends PanelBuilder {
     @Override
     public JPanel build() {
         LabelField headerLabel = LabelField.createBoldHeaderLabel("AnimatedTextRenderer demo", 20);
-        headerLabel.setBottomMargin(24);
+        headerLabel.getMargins().setBottom(24);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(headerLabel);
+        formPanel.add(headerLabel);
 
         fontField = new FontField("Text style:", new Font(Font.MONOSPACED, Font.PLAIN, 16), Color.GREEN, Color.BLACK);
-        formPanel.addFormField(fontField);
+        formPanel.add(fontField);
 
         speedField = new NumberField("Chars/second:", 8, 1, 15, 1);
-        formPanel.addFormField(speedField);
+        formPanel.add(speedField);
 
         PanelField panelField = new PanelField();
         JPanel panel = panelField.getPanel();
@@ -67,7 +67,7 @@ public class AnimationTextDemoPanel extends PanelBuilder {
         imagePanel.setPreferredSize(new Dimension(IMG_WIDTH, IMG_HEIGHT));
         imagePanel.setImage(image);
         panel.add(imagePanel);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         panelField = new PanelField();
         panel = panelField.getPanel();
@@ -76,7 +76,7 @@ public class AnimationTextDemoPanel extends PanelBuilder {
         JButton button = new JButton("Restart animation");
         button.addActionListener(e -> go());
         panel.add(button);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         formPanel.render();
         return formPanel;

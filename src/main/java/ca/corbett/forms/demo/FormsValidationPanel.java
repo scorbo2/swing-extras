@@ -38,14 +38,14 @@ public class FormsValidationPanel extends PanelBuilder {
         formPanel.setBorderMargin(24);
 
         final LabelField headerLabel = LabelField.createBoldHeaderLabel("Form validation is super easy!", 20);
-        headerLabel.setBottomMargin(12);
+        headerLabel.getMargins().setBottom(12);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(headerLabel);
+        formPanel.add(headerLabel);
         LabelField label = LabelField.createPlainHeaderLabel("You can use built-in validators or make your own!", 14);
-        label.setBottomMargin(18);
-        formPanel.addFormField(label);
+        label.getMargins().setBottom(18);
+        formPanel.add(label);
 
         String sb = "<html>Oops! Looks like there are form validation errors!<br/>" +
                 "No problem, just hover over the validation error<br/>" +
@@ -65,7 +65,7 @@ public class FormsValidationPanel extends PanelBuilder {
                 return ValidationResult.valid();
             }
         });
-        formPanel.addFormField(textField);
+        formPanel.add(textField);
 
         final ColorField colorField = new ColorField("Don't choose black!", Color.BLACK);
         colorField.addFieldValidator(new FieldValidator<ColorField>() {
@@ -77,7 +77,7 @@ public class FormsValidationPanel extends PanelBuilder {
                 return ValidationResult.valid();
             }
         });
-        formPanel.addFormField(colorField);
+        formPanel.add(colorField);
 
         final CheckBoxField checkbox = new CheckBoxField("I promise I didn't choose black.", true);
         checkbox.addFieldValidator(new FieldValidator<CheckBoxField>() {
@@ -89,7 +89,7 @@ public class FormsValidationPanel extends PanelBuilder {
                 return ValidationResult.valid();
             }
         });
-        formPanel.addFormField(checkbox);
+        formPanel.add(checkbox);
 
         PanelField panelField = new PanelField();
         JPanel panel = panelField.getPanel();
@@ -104,13 +104,13 @@ public class FormsValidationPanel extends PanelBuilder {
             }
         });
         panel.add(btn);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         successLabel.setVisible(false);
-        formPanel.addFormField(successLabel);
+        formPanel.add(successLabel);
 
         warningLabel.setVisible(false);
-        formPanel.addFormField(warningLabel);
+        formPanel.add(warningLabel);
 
         formPanel.render();
         return formPanel;

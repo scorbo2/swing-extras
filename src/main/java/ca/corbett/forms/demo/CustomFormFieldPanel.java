@@ -27,33 +27,33 @@ public class CustomFormFieldPanel extends PanelBuilder {
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        headerLabel.setBottomMargin(24);
-        formPanel.addFormField(headerLabel);
+        headerLabel.getMargins().setBottom(24);
+        formPanel.add(headerLabel);
 
         String text = "<html>Sometimes the built-in form field components just aren't good enough,<br/>"
                 + "and you need to build something custom.<br/><br/>"
                 + "Here is an example of a custom font field that allows the user to select<br/>"
                 + "various font properties all in one single FormField:</html>";
         LabelField label = LabelField.createPlainHeaderLabel(text, 14);
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
         FontField fontField = new FontField("Just font, no size:");
         fontField.setShowSizeField(false);
-        fontField.setTopMargin(8);
-        formPanel.addFormField(fontField);
+        fontField.getMargins().setTop(8);
+        formPanel.add(fontField);
         fontField = new FontField("Both font and size:");
-        formPanel.addFormField(fontField);
+        formPanel.add(fontField);
 
-        formPanel.addFormField(new FontField("Font and text color:", FontDialog.INITIAL_FONT, Color.RED));
-        formPanel.addFormField(
+        formPanel.add(new FontField("Font and text color:", FontDialog.INITIAL_FONT, Color.RED));
+        formPanel.add(
                 new FontField("Font and fg/bg color:", FontDialog.INITIAL_FONT, Color.BLUE, Color.ORANGE));
 
         label = LabelField.createPlainHeaderLabel("Full source code for this component is included!", 14);
-        headerLabel.setTopMargin(24);
-        formPanel.addFormField(label);
+        headerLabel.getMargins().setTop(24);
+        formPanel.add(label);
         label = LabelField.createPlainHeaderLabel("See the swing-extras book for a walkthrough of this form field!",
                                                   14);
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
         formPanel.render();
         return formPanel;
