@@ -122,8 +122,6 @@ public class DesktopDemoPanel extends PanelBuilder {
         buttonWrapper.getMargins().setAll(0).setLeft(24).setTop(8);
         formPanel.add(buttonWrapper);
 
-        formPanel.render();
-
         container.add(formPanel, BorderLayout.SOUTH);
         container.add(desktopPane, BorderLayout.CENTER);
         return container;

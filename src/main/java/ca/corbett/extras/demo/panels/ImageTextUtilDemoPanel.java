@@ -149,7 +149,6 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         lineWrapField.addValueChangedListener(changeListener);
         formPanel.add(lineWrapField);
 
-        formPanel.render();
         panel.add(formPanel, BorderLayout.WEST);
 
         render();

@@ -143,7 +143,6 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
         panelField.getPanel().add(button);
         formPanel.add(panelField);
 
-        formPanel.render();
         add(formPanel, BorderLayout.WEST);
 
         ImagePanelConfig iPanelConf = ImagePanelConfig.createSimpleReadOnlyProperties();

@@ -112,7 +112,6 @@ public class FormsValidationPanel extends PanelBuilder {
         warningLabel.setVisible(false);
         formPanel.add(warningLabel);
 
-        formPanel.render();
         return formPanel;
     }
 }

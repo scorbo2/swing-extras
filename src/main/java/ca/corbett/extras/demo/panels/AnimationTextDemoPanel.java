@@ -78,7 +78,6 @@ public class AnimationTextDemoPanel extends PanelBuilder {
         panel.add(button);
         formPanel.add(panelField);
 
-        formPanel.render();
         return formPanel;
     }
 

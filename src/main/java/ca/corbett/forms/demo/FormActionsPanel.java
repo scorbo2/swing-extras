@@ -93,7 +93,6 @@ public class FormActionsPanel extends PanelBuilder {
             numberField1.setCurrentValue(numberField2.getCurrentValue());
         });
 
-        formPanel.render();
         return formPanel;
     }
 

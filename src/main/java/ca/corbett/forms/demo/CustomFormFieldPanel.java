@@ -55,7 +55,6 @@ public class CustomFormFieldPanel extends PanelBuilder {
                                                   14);
         formPanel.add(label);
 
-        formPanel.render();
         return formPanel;
     }
 }

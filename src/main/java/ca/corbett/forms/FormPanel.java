@@ -255,8 +255,11 @@ public final class FormPanel extends JPanel {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = FORM_FIELD_START_COLUMN;
         constraints.gridy = row;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(margins.getTop(), margins.getLeft(), margins.getBottom(),
+        constraints.anchor = field.isMultiLine() ? GridBagConstraints.FIRST_LINE_START : GridBagConstraints.WEST;
+        int extraTopMargin = field.isMultiLine() ? 4 : 0; // TODO don't hard-code this value
+        constraints.insets = new Insets(margins.getTop() + extraTopMargin,
+                                        margins.getLeft(),
+                                        margins.getBottom(),
                                         margins.getInternalSpacing());
         add(field.getFieldLabel(), constraints);
     }
@@ -266,12 +269,21 @@ public final class FormPanel extends JPanel {
             return;
         }
 
+        // If a field label exists, then left margin has already been set. Otherwise, set it now.
+        int leftMargin = field.hasFieldLabel() ? margins.getInternalSpacing() : margins.getLeft();
+
         GridBagConstraints constraints = new GridBagConstraints();
-        constraints.insets = new Insets(margins.getTop(), margins.getInternalSpacing(), margins.getBottom(),
+        constraints.insets = new Insets(margins.getTop(),
+                                        leftMargin,
+                                        margins.getBottom(),
                                         margins.getInternalSpacing());
         constraints.gridx = CONTROL_COLUMN;
         constraints.gridy = row;
-        constraints.anchor = GridBagConstraints.WEST;
+        constraints.anchor = GridBagConstraints.NORTHWEST;
+
+        if (field.isMultiLine()) {
+            constraints.fill = GridBagConstraints.BOTH;
+        }
 
         // If there is no field label, then this control will occupy both the field
         // label column and the control column:
@@ -290,6 +302,7 @@ public final class FormPanel extends JPanel {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = HELP_COLUMN;
         constraints.gridy = row;
+        constraints.anchor = GridBagConstraints.NORTH;
         constraints.insets = new Insets(margins.getTop(), margins.getInternalSpacing(), margins.getBottom(),
                                         margins.getInternalSpacing());
         add(field.getHelpLabel(), constraints);
@@ -303,6 +316,7 @@ public final class FormPanel extends JPanel {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = VALIDATION_COLUMN;
         constraints.gridy = row;
+        constraints.anchor = GridBagConstraints.NORTH;
         constraints.insets = new Insets(margins.getTop(), margins.getInternalSpacing(), margins.getBottom(),
                                         margins.getRight());
         add(field.getValidationLabel(), constraints);

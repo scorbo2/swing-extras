@@ -107,9 +107,8 @@ public class ExtensionDetailsPanel extends JPanel {
         setLayout(new BorderLayout());
         formPanel = new FormPanel(Alignment.TOP_LEFT);
 
-        PanelField panelField = new PanelField();
+        PanelField panelField = new PanelField(new FlowLayout(FlowLayout.RIGHT));
         JPanel panel = panelField.getPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         enabledCheckBox = new JCheckBox("Enabled", isEnabled);
         enabledCheckBox.setOpaque(false);
         if (extension == null) {
@@ -167,24 +166,23 @@ public class ExtensionDetailsPanel extends JPanel {
             }
         }
 
-        TextField descriptionField = new TextField("Description:", 40, 5, true);
+        TextField descriptionField = new TextField("Description:", 40, 8, true);
 
         // Marking the TextField as disabled will unfortunately change the text color to something
         // much lighter, which makes it very hard or almost impossible to read in some look and feels:
         //descriptionField.setEnabled(false);
 
         // So instead, we'll leave it as "enabled" but mark the JTextArea itself as read-only:
-        JTextArea jTextArea = (JTextArea)descriptionField.getFieldComponent();
+        JTextArea jTextArea = (JTextArea)descriptionField.getTextComponent();
         jTextArea.setEditable(false);
 
         jTextArea.setLineWrap(true);
         descriptionField.setText(extInfo == null ? "" : extInfo.getLongDescription());
         jTextArea.setCaretPosition(0); // scroll to top
-        descriptionField.setScrollPanePreferredSize(460, 100);
-        descriptionField.getMargins().setAll(4).setLeft(10);
+        descriptionField.setScrollPanePreferredSize(360, 100);
+        descriptionField.getMargins().setAll(4);
         formPanel.add(descriptionField);
 
-        formPanel.render();
         add(formPanel, BorderLayout.CENTER);
     }
 

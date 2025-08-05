@@ -409,7 +409,6 @@ public final class MultiProgressDialog extends JDialog {
 
         FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
         formPanel.add(formFields);
-        formPanel.render();
         add(formPanel, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();

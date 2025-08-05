@@ -11,7 +11,6 @@ import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.TextField;
 
 import javax.swing.JPanel;
-import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -157,12 +156,11 @@ public class DirTreeDemoPanel extends PanelBuilder {
         formPanel.add(checkBoxField);
 
         listenerTextArea = new TextField("", 65, 8, true);
-        ((JTextComponent)listenerTextArea.getFieldComponent()).setEditable(false);
-        ((JTextComponent)listenerTextArea.getFieldComponent()).setFont(new Font("Monospaced", Font.PLAIN, 10));
+        listenerTextArea.getTextComponent().setEditable(false);
+        listenerTextArea.getTextComponent().setFont(new Font("Monospaced", Font.PLAIN, 10));
         listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
         formPanel.add(listenerTextArea);
 
-        formPanel.render();
         return formPanel;
     }
 

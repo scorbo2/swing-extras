@@ -50,7 +50,6 @@ public class BasicFormPanel extends PanelBuilder {
 
         formPanel.add(new TextField("Single-line text:", 15, 1, true));
         TextField textField = new TextField("Multi-line text:", 18, 4, true);
-        textField.setAddScrollPaneWhenMultiLine(false);
         textField.getMargins().setBottom(12);
         formPanel.add(textField);
         formPanel.add(new CheckBoxField("Checkboxes", true));
@@ -92,7 +91,6 @@ public class BasicFormPanel extends PanelBuilder {
         listField2.setVisibleRowCount(3);
         formPanel.add(listField2);
 
-        formPanel.render();
         return formPanel;
     }
 

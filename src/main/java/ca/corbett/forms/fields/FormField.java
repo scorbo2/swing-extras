@@ -67,11 +67,23 @@ public abstract class FormField {
     }
 
     /**
+     * By default, FormFields occupy a single "line", or row, on the form. However,
+     * some FormFields may have a field component that spans multiple lines,
+     * like a multi-line text box, or a list, or a custom panel. Descendant
+     * classes can override the default false value here. It controls the placement
+     * of the field label. For tall form fields, the field label will be anchored
+     * to the top-left of its area.
+     */
+    public boolean isMultiLine() {
+        return false;
+    }
+
+    /**
      * Any FormField that has help text set will return true here to indicate that
      * a help label is available. If help text is unset, will return false;
      */
     public boolean hasHelpLabel() {
-        return !helpLabel.getToolTipText().isBlank();
+        return helpLabel.getToolTipText() != null && !helpLabel.getToolTipText().isBlank();
     }
 
     /**
@@ -83,7 +95,7 @@ public abstract class FormField {
      * field label, because the checkbox control itself contains a label.
      */
     public boolean hasFieldLabel() {
-        return !fieldLabel.getText().isBlank();
+        return fieldLabel.getText() != null && !fieldLabel.getText().isBlank();
     }
 
     public JLabel getFieldLabel() {

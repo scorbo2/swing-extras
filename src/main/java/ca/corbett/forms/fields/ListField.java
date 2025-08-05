@@ -109,4 +109,9 @@ public class ListField<T> extends FormField {
     public void setFixedCellWidth(int width) {
         list.setFixedCellWidth(width);
     }
+
+    @Override
+    public boolean isMultiLine() {
+        return true;
+    }
 }

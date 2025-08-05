@@ -109,7 +109,6 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         formPanel.add(new LabelField("ImageScroller is better suited for fullscreen applications!"));
         formPanel.add(new LabelField("It can scroll an oversized image with configurable 'bounce' parameters."));
 
-        formPanel.render();
         return formPanel;
     }
 

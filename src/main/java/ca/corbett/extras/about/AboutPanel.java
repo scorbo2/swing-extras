@@ -242,7 +242,6 @@ public final class AboutPanel extends JPanel {
             textArea.setCaretPosition(0);
         }
 
-        formPanel.render();
         add(formPanel, BorderLayout.CENTER);
     }
 

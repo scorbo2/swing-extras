@@ -62,7 +62,6 @@ public class PropertiesDialog extends JDialog {
         if (formPanelList.size() > 1) {
             tabPane = new JTabbedPane();
             for (FormPanel formPanel : formPanelList) {
-                formPanel.render();
                 tabPane.addTab(formPanel.getName(), buildScrollPane(formPanel));
             }
             formPanel = null;
@@ -73,7 +72,6 @@ public class PropertiesDialog extends JDialog {
         else if (formPanelList.size() == 1) {
             tabPane = null;
             formPanel = formPanelList.get(0);
-            formPanel.render();
             add(buildScrollPane(formPanel), BorderLayout.CENTER);
         }
 

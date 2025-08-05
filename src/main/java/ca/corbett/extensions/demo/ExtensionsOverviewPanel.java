@@ -68,7 +68,6 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         panel.add(button);
         formPanel.add(field);
 
-        formPanel.render();
         return formPanel;
     }
 

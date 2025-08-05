@@ -118,8 +118,6 @@ public class LogConsolePanel extends PanelBuilder {
         panelField.getPanel().add(button);
         formPanel.add(panelField);
 
-        formPanel.render();
-
         initializeLogConsole();
 
         return formPanel;

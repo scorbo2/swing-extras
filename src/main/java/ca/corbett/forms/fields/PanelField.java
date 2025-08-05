@@ -56,4 +56,8 @@ public class PanelField extends FormField {
     public JPanel getPanel() {
         return panel;
     }
+
+    public boolean isMultiLine() {
+        return true;
+    }
 }

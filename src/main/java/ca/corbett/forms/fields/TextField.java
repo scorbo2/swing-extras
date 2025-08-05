@@ -1,11 +1,8 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.validators.NonBlankFieldValidator;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -14,8 +11,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 
 /**
  * A FormField implementation specifically for text input.
@@ -34,7 +29,7 @@ public final class TextField extends FormField {
     private int multiLineTextBoxBottomMargin;
     private int multiLineTextBoxRightMargin;
     private boolean expandMultiLineHorizontally;
-    private boolean addScrollPaneWhenMultiLine;
+    private JScrollPane scrollPane;
 
     private int scrollPaneWidth;
     private int scrollPaneHeight;
@@ -73,15 +68,20 @@ public final class TextField extends FormField {
             textComponent = new JTextArea(rows, cols);
             ((JTextArea)textComponent).setLineWrap(true);
             ((JTextArea)textComponent).setWrapStyleWord(true);
+            scrollPane = new JScrollPane(textComponent);
+            //scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            //scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            //textComponent.setSize(textComponent.getPreferredSize());
             textComponent.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
             multiLine = true;
+            fieldComponent = scrollPane;
         }
         else {
             textComponent = new JTextField();
             ((JTextField)textComponent).setColumns(cols);
             multiLine = false;
+            fieldComponent = textComponent;
         }
-        fieldComponent = textComponent;
         textComponent.getDocument().addDocumentListener(changeListener);
         if (!allowBlank) {
             addFieldValidator(new NonBlankFieldValidator());
@@ -90,10 +90,8 @@ public final class TextField extends FormField {
         multiLineTextBoxTopMargin = 0;
         multiLineTextBoxBottomMargin = 0;
         multiLineTextBoxRightMargin = 0;
-        addScrollPaneWhenMultiLine = true;
         scrollPaneWidth = -1;
         scrollPaneHeight = -1;
-        isExtraLabelRenderedByField = true;
     }
 
     /**
@@ -107,19 +105,6 @@ public final class TextField extends FormField {
     }
 
     /**
-     * You can prevent a JScrollPane from being used when the text field is multi-line (default true).
-     * If false, the text pane will grow vertically as new lines are added. If true, the text
-     * pane will stay at its original size and a vertical scrollbar will appear as needed.
-     * True is usually the way to go. This method is provided in case any application code
-     * relies on the old behaviour of defaulting this to false with no way to change it.
-     *
-     * @param value The new value for this option. Must be set before the form is rendered.
-     */
-    public void setAddScrollPaneWhenMultiLine(boolean value) {
-        addScrollPaneWhenMultiLine = value;
-    }
-
-    /**
      * Optionally set a preferred size for the scroll pane for use with multi-line text fields.
      * If the given width or height values are less than or equal to zero, the old behaviour
      * is used, where the text box fills its grid bag cell. Setting both of these values to
@@ -130,10 +115,16 @@ public final class TextField extends FormField {
      * @param h Preferred pixel height of the text box's scroll pane.
      */
     public void setScrollPanePreferredSize(int w, int h) {
+        if (scrollPane == null) {
+            return;
+        }
         scrollPaneWidth = w;
         scrollPaneHeight = h;
         if (scrollPaneWidth > 0 && scrollPaneHeight > 0) {
-            addScrollPaneWhenMultiLine = true;
+            scrollPane.setPreferredSize(new Dimension(scrollPaneWidth, scrollPaneHeight));
+        }
+        else {
+            scrollPane.setPreferredSize(null);
         }
     }
 
@@ -171,104 +162,12 @@ public final class TextField extends FormField {
         textComponent.setText(text);
     }
 
-    /**
-     * Renders this field into the given panel.
-     *
-     * @param container   The containing form panel.
-     * @param constraints The constraints to use.
-     */
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridy = constraints.gridy + 1;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.gridwidth = multiLine ? 2 : 1;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        if (multiLine) {
-            if (!helpText.isBlank()) {
-                constraints.gridx = FormPanel.HELP_COLUMN;
-                constraints.gridwidth = 1;
-                constraints.fill = GridBagConstraints.NONE;
-                constraints.insets = new Insets(topMargin, componentSpacing, componentSpacing, componentSpacing);
-                if (FormPanel.helpImageUrl != null) {
-                    helpLabel.setIcon(new ImageIcon(FormPanel.helpImageUrl));
-                }
-                helpLabel.setToolTipText(helpText);
-                container.add(helpLabel, constraints);
-            }
-
-            if (expandMultiLineHorizontally) {
-                constraints.insets = new Insets(topMargin, componentSpacing, componentSpacing, rightMargin);
-                constraints.gridwidth = 1;
-                constraints.fill = GridBagConstraints.NONE;
-                constraints.gridx = FormPanel.VALIDATION_COLUMN;
-                container.add(validationLabel, constraints);
-            }
-
-            constraints.gridx = FormPanel.LABEL_COLUMN;
-            constraints.gridwidth = expandMultiLineHorizontally ? 4 : 2;
-            constraints.gridy = constraints.gridy + 1;
-            if (scrollPaneWidth > 0 && scrollPaneHeight > 0) {
-                constraints.fill = GridBagConstraints.NONE;
-            }
-            else {
-                constraints.fill = GridBagConstraints.BOTH;
-            }
-            int rightMarginValue = rightMargin + (expandMultiLineHorizontally ? multiLineTextBoxRightMargin : componentSpacing);
-            constraints.insets = new Insets(topMargin + multiLineTextBoxTopMargin,
-                                            leftMargin + multiLineTextBoxLeftMargin,
-                                            bottomMargin + multiLineTextBoxBottomMargin,
-                                            rightMarginValue);
-            constraints.weightx = expandMultiLineHorizontally ? 0.05 : 0.0;
-            if (addScrollPaneWhenMultiLine) {
-                JScrollPane scrollPane = new JScrollPane(textComponent);
-                if (scrollPaneWidth > 0 && scrollPaneHeight > 0) {
-                    scrollPane.setPreferredSize(new Dimension(scrollPaneWidth, scrollPaneHeight));
-                }
-                container.add(scrollPane, constraints);
-            }
-            else {
-                container.add(textComponent, constraints);
-            }
-            constraints.weightx = 0.0;
-            constraints.gridwidth = 1;
-
-            if (!expandMultiLineHorizontally) {
-                constraints.insets = new Insets(0, 0, 0, rightMargin);
-                constraints.fill = GridBagConstraints.NONE;
-                constraints.gridx = FormPanel.VALIDATION_COLUMN;
-                constraints.anchor = GridBagConstraints.NORTHWEST;
-                container.add(validationLabel, constraints);
-                constraints.anchor = GridBagConstraints.WEST;
-            }
-        }
-        else {
-            constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-            constraints.gridwidth = 1;
-            constraints.gridx = FormPanel.CONTROL_COLUMN;
-            container.add(textComponent, constraints);
-
-            if (!helpText.isBlank()) {
-                constraints.gridx = FormPanel.HELP_COLUMN;
-                constraints.gridwidth = 1;
-                constraints.fill = GridBagConstraints.NONE;
-                constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-                if (FormPanel.helpImageUrl != null) {
-                    helpLabel.setIcon(new ImageIcon(FormPanel.helpImageUrl));
-                }
-                helpLabel.setToolTipText(helpText);
-                container.add(helpLabel, constraints);
-            }
-
-            constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, rightMargin);
-            constraints.gridwidth = 1;
-            constraints.fill = GridBagConstraints.NONE;
-            constraints.gridx = FormPanel.VALIDATION_COLUMN;
-            container.add(validationLabel, constraints);
-        }
+    public JTextComponent getTextComponent() {
+        return textComponent;
     }
 
+    @Override
+    public boolean isMultiLine() {
+        return multiLine;
+    }
 }

@@ -366,7 +366,6 @@ public final class FontDialog extends JDialog {
             formPanel.add(bgColorField);
         }
 
-        formPanel.render();
         return PropertiesDialog.buildScrollPane(formPanel);
     }
 

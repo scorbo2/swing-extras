@@ -123,7 +123,6 @@ public class PropertiesDemoPanel extends PanelBuilder {
         panelField.getPanel().add(btn);
         formPanel.add(panelField);
 
-        formPanel.render();
         return formPanel;
     }
 
