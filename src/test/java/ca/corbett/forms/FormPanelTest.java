@@ -18,7 +18,7 @@ class FormPanelTest {
 
         TextField textField = new TextField("Text:", 12, 1, true);
         textField.setIdentifier("textField1");
-        formPanel.addFormField(textField);
+        formPanel.add(textField);
 
         assertNull(formPanel.getFormField("TEXTFIELD1"));
         assertNull(formPanel.getFormField("textField11"));
@@ -30,12 +30,12 @@ class FormPanelTest {
         NumberField numberField = new NumberField("Number:", 1, 0, 2, 1);
         numberField.setIdentifier("numberField1");
         FormPanel formPanel = new FormPanel();
-        formPanel.addFormFields(List.of(numberField));
+        formPanel.add(List.of(numberField));
         assertNotNull(formPanel.getFormField("numberField1"));
 
         TextField textField = new TextField("Text:", 12, 1, true);
         textField.setIdentifier("textField1");
-        formPanel.addFormField(textField);
+        formPanel.add(textField);
         assertNotNull(formPanel.getFormField("textField1"));
 
         formPanel.removeAllFormFields();
