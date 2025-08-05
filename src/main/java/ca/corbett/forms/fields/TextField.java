@@ -10,7 +10,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import java.awt.Dimension;
 
 /**
  * A FormField implementation specifically for text input.
@@ -68,11 +67,11 @@ public final class TextField extends FormField {
             textComponent = new JTextArea(rows, cols);
             ((JTextArea)textComponent).setLineWrap(true);
             ((JTextArea)textComponent).setWrapStyleWord(true);
-            scrollPane = new JScrollPane(textComponent);
-            //scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            //scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            //textComponent.setSize(textComponent.getPreferredSize());
+            textComponent.setSize(textComponent.getPreferredSize());
             textComponent.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+            scrollPane = new JScrollPane(textComponent);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
             multiLine = true;
             fieldComponent = scrollPane;
         }
@@ -121,7 +120,8 @@ public final class TextField extends FormField {
         scrollPaneWidth = w;
         scrollPaneHeight = h;
         if (scrollPaneWidth > 0 && scrollPaneHeight > 0) {
-            scrollPane.setPreferredSize(new Dimension(scrollPaneWidth, scrollPaneHeight));
+            // TODO temporarily disabling this behaviour as setting pixel dimensions feels ugly... revisit this!
+            //scrollPane.setPreferredSize(new Dimension(scrollPaneWidth, scrollPaneHeight));
         }
         else {
             scrollPane.setPreferredSize(null);

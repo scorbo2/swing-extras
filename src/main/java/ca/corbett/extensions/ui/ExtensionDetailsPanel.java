@@ -166,7 +166,7 @@ public class ExtensionDetailsPanel extends JPanel {
             }
         }
 
-        TextField descriptionField = new TextField("Description:", 40, 8, true);
+        TextField descriptionField = new TextField("Description:", 32, 8, true);
 
         // Marking the TextField as disabled will unfortunately change the text color to something
         // much lighter, which makes it very hard or almost impossible to read in some look and feels:
@@ -179,7 +179,7 @@ public class ExtensionDetailsPanel extends JPanel {
         jTextArea.setLineWrap(true);
         descriptionField.setText(extInfo == null ? "" : extInfo.getLongDescription());
         jTextArea.setCaretPosition(0); // scroll to top
-        descriptionField.setScrollPanePreferredSize(360, 100);
+        //descriptionField.setScrollPanePreferredSize(360, 100);
         descriptionField.getMargins().setAll(4);
         formPanel.add(descriptionField);
 
