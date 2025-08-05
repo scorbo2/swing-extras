@@ -79,6 +79,16 @@ public abstract class FormField {
     }
 
     /**
+     * By default, FormPanel will allocate only the space that the field component
+     * requires. Descendant classes can override the default false value here to
+     * indicate that their field component should be allowed to expand as much space
+     * as is available to it. For example: PanelField.
+     */
+    public boolean shouldExpand() {
+        return false;
+    }
+
+    /**
      * Any FormField that has help text set will return true here to indicate that
      * a help label is available. If help text is unset, will return false;
      */

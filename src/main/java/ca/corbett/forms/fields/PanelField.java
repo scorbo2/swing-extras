@@ -57,7 +57,13 @@ public class PanelField extends FormField {
         return panel;
     }
 
+    @Override
     public boolean isMultiLine() {
+        return true;
+    }
+
+    @Override
+    public boolean shouldExpand() {
         return true;
     }
 }

@@ -281,7 +281,7 @@ public final class FormPanel extends JPanel {
         constraints.gridy = row;
         constraints.anchor = GridBagConstraints.NORTHWEST;
 
-        if (field.isMultiLine()) {
+        if (field.shouldExpand()) {
             constraints.fill = GridBagConstraints.BOTH;
         }
 
