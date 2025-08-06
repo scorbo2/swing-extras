@@ -15,7 +15,13 @@ import java.awt.LayoutManager;
  * the form is validated. But if you add a FieldValidator
  * to your PanelField, then the validation label will appear
  * when the form is validated.
- * </p>
+ * <p>
+ * The purpose of a PanelField is to allow a very easy way to create a custom
+ * FormField without actually extending the FormField class yourself. You can
+ * simply instantiate a PanelField and then render whatever you need. You can
+ * of course also write a corresponding FieldValidator for your PanelField to
+ * validate whatever value it contains, but at that point it might be easier
+ * to just extend FormField and create a custom implementation.
  *
  * @author scorbo2
  * @since 2020-09-27

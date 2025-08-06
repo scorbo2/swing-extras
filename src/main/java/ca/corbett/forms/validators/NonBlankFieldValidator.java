@@ -3,7 +3,7 @@ package ca.corbett.forms.validators;
 import ca.corbett.forms.fields.TextField;
 
 /**
- * A simple field validator that ensures that the field does not have a blank value.
+ * A simple field validator for TextField that ensures that the field does not have a blank value.
  *
  * @author scorbo2
  * @since 2019-11-23

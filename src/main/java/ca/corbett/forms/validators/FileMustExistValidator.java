@@ -5,7 +5,10 @@ import ca.corbett.forms.fields.FileField;
 import java.io.File;
 
 /**
- * A FieldValidator that ensures that the chosen Directory exists.
+ * A FieldValidator that ensures that the chosen File or Directory exists.
+ * Also checks that the selection makes sense given the selection type of the
+ * FileField in question. For example, if the selection type is DIRECTORIES_ONLY
+ * and you select a file, that selection will fail validation.
  *
  * @author scorbo2
  * @since 2019-11-24

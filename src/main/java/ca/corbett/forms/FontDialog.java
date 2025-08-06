@@ -37,7 +37,9 @@ import java.util.List;
 /**
  * Represents a dialog that can be shown to the user to allow
  * selection of a font with style properties and optional
- * foreground/background color selection.
+ * foreground/background color selection. This dialog was
+ * written for and is used by the FontField, but you could
+ * also invoke this dialog standalone if needed.
  *
  * @author scorbo2
  * @since 2025-04-07

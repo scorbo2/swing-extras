@@ -19,7 +19,7 @@ public class FileMustBeWritableValidator extends FieldValidator<FileField> {
         if (fieldToValidate.getFile() == null) {
             return allowBlank
                     ? ValidationResult.valid()
-                    : ValidationResult.invalid("Selected location must be writable.");
+                    : ValidationResult.invalid("Value cannot be blank.");
         }
 
         File file = fieldToValidate.getFile();

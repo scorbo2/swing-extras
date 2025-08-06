@@ -9,7 +9,8 @@ import java.awt.event.MouseEvent;
 
 /**
  * A FormField implementation for selecting a solid color.
- * See also GradientColorField in ca.corbett.extras.gradient package.
+ * See also GradientColorField in ca.corbett.extras.gradient package if you want to
+ * also allow selection of color gradients in addition to solid colors.
  *
  * @author scorbo2
  */

@@ -6,10 +6,13 @@ import javax.swing.JCheckBox;
  * A FormField to wrap a JCheckBox.
  * <p>
  * A note about validation: checkboxes don't generally "count" when a FormPanel validates itself.
- * That is, they won't show a little checkbox label to indicate that the selected value is "correct".
- * However, if you invoked addFieldValidator(), then the field will automatically be included
- * in any calls to formPanel.isFormValid().
- * </p>
+ * That is, they won't show a validation label to indicate that the selected value is "correct".
+ * You can change this behavior by using addFieldValidator() - if any FieldValidators are present
+ * on this field, then it will be included when the FormPanel is validated.
+ * <p>
+ * <b>Getting access to the underlying JCheckBox</b> - if you need access to the underlying
+ * JCheckBox (for example, for styling purposes, changing the font, etc), you can
+ * use getFieldComponent() and cast the return to JCheckBox.
  *
  * @author scorbo2
  * @since 2019-11-27

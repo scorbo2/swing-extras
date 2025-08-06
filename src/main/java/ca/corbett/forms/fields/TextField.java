@@ -16,6 +16,10 @@ import javax.swing.text.JTextComponent;
  * The wrapped field is either a JTextField or a JTextArea depending on whether
  * you specify multi-line input or not. Yes, that's right! All the niggly
  * details of setting up text input are hugely simplified here.
+ * <p>
+ * The underlying JTextComponent can be accessed directly if needed by
+ * using getFieldComponent() and casting the result to JTextArea (for multi-line
+ * fields) or JTextField (for single-line fields).
  *
  * @author scorbo2
  * @since 2019-11-23
@@ -23,11 +27,6 @@ import javax.swing.text.JTextComponent;
 public final class TextField extends FormField {
 
     private final boolean multiLine;
-    private int multiLineTextBoxLeftMargin;
-    private int multiLineTextBoxTopMargin;
-    private int multiLineTextBoxBottomMargin;
-    private int multiLineTextBoxRightMargin;
-    private boolean expandMultiLineHorizontally;
     private JScrollPane scrollPane;
 
     private int scrollPaneWidth;
@@ -85,22 +84,8 @@ public final class TextField extends FormField {
         if (!allowBlank) {
             addFieldValidator(new NonBlankFieldValidator());
         }
-        multiLineTextBoxLeftMargin = 0;
-        multiLineTextBoxTopMargin = 0;
-        multiLineTextBoxBottomMargin = 0;
-        multiLineTextBoxRightMargin = 0;
         scrollPaneWidth = -1;
         scrollPaneHeight = -1;
-    }
-
-    /**
-     * You can tell the multi-line textbox to take up additional horizontal space if the
-     * parent container is resized. Does nothing for single-line text fields.
-     *
-     * @param expand Whether to do horizontal expansion of the multiline text box.
-     */
-    public void setExpandMultiLineTextBoxHorizontally(boolean expand) {
-        expandMultiLineHorizontally = expand;
     }
 
     /**
@@ -128,21 +113,6 @@ public final class TextField extends FormField {
         }
     }
 
-    /**
-     * You can horizontally indent and/or vertically space out the multiline text box
-     * if you want, to visually set it out from other form components and make the form
-     * look a bit less busy.
-     *
-     * @param top    The top margin
-     * @param left   The left margin
-     * @param bottom The bottom margin
-     * @param right  The right margin - only used if expandMultiLineTextBoxHorizontally is set.
-     */
-    public void setMultiLineTextBoxMargins(int top, int left, int bottom, int right) {
-        multiLineTextBoxLeftMargin = left;
-        multiLineTextBoxTopMargin = top;
-        multiLineTextBoxBottomMargin = bottom;
-    }
 
     /**
      * Returns the text currently in this field.

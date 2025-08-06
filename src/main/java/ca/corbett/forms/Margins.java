@@ -3,7 +3,17 @@ package ca.corbett.forms;
 import java.util.Objects;
 
 /**
- * Represents margins around a FormField.
+ * Can be used to specify margins around an inside of a FormField.
+ * <p>
+ * The left, right, top, and bottom properties apply margins outside the
+ * FormField - that is, either between the FormField and the outside border
+ * of the FormPanel, or between the FormField and the previous or next
+ * FormField on the same FormPanel.
+ * <p>
+ * The internalSpacing property applies extra space within the FormField -
+ * that is, between the field label and the field component, between the
+ * field component and the help label, and between the help label and
+ * the validation label.
  */
 public class Margins {
 
@@ -15,14 +25,23 @@ public class Margins {
     private int bottom;
     private int internalSpacing;
 
+    /**
+     * Creates a new Margins instance with all properties set to a hard-coded default of 4 pixels.
+     */
     public Margins() {
         this(DEFAULT_MARGIN);
     }
 
+    /**
+     * Creates a new Margins instance with all properties set to the given pixel value.
+     */
     public Margins(int all) {
         this(all, all, all, all, all);
     }
 
+    /**
+     * Creates a new Margins instance with the given properties (all values in pixels).
+     */
     public Margins(int left, int top, int right, int bottom, int internalSpacing) {
         this.left = left;
         this.top = top;
@@ -31,11 +50,19 @@ public class Margins {
         this.internalSpacing = internalSpacing;
     }
 
+    /**
+     * Creates a new Margins instance by copying values from the given other Margins instance.
+     * If the given instance is null, this is equivalent to new Margins().
+     */
     public Margins(Margins other) {
         this();
         copy(other);
     }
 
+    /**
+     * Copies all values from the given other Margins instance. If the given instance is null,
+     * this call does nothing.
+     */
     public void copy(Margins other) {
         if (other != null) {
             this.left = other.left;
@@ -46,6 +73,9 @@ public class Margins {
         }
     }
 
+    /**
+     * Set all values to the given pixel value.
+     */
     public Margins setAll(int value) {
         left = value;
         top = value;

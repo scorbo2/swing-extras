@@ -9,6 +9,8 @@ import java.awt.Dimension;
 
 /**
  * A FormField that wraps a JSpinner to allow numeric input.
+ * The underlying JSpinner is accessible by invoking getFieldComponent() and
+ * casting the result to JSpinner.
  *
  * @author scorbo2
  * @since 2020-09-25

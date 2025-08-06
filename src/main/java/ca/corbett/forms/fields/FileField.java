@@ -24,6 +24,10 @@ import java.io.File;
  * For directories, the chosen directory must exist.
  * For files, you can specify whether to browse for files that must exist,
  * or for files that must NOT exist (for example, for a save dialog).
+ * <p>
+ * The underlying JFileChooser is not directly exposed, but there are some
+ * convenience methods here, like setFileFilter(), that can be used to
+ * customize it.
  *
  * @author scorbo2
  * @since 2019-11-24

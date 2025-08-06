@@ -3,10 +3,10 @@ package ca.corbett.forms.validators;
 import ca.corbett.forms.fields.FormField;
 
 /**
- * Provides an interface that can be implemented by any class that wants to validate
- * the contents of a particular FormField. You must supply a reference to the FormField
- * that this FieldValidator needs to know about in the constructor, so that it is
- * available when we go to validate the field.
+ * Provides an abstract base for a class that can perform validation on some type of FormField.
+ * Refer to the provided implementation classes in this package for examples of what you
+ * can do with this class. Writing your own validator with custom business logic or
+ * validation rules is as easy as extending this class and writing the validate() method!
  *
  * @param <T> FieldValidators are typed to a specific type of FormField.
  * @author scorbo2

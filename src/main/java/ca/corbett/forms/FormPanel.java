@@ -9,33 +9,29 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This FormPanel wraps a collection of FormField instances and provides an
- * easy mechanism for rendering and form validation.
- * <p>
- * You can either create a new, empty FormPanel and then use addFormField to add
- * fields to it, or you can supply a List of FormFields to the constructor.
- * Either way, <b>you must invoke render() before showing the FormPanel</b>.
- * </p>
- * <p>
- * Forms have an Alignment property which defaults to TOP_CENTER. This means
- * that the form will stick to the top of its container and will try to
- * horizontally center all contents. You can adjust this alignment at
- * any time, though you will have to re-render the FormPanel if you change
- * this property after the FormPanel has already been rendered.
- * </p>
+ * FormPanel wraps a collection of FormFields and manages the following functions:
+ * <ul>
+ *     <li><b>Layout management</b> - you don't need to write manual GridBagLayout code
+ *         to use a FormPanel. Just add your FormFields to the panel and the layout will
+ *         be handled automatically.
+ *     <li><b>Form validation</b> - assuming you've added FieldValidator instances to
+ *         your FormFields as needed, you don't need to write much manual validation code,
+ *         and you don't need to write any UI code to show validation results. Just
+ *         call formField.validate() and the validators will be invoked automatically.
+ * </ul>
+ *
+ * <h3>Handling oversized forms</h3>
+ * You can easily add a FormPanel to a JScrollPane to provide for scrollbars in the
+ * case where the form is unreasonably large.
  *
  * @author scorbo2
  * @since 2019-11-24
  */
 public final class FormPanel extends JPanel {
-
-    public static final URL helpImageUrl = FormPanel.class.getResource(
-            "/ca/corbett/swing-forms/images/formfield-help.png");
 
     public static final int LEFT_SPACER_COLUMN = 0;
     public static final int LABEL_COLUMN = 1;
@@ -77,7 +73,8 @@ public final class FormPanel extends JPanel {
      * </p>
      * <p>
      * Note that any value given here is added to whatever margins are already present on
-     * each FormField. This value does not replace those values.
+     * each FormField. This value does not replace those values. So, you can still indent
+     * a FormField from the others by setting its left margin, for example.
      * </p>
      *
      * @param margin The margin, in pixels, to apply to FormFields as needed. Negative values are treated as 0.
@@ -106,7 +103,7 @@ public final class FormPanel extends JPanel {
 
     /**
      * Finds and returns a specific FormField by its identifier, if it exists.
-     * No validation of FormField.identifier is done in this class! If more than
+     * No validation of the FormField identifier is done in this class! If more than
      * one FormField has the same identifier, this method will return whichever
      * one it finds first. If a field does not have an identifier, it will not
      * be considered by this method.
@@ -133,9 +130,6 @@ public final class FormPanel extends JPanel {
 
     /**
      * Adds the specified list of FormFields to this FormPanel.
-     * The render() method must be invoked manually after this call to see the result.
-     *
-     * @param fields The FormFields to be added to this FormPanel.
      */
     public void add(List<FormField> fields) {
         this.formFields.addAll(fields);
@@ -144,9 +138,6 @@ public final class FormPanel extends JPanel {
 
     /**
      * Adds the specified FormField to this FormPanel.
-     * The render() method must be invoked manually after this call to see the result.
-     *
-     * @param field The FormField to be added to this FormPanel.
      */
     public void add(FormField field) {
         this.formFields.add(field);
@@ -155,8 +146,6 @@ public final class FormPanel extends JPanel {
 
     /**
      * Returns the number of FormFields contained in this panel.
-     *
-     * @return A count of FormFields contained here.
      */
     public int getFieldCount() {
         return formFields.size();
@@ -173,9 +162,9 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Reports whether this form panel is in a valid state or not.
-     *
-     * @return Whether all fields in this panel are valid.
+     * Validates each FormField by invoking all FieldValidators that are attached to it,
+     * then returns the overall result. The return will be true if all FieldValidators for
+     * all FormFields validated successfully.
      */
     public boolean isFormValid() {
         boolean isValid = true;
@@ -221,12 +210,15 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Renders this form panel by rendering each form field one by one.
-     * This will clear the panel of any components from any previous render().
+     * Invoked internally as needed to remove all UI components and re-do the form layout.
      */
-    public void render() {
+    private void render() {
         this.removeAll();
         this.setLayout(new GridBagLayout());
+
+        if (formFields.isEmpty()) {
+            return;
+        }
 
         addHeaderMargin();
         int row = 1; // starting on row 1, after header margin row
@@ -247,6 +239,9 @@ public final class FormPanel extends JPanel {
         addFooterMargin(row);
     }
 
+    /**
+     * Invoked internally to render the field label for the given FormField, if it has one.
+     */
     private void renderFieldLabel(FormField field, int row, Margins margins) {
         if (!field.hasFieldLabel()) {
             return;
@@ -264,6 +259,9 @@ public final class FormPanel extends JPanel {
         add(field.getFieldLabel(), constraints);
     }
 
+    /**
+     * Invoked internally to render the field component for the given FormField, if it has one.
+     */
     private void renderFieldComponent(FormField field, int row, Margins margins) {
         if (field.getFieldComponent() == null) {
             return;
@@ -294,6 +292,9 @@ public final class FormPanel extends JPanel {
         add(field.getFieldComponent(), constraints);
     }
 
+    /**
+     * Invoked internally to render the help label for the given FormField, if it has one.
+     */
     private void renderHelpLabel(FormField field, int row, Margins margins) {
         if (!field.hasHelpLabel()) {
             return;
@@ -308,6 +309,9 @@ public final class FormPanel extends JPanel {
         add(field.getHelpLabel(), constraints);
     }
 
+    /**
+     * Invoked internally to render the validation label for the given FormField, if it has one.
+     */
     private void renderValidationLabel(FormField field, int row, Margins margins) {
         if (!field.hasValidationLabel()) {
             return;
@@ -342,7 +346,7 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Adds a left margin to the given grid row to align the form field on that row.
+     * Adds a left margin to the given grid row to align the form field horizontally on that row.
      */
     private void addLeftMargin(int row) {
         GridBagConstraints constraints = new GridBagConstraints();
@@ -362,7 +366,7 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Adds a right margin to the given grid row to align the form field on that row.
+     * Adds a right margin to the given grid row to align the form field horizontally on that row.
      */
     private void addRightMargin(int row) {
         GridBagConstraints constraints = new GridBagConstraints();

@@ -16,11 +16,31 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * An abstract base class for a form field. These form fields are intended to wrap common Swing
- * components such as JTextField or JComboBox or whatever, but with the added advantage
- * (working with FormPanel) of being able to very easily generate all the GridBagLayout code
- * required to get them onto a form panel without writing a tonne of code, and also to handle
- * form validation through FieldValidator implementations in a standardized way.
+ * FormField is an abstract base class which allows for the creation of a form field that
+ * wraps one or more Java Swing UI components. Most FormFields ultimately wrap a single
+ * Java Swing UI component - for example, TextField wraps a JTextComponent, CheckBoxField
+ * wraps a JCheckBox, and so on. However, it's possible to wrap multiple UI components into
+ * a single FormField implementation - for example, FileField wraps a text box for displaying
+ * the currently selected file or directory, and also a JButton for launching a file chooser dialog.
+ * <p>
+ * FormField is designed with extensibility in mind! If you need a specific type of form field
+ * that isn't represented by any of the provided implementation classes, you can build your
+ * own FormField by extending this class and wrapping whatever UI components you need.
+ * Alternatively, you can use PanelField, which wraps an empty JPanel that you can populate
+ * with whatever UI components you need.
+ *
+ * <h2>Validating a FormField</h2>
+ * You can use addFieldValidator() to add any number of FieldValidator instances to the
+ * FormField. When the containing FormPanel is validated, all the validators on the FormField
+ * will be executed, and the results will automatically be displayed in a validation label
+ * next to the FormField. Helpful tooltip text will be provided so that the user understands
+ * why the field failed to validate.
+ *
+ * <h2>Responding to field value changes</h2>
+ * Often it's handy to be able to respond to form field changes as they are made, rather than
+ * waiting until the form is validated and submitted. For example, you might want to control
+ * the visibility of field B depending on what value is contained in field A. You can do this
+ * by using addValueChangedListener() and responding to the change events as they happen.
  *
  * @author scorbo2
  * @since 2019-11-23
@@ -330,11 +350,17 @@ public abstract class FormField {
     }
 
     /**
-     * Invoke this to ask all registered FieldValidators (if any) to check the current value
+     * Asks all registered FieldValidators (if any) to check the current value
      * of this field to make sure it's valid. If no FieldValidators are registered, then
-     * the field is valid by default (i.e. no checking is done).
+     * the field is valid by default (i.e. no checking is done). If any validator returns
+     * false, then this method will return false.
+     * <p>
+     * <b>Updating the UI</b>: this method will make the validation label to the right of the
+     * FormField visible automatically and will set its icon as appropriate. Tooltip text
+     * will be available in the case of a failed validation, to explain why the field is invalid.
+     * </p>
      *
-     * @return True if the field value is valid according to our validators, false otherwise.
+     * @return True if the field value is valid according to all our validators, false otherwise.
      */
     public boolean validate() {
         boolean isValid = true;
@@ -385,14 +411,17 @@ public abstract class FormField {
     /**
      * Invoke before rendering this FormField to a container, in case the FormField needs
      * to do some initialization specific to its new container (for example, matching
-     * the container's background color or using the container's location for a popup dialog).
+     * the container's background color or using the container as a parent component for a popup dialog).
+     * The default implementation here does nothing. Overriding this method is optional.
      */
     public void preRender(JPanel container) {
     }
 
     /**
      * Invoked internally to notify all registered actions about a change
-     * in the value of this field.
+     * in the value of this field. If you are extending FormField to create your own
+     * implementation, you can invoke this to easily notify all listeners that the
+     * value in your field has changed.
      */
     protected void fireValueChangedEvent() {
         for (ValueChangedListener listener : valueChangedListeners) {

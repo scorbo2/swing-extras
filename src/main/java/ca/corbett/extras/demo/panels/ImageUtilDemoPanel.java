@@ -98,7 +98,6 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         containerPanel.add(configPanel, BorderLayout.NORTH);
         controlPanel.add(panelField);
 
-        controlPanel.render();
         leftPanel.add(controlPanel, BorderLayout.CENTER);
         panel.add(leftPanel, BorderLayout.WEST);
 

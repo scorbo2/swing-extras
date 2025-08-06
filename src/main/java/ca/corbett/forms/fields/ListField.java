@@ -7,6 +7,10 @@ import java.util.List;
 
 /**
  * Wraps a JList to allow for multi-selection of some object type.
+ * A common use case would be ListField&lt;String&gt; to wrap a simple
+ * list of Strings. The underlying JList can be obtained by calling
+ * getFieldComponent() and casting the result to JList, if you need to
+ * do custom styling or whatnot on the JList.
  *
  * @since swing-extras 2.3
  * @author scorbo2

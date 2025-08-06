@@ -39,7 +39,6 @@ public class FormHelpPanel extends PanelBuilder {
 
         TextField textBox = new TextField("Text area:", 12, 4, true);
         textBox.setHelpText("Even text areas can have help text");
-        textBox.setExpandMultiLineTextBoxHorizontally(true);
         panel.add(textBox);
 
         LabelField label = LabelField.createPlainHeaderLabel("This is a form label.", 14);
@@ -50,7 +49,6 @@ public class FormHelpPanel extends PanelBuilder {
         label = LabelField.createPlainHeaderLabel("If no help text is given, the icon remains hidden.", 14);
         panel.add(label);
 
-        panel.render();
         return panel;
     }
 }

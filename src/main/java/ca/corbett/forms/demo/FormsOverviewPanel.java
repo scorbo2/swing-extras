@@ -62,7 +62,6 @@ public class FormsOverviewPanel extends PanelBuilder {
                 LabelField.createPlainHeaderLabel("Visit the other tabs to explore swing-forms features and usage!",
                                                   14));
 
-        introPanel.render();
         return introPanel;
     }
 }

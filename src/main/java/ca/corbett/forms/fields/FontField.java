@@ -14,10 +14,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Intended as a proper replacement for FontStyleField, which I'm not happy with.
+ * A FormField implementation that provides the ability to select a Font, with
+ * optional abilities to select font size, font color, and font background color.
  * This form field presents options for choosing a font from any of the installed
- * fonts on the system, along with font style and size properties.
- * Makes use of the new FontDialog for this purpose.
+ * fonts on the system, or by using the built-in Java Font abstraction names,
+ * like "SansSerif" or "Monospaced", which will map to some system-installed font.
+ * See also FontDialog, which is used by this FormField but which can also
+ * be used standalone if you need to select a Font.
  *
  * @author scorbo2
  * @since 2025-04-07

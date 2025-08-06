@@ -6,7 +6,14 @@ import java.awt.event.ItemEvent;
 import java.util.List;
 
 /**
- * A FormField wrapping a JComboBox.
+ * A FormField wrapping a JComboBox. The field is typed to a specific class - the usual
+ * case is to use ComboField&lt;String&gt; to wrap a simple list of Strings, but you
+ * can use your own class type here as long as it has a meaningful toString().
+ * <p>
+ * <B>Getting access to the underlying JComboBox</B> - if you need access to the underlying
+ * JComboBox, for example for styling purposes, to set a different font, etc, you can
+ * use getFieldComponent() and cast the result to JComboBox with whatever type you used
+ * with this class (for example, JComboBox&lt;String&gt;)
  *
  * @author scorbo2
  * @since 2019-11-24

@@ -121,7 +121,6 @@ public class IntroPanel extends PanelBuilder {
         lafCombo.getMargins().setTop(38);
         introPanel.add(lafCombo);
 
-        introPanel.render();
         return introPanel;
     }
 }
