@@ -1,5 +1,6 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.FileMustBeCreatableValidator;
 import ca.corbett.forms.validators.FileMustBeReadableValidator;
 import ca.corbett.forms.validators.FileMustBeSpecifiedValidator;
@@ -18,6 +19,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A FormField for choosing a single directory or file.
@@ -52,6 +55,7 @@ public final class FileField extends FormField {
         NonExistingFile
     }
 
+    private final List<FieldValidator<? extends FormField>> userAddedValidators = new ArrayList<>();
     private final JTextField textField;
     private final JFileChooser fileChooser;
     private JButton chooseButton;
@@ -121,9 +125,6 @@ public final class FileField extends FormField {
      * <li>ExistingFile: You can browse for a single file, which must exist and be readable/writable.
      * <li>NonExistingFile: You can browse for a single file, which must not exist.
      * </ul>
-     * Note: if you call this method after you have added custom field validators with the
-     * addFieldValidator() method, you must re-add your custom validators as the list will
-     * have been cleared and rebuilt.
      *
      * @param allowBlankValues If false, the text field cannot be blanked out (i.e. no file specified at all).
      * @param selectionType    A SelectionType value as explained above.
@@ -138,20 +139,21 @@ public final class FileField extends FormField {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         }
         if (selectionType == SelectionType.ExistingFile || selectionType == SelectionType.ExistingDirectory) {
-            removeAllFieldValidators();
-            addFieldValidator(new FileMustExistValidator());
-            addFieldValidator(new FileMustBeReadableValidator());
-            addFieldValidator(new FileMustBeWritableValidator());
-
+            fieldValidators.clear(); // clear ALL - both our built-in ones and the user-added ones
+            fieldValidators.add(new FileMustExistValidator());
+            fieldValidators.add(new FileMustBeReadableValidator());
+            fieldValidators.add(new FileMustBeWritableValidator());
+            fieldValidators.addAll(userAddedValidators); // now add the user-added validators back
         }
         else {
-            removeAllFieldValidators();
-            addFieldValidator(new FileMustNotExistValidator());
-            addFieldValidator(new FileMustBeCreatableValidator());
+            fieldValidators.clear(); // clear ALL - both our built-in ones and the user-added ones
+            fieldValidators.add(new FileMustNotExistValidator());
+            fieldValidators.add(new FileMustBeCreatableValidator());
+            fieldValidators.addAll(userAddedValidators); // now add the user-added validators back
         }
 
         if (!allowBlankValues) {
-            addFieldValidator(new FileMustBeSpecifiedValidator());
+            fieldValidators.add(new FileMustBeSpecifiedValidator());
         }
     }
 
@@ -260,4 +262,33 @@ public final class FileField extends FormField {
             }
         }
     }
+
+    /**
+     * Overridden so that it acts only on our "user-added" validators list. We need to keep these
+     * separate from the validators that we add internally depending on selectionType.
+     */
+    @Override
+    public FormField addFieldValidator(FieldValidator<? extends FormField> validator) {
+        userAddedValidators.add(validator);
+        return this;
+    }
+
+    /**
+     * Overridden so that it acts only on our "user-added" validators list. We need to keep these
+     * separate from the validators that we add internally depending on selectionType.
+     */
+    @Override
+    public void removeFieldValidator(FieldValidator<FormField> validator) {
+        userAddedValidators.remove(validator);
+    }
+
+    /**
+     * Overridden so that it acts only on our "user-added" validators list. We need to keep these
+     * separate from the validators that we add internally depending on selectionType.
+     */
+    @Override
+    public void removeAllFieldValidators() {
+        userAddedValidators.clear();
+    }
+
 }
