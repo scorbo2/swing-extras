@@ -3,12 +3,20 @@ Author: Steve Corbett
 
 Version 2.4.0 [TODO] - swing-forms rewrite
   #86 - Clean up resource handling in swing-forms
+  #84 - Rewrite the swing-forms render pipeline
+  #83 - Add deprecation warning for ConfigObject and ConfigPanel
   #82 - Refactor FieldValidator
   #80 - Refactor ValidationResult
+  #79 - Thorough javadoc pass on swing-forms
   #78 - Refactor FormPanel
+  #77 - Refactor FormField
+  #76 - Remove ugly hack in FormField
   #74 - ComboProperty and ComboField are now generic
+  #73 - Refactor FormField.render()
+  #72 - Fix some goofiness in FileField
   #70 - Fix array index out of bounds in ListProperty
   #69 - Fix uncaught exception during extension loading
+  #68 - Change the way AbstractProperty exposes form fields
 
 Version 2.3.0 [2025-07-20] - Maintenance release
   #67 - Minor bug in extension config preview
