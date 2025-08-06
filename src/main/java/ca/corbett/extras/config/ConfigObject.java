@@ -6,6 +6,7 @@ import ca.corbett.extras.properties.Properties;
  * Implement this interface to signify that your class is capable of loading
  * and saving its current state to or from a Properties instance.
  *
+ * @deprecated Consider using AbstractProperty instead! This class may be removed in a future release!
  * @author scorbo2
  * @since 2018-02-04
  */
