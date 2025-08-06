@@ -15,10 +15,10 @@ import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.FormField;
-import ca.corbett.forms.fields.FormFieldValueChangedListener;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ValueChangedListener;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -177,7 +177,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         imagePanel.setImage(image);
     }
 
-    private final FormFieldValueChangedListener changeListener = new FormFieldValueChangedListener() {
+    private final ValueChangedListener changeListener = new ValueChangedListener() {
         @Override
         public void formFieldValueChanged(FormField field) {
             text = textField.getText();

@@ -4,10 +4,10 @@ import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FormField;
-import ca.corbett.forms.fields.FormFieldValueChangedListener;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
+import ca.corbett.forms.fields.ValueChangedListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -300,7 +300,7 @@ public final class FontDialog extends JDialog {
     private JComponent buildFontChooserPanel(Color textColor, Color bgColor) {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
 
-        FormFieldValueChangedListener changeListener = new FormFieldValueChangedListener() {
+        ValueChangedListener changeListener = new ValueChangedListener() {
             @Override
             public void formFieldValueChanged(FormField field) {
                 fontChanged();

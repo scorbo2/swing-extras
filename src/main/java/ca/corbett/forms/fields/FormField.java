@@ -29,7 +29,7 @@ public abstract class FormField {
 
     public static final Font DEFAULT_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
 
-    protected final List<FormFieldValueChangedListener> valueChangedListeners = new ArrayList<>();
+    protected final List<ValueChangedListener> valueChangedListeners = new ArrayList<>();
     protected final List<FieldValidator<? extends FormField>> fieldValidators = new ArrayList<>();
 
     protected String identifier;
@@ -137,7 +137,7 @@ public abstract class FormField {
     /**
      * Adds a value changed listener that will be invoked when the field value is changed.
      */
-    public FormField addValueChangedListener(FormFieldValueChangedListener listener) {
+    public FormField addValueChangedListener(ValueChangedListener listener) {
         valueChangedListeners.add(listener);
         return this;
     }
@@ -145,7 +145,7 @@ public abstract class FormField {
     /**
      * Removes the given value changed listener from this FormField.
      */
-    public void removeValueChangedListener(FormFieldValueChangedListener listener) {
+    public void removeValueChangedListener(ValueChangedListener listener) {
         valueChangedListeners.remove(listener);
     }
 
@@ -395,7 +395,7 @@ public abstract class FormField {
      * in the value of this field.
      */
     protected void fireValueChangedEvent() {
-        for (FormFieldValueChangedListener listener : valueChangedListeners) {
+        for (ValueChangedListener listener : valueChangedListeners) {
             listener.formFieldValueChanged(this);
         }
     }

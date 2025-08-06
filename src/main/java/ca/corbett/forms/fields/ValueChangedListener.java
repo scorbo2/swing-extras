@@ -7,7 +7,7 @@ package ca.corbett.forms.fields;
  * @author scorbo2
  * @since swing-extras 2.4
  */
-public interface FormFieldValueChangedListener {
+public interface ValueChangedListener {
 
     /**
      * The value in the given FormField has been modified. The field can be interrogated for its new value.

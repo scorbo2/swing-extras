@@ -9,8 +9,8 @@ import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.FormField;
-import ca.corbett.forms.fields.FormFieldValueChangedListener;
 import ca.corbett.forms.fields.NumberField;
+import ca.corbett.forms.fields.ValueChangedListener;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -223,7 +223,7 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
         add(formPanel, BorderLayout.CENTER);
     }
 
-    private final FormFieldValueChangedListener fontFieldChangedAction = new FormFieldValueChangedListener() {
+    private final ValueChangedListener fontFieldChangedAction = new ValueChangedListener() {
         @Override
         public void formFieldValueChanged(FormField field) {
             Font font = fontField.getSelectedFont();
