@@ -1,7 +1,12 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.forms.validators.FieldValidator;
+import ca.corbett.forms.validators.ValidationResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -122,5 +127,53 @@ public abstract class FormFieldBaseTests {
     @Test
     public void validate_withNoValidators_shouldBeValid() {
         assertTrue(actual.isValid());
+    }
+
+    @Test
+    public void testClearValidationResults() {
+        actual.addFieldValidator(new AlwaysFalseValidator());
+        assertFalse(actual.isValid());
+        actual.clearValidationResults();
+        assertNull(actual.getValidationLabel().getToolTipText());
+    }
+
+    @Test
+    public void testExtraAttributes() {
+        assertNull(actual.getExtraAttribute("test"));
+        actual.setExtraAttribute("test", "value");
+        assertEquals("value", actual.getExtraAttribute("test"));
+        actual.clearExtraAttribute("test");
+        assertNull(actual.getExtraAttribute("test"));
+    }
+
+    @Test
+    public void testSetAllExtraAttributes() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("test1", "value1");
+        values.put("test2", "value2");
+        values.put("test3", "value3");
+
+        actual.setAllExtraAttributes(values);
+        assertEquals("value1", actual.getExtraAttribute("test1"));
+        assertEquals("value2", actual.getExtraAttribute("test2"));
+        assertEquals("value3", actual.getExtraAttribute("test3"));
+
+        actual.clearExtraAttribute("test2");
+        assertEquals("value1", actual.getExtraAttribute("test1"));
+        assertNull(actual.getExtraAttribute("test2"));
+        assertEquals("value3", actual.getExtraAttribute("test3"));
+
+        actual.clearExtraAttributes();
+        assertNull(actual.getExtraAttribute("test1"));
+        assertNull(actual.getExtraAttribute("test2"));
+        assertNull(actual.getExtraAttribute("test3"));
+    }
+
+    protected static class AlwaysFalseValidator extends FieldValidator<FormField> {
+
+        @Override
+        public ValidationResult validate(FormField fieldToValidate) {
+            return ValidationResult.invalid("invalid");
+        }
     }
 }
