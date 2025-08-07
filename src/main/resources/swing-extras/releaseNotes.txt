@@ -11,6 +11,7 @@ Version 2.4.0 [TODO] - swing-forms rewrite
   #78 - Refactor FormPanel
   #77 - Refactor FormField
   #76 - Remove ugly hack in FormField
+  #75 - Add unit tests for swing-forms
   #74 - ComboProperty and ComboField are now generic
   #73 - Refactor FormField.render()
   #72 - Fix some goofiness in FileField

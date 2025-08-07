@@ -20,7 +20,6 @@ import javax.swing.JCheckBox;
 public final class CheckBoxField extends FormField {
 
     public CheckBoxField(String labelText, boolean isChecked) {
-        fieldLabel.setFont(DEFAULT_FONT);
         fieldComponent = new JCheckBox(labelText, isChecked);
         fieldComponent.setFont(DEFAULT_FONT);
         ((JCheckBox)fieldComponent).addItemListener(e -> fireValueChangedEvent());
