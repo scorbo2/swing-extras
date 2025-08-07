@@ -2,7 +2,6 @@ package ca.corbett.forms.fields;
 
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.ValidationResult;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -15,13 +14,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CheckBoxFieldTest {
+class CheckBoxFieldTest extends FormFieldBaseTests {
 
-    private CheckBoxField actual;
-
-    @BeforeEach
-    public void setup() {
-        actual = new CheckBoxField("test", true);
+    @Override
+    protected FormField createTestObject() {
+        return new CheckBoxField("test", true);
     }
 
     @Test
@@ -38,61 +35,41 @@ class CheckBoxFieldTest {
 
     @Test
     public void testCheck() {
-        assertTrue(actual.isChecked());
+        CheckBoxField actualField = (CheckBoxField)actual;
+        assertTrue(actualField.isChecked());
         assertTrue(((JCheckBox)actual.getFieldComponent()).isSelected());
-        actual.setChecked(false);
-        assertFalse(actual.isChecked());
+        actualField.setChecked(false);
+        assertFalse(actualField.isChecked());
         assertFalse(((JCheckBox)actual.getFieldComponent()).isSelected());
     }
 
     @Test
     public void testAddValueChangedListener() {
+        CheckBoxField actualField = (CheckBoxField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
-        actual.setChecked(false);
-        actual.setChecked(true);
-        actual.setChecked(true); // shouldn't count as it isn't a value change
+        actualField.setChecked(false);
+        actualField.setChecked(true);
+        actualField.setChecked(true); // shouldn't count as it isn't a value change
         Mockito.verify(listener, Mockito.times(2)).formFieldValueChanged(actual);
     }
 
     @Test
     public void testRemoveValueChangedListener() {
+        CheckBoxField actualField = (CheckBoxField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
         actual.removeValueChangedListener(listener);
-        actual.setChecked(false);
-        actual.setChecked(true);
+        actualField.setChecked(false);
+        actualField.setChecked(true);
         Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(actual);
-
-    }
-
-    @Test
-    public void testSetIdentifier() {
-        assertNull(actual.getIdentifier());
-        actual.setIdentifier("Hello");
-        assertEquals("Hello", actual.getIdentifier());
-        actual.setIdentifier(null);
-        assertNull(actual.getIdentifier());
-    }
-
-    @Test
-    public void testHelpLabel() {
-        assertFalse(actual.hasHelpLabel());
-        assertNull(actual.getHelpLabel().getToolTipText());
-        actual.setHelpText("Hello there");
-        assertTrue(actual.hasHelpLabel());
-        assertEquals("Hello there", actual.getHelpLabel().getToolTipText());
-    }
-
-    @Test
-    public void validate_withNoValidators_shouldBeValid() {
-        assertTrue(actual.isValid());
     }
 
     @Test
     public void validate_invalidScenario() {
+        CheckBoxField actualField = (CheckBoxField)actual;
         actual.addFieldValidator(new TestValidator());
-        actual.setChecked(false);
+        actualField.setChecked(false);
         assertFalse(actual.isValid());
         assertEquals(TestValidator.MSG, actual.getValidationLabel().getToolTipText());
     }

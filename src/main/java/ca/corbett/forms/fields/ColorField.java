@@ -44,11 +44,7 @@ public class ColorField extends FormField {
                 if (!colorPanel.isEnabled()) {
                     return;
                 }
-                Color newColor = JColorChooser.showDialog(((JPanel)e.getSource()), "Choose color", selectedColor);
-                if (newColor != null) {
-                    setColor(newColor);
-                    fireValueChangedEvent();
-                }
+                setColor(JColorChooser.showDialog(((JPanel)e.getSource()), "Choose color", selectedColor));
             }
         });
     }
@@ -65,11 +61,14 @@ public class ColorField extends FormField {
     /**
      * Sets the current Color value for this field.
      *
-     * @param color The new color.
+     * @param newColor The new newColor. Null values are ignored.
      */
-    public ColorField setColor(Color color) {
-        selectedColor = color;
-        colorPanel.setBackground(color);
+    public ColorField setColor(Color newColor) {
+        if (newColor != null && !selectedColor.equals(newColor)) {
+            selectedColor = newColor;
+            colorPanel.setBackground(newColor);
+            fireValueChangedEvent();
+        }
         return this;
     }
 }

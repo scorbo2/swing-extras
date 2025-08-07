@@ -229,6 +229,13 @@ public abstract class FormField {
     }
 
     /**
+     * Reports whether this FormField is visible.
+     */
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    /**
      * Enables or disables all components in this field.
      *
      * @param enabled whether to enable or disable the components.
