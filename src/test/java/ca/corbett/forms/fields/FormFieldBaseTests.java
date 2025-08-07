@@ -23,14 +23,41 @@ public abstract class FormFieldBaseTests {
     public void testSetEnabled() {
         assertTrue(actual.isEnabled());
         assertTrue(actual.getFieldComponent().isEnabled());
+        if (actual.hasFieldLabel()) {
+            assertTrue(actual.getFieldLabel().isEnabled());
+        }
+        if (actual.hasHelpLabel()) {
+            assertTrue(actual.getHelpLabel().isEnabled());
+        }
+        if (actual.hasValidationLabel()) {
+            assertTrue(actual.getValidationLabel().isEnabled());
+        }
 
         actual.setEnabled(false);
         assertFalse(actual.isEnabled());
         assertFalse(actual.getFieldComponent().isEnabled());
+        if (actual.hasFieldLabel()) {
+            assertFalse(actual.getFieldLabel().isEnabled());
+        }
+        if (actual.hasHelpLabel()) {
+            assertFalse(actual.getHelpLabel().isEnabled());
+        }
+        if (actual.hasValidationLabel()) {
+            assertFalse(actual.getValidationLabel().isEnabled());
+        }
 
         actual.setEnabled(true);
         assertTrue(actual.isEnabled());
         assertTrue(actual.getFieldComponent().isEnabled());
+        if (actual.hasFieldLabel()) {
+            assertTrue(actual.getFieldLabel().isEnabled());
+        }
+        if (actual.hasHelpLabel()) {
+            assertTrue(actual.getHelpLabel().isEnabled());
+        }
+        if (actual.hasValidationLabel()) {
+            assertTrue(actual.getValidationLabel().isEnabled());
+        }
     }
 
     @Test
