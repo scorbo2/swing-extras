@@ -34,7 +34,7 @@ import java.util.Map;
  *     <pre>labelField.setText("&lt;html&gt;Hello&lt;br&gt;second line&lt;br&gt;another line&lt;/html&gt;");</pre>
  * </blockquote>
  *
- * <h3>Hyperlinks</h3>
+ * <p>Hyperlinks</p><br>
  * Hyperlinked labels are supported by using the setHyperlink() method and providing some Action to be invoked
  * when the link is clicked. This will change the color of the label to blue and change the mouse pointer
  * when the cursor is over the label, to indicate that the label is clickable.

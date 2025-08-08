@@ -24,7 +24,7 @@ import java.util.List;
  *         call formField.validate() and the validators will be invoked automatically.
  * </ul>
  *
- * <h3>Handling oversized forms</h3>
+ * <p>Handling oversized forms</p><br>
  * You can easily add a FormPanel to a JScrollPane to provide for scrollbars in the
  * case where the form is unreasonably large.
  *

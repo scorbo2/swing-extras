@@ -1,18 +1,18 @@
 /**
- * <H1>Welcome to swing-forms!</H1>
+ * <H2>Welcome to swing-forms!</H2>
  * The swing-forms library provides a layer of abstraction on top of
  * Java Swing components, and in particular eliminates the need to
  * worry about a LayoutManager for forms-like interfaces - that is,
  * presenting a group of related input fields to the user to allow
  * for viewing and modification.
  *
- * <h2>Online documentation</h2>
+ * <h3>Online documentation</h3>
  * In addition to the javadocs that you are reading right now,
  * the swing-forms library is also well documented in the
  * <a href="https://www.corbett.ca/swing-extras-book/">swing-extras book</a>,
  * which is available online.
  *
- * <h2>Quick guide to the code</h2>
+ * <h3>Quick guide to the code</h3>
  * Here is a very quick overview of the code:
  * <ul>
  *     <li>The FormPanel class wraps a collection of FormField instances
@@ -28,7 +28,7 @@
  *         can very easily build your own FieldValidator implementation.
  * </ul>
  *
- * <h2>Extending the code</h2>
+ * <h3>Extending the code</h3>
  * The swing-forms library is designed with extensibility in mind! If you
  * need a new type of FormField, you can either create a PanelField and
  * add whatever components you need into it, or you can extend FormField
@@ -36,7 +36,7 @@
  * for your input form or for a particular FormField, you can easily
  * extend FieldValidator to write whatever validation rules you need.
  *
- * <h2>Additional help</h2>
+ * <h3>Additional help</h3>
  * You can fire up the included swing-extras demo app for a quick walk-through
  * of some of the capabilities of swing-forms.
  * <p>
