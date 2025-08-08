@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Objects;
 
 /**
  * A FormField implementation that provides the ability to select a Font, with
@@ -27,9 +28,9 @@ import java.awt.event.ActionListener;
  */
 public final class FontField extends FormField {
 
-    private JLabel sampleLabel;
-    private JButton button;
-    private JPanel wrapperPanel;
+    private final JLabel sampleLabel;
+    private final JButton button;
+    private final JPanel wrapperPanel;
     private ActionListener actionListener;
     private Font selectedFont;
     private Color textColor;
@@ -91,7 +92,7 @@ public final class FontField extends FormField {
         sampleLabel = new JLabel();
         sampleLabel.setOpaque(true);
         sampleLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        setSelectedFont(selectedFont);
+        updateSampleLabel();
         fieldComponent = wrapperPanel;
         wrapperPanel.add(sampleLabel);
         wrapperPanel.add(new JLabel(" ")); // spacer
@@ -129,9 +130,14 @@ public final class FontField extends FormField {
      *
      * @param font The Font to select.
      */
-    public void setSelectedFont(Font font) {
+    public FontField setSelectedFont(Font font) {
+        if (Objects.equals(selectedFont, font)) {
+            return this; // don't accept no-op changes
+        }
         selectedFont = font;
         updateSampleLabel();
+        fireValueChangedEvent();
+        return this;
     }
 
     /**
@@ -150,12 +156,17 @@ public final class FontField extends FormField {
      *
      * @param textColor The new text color (overrides any previous selection).
      */
-    public void setTextColor(Color textColor) {
+    public FontField setTextColor(Color textColor) {
+        if (Objects.equals(this.textColor, textColor)) {
+            return this; // reject no-op changes
+        }
         if (this.textColor == null) {
-            return;
+            return this; // reject null
         }
         this.textColor = textColor;
         updateSampleLabel();
+        fireValueChangedEvent();
+        return this;
     }
 
     /**
@@ -174,28 +185,37 @@ public final class FontField extends FormField {
      *
      * @param bgColor The new background color (overrides any previous selection).
      */
-    public void setBgColor(Color bgColor) {
+    public FontField setBgColor(Color bgColor) {
+        if (Objects.equals(this.bgColor, bgColor)) {
+            return this; // reject no-op changes
+        }
         if (this.bgColor == null) {
-            return;
+            return this; // reject null
         }
         this.bgColor = bgColor;
         updateSampleLabel();
+        fireValueChangedEvent();
+        return this;
     }
 
     @Override
-    public void setVisible(boolean isVisible) {
-        super.setVisible(isVisible);
-        wrapperPanel.setVisible(isVisible);
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        button.setEnabled(enabled);
     }
 
     @Override
     public void preRender(JPanel container) {
         wrapperPanel.setBackground(container.getBackground());
+
+        // Remove old action listener:
         if (actionListener != null) {
             button.removeActionListener(actionListener);
         }
+
+        // Now create and add a new one - it needs the container to use as a parent for the popup:
         actionListener = getActionListener(container);
-        button.addActionListener(actionListener); // UTIL-147 avoid adding it twice
+        button.addActionListener(actionListener);
     }
 
     /**
@@ -230,7 +250,6 @@ public final class FontField extends FormField {
                     setSelectedFont(dialog.getSelectedFont());
                     setTextColor(dialog.getSelectedTextColor());
                     setBgColor(dialog.getSelectedBgColor());
-                    fireValueChangedEvent();
                 }
             }
         };
