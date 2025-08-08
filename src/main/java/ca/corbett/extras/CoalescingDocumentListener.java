@@ -33,7 +33,7 @@ import javax.swing.text.JTextComponent;
  *     In effect, we can treat setText() as a single operation, as it should be.
  * </p>
  *
- * @author scorbo2
+ * @author scorbo2 (with help from claude.ai!)
  * @since swing-extras 2.4
  */
 public class CoalescingDocumentListener implements DocumentListener {
