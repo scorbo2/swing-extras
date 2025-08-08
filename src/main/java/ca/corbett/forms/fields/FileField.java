@@ -1,5 +1,6 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.extras.CoalescingDocumentListener;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.FileMustBeCreatableValidator;
 import ca.corbett.forms.validators.FileMustBeReadableValidator;
@@ -61,6 +62,7 @@ public final class FileField extends FormField {
     private JButton chooseButton;
     private SelectionType selectionType;
     private boolean isAllowBlank;
+    private File currentFile;
 
     /**
      * Creates a FileField with the given parameters.
@@ -84,9 +86,12 @@ public final class FileField extends FormField {
      * @param allowBlank    whether to allow blank values in the field.
      */
     public FileField(String label, File initialValue, int cols, SelectionType selectionType, boolean allowBlank) {
+        this.currentFile = initialValue;
         fieldLabel.setText(label);
         textField = new JTextField(initialValue == null ? "" : initialValue.getAbsolutePath());
         textField.setColumns(cols);
+        textField.getDocument()
+                 .addDocumentListener(new CoalescingDocumentListener(textField, e -> fireValueChangedEvent()));
         fileChooser = new JFileChooser(initialValue);
         fileChooser.setMultiSelectionEnabled(false);
         setSelectionType(selectionType, allowBlank);
@@ -113,8 +118,9 @@ public final class FileField extends FormField {
      *
      * @param selectionType A SelectionType value as explained above.
      */
-    public void setSelectionType(SelectionType selectionType) {
+    public FileField setSelectionType(SelectionType selectionType) {
         setSelectionType(selectionType, false);
+        return this;
     }
 
     /**
@@ -129,7 +135,7 @@ public final class FileField extends FormField {
      * @param allowBlankValues If false, the text field cannot be blanked out (i.e. no file specified at all).
      * @param selectionType    A SelectionType value as explained above.
      */
-    public void setSelectionType(SelectionType selectionType, boolean allowBlankValues) {
+    public FileField setSelectionType(SelectionType selectionType, boolean allowBlankValues) {
         this.selectionType = selectionType;
         this.isAllowBlank = allowBlankValues;
         if (selectionType == SelectionType.NonExistingFile || selectionType == SelectionType.ExistingFile) {
@@ -138,23 +144,8 @@ public final class FileField extends FormField {
         else {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         }
-        if (selectionType == SelectionType.ExistingFile || selectionType == SelectionType.ExistingDirectory) {
-            fieldValidators.clear(); // clear ALL - both our built-in ones and the user-added ones
-            fieldValidators.add(new FileMustExistValidator());
-            fieldValidators.add(new FileMustBeReadableValidator());
-            fieldValidators.add(new FileMustBeWritableValidator());
-            fieldValidators.addAll(userAddedValidators); // now add the user-added validators back
-        }
-        else {
-            fieldValidators.clear(); // clear ALL - both our built-in ones and the user-added ones
-            fieldValidators.add(new FileMustNotExistValidator());
-            fieldValidators.add(new FileMustBeCreatableValidator());
-            fieldValidators.addAll(userAddedValidators); // now add the user-added validators back
-        }
-
-        if (!allowBlankValues) {
-            fieldValidators.add(new FileMustBeSpecifiedValidator());
-        }
+        resetValidators();
+        return this;
     }
 
     /**
@@ -178,14 +169,13 @@ public final class FileField extends FormField {
     }
 
     /**
-     * Overridden so we can show/hide our choose button also.
+     * Specifies whether blank values should be allowed in the text field. If false, a
+     * non-blank validator will be added automatically.
      */
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        if (chooseButton != null) {
-            chooseButton.setVisible(visible);
-        }
+    public FileField setAllowBlankValues(boolean allow) {
+        isAllowBlank = allow;
+        resetValidators();
+        return this;
     }
 
     /**
@@ -197,6 +187,13 @@ public final class FileField extends FormField {
         if (chooseButton != null) {
             chooseButton.setEnabled(enabled);
         }
+    }
+
+    /**
+     * Allows direct access to the underlying JTextField.
+     */
+    public JTextField getTextField() {
+        return textField;
     }
 
     /**
@@ -214,7 +211,7 @@ public final class FileField extends FormField {
      *
      * @param file The File to select.
      */
-    public void setFile(File file) {
+    public FileField setFile(File file) {
         clearValidationResults();
         if (file == null) {
             textField.setText("");
@@ -222,6 +219,7 @@ public final class FileField extends FormField {
         else {
             textField.setText(file.getAbsolutePath());
         }
+        return this;
     }
 
     /**
@@ -229,18 +227,27 @@ public final class FileField extends FormField {
      *
      * @param filter An optional FileFilter to apply.
      */
-    public void setFileFilter(FileFilter filter) {
+    public FileField setFileFilter(FileFilter filter) {
         fileChooser.setFileFilter(filter);
+        return this;
+    }
+
+    public FileFilter getFileFilter() {
+        return fileChooser.getFileFilter();
     }
 
     @Override
     public void preRender(JPanel container) {
         fieldComponent.setBackground(container.getBackground());
+
+        // Remove any previous action listener added by us:
         for (ActionListener listener : chooseButton.getActionListeners()) {
             if (listener instanceof ButtonActionListener) {
                 chooseButton.removeActionListener(listener);
             }
         }
+
+        // Add a new one - the action listener needs the parent container to show the chooser dialog:
         chooseButton.addActionListener(new ButtonActionListener(this, container));
     }
 
@@ -258,7 +265,6 @@ public final class FileField extends FormField {
             int result = ownerField.fileChooser.showDialog(container, "Choose");
             if (result == JFileChooser.APPROVE_OPTION) {
                 ownerField.textField.setText(ownerField.fileChooser.getSelectedFile().getAbsolutePath());
-                ownerField.fireValueChangedEvent();
             }
         }
     }
@@ -270,6 +276,7 @@ public final class FileField extends FormField {
     @Override
     public FormField addFieldValidator(FieldValidator<? extends FormField> validator) {
         userAddedValidators.add(validator);
+        resetValidators();
         return this;
     }
 
@@ -280,6 +287,7 @@ public final class FileField extends FormField {
     @Override
     public void removeFieldValidator(FieldValidator<FormField> validator) {
         userAddedValidators.remove(validator);
+        resetValidators();
     }
 
     /**
@@ -289,6 +297,37 @@ public final class FileField extends FormField {
     @Override
     public void removeAllFieldValidators() {
         userAddedValidators.clear();
+        resetValidators();
     }
 
+    /**
+     * Invoked internally when any change is made that might affect our FieldValidator list.
+     * We maintain two separate lists - those validators that we add internally based on
+     * allowable selection type, and also user-supplied ones that were added by callers.
+     * This method will carefully rebuild the list so that we can change our internal
+     * validators without affecting the user-supplied ones.
+     */
+    private void resetValidators() {
+        // clear ALL validators - both our built-in ones and the user-added ones.
+        fieldValidators.clear();
+
+        // Figure out which validators we need based on our selectionType
+        if (selectionType == SelectionType.ExistingFile || selectionType == SelectionType.ExistingDirectory) {
+            fieldValidators.add(new FileMustExistValidator());
+            fieldValidators.add(new FileMustBeReadableValidator());
+            fieldValidators.add(new FileMustBeWritableValidator());
+        }
+        else {
+            fieldValidators.add(new FileMustNotExistValidator());
+            fieldValidators.add(new FileMustBeCreatableValidator());
+        }
+
+        // Also add a no-blank validator if required:
+        if (!isAllowBlank) {
+            fieldValidators.add(new FileMustBeSpecifiedValidator());
+        }
+
+        // now add the user-added validators back
+        fieldValidators.addAll(userAddedValidators);
+    }
 }

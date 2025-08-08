@@ -2,8 +2,6 @@ package ca.corbett.forms.validators;
 
 import ca.corbett.forms.fields.FileField;
 
-import javax.swing.JTextField;
-
 /**
  * Similar to NonBlankFieldValidator for TextFields, this FieldValidator implementation
  * insists that a FileField cannot contain a blank value. Note that this validation is
@@ -19,8 +17,7 @@ public class FileMustBeSpecifiedValidator implements FieldValidator<FileField> {
 
     @Override
     public ValidationResult validate(FileField fieldToValidate) {
-        JTextField textField = (JTextField)fieldToValidate.getFieldComponent();
-        if (textField.getText().trim().isEmpty()) {
+        if (fieldToValidate.getTextField().getText().trim().isEmpty()) {
             return ValidationResult.invalid("Value cannot be blank.");
         }
         return ValidationResult.valid();
