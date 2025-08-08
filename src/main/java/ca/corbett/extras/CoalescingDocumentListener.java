@@ -32,6 +32,17 @@ import javax.swing.text.JTextComponent;
  *     behind-the-scenes change notifications into one single notification.
  *     In effect, we can treat setText() as a single operation, as it should be.
  * </p>
+ * <p>
+ * <b>Minor drawback:</b> multiple successive calls to setText() will confuse
+ *     the timer and will cause it to incorrectly coalesce those multiple
+ *     changes into one change notification. However, outside of unit test,
+ *     this scenario isn't likely to come up often. The problem is that the
+ *     timer can't distinguish between "rapid calls to setText() that should
+ *     be considered separate changes" and "multiple rapid text modifications
+ *     being done as part of the same operation". I blame DocumentListener
+ *     for being a bit of a weird interface in the first place, and also
+ *     JTextComponent for exposing too much of its internals.
+ * </p>
  *
  * @author scorbo2 (with help from claude.ai!)
  * @since swing-extras 2.4
