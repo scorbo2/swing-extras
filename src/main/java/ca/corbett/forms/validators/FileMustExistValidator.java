@@ -13,7 +13,7 @@ import java.io.File;
  * @author scorbo2
  * @since 2019-11-24
  */
-public class FileMustExistValidator extends FieldValidator<FileField> {
+public class FileMustExistValidator implements FieldValidator<FileField> {
 
     @Override
     public ValidationResult validate(FileField fieldToValidate) {

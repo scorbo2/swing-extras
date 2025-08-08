@@ -11,7 +11,7 @@ import java.io.File;
  * @author scorbo2
  * @since 2019-11-24
  */
-public class FileMustNotExistValidator extends FieldValidator<FileField> {
+public class FileMustNotExistValidator implements FieldValidator<FileField> {
 
     @Override
     public ValidationResult validate(FileField fieldToValidate) {

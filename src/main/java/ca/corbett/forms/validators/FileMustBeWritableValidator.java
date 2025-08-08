@@ -10,7 +10,7 @@ import java.io.File;
  * @author scorbo2
  * @since 2019-11-24
  */
-public class FileMustBeWritableValidator extends FieldValidator<FileField> {
+public class FileMustBeWritableValidator implements FieldValidator<FileField> {
 
     @Override
     public ValidationResult validate(FileField fieldToValidate) {

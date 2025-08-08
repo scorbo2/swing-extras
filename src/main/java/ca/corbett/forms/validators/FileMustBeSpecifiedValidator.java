@@ -15,7 +15,7 @@ import javax.swing.JTextField;
  * @author scorbo2
  * @since 2020-10-13
  */
-public class FileMustBeSpecifiedValidator extends FieldValidator<FileField> {
+public class FileMustBeSpecifiedValidator implements FieldValidator<FileField> {
 
     @Override
     public ValidationResult validate(FileField fieldToValidate) {

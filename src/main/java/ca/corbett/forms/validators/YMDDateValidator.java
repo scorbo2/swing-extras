@@ -12,7 +12,7 @@ import java.text.SimpleDateFormat;
  * @author scorbo2
  * @since 2019-11-24
  */
-public class YMDDateValidator extends FieldValidator<TextField> {
+public class YMDDateValidator implements FieldValidator<TextField> {
 
     private final boolean allowBlankValues;
     private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");

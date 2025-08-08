@@ -169,7 +169,7 @@ public abstract class FormFieldBaseTests {
         assertNull(actual.getExtraAttribute("test3"));
     }
 
-    protected static class AlwaysFalseValidator extends FieldValidator<FormField> {
+    protected static class AlwaysFalseValidator implements FieldValidator<FormField> {
 
         @Override
         public ValidationResult validate(FormField fieldToValidate) {

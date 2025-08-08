@@ -89,7 +89,7 @@ class ColorFieldTest extends FormFieldBaseTests {
         assertNull(actual.getValidationLabel().getToolTipText());
     }
 
-    private static class TestValidator extends FieldValidator<ColorField> {
+    private static class TestValidator implements FieldValidator<ColorField> {
 
         public static final String MSG = "Color must be white";
 

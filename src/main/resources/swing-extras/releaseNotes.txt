@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.4.0 [TODO] - swing-forms rewrite
+  #87 - Change FieldValidator from abstract class to interface
   #86 - Clean up resource handling in swing-forms
   #84 - Rewrite the swing-forms render pipeline
   #83 - Add deprecation warning for ConfigObject and ConfigPanel

@@ -8,7 +8,7 @@ import ca.corbett.forms.fields.TextField;
  * @author scorbo2
  * @since 2019-11-23
  */
-public class NonBlankFieldValidator extends FieldValidator<TextField> {
+public class NonBlankFieldValidator implements FieldValidator<TextField> {
 
     @Override
     public ValidationResult validate(TextField fieldToValidate) {

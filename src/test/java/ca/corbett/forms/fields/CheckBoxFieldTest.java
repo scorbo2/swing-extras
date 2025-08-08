@@ -81,7 +81,7 @@ class CheckBoxFieldTest extends FormFieldBaseTests {
         assertNull(actual.getValidationLabel().getToolTipText());
     }
 
-    private static class TestValidator extends FieldValidator<CheckBoxField> {
+    private static class TestValidator implements FieldValidator<CheckBoxField> {
 
         public static final String MSG = "Validation message";
 
