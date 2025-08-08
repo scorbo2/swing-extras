@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  * Apologies: this code predates swing-forms and is therefore a little ugly. One day I'll
  * sit down and rewrite it to get rid of all the GridBagLayout stuff.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-04
  */
 public final class AudioDemoPanel extends PanelBuilder implements AudioPanelListener {

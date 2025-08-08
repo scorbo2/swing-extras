@@ -28,7 +28,7 @@ import java.util.List;
  * You can easily add a FormPanel to a JScrollPane to provide for scrollbars in the
  * case where the form is unreasonably large.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
 public final class FormPanel extends JPanel {

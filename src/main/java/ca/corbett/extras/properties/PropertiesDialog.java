@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  * create the dialog yourself. This isn't as hard as it sounds... see javadocs on generateDialog()
  * for more information.</p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public class PropertiesDialog extends JDialog {

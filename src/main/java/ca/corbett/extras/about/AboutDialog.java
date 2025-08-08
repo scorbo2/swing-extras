@@ -22,7 +22,7 @@ import java.awt.event.KeyEvent;
  * See also AboutPanel if you'd rather embed a JPanel somewhere instead of popping
  * up a dialog.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-02-14
  */
 public final class AboutDialog extends JDialog implements KeyEventDispatcher {

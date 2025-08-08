@@ -42,7 +42,7 @@ import java.util.Objects;
  * the visibility of field B depending on what value is contained in field A. You can do this
  * by using addValueChangedListener() and responding to the change events as they happen.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-23
  */
 public abstract class FormField {

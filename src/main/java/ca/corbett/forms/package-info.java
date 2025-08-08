@@ -22,7 +22,7 @@
  *         the various FormField implementations. Generally speaking,
  *         each FormField implementing class wraps a different Java
  *         Swing UI component.
- *     <li>The FieldValidator class provides an abstract starting point
+ *     <li>The FieldValidator interface provides a starting point
  *         for form field validation. A few FieldValidator implementations
  *         are included out of the box for some basic validation, or you
  *         can very easily build your own FieldValidator implementation.
@@ -44,12 +44,12 @@
  * for additional documentation and examples.
  * <p>
  * You can visit the <a href="https://github.com/scorbo2/swing-extras/issues">project issues page</a>
- * on GitHub the existing issues or post a question.
+ * on GitHub to view the existing issues or to post a question.
  *
  * <h2>Have fun!</h2>
  * Say goodbye forever to writing niggly GridBagLayout code, and enjoy
  * bringing your forms to the screen quickly and painlessly!
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 package ca.corbett.forms;

@@ -8,7 +8,7 @@ import java.awt.Color;
 /**
  * Represents a preferences object that can be used with AudioUtil.generateWaveform().
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-03
  */
 public class WaveformConfig implements ConfigObject {

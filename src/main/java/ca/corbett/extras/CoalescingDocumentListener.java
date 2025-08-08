@@ -44,7 +44,7 @@ import javax.swing.text.JTextComponent;
  *     JTextComponent for exposing too much of its internals.
  * </p>
  *
- * @author scorbo2 (with help from claude.ai!)
+ * @author <a href="https://github.com/scorbo2">scorbo2</a> (with help from claude.ai!)
  * @since swing-extras 2.4
  */
 public class CoalescingDocumentListener implements DocumentListener {

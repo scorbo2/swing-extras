@@ -28,6 +28,6 @@
  * also expose the wrapped Java Swing UI component via getFieldComponent(),
  * so you can apply custom styling to the individual form fields as well.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 package ca.corbett.forms.fields;

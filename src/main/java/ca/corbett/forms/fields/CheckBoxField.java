@@ -14,7 +14,7 @@ import javax.swing.JCheckBox;
  * JCheckBox (for example, for styling purposes, changing the font, etc), you can
  * use getFieldComponent() and cast the return to JCheckBox.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-27
  */
 public final class CheckBoxField extends FormField {

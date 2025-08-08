@@ -10,7 +10,7 @@ import java.io.File;
  * FileField in question. For example, if the selection type is DIRECTORIES_ONLY
  * and you select a file, that selection will fail validation.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
 public class FileMustExistValidator implements FieldValidator<FileField> {

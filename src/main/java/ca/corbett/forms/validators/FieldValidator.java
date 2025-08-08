@@ -9,7 +9,7 @@ import ca.corbett.forms.fields.FormField;
  * validation rules is as easy as implementing this interface and writing the validate() method!
  *
  * @param <T> FieldValidators are typed to a specific type of FormField.
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-23
  */
 public interface FieldValidator<T extends FormField> {

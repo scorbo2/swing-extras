@@ -7,7 +7,7 @@ import java.io.File;
 /**
  * A FieldValidator that ensures that the chosen Directory can be read.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
 public class FileMustBeReadableValidator implements FieldValidator<FileField> {

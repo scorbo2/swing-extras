@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  * to allow user input for playback, recording, and editing functions. If the controls
  * are hidden, these functions are only available programmatically.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-08
  */
 public final class AudioWaveformPanel extends JPanel {

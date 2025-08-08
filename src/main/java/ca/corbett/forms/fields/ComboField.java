@@ -15,7 +15,7 @@ import java.util.List;
  * use getFieldComponent() and cast the result to JComboBox with whatever type you used
  * with this class (for example, JComboBox&lt;String&gt;)
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
 public class ComboField<T> extends FormField {

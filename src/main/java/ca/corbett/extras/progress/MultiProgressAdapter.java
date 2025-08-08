@@ -3,7 +3,7 @@ package ca.corbett.extras.progress;
 /**
  * An empty adapter class for MultiProgressListener. None of the methods here do anything.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public class MultiProgressAdapter implements MultiProgressListener {

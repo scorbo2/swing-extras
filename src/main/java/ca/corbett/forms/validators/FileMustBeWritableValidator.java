@@ -7,7 +7,7 @@ import java.io.File;
 /**
  * A FieldValidator that ensures that the chosen File can be written.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
 public class FileMustBeWritableValidator implements FieldValidator<FileField> {

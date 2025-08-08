@@ -15,7 +15,7 @@ import java.util.List;
  * this directly, but it's easier to go through the various play() wrapper functions
  * in AudioUtil to generate and start the thread for you.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-10
  */
 public class PlaybackThread implements Runnable {

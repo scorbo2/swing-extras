@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * A quick demo panel to show off the capabilities of ImageTextUtil.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-15
  */
 public class ImageTextUtilDemoPanel extends PanelBuilder {

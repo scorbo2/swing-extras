@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 /**
  * Contains some static utility methods for dealing with drawing gradients into images.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public final class GradientUtil {

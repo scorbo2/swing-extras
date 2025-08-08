@@ -8,7 +8,7 @@ import java.io.File;
  * The opposite of FileMustExistValidator, this one ensures that the selected file or directory
  * does not already exist (such as for a save dialog).
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
 public class FileMustNotExistValidator implements FieldValidator<FileField> {

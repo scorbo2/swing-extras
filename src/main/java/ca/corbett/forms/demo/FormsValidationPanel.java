@@ -23,7 +23,7 @@ import java.awt.event.ActionListener;
  * Builds a FormPanel that shows how to add custom FieldValidators to make
  * form validation very easy to implement.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2029-11-25
  */
 public class FormsValidationPanel extends PanelBuilder {

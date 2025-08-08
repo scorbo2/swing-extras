@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Builds a FormPanel that contains an example of each of the basic form field types.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2029-11-25
  */
 public class BasicFormPanel extends PanelBuilder {

@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  * A utility class that can be used to interact with audio files. This is an abstraction over
  * the javax.sound utility classes, but also adds some additional features.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-03
  */
 public class AudioUtil {

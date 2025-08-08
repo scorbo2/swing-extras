@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  * property values will be loaded correctly, but they won't show up in the PropertiesDialog
  * until the extension is enabled again.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public abstract class AppProperties<T extends AppExtension> {

@@ -9,7 +9,7 @@ import java.net.URL;
 /**
  * Centralizes and manages access to the various resource images that are used in swing-forms.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.4
  */
 public final class Resources {

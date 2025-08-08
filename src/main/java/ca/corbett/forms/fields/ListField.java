@@ -13,7 +13,7 @@ import java.util.List;
  * do custom styling or whatnot on the JList.
  *
  * @since swing-extras 2.3
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class ListField<T> extends FormField {
 

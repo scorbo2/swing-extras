@@ -33,7 +33,7 @@ import java.util.List;
  * convenience methods here, like setFileFilter(), that can be used to
  * customize it.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
 public final class FileField extends FormField {

@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Provides a ConfigPanel implementation for editing LogoGenerator config options.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-06
  */
 public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {

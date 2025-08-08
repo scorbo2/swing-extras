@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
  * A FieldValidator that enforces yyyy-mm-dd format on a given TextField.
  * This is a bit cheesy but will do until and unless I ever put in a proper calendar chooser.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
 public class YMDDateValidator implements FieldValidator<TextField> {

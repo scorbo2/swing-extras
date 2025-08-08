@@ -19,7 +19,7 @@ import java.util.List;
  * Builds a FormPanel that gives some examples of attaching a custom Action
  * to FormFields to do certain things when their value changes.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2029-11-25
  */
 public class FormActionsPanel extends PanelBuilder {

@@ -54,7 +54,7 @@ import java.util.List;
  * setMajorProgressBounds() and setMinorProgressBounds() as soon as they are known, as above).
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-04-15
  */
 public final class MultiProgressDialog extends JDialog {

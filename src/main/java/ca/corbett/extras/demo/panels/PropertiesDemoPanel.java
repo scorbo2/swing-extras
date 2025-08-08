@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 /**
  * Demo panel to show off PropertiesManager and PropertiesDialog capabilities.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-15
  */
 public class PropertiesDemoPanel extends PanelBuilder {

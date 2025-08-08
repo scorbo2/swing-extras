@@ -46,7 +46,7 @@ import java.util.logging.Logger;
  * This is used by AboutDialog, but can be used also by applications that simply want
  * to embed the AboutPanel directly somewhere other than a popup dialog.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-02-14 (generified from existing code)
  */
 public final class AboutPanel extends JPanel {

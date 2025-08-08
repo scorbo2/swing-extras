@@ -23,7 +23,7 @@ import java.awt.image.BufferedImage;
  * app has some costly process to go through before the UI is shown, it is useful to be able to
  * show a progress bar with the splash screen, to give the user some idea of how startup is going.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public final class SplashProgressWindow extends JWindow {

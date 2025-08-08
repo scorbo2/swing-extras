@@ -12,7 +12,7 @@ import java.awt.Dimension;
  * The underlying JSpinner is accessible by invoking getFieldComponent() and
  * casting the result to JSpinner.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2020-09-25
  */
 public final class NumberField extends FormField {

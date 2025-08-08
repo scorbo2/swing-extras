@@ -5,7 +5,7 @@ package ca.corbett.forms.validators;
  * If validation is unsuccessful, the convention is to supply some user-readable
  * message to explain what's wrong, and what the user can do to fix it.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-23
  */
 public class ValidationResult {

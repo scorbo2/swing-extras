@@ -37,7 +37,7 @@ import java.util.Objects;
  * I should have called these "Preferences".
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public abstract class AbstractProperty {

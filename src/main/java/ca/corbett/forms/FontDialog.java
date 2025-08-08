@@ -41,7 +41,7 @@ import java.util.List;
  * written for and is used by the FontField, but you could
  * also invoke this dialog standalone if needed.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-04-07
  */
 public final class FontDialog extends JDialog {

@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * very quick logo type of thing. This was moved into sc-util from the
  * standalone LogoGenerator app as it makes more sense to live here.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public final class LogoGenerator {
 

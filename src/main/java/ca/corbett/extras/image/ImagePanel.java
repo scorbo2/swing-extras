@@ -34,7 +34,7 @@ import java.util.Map;
  * all configuration options. Alternatively, you can create an ImagePanelConfig
  * instance and override some or all of those defaults.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @see ca.corbett.extras.image.ImagePanelConfig
  * @since 2012-09-22 (originally for StegPng, later generified for ca.corbett.util.ui)
  */

@@ -19,7 +19,7 @@ import java.awt.event.ActionListener;
  * Combines a JColorChooser with a GradientConfigDialog to allow you to select
  * either a solid color or a gradient.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public final class GradientColorChooser extends JPanel {
 

@@ -14,7 +14,7 @@ import java.awt.Color;
  * Builds a very simple FormPanel with some introductory text. This one isn't very interesting,
  * but it contains a nice easy introduction to the rest of the demo app.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2029-11-25
  */
 public class FormsOverviewPanel extends PanelBuilder {

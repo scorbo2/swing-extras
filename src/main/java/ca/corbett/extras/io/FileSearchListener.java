@@ -8,7 +8,7 @@ import java.io.File;
  * up front how many files will be found during the search. So, this notification
  * is just so that callers with a UI can be assured that something is actually going on.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2017-12-02
  */
 public interface FileSearchListener {

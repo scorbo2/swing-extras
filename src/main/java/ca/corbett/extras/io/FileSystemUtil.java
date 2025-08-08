@@ -16,7 +16,7 @@ import java.util.List;
  * Provides a way to scan, organize, and search through a given file system, looking for
  * specific types of files recursively.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-07-28 (originally written for ICE, later generalized for ca.corbett.util)
  */
 public final class FileSystemUtil {

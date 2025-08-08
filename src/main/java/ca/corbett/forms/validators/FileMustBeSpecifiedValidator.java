@@ -10,7 +10,7 @@ import ca.corbett.forms.fields.FileField;
  * If you specify ExistingFile but don't add this FieldValidator, then the given file
  * must only exist if one is specified... blank value will return null in that case).
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2020-10-13
  */
 public class FileMustBeSpecifiedValidator implements FieldValidator<FileField> {

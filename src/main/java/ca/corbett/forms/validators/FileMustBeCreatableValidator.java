@@ -10,7 +10,7 @@ import java.io.File;
  * for a new File which does NOT exist, it should be in a location where
  * we have permission to create a new file.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-27
  */
 public class FileMustBeCreatableValidator implements FieldValidator<FileField> {

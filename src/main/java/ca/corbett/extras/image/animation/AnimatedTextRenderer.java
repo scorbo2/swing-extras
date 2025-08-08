@@ -15,7 +15,7 @@ import java.util.List;
  * Animates a text display, such that a given text string will be slowly "printed" out character
  * by character with configurable styling and with a configurable speed.
  *
- * @author scorbo2 (with help from Claude!)
+ * @author <a href="https://github.com/scorbo2">scorbo2</a> (with help from Claude!)
  * @since swing-extras 2.3
  */
 public class AnimatedTextRenderer {

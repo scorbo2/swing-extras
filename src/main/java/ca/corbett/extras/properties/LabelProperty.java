@@ -16,7 +16,7 @@ import java.awt.Font;
  * some read-only programmatically configurable field on a properties
  * dialog, you should use a read-only text field instead of a label.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public class LabelProperty extends AbstractProperty {

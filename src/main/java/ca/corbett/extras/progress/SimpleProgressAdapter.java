@@ -3,7 +3,7 @@ package ca.corbett.extras.progress;
 /**
  * Simple adapter class for SimpleProgressListener. None of these methods do anything.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public class SimpleProgressAdapter implements SimpleProgressListener {

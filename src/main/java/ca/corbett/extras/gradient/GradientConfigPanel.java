@@ -22,7 +22,7 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 /**
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
 

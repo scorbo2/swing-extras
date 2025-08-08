@@ -53,7 +53,7 @@ import java.util.logging.Logger;
  * from a maven build is executable, and when launched, will show this
  * demo app.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-09
  */
 public class DemoApp extends JFrame {

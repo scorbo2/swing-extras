@@ -5,7 +5,7 @@ import javax.swing.JPanel;
 /**
  * Provides an easy abstract way to create new demo panels and load them into the DemoApp.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-11
  */
 public abstract class PanelBuilder {

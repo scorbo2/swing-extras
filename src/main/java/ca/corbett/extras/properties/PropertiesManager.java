@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  * See also generateDialog() and generateUnrenderedFormPanel() for ways to present
  * a UI to view or edit application properties.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public class PropertiesManager {

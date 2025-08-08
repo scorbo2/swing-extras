@@ -23,7 +23,7 @@ import java.awt.LayoutManager;
  * validate whatever value it contains, but at that point it might be easier
  * to just extend FormField and create a custom implementation.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2020-09-27
  */
 public class PanelField extends FormField {

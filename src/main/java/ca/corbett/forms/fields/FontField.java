@@ -23,7 +23,7 @@ import java.util.Objects;
  * See also FontDialog, which is used by this FormField but which can also
  * be used standalone if you need to select a Font.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-04-07
  */
 public final class FontField extends FormField {

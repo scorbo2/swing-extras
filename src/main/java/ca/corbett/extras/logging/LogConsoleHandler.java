@@ -24,7 +24,7 @@ import java.util.logging.SimpleFormatter;
  * methods to log as you normally would, and they will show up in the LogConsole.
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-03-17
  */
 public class LogConsoleHandler extends Handler {

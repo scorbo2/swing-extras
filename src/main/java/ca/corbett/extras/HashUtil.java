@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 /**
  * A simple wrapper class to wrap and simplify hashing functionality a little.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-08-29 (originally written for ICE and then generalized much later)
  */
 public final class HashUtil {

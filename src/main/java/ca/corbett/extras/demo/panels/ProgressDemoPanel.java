@@ -32,7 +32,7 @@ import java.awt.event.ActionListener;
 /**
  * A quick demo of the capabilities of the progress classes.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-15
  */
 public class ProgressDemoPanel extends PanelBuilder {

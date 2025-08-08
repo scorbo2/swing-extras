@@ -3,7 +3,7 @@ package ca.corbett.extras.audio;
 /**
  * Provides a way to listen for events from a PlaybackThread.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-10
  */
 public interface PlaybackListener {

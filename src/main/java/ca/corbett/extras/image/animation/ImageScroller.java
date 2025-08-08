@@ -28,7 +28,7 @@ import java.awt.image.BufferedImage;
  *     of minSpeedRatio. Fractional pixel values are rounded up to 1 to prevent the animation from freezing.
  * </ul>
  *
- * @author scorbo2 (with help from Claude!)
+ * @author <a href="https://github.com/scorbo2">scorbo2</a> (with help from Claude!)
  * @since swing-extras 2.3
  */
 public class ImageScroller {

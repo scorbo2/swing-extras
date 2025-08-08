@@ -35,7 +35,7 @@ import java.util.Map;
  * to instantiate this panel yourself... much easier to go through ExtensionPanel
  * or ExtensionDialog.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public class ExtensionDetailsPanel extends JPanel {

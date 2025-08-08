@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * the toString() value changes over time or is localized to another language.
  *
  * @param <T> Supply your custom enum type.
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-26
  */
 public class EnumProperty<T extends Enum<?>> extends AbstractProperty {

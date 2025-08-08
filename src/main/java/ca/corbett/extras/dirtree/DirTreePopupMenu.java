@@ -15,7 +15,7 @@ import java.awt.event.ActionListener;
  * We also handle selecting a node on right click here, so a separate MouseListener isn't
  * needed for that.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2017-11-09
  */
 public class DirTreePopupMenu extends JPopupMenu {

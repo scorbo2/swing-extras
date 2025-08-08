@@ -39,7 +39,7 @@ import java.util.Objects;
  * If you want a convenient dialog wrapper around this panel,
  * use ExtensionDialog instead.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public class ExtensionManagerPanel extends JPanel {

@@ -12,7 +12,7 @@ import java.awt.event.MouseEvent;
  * See also GradientColorField in ca.corbett.extras.gradient package if you want to
  * also allow selection of color gradients in addition to solid colors.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class ColorField extends FormField {
 

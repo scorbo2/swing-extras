@@ -5,7 +5,7 @@ package ca.corbett.extras.progress;
  * each with some variable number of minor work steps. Listeners can use this in conjunction
  * with MultiProgressDialog to show a major and minor progress bar as the work progresses.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public interface MultiProgressListener {
