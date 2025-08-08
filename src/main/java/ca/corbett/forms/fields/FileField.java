@@ -59,10 +59,9 @@ public final class FileField extends FormField {
     private final List<FieldValidator<? extends FormField>> userAddedValidators = new ArrayList<>();
     private final JTextField textField;
     private final JFileChooser fileChooser;
-    private JButton chooseButton;
+    private final JButton chooseButton;
     private SelectionType selectionType;
     private boolean isAllowBlank;
-    private File currentFile;
 
     /**
      * Creates a FileField with the given parameters.
@@ -86,7 +85,6 @@ public final class FileField extends FormField {
      * @param allowBlank    whether to allow blank values in the field.
      */
     public FileField(String label, File initialValue, int cols, SelectionType selectionType, boolean allowBlank) {
-        this.currentFile = initialValue;
         fieldLabel.setText(label);
         textField = new JTextField(initialValue == null ? "" : initialValue.getAbsolutePath());
         textField.setColumns(cols);
@@ -184,9 +182,8 @@ public final class FileField extends FormField {
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        if (chooseButton != null) {
-            chooseButton.setEnabled(enabled);
-        }
+        chooseButton.setEnabled(enabled);
+        textField.setEnabled(enabled);
     }
 
     /**

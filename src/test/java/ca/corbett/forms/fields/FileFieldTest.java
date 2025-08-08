@@ -6,7 +6,10 @@ import ca.corbett.forms.validators.ValidationResult;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import java.awt.Component;
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -81,6 +84,41 @@ class FileFieldTest extends FormFieldBaseTests {
         actualField.setFile(new File("2"));
         Thread.sleep(CoalescingDocumentListener.DELAY_MS*2); // cheesy!
         Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(actual);
+    }
+
+    @Test
+    public void testSetEnabled_allComponents() {
+        actual.setEnabled(false);
+        JPanel wrapperPanel = (JPanel)actual.getFieldComponent();
+        boolean foundTextField = false;
+        boolean foundButton = false;
+        for (Component component : wrapperPanel.getComponents()) {
+            if (component instanceof JTextField) {
+                foundTextField = true;
+                assertFalse(component.isEnabled());
+            }
+            else if (component instanceof JButton) {
+                foundButton = true;
+                assertFalse(component.isEnabled());
+            }
+        }
+        assertTrue(foundTextField);
+        assertTrue(foundButton);
+
+        foundTextField = false;
+        foundButton = false;
+        actual.setEnabled(true);
+        for (Component component : wrapperPanel.getComponents()) {
+            assertTrue(component.isEnabled());
+            if (component instanceof JTextField) {
+                foundTextField = true;
+            }
+            else if (component instanceof JButton) {
+                foundButton = true;
+            }
+        }
+        assertTrue(foundTextField);
+        assertTrue(foundButton);
     }
 
     @Test
