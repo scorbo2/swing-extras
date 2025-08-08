@@ -77,10 +77,12 @@ public class ComboField<T> extends FormField {
         return this;
     }
 
+    public int getItemCount() {
+        return comboBox.getItemCount();
+    }
+
     /**
-     * Returns the currently selected item as a string.
-     *
-     * @return The current item.
+     * Returns the currently selected item as an instance of T.
      */
     public T getSelectedItem() {
         //noinspection unchecked
@@ -112,6 +114,10 @@ public class ComboField<T> extends FormField {
      * @param index The index to select.
      */
     public ComboField<T> setSelectedIndex(int index) {
+        if (index < 0 || index >= comboBox.getItemCount()) {
+            return this;
+        }
+
         comboBox.setSelectedIndex(index);
         return this;
     }
