@@ -12,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents a form field that just presents a static label without any
@@ -39,7 +40,7 @@ import java.util.Map;
  * when the link is clicked. This will change the color of the label to blue and change the mouse pointer
  * when the cursor is over the label, to indicate that the label is clickable.
  *
- * @author scorbp2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-26
  */
 public final class LabelField extends FormField {
@@ -54,8 +55,6 @@ public final class LabelField extends FormField {
 
     private final JLabel label;
     private Action hyperlinkAction;
-    private Font font;
-    private Color color;
 
     /**
      * Creates a form-width label in the format "labelText".
@@ -75,8 +74,9 @@ public final class LabelField extends FormField {
      */
     public LabelField(String fieldLabelText, String labelText) {
         label = new JLabel(labelText == null ? "" : labelText);
-        font = label.getFont();
-        color = LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK);
+        label.setFont(DEFAULT_FONT);
+        label.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
+        label.addMouseListener(new HyperlinkMouseListener());
         fieldLabel.setText(fieldLabelText == null ? "" : fieldLabelText);
         fieldComponent = label;
     }
@@ -223,35 +223,31 @@ public final class LabelField extends FormField {
     /**
      * Converts the field label (if present) or the header label (if isHeaderLabel()) into
      * a hyperlink, by adding a custom mouse cursor and mouse listener with the given
-     * ActionListener attached to the single click event. You can optionally use setFieldLabelFont()
-     * to change the label colour and underline it.
+     * ActionListener attached to the single click event. The label font is also modified
+     * with color and underline and custom mouse cursor as hints that it is now clickable.
      *
      * @param action The Action to fire when the label is clicked.
      */
-    public void setHyperlink(Action action) {
+    public LabelField setHyperlink(Action action) {
         JLabel linkLabel = label; // whether header label or not, put the link on "label" and not "fieldLabel"
         linkLabel.setForeground(Color.BLUE);
         linkLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         Map attributes = linkLabel.getFont().getAttributes();
         attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
         linkLabel.setFont(linkLabel.getFont().deriveFont(attributes));
-        linkLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                action.actionPerformed(new ActionEvent(linkLabel, 0, ""));
-                fireValueChangedEvent(); // Also notify listeners that the action was triggered
-            }
-        });
+        hyperlinkAction = action;
+        return this;
     }
 
     /**
      * Removes any previously set hyperlink, if any.
+     * This will return the label to DEFAULT_FONT and default label text color.
      */
     public void clearHyperlink() {
         hyperlinkAction = null;
         if (isHeaderLabel()) {
-            label.setForeground(color);
-            label.setFont(font);
+            label.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
+            label.setFont(DEFAULT_FONT);
             label.setCursor(Cursor.getDefaultCursor());
         }
         else {
@@ -275,8 +271,16 @@ public final class LabelField extends FormField {
      *
      * @param text The new label text.
      */
-    public void setText(String text) {
+    public LabelField setText(String text) {
+        if (Objects.equals(label.getText(), text)) {
+            return this; // reject no-op changes
+        }
+        if (text == null) {
+            text = "";
+        }
         label.setText(text);
+        fireValueChangedEvent(); // debatable, but arguably this is a "value change" even if labels don't have a "value"
+        return this;
     }
 
     /**
@@ -285,9 +289,16 @@ public final class LabelField extends FormField {
      *
      * @param font The new Font to use.
      */
-    public void setFont(Font font) {
-        this.font = font;
+    public LabelField setFont(Font font) {
+        if (font == null) {
+            return this;
+        }
         label.setFont(font);
+        return this;
+    }
+
+    public Font getFont() {
+        return label.getFont();
     }
 
     /**
@@ -296,8 +307,26 @@ public final class LabelField extends FormField {
      *
      * @param c The new text colour.
      */
-    public void setColor(Color c) {
-        this.color = c;
+    public LabelField setColor(Color c) {
+        if (c == null) {
+            return this;
+        }
         label.setForeground(c);
+        return this;
+    }
+
+    public Color getColor() {
+        return label.getForeground();
+    }
+
+    private final class HyperlinkMouseListener extends MouseAdapter {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (hyperlinkAction == null) {
+                return; // do nothing if there is no link action
+            }
+            hyperlinkAction.actionPerformed(new ActionEvent(fieldComponent, 0, ""));
+        }
+
     }
 }

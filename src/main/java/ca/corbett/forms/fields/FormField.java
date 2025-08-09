@@ -1,5 +1,6 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.forms.Margins;
 import ca.corbett.forms.Resources;
 import ca.corbett.forms.validators.FieldValidator;
@@ -8,6 +9,7 @@ import ca.corbett.forms.validators.ValidationResult;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,6 +70,7 @@ public abstract class FormField {
 
     public FormField() {
         fieldLabel.setFont(DEFAULT_FONT);
+        fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
         helpLabel.setIcon(Resources.getHelpIcon());
     }
 
