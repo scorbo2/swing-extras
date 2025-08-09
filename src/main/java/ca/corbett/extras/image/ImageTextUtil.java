@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * Contains utility method for drawing stylized text onto a BufferedImage.
  * Absorbed into sc-util as per UTIL-143.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public final class ImageTextUtil {

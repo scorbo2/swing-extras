@@ -2,7 +2,7 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.Version;
 import ca.corbett.extras.about.AboutPanel;
-import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.Alignment;
 
 import javax.swing.JPanel;
 
@@ -20,6 +20,6 @@ public class AboutDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        return new AboutPanel(Version.aboutInfo, FormPanel.Alignment.TOP_LEFT, 24);
+        return new AboutPanel(Version.aboutInfo, Alignment.TOP_LEFT, 24);
     }
 }

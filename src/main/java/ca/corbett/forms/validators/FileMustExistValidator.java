@@ -1,42 +1,40 @@
 package ca.corbett.forms.validators;
 
 import ca.corbett.forms.fields.FileField;
-import ca.corbett.forms.fields.FormField;
 
 import java.io.File;
 
 /**
- * A FieldValidator that ensures that the chosen Directory exists.
+ * A FieldValidator that ensures that the chosen File or Directory exists.
+ * Also checks that the selection makes sense given the selection type of the
+ * FileField in question. For example, if the selection type is DIRECTORIES_ONLY
+ * and you select a file, that selection will fail validation.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
-public class FileMustExistValidator extends FieldValidator<FormField> {
-
-    public FileMustExistValidator(FileField field) {
-        super(field);
-    }
+public class FileMustExistValidator implements FieldValidator<FileField> {
 
     @Override
-    public ValidationResult validate() {
-        FileField ourField = (FileField)field;
-
+    public ValidationResult validate(FileField fieldToValidate) {
         // Blank values may be permissible:
-        boolean allowBlank = ourField.isAllowBlankValues();
-        if (ourField.getFile() == null) {
-            return allowBlank ? new ValidationResult() : new ValidationResult(false, "Value cannot be blank.");
+        boolean allowBlank = fieldToValidate.isAllowBlankValues();
+        if (fieldToValidate.getFile() == null) {
+            return allowBlank
+                    ? ValidationResult.valid()
+                    : ValidationResult.invalid("Value cannot be blank.");
         }
 
-        File file = ourField.getFile();
+        File file = fieldToValidate.getFile();
         if (!file.exists()) {
-            return new ValidationResult(false, "File or directory must exist.");
+            return ValidationResult.invalid("File or directory must exist.");
         }
-        if (ourField.getSelectionType() == FileField.SelectionType.ExistingDirectory && !file.isDirectory()) {
-            return new ValidationResult(false, "Input must be a directory, not a file.");
+        if (fieldToValidate.getSelectionType() == FileField.SelectionType.ExistingDirectory && !file.isDirectory()) {
+            return ValidationResult.invalid("Input must be a directory, not a file.");
         }
-        if (ourField.getSelectionType() == FileField.SelectionType.ExistingFile && file.isDirectory()) {
-            return new ValidationResult(false, "Input must be a file, not a directory.");
+        if (fieldToValidate.getSelectionType() == FileField.SelectionType.ExistingFile && file.isDirectory()) {
+            return ValidationResult.invalid("Input must be a file, not a directory.");
         }
-        return new ValidationResult();
+        return ValidationResult.valid();
     }
 }

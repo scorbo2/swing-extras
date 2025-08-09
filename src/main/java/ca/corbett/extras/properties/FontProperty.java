@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  * Represents a property field that allows storing a Font,
  * along with associated style and optional color attributes.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class FontProperty extends AbstractProperty {
 

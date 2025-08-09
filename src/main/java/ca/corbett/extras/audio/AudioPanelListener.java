@@ -3,7 +3,7 @@ package ca.corbett.extras.audio;
 /**
  * Provides a way to listen for events on an AudioWaveformPanel.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-20
  */
 public interface AudioPanelListener {

@@ -9,20 +9,20 @@ import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoConfigPanel;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.TextField;
 
-import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,56 +44,50 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
 
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BorderLayout());
-        FormPanel controlPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        controlPanel.setStandardLeftMargin(12);
+        FormPanel controlPanel = new FormPanel(Alignment.TOP_LEFT);
+        controlPanel.setBorderMargin(12);
 
         final LabelField label = LabelField.createBoldHeaderLabel("ImageUtil", 20);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        controlPanel.addFormField(label);
+        controlPanel.add(label);
 
         LabelField labelField = new LabelField("<html>ImageUtil and the associated color<br>"
                                             + "gradient classes can generate images with<br>"
                                             + "a variety of options. Here are just a few!</html>");
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.PLAIN, 12f));
-        controlPanel.addFormField(labelField);
+        labelField.setFont(FontField.DEFAULT_FONT.deriveFont(Font.PLAIN, 12f));
+        controlPanel.add(labelField);
 
         textField = new TextField("Text:", 20, 1, true);
         textField.setText(Version.NAME);
-        textField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                regenerate();
-            }
+        textField.addValueChangedListener(field -> {
+            regenerate();
         });
-        controlPanel.addFormField(textField);
+        controlPanel.add(textField);
 
         List<String> options = new ArrayList<>();
         options.add("Center");
         options.add("Best fit");
         options.add("Stretch");
-        ComboField displayModeChooser = new ComboField("Display mode:", options, 0, false);
-        displayModeChooser.setBottomMargin(24);
-        displayModeChooser.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ImagePanelConfig.DisplayMode displayMode;
-                switch (displayModeChooser.getSelectedIndex()) {
-                    case 2:
-                        displayMode = ImagePanelConfig.DisplayMode.STRETCH;
-                        break;
-                    case 1:
-                        displayMode = ImagePanelConfig.DisplayMode.BEST_FIT;
-                        break;
-                    default:
-                        displayMode = ImagePanelConfig.DisplayMode.CENTER;
-                }
-                imagePanelConfig.setDisplayMode(displayMode);
-                regenerate();
+        ComboField<String> displayModeChooser = new ComboField<>("Display mode:", options, 0, false);
+        displayModeChooser.getMargins().setBottom(24);
+        displayModeChooser.addValueChangedListener(field -> {
+            ImagePanelConfig.DisplayMode displayMode;
+            switch (displayModeChooser.getSelectedIndex()) {
+                case 2:
+                    displayMode = ImagePanelConfig.DisplayMode.STRETCH;
+                    break;
+                case 1:
+                    displayMode = ImagePanelConfig.DisplayMode.BEST_FIT;
+                    break;
+                default:
+                    displayMode = ImagePanelConfig.DisplayMode.CENTER;
             }
+            imagePanelConfig.setDisplayMode(displayMode);
+            regenerate();
         });
-        controlPanel.addFormField(displayModeChooser);
+        controlPanel.add(displayModeChooser);
 
         PanelField panelField = new PanelField();
         JPanel containerPanel = panelField.getPanel();
@@ -102,9 +96,8 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         LogoConfigPanel configPanel = new LogoConfigPanel("Image options", logoConfig);
         configPanel.addChangeListener(this);
         containerPanel.add(configPanel, BorderLayout.NORTH);
-        controlPanel.addFormField(panelField);
+        controlPanel.add(panelField);
 
-        controlPanel.render();
         leftPanel.add(controlPanel, BorderLayout.CENTER);
         panel.add(leftPanel, BorderLayout.WEST);
 

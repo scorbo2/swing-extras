@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Unit tests for HashUtil class.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2017-11-06
  */
 public class HashUtilTest {

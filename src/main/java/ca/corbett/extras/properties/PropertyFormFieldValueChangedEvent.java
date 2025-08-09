@@ -21,7 +21,7 @@ import java.awt.event.ActionEvent;
  * </p>
  *
  * @since swing-extras 2.3
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class PropertyFormFieldValueChangedEvent {
     private final ActionEvent sourceEvent;

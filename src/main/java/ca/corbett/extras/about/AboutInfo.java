@@ -12,7 +12,7 @@ import java.util.Set;
  * logo image for your application around 480x90 or so and specify it here. If not supplied,
  * the About code will try to generate one automatically based on the applicationName specified here.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-02-14
  */
 public final class AboutInfo {

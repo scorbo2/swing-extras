@@ -8,7 +8,7 @@ import java.util.Comparator;
 /**
  * Represents a single directory within our DirTree.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2017-11-09
  */
 public final class DirTreeNode extends DefaultMutableTreeNode {

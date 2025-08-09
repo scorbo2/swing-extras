@@ -7,7 +7,7 @@ import javax.swing.tree.ExpandVetoException;
 /**
  * Listener implementations for the FileTree component.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2017-11-09
  */
 public class DirTreeExpandListener implements TreeWillExpandListener {

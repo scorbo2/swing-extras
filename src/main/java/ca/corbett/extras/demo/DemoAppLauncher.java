@@ -8,7 +8,7 @@ import java.awt.SplashScreen;
 /**
  * Entry point for the DemoApp.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-09
  */
 public class DemoAppLauncher {

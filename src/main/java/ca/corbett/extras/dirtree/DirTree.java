@@ -33,7 +33,7 @@ import java.util.Enumeration;
  * subdirectory, so will show all directories from root on down.
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2017-11-09
  */
 public final class DirTree extends JPanel implements TreeSelectionListener {

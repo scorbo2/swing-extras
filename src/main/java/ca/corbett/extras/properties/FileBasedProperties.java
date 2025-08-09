@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  * Extends the Properties class to provide for saving and loading of properties to and from
  * a flat file on disk.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public final class FileBasedProperties extends Properties {

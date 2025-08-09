@@ -5,7 +5,7 @@ import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.FileBasedProperties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
-import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.Alignment;
 
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  * property values will be loaded correctly, but they won't show up in the PropertiesDialog
  * until the extension is enabled again.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public abstract class AppProperties<T extends AppExtension> {
@@ -170,7 +170,7 @@ public abstract class AppProperties<T extends AppExtension> {
      * @return true if the user OK'd the dialog and changes were made - reload your UI!
      */
     public boolean showPropertiesDialog(Frame owner) {
-        return showPropertiesDialog(owner, FormPanel.Alignment.TOP_LEFT);
+        return showPropertiesDialog(owner, Alignment.TOP_LEFT);
     }
 
     /**
@@ -181,7 +181,7 @@ public abstract class AppProperties<T extends AppExtension> {
      * @param alignment How the FormPanels should align themselves.
      * @return true if the user OK'd the dialog and changes were made - reload your UI!
      */
-    public boolean showPropertiesDialog(Frame owner, FormPanel.Alignment alignment) {
+    public boolean showPropertiesDialog(Frame owner, Alignment alignment) {
         reconcileExtensionEnabledStatus();
         PropertiesDialog dialog = propsManager.generateDialog(owner, appName + " properties", alignment, 24);
         dialog.setSize(propertiesDialogInitialWidth, propertiesDialogInitialHeight);

@@ -6,13 +6,13 @@ import ca.corbett.extras.gradient.GradientConfig;
 import ca.corbett.extras.gradient.GradientUtil;
 import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
@@ -54,59 +54,46 @@ public class DesktopDemoPanel extends PanelBuilder {
         JPanel container = new JPanel();
         container.setLayout(new BorderLayout());
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
         StringBuilder sb = new StringBuilder();
         sb.append("<html>If your application uses JDesktopPane, you may be frustrated with the lack of<br/>");
         sb.append("options for customization.  Meet the CustomizableDesktopPane!</html>");
         LabelField labelField = new LabelField(sb.toString());
-        labelField.setTopMargin(14);
-        labelField.setBottomMargin(18);
-        formPanel.addFormField(labelField);
+        labelField.getMargins().setTop(14).setBottom(18);
+        formPanel.add(labelField);
 
         final GradientColorField bgColorField = new GradientColorField("Background:", Color.BLACK, gradient, false);
-        bgColorField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Object val = bgColorField.getSelectedValue();
-                if (val instanceof Color) {
-                    gradient.setColor1((Color)val);
-                    gradient.setColor2((Color)val);
-                }
-                else {
-                    gradient = (GradientConfig)val;
-                }
-                desktopPane.setGradientConfig(gradient);
+        bgColorField.addValueChangedListener(field -> {
+            Object val = bgColorField.getSelectedValue();
+            if (val instanceof Color) {
+                gradient.setColor1((Color)val);
+                gradient.setColor2((Color)val);
             }
-
+            else {
+                gradient = (GradientConfig)val;
+            }
+            desktopPane.setGradientConfig(gradient);
         });
-        formPanel.addFormField(bgColorField);
+        formPanel.add(bgColorField);
 
         NumberField alphaField = new NumberField("Logo alpha:", 0.5, 0.0, 1.0, 0.1);
-        alphaField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                desktopPane.setLogoImageTransparency(alphaField.getCurrentValue().floatValue());
-            }
-
+        alphaField.addValueChangedListener(field -> {
+            desktopPane.setLogoImageTransparency(alphaField.getCurrentValue().floatValue());
         });
-        formPanel.addFormField(alphaField);
+        formPanel.add(alphaField);
 
         List<String> options = new ArrayList<>();
         for (CustomizableDesktopPane.LogoPlacement placement : CustomizableDesktopPane.LogoPlacement.values()) {
             options.add(placement.toString());
         }
-        ComboField placementCombo = new ComboField("Logo placement:", options, 4, false);
-        placementCombo.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                desktopPane.setLogoImagePlacement(
-                        CustomizableDesktopPane.LogoPlacement.fromLabel(placementCombo.getSelectedItem()));
-            }
-
+        ComboField<String> placementCombo = new ComboField<>("Logo placement:", options, 4, false);
+        placementCombo.addValueChangedListener(field -> {
+            desktopPane.setLogoImagePlacement(
+                    CustomizableDesktopPane.LogoPlacement.fromLabel(placementCombo.getSelectedItem()));
         });
-        formPanel.addFormField(placementCombo);
+        formPanel.add(placementCombo);
 
         PanelField buttonWrapper = new PanelField();
         buttonWrapper.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -132,10 +119,8 @@ public class DesktopDemoPanel extends PanelBuilder {
 
         });
         buttonWrapper.getPanel().add(button);
-        buttonWrapper.setMargins(24, 8, 0, 0, 0);
-        formPanel.addFormField(buttonWrapper);
-
-        formPanel.render();
+        buttonWrapper.getMargins().setAll(0).setLeft(24).setTop(8);
+        formPanel.add(buttonWrapper);
 
         container.add(formPanel, BorderLayout.SOUTH);
         container.add(desktopPane, BorderLayout.CENTER);

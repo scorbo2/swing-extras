@@ -2,15 +2,10 @@ package ca.corbett.extras.gradient;
 
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
-import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -65,8 +60,8 @@ public class GradientColorField extends FormField {
         }
 
         // Initialize our UI components:
-        fieldLabel = new JLabel(label);
-        fieldLabel.setFont(fieldLabelFont);
+        fieldLabel.setText(label);
+        fieldLabel.setFont(DEFAULT_FONT);
         ImagePanelConfig ipc = ImagePanelConfig.createSimpleReadOnlyProperties();
         colorPanel = new ImagePanel((BufferedImage)null, ipc);
         fieldComponent = colorPanel;
@@ -196,27 +191,4 @@ public class GradientColorField extends FormField {
             setGradient((GradientConfig)obj);
         }
     }
-
-    /**
-     * Renders this field into the given container.
-     *
-     * @param container   The containing form panel.
-     * @param constraints The GridBagConstraints to use.
-     */
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.fill = GridBagConstraints.NONE;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(colorPanel, constraints);
-    }
-
 }

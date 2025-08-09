@@ -1,32 +1,42 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.extras.properties.PropertiesDialog;
-import ca.corbett.forms.FormPanel;
-
+import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.util.List;
 
 /**
  * Wraps a JList to allow for multi-selection of some object type.
+ * A common use case would be ListField&lt;String&gt; to wrap a simple
+ * list of Strings. The underlying JList can be obtained by calling
+ * getFieldComponent() and casting the result to JList, if you need to
+ * do custom styling or whatnot on the JList.
  *
  * @since swing-extras 2.3
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class ListField<T> extends FormField {
 
     private final JList<T> list;
+    private final AbstractListModel<T> listModel;
 
+    /**
+     * If you supply a List of T, we will create and use a DefaultListModel implicitly.
+     * Use the overloaded constructor if you wish to use your own ListModel instead.
+     */
     public ListField(String label, List<T> items) {
-        fieldLabel = new JLabel(label);
-        fieldLabel.setFont(fieldLabelFont);
-        DefaultListModel<T> listModel = new DefaultListModel<>();
-        listModel.addAll(items);
+        this(label, createDefaultListModel(items));
+    }
+
+    /**
+     * If you supply a ListModel of T, we will use that instead of creating a
+     * DefaultListModel, but beware - you must populate the model beforehand.
+     */
+    public ListField(String label, AbstractListModel<T> listModel) {
+        fieldLabel.setText(label);
+        this.listModel = listModel;
         list = new JList<>(listModel);
         list.setVisibleRowCount(4);
         list.setFixedCellWidth(20);
@@ -46,13 +56,14 @@ public class ListField<T> extends FormField {
      * ListSelectionModel.MULTIPLE_INTERVAL_SELECTION, and ListSelectionModel.SINGLE_INTERVAL_SELECTION).
      * Any other value is ignored. The default value is MULTIPLE_INTERVAL_SELECTION.
      */
-    public void setSelectionMode(int selectionMode) {
+    public ListField<T> setSelectionMode(int selectionMode) {
         switch (selectionMode) {
             case ListSelectionModel.SINGLE_SELECTION:
             case ListSelectionModel.MULTIPLE_INTERVAL_SELECTION:
             case ListSelectionModel.SINGLE_INTERVAL_SELECTION:
                 list.setSelectionMode(selectionMode);
         }
+        return this;
     }
 
     /**
@@ -68,13 +79,14 @@ public class ListField<T> extends FormField {
      * JList.VERTICAL_WRAP, and JList.HORIZONTAL_WRAP).
      * Any other value is ignored. The default value is VERTICAL.
      */
-    public void setLayoutOrientation(int orientation) {
+    public ListField<T> setLayoutOrientation(int orientation) {
         switch (orientation) {
             case JList.VERTICAL:
             case JList.VERTICAL_WRAP:
             case JList.HORIZONTAL_WRAP:
                 list.setLayoutOrientation(orientation);
         }
+        return this;
     }
 
     public int getVisibleRowCount() {
@@ -84,10 +96,17 @@ public class ListField<T> extends FormField {
     /**
      * Sets the desired visible row count. The default count is 4.
      */
-    public void setVisibleRowCount(int count) {
+    public ListField<T> setVisibleRowCount(int count) {
+        if (count <= 0) {
+            return this; // ignore crazy values
+        }
         list.setVisibleRowCount(count);
+        return this;
     }
 
+    /**
+     * Returns an array of selected item indexes.
+     */
     public int[] getSelectedIndexes() {
         return list.getSelectedIndices();
     }
@@ -96,9 +115,51 @@ public class ListField<T> extends FormField {
      * Sets the selected indexes for the list. Note: this may not do what you expect
      * it to do depending on the current selection mode (default selection mode is MULTIPLE_INTERVAL_SELECTION,
      * which allows multiple non-contiguous items to be selected).
+     * <p>
+     * Passing null or an empty list will clear the selection.
      */
-    public void setSelectedIndexes(int[] selection) {
+    public ListField<T> setSelectedIndexes(int[] selection) {
+        if (selection == null || selection.length == 0) {
+            list.clearSelection();
+            return this;
+        }
         list.setSelectedIndices(selection);
+        return this;
+    }
+
+    /**
+     * Sets a specific list index to select. If out of bounds, this call is ignored.
+     */
+    public ListField<T> setSelectedIndex(int index) {
+        if (index < 0 || index >= listModel.getSize()) {
+            return this; // ignore out of bounds values
+        }
+        list.setSelectedIndex(index);
+        return this;
+    }
+
+    /**
+     * Provides direct access to the underlying ListModel.
+     * By default (unless the constructor was given something else), this will
+     * return a DefaultListModel&lt;T&gt; instance.
+     */
+    public AbstractListModel<T> getListModel() {
+        return listModel;
+    }
+
+    /**
+     * You can optionally set a custom cell renderer if your list items have special display requirements.
+     */
+    public ListField<T> setCellRenderer(ListCellRenderer<T> renderer) {
+        list.setCellRenderer(renderer);
+        return this;
+    }
+
+    /**
+     * Returns the effective list cell renderer.
+     */
+    public ListCellRenderer<? super T> getCellRenderer() {
+        return list.getCellRenderer();
     }
 
     /**
@@ -114,23 +175,26 @@ public class ListField<T> extends FormField {
      * Sets the pixel width of each list cell.
      * The default value is -1, which will set each cell's width to the width of the largest item.
      */
-    public void setFixedCellWidth(int width) {
+    public ListField<T> setFixedCellWidth(int width) {
+        if (width < -1 || width == 0) {
+            return this; // reject crazy values
+        }
         list.setFixedCellWidth(width);
+        return this;
     }
 
+    /**
+     * ListFields occupy more than one form row (generally - you can of course set
+     * a visibleRowCount of 1, but why would you do that).
+     */
     @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        int oldAnchor = constraints.anchor;
-        constraints.anchor = GridBagConstraints.NORTHWEST;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-        constraints.anchor = oldAnchor;
+    public boolean isMultiLine() {
+        return true;
+    }
 
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(PropertiesDialog.buildScrollPane(list), constraints);
+    private static <T> DefaultListModel<T> createDefaultListModel(List<T> items) {
+        DefaultListModel<T> model = new DefaultListModel<>();
+        model.addAll(items);
+        return model;
     }
 }

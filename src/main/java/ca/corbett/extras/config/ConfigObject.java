@@ -6,7 +6,8 @@ import ca.corbett.extras.properties.Properties;
  * Implement this interface to signify that your class is capable of loading
  * and saving its current state to or from a Properties instance.
  *
- * @author scorbo2
+ * @deprecated Consider using AbstractProperty instead! This class may be removed in a future release!
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-02-04
  */
 public interface ConfigObject {

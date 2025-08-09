@@ -31,7 +31,7 @@ import java.awt.event.MouseEvent;
 /**
  * A ConfigPanel instance that allows viewing and editing settings for a WaveformConfig object.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-25
  */
 public final class WaveformConfigPanel extends ConfigPanel<WaveformConfig> {

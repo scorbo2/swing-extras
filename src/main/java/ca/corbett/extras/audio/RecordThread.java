@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 /**
  * Provides a worker thread that can be used to capture audio and record it.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-20
  */
 public class RecordThread implements Runnable {

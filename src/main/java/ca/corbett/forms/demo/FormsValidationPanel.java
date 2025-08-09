@@ -2,10 +2,10 @@ package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ColorField;
-import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.TextField;
@@ -23,7 +23,7 @@ import java.awt.event.ActionListener;
  * Builds a FormPanel that shows how to add custom FieldValidators to make
  * form validation very easy to implement.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2029-11-25
  */
 public class FormsValidationPanel extends PanelBuilder {
@@ -34,18 +34,18 @@ public class FormsValidationPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        final FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        final FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
         final LabelField headerLabel = LabelField.createBoldHeaderLabel("Form validation is super easy!", 20);
-        headerLabel.setBottomMargin(12);
+        headerLabel.getMargins().setBottom(12);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(headerLabel);
+        formPanel.add(headerLabel);
         LabelField label = LabelField.createPlainHeaderLabel("You can use built-in validators or make your own!", 14);
-        label.setBottomMargin(18);
-        formPanel.addFormField(label);
+        label.getMargins().setBottom(18);
+        formPanel.add(label);
 
         String sb = "<html>Oops! Looks like there are form validation errors!<br/>" +
                 "No problem, just hover over the validation error<br/>" +
@@ -56,43 +56,40 @@ public class FormsValidationPanel extends PanelBuilder {
 
         final TextField textField = new TextField("Must be 3+ chars long: ", 15, 1, false);
         textField.setText("Example");
-        textField.addFieldValidator(new FieldValidator<FormField>(textField) {
+        textField.addFieldValidator(new FieldValidator<TextField>() {
             @Override
-            public ValidationResult validate() {
-                ValidationResult result = new ValidationResult();
-                if (((TextField)field).getText().length() < 3) {
-                    result.setResult(false, "Text must be at least three characters!");
+            public ValidationResult validate(TextField fieldToValidate) {
+                if (fieldToValidate.getText().length() < 3) {
+                    return ValidationResult.invalid("Text must be at least three characters!");
                 }
-                return result;
+                return ValidationResult.valid();
             }
         });
-        formPanel.addFormField(textField);
+        formPanel.add(textField);
 
         final ColorField colorField = new ColorField("Don't choose black!", Color.BLACK);
-        colorField.addFieldValidator(new FieldValidator<FormField>(colorField) {
+        colorField.addFieldValidator(new FieldValidator<ColorField>() {
             @Override
-            public ValidationResult validate() {
-                ValidationResult result = new ValidationResult();
-                if (Color.BLACK.equals(((ColorField)field).getColor())) {
-                    result.setResult(false, "I said DON'T choose black!");
+            public ValidationResult validate(ColorField fieldToValidate) {
+                if (Color.BLACK.equals(fieldToValidate.getColor())) {
+                    return ValidationResult.invalid("I said DON'T choose black!");
                 }
-                return result;
+                return ValidationResult.valid();
             }
         });
-        formPanel.addFormField(colorField);
+        formPanel.add(colorField);
 
         final CheckBoxField checkbox = new CheckBoxField("I promise I didn't choose black.", true);
-        checkbox.addFieldValidator(new FieldValidator<FormField>(checkbox) {
+        checkbox.addFieldValidator(new FieldValidator<CheckBoxField>() {
             @Override
-            public ValidationResult validate() {
-                ValidationResult result = new ValidationResult();
-                if (((CheckBoxField)field).isChecked() && Color.BLACK.equals(colorField.getColor())) {
-                    result.setResult(false, "You broke your promise!");
+            public ValidationResult validate(CheckBoxField fieldToValidate) {
+                if (fieldToValidate.isChecked() && Color.BLACK.equals(colorField.getColor())) {
+                    return ValidationResult.invalid("You broke your promise!");
                 }
-                return result;
+                return ValidationResult.valid();
             }
         });
-        formPanel.addFormField(checkbox);
+        formPanel.add(checkbox);
 
         PanelField panelField = new PanelField();
         JPanel panel = panelField.getPanel();
@@ -107,15 +104,14 @@ public class FormsValidationPanel extends PanelBuilder {
             }
         });
         panel.add(btn);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         successLabel.setVisible(false);
-        formPanel.addFormField(successLabel);
+        formPanel.add(successLabel);
 
         warningLabel.setVisible(false);
-        formPanel.addFormField(warningLabel);
+        formPanel.add(warningLabel);
 
-        formPanel.render();
         return formPanel;
     }
 }

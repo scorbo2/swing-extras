@@ -1,23 +1,21 @@
 package ca.corbett.forms.validators;
 
+import java.util.Objects;
+
 /**
- * A value class that can store the results of validation on a particular field.
+ * Used by FieldValidator to report successful or unsuccessful validation on a FormField.
+ * If validation is unsuccessful, the convention is to supply some user-readable
+ * message to explain what's wrong, and what the user can do to fix it.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-23
  */
 public class ValidationResult {
 
-    private boolean isValid;
-    private String message;
+    private static final ValidationResult VALID = new ValidationResult(true, "");
 
-    /**
-     * Creates a ValidationResult representing a valid result (no message).
-     */
-    public ValidationResult() {
-        isValid = true;
-        message = "";
-    }
+    private final boolean isValid;
+    private final String message;
 
     /**
      * Creates a ValidationResult with the given isValid value and message.
@@ -25,38 +23,49 @@ public class ValidationResult {
      * @param isValid Whether the field in question is considered valid.
      * @param message The validation message (should be blank if isValid==true).
      */
-    public ValidationResult(boolean isValid, String message) {
+    protected ValidationResult(boolean isValid, String message) {
         this.isValid = isValid;
         this.message = message;
     }
 
     /**
-     * Sets the validation result according to the supplied parameters.
-     *
-     * @param isValid Whether the field in question is considered valid.
-     * @param message The validation message (should be blank if isValid==true).
+     * Returns a valid ValidationResult with no validation message.
      */
-    public void setResult(boolean isValid, String message) {
-        this.isValid = isValid;
-        this.message = message;
+    public static ValidationResult valid() {
+        return VALID;
     }
 
     /**
-     * Returns whether the validation result is okay or not.
-     *
-     * @return True if the field in question is valid, false if not (see getMessage() also).
+     * Creates and returns an invalid ValidationResult with the given message.
+     */
+    public static ValidationResult invalid(String msg) {
+        return new ValidationResult(false, msg);
+    }
+
+    /**
+     * Returns whether the ValidationResult is valid.
      */
     public boolean isValid() {
         return isValid;
     }
 
     /**
-     * Returns a validation message if the validation result is not valid.
-     * Will be an empty string if the validation result is valid.
-     *
-     * @return A String containing a validation message (or empty).
+     * Returns the message associated with this ValidationResult, or empty string if it
+     * contains no message.
      */
     public String getMessage() {
         return message;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ValidationResult)) { return false; }
+        ValidationResult that = (ValidationResult)o;
+        return isValid == that.isValid && Objects.equals(message, that.message);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(isValid, message);
     }
 }

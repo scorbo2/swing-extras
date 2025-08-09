@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * This will show an error dialog to the user, and also log the message string to the
  * given Logger.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-04-11
  */
 public final class MessageUtil {

@@ -34,7 +34,7 @@ import java.util.logging.Logger;
  * algorithm is applied as described in LogConsoleTheme.
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-03-17
  */
 public final class LogConsoleStyle implements ConfigObject {

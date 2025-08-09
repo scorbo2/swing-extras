@@ -10,7 +10,7 @@ import java.util.Comparator;
  * large recursive searches, and also because it turns out I like the results from
  * FileNameComparator better anyway. Leaving this here in case it's ever useful.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  * @deprecated Use FileNameComparator
  */

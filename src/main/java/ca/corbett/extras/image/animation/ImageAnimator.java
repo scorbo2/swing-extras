@@ -28,7 +28,7 @@ import java.awt.image.BufferedImage;
  * </ul>
  * You can specify an alpha value if you wish the image to be drawn partially transparent.
  *
- * @author scorbo2 (with help from Claude!)
+ * @author <a href="https://github.com/scorbo2">scorbo2</a> (with help from Claude!)
  * @since swing-extras 2.3
  */
 public class ImageAnimator {

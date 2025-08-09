@@ -3,7 +3,6 @@ package ca.corbett.extras.properties;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ import java.util.Objects;
  * I should have called these "Preferences".
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public abstract class AbstractProperty {
@@ -456,11 +455,8 @@ public abstract class AbstractProperty {
         field.setAllExtraAttributes(extraAttributes);
 
         // Listen for changes on this field so we can notify our own listeners, if any:
-        field.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fireFormFieldChangedEvent(field, e);
-            }
+        field.addValueChangedListener(f -> {
+            fireFormFieldChangedEvent(f, null);
         });
 
         return field;

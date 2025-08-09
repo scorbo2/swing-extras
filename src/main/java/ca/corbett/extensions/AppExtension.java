@@ -11,7 +11,7 @@ import java.util.List;
  * application-specific implementations will add their own hooks
  * to be invoked by the application in question.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public abstract class AppExtension {

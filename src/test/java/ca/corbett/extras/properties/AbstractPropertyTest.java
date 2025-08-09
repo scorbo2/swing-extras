@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * AbstractProperty is an abstract class, so in order to test out some of its functionality,
  * we have to instantiate one of its implementing classes.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class AbstractPropertyTest {
 

@@ -4,6 +4,6 @@
  * or refer to the swing-extras-book documentation.
  *
  * @since swing-extras 2.3
- * @author scorbo2 (with help from Claude!)
+ * @author <a href="https://github.com/scorbo2">scorbo2</a> (with help from Claude!)
  */
 package ca.corbett.extras.image.animation;

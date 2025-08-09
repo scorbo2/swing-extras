@@ -1,22 +1,18 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
-
 import javax.swing.JColorChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
  * A FormField implementation for selecting a solid color.
- * See also GradientColorField in ca.corbett.extras.gradient package.
+ * See also GradientColorField in ca.corbett.extras.gradient package if you want to
+ * also allow selection of color gradients in addition to solid colors.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class ColorField extends FormField {
 
@@ -36,8 +32,7 @@ public class ColorField extends FormField {
         }
 
         // Initialize our UI components:
-        fieldLabel = new JLabel(label);
-        fieldLabel.setFont(fieldLabelFont);
+        fieldLabel.setText(label);
         colorPanel = new JPanel();
         fieldComponent = colorPanel;
         colorPanel.setPreferredSize(new Dimension(30, 20));
@@ -49,11 +44,7 @@ public class ColorField extends FormField {
                 if (!colorPanel.isEnabled()) {
                     return;
                 }
-                Color newColor = JColorChooser.showDialog(((JPanel)e.getSource()), "Choose color", selectedColor);
-                if (newColor != null) {
-                    setColor(newColor);
-                    fireValueChangedEvent();
-                }
+                setColor(JColorChooser.showDialog(((JPanel)e.getSource()), "Choose color", selectedColor));
             }
         });
     }
@@ -70,32 +61,14 @@ public class ColorField extends FormField {
     /**
      * Sets the current Color value for this field.
      *
-     * @param color The new color.
+     * @param newColor The new newColor. Null values are ignored.
      */
-    public void setColor(Color color) {
-        selectedColor = color;
-        colorPanel.setBackground(color);
-    }
-
-    /**
-     * Renders this field into the given container.
-     *
-     * @param container   The containing form panel.
-     * @param constraints The GridBagConstraints to use.
-     */
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.fill = GridBagConstraints.NONE;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(colorPanel, constraints);
+    public ColorField setColor(Color newColor) {
+        if (newColor != null && !selectedColor.equals(newColor)) {
+            selectedColor = newColor;
+            colorPanel.setBackground(newColor);
+            fireValueChangedEvent();
+        }
+        return this;
     }
 }

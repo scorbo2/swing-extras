@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * Provides a way to listen for events from a DirTree instance.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2017-11-11
  */
 public interface DirTreeListener {

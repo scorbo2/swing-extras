@@ -13,22 +13,22 @@ import java.util.logging.Logger;
  * @author scorbett
  * @since sc-util 1.8
  */
-public class ComboProperty extends AbstractProperty {
+public class ComboProperty<T> extends AbstractProperty {
 
     private static final Logger logger = Logger.getLogger(ComboProperty.class.getName());
 
-    protected final List<String> items;
+    protected final List<T> items;
     protected int selectedIndex;
     protected boolean isEditable;
 
-    public ComboProperty(String name, String label, List<String> items, int selectedIndex, boolean isEditable) {
+    public ComboProperty(String name, String label, List<T> items, int selectedIndex, boolean isEditable) {
         super(name, label);
         this.items = items;
         this.selectedIndex = selectedIndex;
         this.isEditable = isEditable;
     }
 
-    public ComboProperty setSelectedIndex(int index) {
+    public ComboProperty<T> setSelectedIndex(int index) {
         if (index < 0 || index >= items.size()) {
             return this;
         }
@@ -40,7 +40,7 @@ public class ComboProperty extends AbstractProperty {
         return selectedIndex;
     }
 
-    public ComboProperty setSelectedItem(String item) {
+    public ComboProperty<T> setSelectedItem(T item) {
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).equals(item)) {
                 selectedIndex = i;
@@ -50,7 +50,7 @@ public class ComboProperty extends AbstractProperty {
         return this;
     }
 
-    public int indexOf(String item) {
+    public int indexOf(T item) {
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).equals(item)) {
                 return i;
@@ -59,7 +59,16 @@ public class ComboProperty extends AbstractProperty {
         return -1;
     }
 
-    public String getSelectedItem() {
+    public int indexOfString(String item) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).toString().equals(item)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public T getSelectedItem() {
         return items.get(selectedIndex);
     }
 
@@ -69,12 +78,15 @@ public class ComboProperty extends AbstractProperty {
 
     @Override
     public void saveToProps(Properties props) {
-        props.setString(fullyQualifiedName, getSelectedItem());
+        T selectedItem = getSelectedItem();
+        props.setString(fullyQualifiedName, selectedItem == null ? "" : selectedItem.toString());
     }
 
     @Override
     public void loadFromProps(Properties props) {
-        int index = indexOf(props.getString(fullyQualifiedName, getSelectedItem()));
+        T selectedItem = getSelectedItem();
+        String selectedItemStr = selectedItem == null ? "" : selectedItem.toString();
+        int index = indexOfString(props.getString(fullyQualifiedName, selectedItemStr));
         if (index == -1) {
             selectedIndex = 0; // fallback default
         }
@@ -85,7 +97,7 @@ public class ComboProperty extends AbstractProperty {
 
     @Override
     protected FormField generateFormFieldImpl() {
-        return new ComboField(propertyLabel, items, selectedIndex, isEditable);
+        return new ComboField<>(propertyLabel, items, selectedIndex, isEditable);
     }
 
     @Override
@@ -98,7 +110,7 @@ public class ComboProperty extends AbstractProperty {
             return;
         }
 
-        selectedIndex = ((ComboField)field).getSelectedIndex();
+        selectedIndex = ((ComboField<T>)field).getSelectedIndex();
     }
 
 }

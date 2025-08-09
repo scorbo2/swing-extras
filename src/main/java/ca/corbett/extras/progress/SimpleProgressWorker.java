@@ -9,7 +9,7 @@ import java.util.List;
  * or with SplashProgressWindow. For complex tasks with multiple progress bars, use
  * MultiProgressWorker instead.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public abstract class SimpleProgressWorker implements Runnable {

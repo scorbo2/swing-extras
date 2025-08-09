@@ -4,7 +4,7 @@ package ca.corbett.extensions.ui;
  * Allows client code to listen for enable/disable checkbox events on
  * an ExtensionDetailsPanel.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public interface ExtensionDetailsPanelListener {
 

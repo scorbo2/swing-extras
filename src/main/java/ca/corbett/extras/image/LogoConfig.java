@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 /**
  * Represents a configuration preset for logo images, to be used with LogoGenerator.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public final class LogoConfig implements ConfigObject {
 

@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  * create the dialog yourself. This isn't as hard as it sounds... see javadocs on generateDialog()
  * for more information.</p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public class PropertiesDialog extends JDialog {
@@ -62,7 +62,6 @@ public class PropertiesDialog extends JDialog {
         if (formPanelList.size() > 1) {
             tabPane = new JTabbedPane();
             for (FormPanel formPanel : formPanelList) {
-                formPanel.render();
                 tabPane.addTab(formPanel.getName(), buildScrollPane(formPanel));
             }
             formPanel = null;
@@ -73,7 +72,6 @@ public class PropertiesDialog extends JDialog {
         else if (formPanelList.size() == 1) {
             tabPane = null;
             formPanel = formPanelList.get(0);
-            formPanel.render();
             add(buildScrollPane(formPanel), BorderLayout.CENTER);
         }
 

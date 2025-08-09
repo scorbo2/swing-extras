@@ -8,7 +8,7 @@ import java.awt.Color;
 /**
  * Represents configuration for a gradient fill on some image.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public final class GradientConfig implements ConfigObject {

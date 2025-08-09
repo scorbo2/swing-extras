@@ -119,7 +119,7 @@ public class LookAndFeelProperty extends AbstractProperty {
 
     @Override
     protected FormField generateFormFieldImpl() {
-        return new ComboField(propertyLabel, displayNames, selectedIndex, false);
+        return new ComboField<>(propertyLabel, displayNames, selectedIndex, false);
     }
 
     @Override
@@ -132,6 +132,7 @@ public class LookAndFeelProperty extends AbstractProperty {
             return;
         }
 
-        selectedIndex = ((ComboField)field).getSelectedIndex();
+        //noinspection unchecked
+        selectedIndex = ((ComboField<String>)field).getSelectedIndex();
     }
 }

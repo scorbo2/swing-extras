@@ -9,21 +9,22 @@ import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageTextUtil;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ValueChangedListener;
 
-import javax.swing.AbstractAction;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ import java.util.List;
 /**
  * A quick demo panel to show off the capabilities of ImageTextUtil.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-15
  */
 public class ImageTextUtilDemoPanel extends PanelBuilder {
@@ -43,8 +44,8 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
     private GradientColorField bgColorField;
     private ColorField textFillColorField;
     private ColorField textOutlineColorField;
-    private ComboField outlineWidthField;
-    private ComboField textAlignField;
+    private ComboField<String> outlineWidthField;
+    private ComboField<ImageTextUtil.TextAlign> textAlignField;
     private NumberField lineWrapField;
 
     private String text;
@@ -88,67 +89,66 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         imagePanel = new ImagePanel(image, ImagePanelConfig.createDefaultProperties());
         panel.add(imagePanel, BorderLayout.CENTER);
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(12);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(12);
 
         final LabelField label = LabelField.createBoldHeaderLabel("ImageTextUtil", 20);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
         LabelField labelField = new LabelField("<html>The ImageTextUtil class gives you a way<br>" +
                                             "to write multiple lines of text to an image<br>" +
                                             "with optional fill and outline properties.<br>" +
                                             "Line wrapping can be handled automatically!</html>");
-        labelField.setBottomMargin(10);
-        labelField.setFont(labelField.getFieldLabelFont().deriveFont(Font.PLAIN, 12f));
-        formPanel.addFormField(labelField);
+        labelField.getMargins().setBottom(10);
+        formPanel.add(labelField);
 
         textField = new TextField("Text:", 22, 4, true);
         textField.setText(text);
-        textField.addValueChangedAction(changeAction);
-        formPanel.addFormField(textField);
+        textField.addValueChangedListener(changeListener);
+        formPanel.add(textField);
 
         fontField = new FontField("Font:");
-        fontField.addValueChangedAction(changeAction);
+        fontField.addValueChangedListener(changeListener);
         fontField.setShowSizeField(false);
-        formPanel.addFormField(fontField);
+        formPanel.add(fontField);
 
         bgColorField = new GradientColorField("Background:", bgGradient);
-        bgColorField.addValueChangedAction(changeAction);
-        formPanel.addFormField(bgColorField);
+        bgColorField.addValueChangedListener(changeListener);
+        formPanel.add(bgColorField);
 
         textFillColorField = new ColorField("Text fill:", fillColor);
-        textFillColorField.addValueChangedAction(changeAction);
-        formPanel.addFormField(textFillColorField);
+        textFillColorField.addValueChangedListener(changeListener);
+        formPanel.add(textFillColorField);
 
         textOutlineColorField = new ColorField("Text outline:", outlineColor);
-        textOutlineColorField.addValueChangedAction(changeAction);
-        formPanel.addFormField(textOutlineColorField);
+        textOutlineColorField.addValueChangedListener(changeListener);
+        formPanel.add(textOutlineColorField);
 
         List<String> options = new ArrayList<>();
         for (ImageTextUtil.TextAlign align : ImageTextUtil.TextAlign.values()) {
             options.add(align.toString());
         }
-        textAlignField = new ComboField("Text align:", options, 4, false);
-        textAlignField.addValueChangedAction(changeAction);
-        formPanel.addFormField(textAlignField);
+        textAlignField = new ComboField<>("Text align:",
+                                          List.of(ImageTextUtil.TextAlign.values()), 4, false);
+        textAlignField.addValueChangedListener(changeListener);
+        formPanel.add(textAlignField);
 
         options.clear();
         options.add("None");
         options.add("Thin");
         options.add("Medium");
         options.add("Thick");
-        outlineWidthField = new ComboField("Outline width:", options, 1, false);
-        outlineWidthField.addValueChangedAction(changeAction);
-        formPanel.addFormField(outlineWidthField);
+        outlineWidthField = new ComboField<>("Outline width:", options, 1, false);
+        outlineWidthField.addValueChangedListener(changeListener);
+        formPanel.add(outlineWidthField);
 
         lineWrapField = new NumberField("Line wrap:", 25, 5, 100, 1);
-        lineWrapField.addValueChangedAction(changeAction);
-        formPanel.addFormField(lineWrapField);
+        lineWrapField.addValueChangedListener(changeListener);
+        formPanel.add(lineWrapField);
 
-        formPanel.render();
         panel.add(formPanel, BorderLayout.WEST);
 
         render();
@@ -177,9 +177,9 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         imagePanel.setImage(image);
     }
 
-    private final AbstractAction changeAction = new AbstractAction() {
+    private final ValueChangedListener changeListener = new ValueChangedListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void formFieldValueChanged(FormField field) {
             text = textField.getText();
             fontFamily = fontField.getSelectedFont().getFamily();
             isBold = fontField.getSelectedFont().isBold();
@@ -203,7 +203,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
                 case 3: outlineWidth = 8; break;
             }
             //@formatter:on
-            textAlign = ImageTextUtil.TextAlign.fromLabel(textAlignField.getSelectedItem());
+            textAlign = textAlignField.getSelectedItem();
             lineWrapAt = (Integer)lineWrapField.getCurrentValue();
             render();
         }

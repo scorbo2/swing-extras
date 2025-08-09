@@ -62,7 +62,7 @@ import java.util.logging.Level;
  * an instance of this class.
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-03-17
  */
 public final class LogConsole extends JFrame implements ChangeListener {

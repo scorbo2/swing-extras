@@ -7,7 +7,7 @@ import java.util.Comparator;
  * A simple Comparator implementation that compares File objects by comparing their
  * absolute paths.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public final class FileNameComparator implements Comparator<File> {

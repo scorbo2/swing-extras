@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 /**
  * Represents a property that can either be on or off.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public class BooleanProperty extends AbstractProperty {

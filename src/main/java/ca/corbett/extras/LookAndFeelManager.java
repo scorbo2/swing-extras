@@ -80,7 +80,7 @@ import static javax.swing.UIManager.installLookAndFeel;
  * This is a simple wrapper class to manage the various look and feels that
  * spring-extras supports.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-04-22
  */
 public class LookAndFeelManager {

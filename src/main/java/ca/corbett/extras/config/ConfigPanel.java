@@ -14,8 +14,9 @@ import java.util.List;
 /**
  * An abstract base class for all ConfigPanel subclasses.
  *
+ * @deprecated Consider using FormField instead! This class may be removed in a future release!
  * @param <T> The type of model object to configure.
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-25
  */
 public abstract class ConfigPanel<T> extends JPanel {

@@ -39,7 +39,7 @@ import java.util.Map;
  * method instead.
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-03-17
  */
 public abstract class Stopwatch {

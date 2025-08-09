@@ -1,7 +1,6 @@
 package ca.corbett.forms.validators;
 
 import ca.corbett.forms.fields.FileField;
-import ca.corbett.forms.fields.FormField;
 
 import java.io.File;
 
@@ -11,35 +10,31 @@ import java.io.File;
  * for a new File which does NOT exist, it should be in a location where
  * we have permission to create a new file.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-27
  */
-public class FileMustBeCreatableValidator extends FieldValidator<FormField> {
-
-    public FileMustBeCreatableValidator(FileField field) {
-        super(field);
-    }
+public class FileMustBeCreatableValidator implements FieldValidator<FileField> {
 
     @Override
-    public ValidationResult validate() {
-        FileField ourField = (FileField)field;
+    public ValidationResult validate(FileField fieldToValidate) {
 
         // Blank values may be permissible:
-        boolean allowBlank = ourField.isAllowBlankValues();
-        if (ourField.getFile() == null) {
-            return allowBlank ? new ValidationResult() : new ValidationResult(false,
-                                                                              "Selected location must be writable.");
+        boolean allowBlank = fieldToValidate.isAllowBlankValues();
+        if (fieldToValidate.getFile() == null) {
+            return allowBlank
+                    ? ValidationResult.valid()
+                    : ValidationResult.invalid("Value cannot be blank.");
         }
 
-        File file = ourField.getFile().getParentFile();
+        File file = fieldToValidate.getFile().getParentFile();
         if (file == null) {
-            file = ourField.getFile(); // wonky case where someone selected the root directory
+            file = fieldToValidate.getFile(); // wonky case where someone selected the root directory
         }
 
         if (!file.canWrite()) {
-            return new ValidationResult(false, "Selected location must be writable.");
+            return ValidationResult.invalid("Selected location must be writable.");
         }
 
-        return new ValidationResult();
+        return ValidationResult.valid();
     }
 }

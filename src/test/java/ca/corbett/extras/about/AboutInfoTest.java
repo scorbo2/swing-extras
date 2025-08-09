@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Unit tests for the AboutInfo class.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-11
  */
 class AboutInfoTest {
