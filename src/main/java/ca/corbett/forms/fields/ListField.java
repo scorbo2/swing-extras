@@ -42,13 +42,14 @@ public class ListField<T> extends FormField {
      * ListSelectionModel.MULTIPLE_INTERVAL_SELECTION, and ListSelectionModel.SINGLE_INTERVAL_SELECTION).
      * Any other value is ignored. The default value is MULTIPLE_INTERVAL_SELECTION.
      */
-    public void setSelectionMode(int selectionMode) {
+    public ListField<T> setSelectionMode(int selectionMode) {
         switch (selectionMode) {
             case ListSelectionModel.SINGLE_SELECTION:
             case ListSelectionModel.MULTIPLE_INTERVAL_SELECTION:
             case ListSelectionModel.SINGLE_INTERVAL_SELECTION:
                 list.setSelectionMode(selectionMode);
         }
+        return this;
     }
 
     /**
@@ -64,13 +65,14 @@ public class ListField<T> extends FormField {
      * JList.VERTICAL_WRAP, and JList.HORIZONTAL_WRAP).
      * Any other value is ignored. The default value is VERTICAL.
      */
-    public void setLayoutOrientation(int orientation) {
+    public ListField<T> setLayoutOrientation(int orientation) {
         switch (orientation) {
             case JList.VERTICAL:
             case JList.VERTICAL_WRAP:
             case JList.HORIZONTAL_WRAP:
                 list.setLayoutOrientation(orientation);
         }
+        return this;
     }
 
     public int getVisibleRowCount() {
@@ -80,8 +82,9 @@ public class ListField<T> extends FormField {
     /**
      * Sets the desired visible row count. The default count is 4.
      */
-    public void setVisibleRowCount(int count) {
+    public ListField<T> setVisibleRowCount(int count) {
         list.setVisibleRowCount(count);
+        return this;
     }
 
     public int[] getSelectedIndexes() {
@@ -93,8 +96,9 @@ public class ListField<T> extends FormField {
      * it to do depending on the current selection mode (default selection mode is MULTIPLE_INTERVAL_SELECTION,
      * which allows multiple non-contiguous items to be selected).
      */
-    public void setSelectedIndexes(int[] selection) {
+    public ListField<T> setSelectedIndexes(int[] selection) {
         list.setSelectedIndices(selection);
+        return this;
     }
 
     /**
@@ -110,8 +114,9 @@ public class ListField<T> extends FormField {
      * Sets the pixel width of each list cell.
      * The default value is -1, which will set each cell's width to the width of the largest item.
      */
-    public void setFixedCellWidth(int width) {
+    public ListField<T> setFixedCellWidth(int width) {
         list.setFixedCellWidth(width);
+        return this;
     }
 
     @Override

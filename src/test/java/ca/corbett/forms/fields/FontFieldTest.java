@@ -39,6 +39,16 @@ class FontFieldTest extends FormFieldBaseTests {
     }
 
     @Test
+    public void testIsMultiLine() {
+        assertFalse(actual.isMultiLine());
+    }
+
+    @Test
+    public void testShouldExpand() {
+        assertFalse(actual.shouldExpand());
+    }
+
+    @Test
     public void testSetSelectedFont() {
         FontField actualField = (FontField)actual;
         assertEquals(FormField.DEFAULT_FONT, actualField.getSelectedFont());

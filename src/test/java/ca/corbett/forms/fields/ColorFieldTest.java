@@ -35,6 +35,16 @@ class ColorFieldTest extends FormFieldBaseTests {
     }
 
     @Test
+    public void testIsMultiLine() {
+        assertFalse(actual.isMultiLine());
+    }
+
+    @Test
+    public void testShouldExpand() {
+        assertFalse(actual.shouldExpand());
+    }
+
+    @Test
     public void testSetColor() {
         ColorField actualField = (ColorField)actual;
         assertEquals(Color.BLUE, actualField.getColor());

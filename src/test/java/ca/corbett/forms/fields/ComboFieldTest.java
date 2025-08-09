@@ -35,6 +35,16 @@ class ComboFieldTest extends FormFieldBaseTests {
     }
 
     @Test
+    public void testIsMultiLine() {
+        assertFalse(actual.isMultiLine());
+    }
+
+    @Test
+    public void testShouldExpand() {
+        assertFalse(actual.shouldExpand());
+    }
+
+    @Test
     public void testSetSelectedIndex() {
         ComboField actualCombo = (ComboField)actual;
         assertEquals(0, actualCombo.getSelectedIndex());

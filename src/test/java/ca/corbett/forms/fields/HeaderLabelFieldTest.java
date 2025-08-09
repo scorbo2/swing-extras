@@ -26,4 +26,14 @@ public class HeaderLabelFieldTest extends FormFieldBaseTests {
         assertFalse(actual.hasFieldLabel());
         assertEquals("", actual.getFieldLabel().getText());
     }
+
+    @Test
+    public void testIsMultiLine() {
+        assertFalse(actual.isMultiLine());
+    }
+
+    @Test
+    public void testShouldExpand() {
+        assertFalse(actual.shouldExpand());
+    }
 }

@@ -40,6 +40,16 @@ class FileFieldTest extends FormFieldBaseTests {
     }
 
     @Test
+    public void testIsMultiLine() {
+        assertFalse(actual.isMultiLine());
+    }
+
+    @Test
+    public void testShouldExpand() {
+        assertFalse(actual.shouldExpand());
+    }
+
+    @Test
     public void testSetSelectionType() {
         FileField actualField = (FileField)actual;
         assertSame(FileField.SelectionType.NonExistingFile, ((FileField)actual).getSelectionType());

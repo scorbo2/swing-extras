@@ -1,5 +1,7 @@
 package ca.corbett.forms.validators;
 
+import java.util.Objects;
+
 /**
  * Used by FieldValidator to report successful or unsuccessful validation on a FormField.
  * If validation is unsuccessful, the convention is to supply some user-readable
@@ -53,5 +55,17 @@ public class ValidationResult {
      */
     public String getMessage() {
         return message;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ValidationResult)) { return false; }
+        ValidationResult that = (ValidationResult)o;
+        return isValid == that.isValid && Objects.equals(message, that.message);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(isValid, message);
     }
 }
