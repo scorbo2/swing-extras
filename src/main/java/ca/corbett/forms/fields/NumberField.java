@@ -6,6 +6,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.Dimension;
+import java.util.Objects;
 
 /**
  * A FormField that wraps a JSpinner to allow numeric input.
@@ -74,6 +75,12 @@ public final class NumberField extends FormField {
     }
 
     public NumberField setCurrentValue(Number value) {
+        if (Objects.equals(spinner.getValue(), value)) {
+            return this; // reject no-op changes
+        }
+        if (value == null) {
+            return this; // reject null
+        }
         spinner.setValue(value);
         return this;
     }

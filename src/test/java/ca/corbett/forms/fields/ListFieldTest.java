@@ -3,6 +3,7 @@ package ca.corbett.forms.fields;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.ValidationResult;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
@@ -191,6 +192,39 @@ class ListFieldTest extends FormFieldBaseTests {
         int[] selected = actualField.getSelectedIndexes();
         assertEquals(1, selected.length);
         assertEquals(0, selected[0]);
+    }
+
+    @Test
+    public void testAddValueChangedListener() {
+        //noinspection unchecked
+        ListField<String> actualField = (ListField<String>)actual;
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        actual.addValueChangedListener(listener);
+        actualField.setSelectedIndex(1);
+        actualField.setSelectedIndexes(new int[]{0, 1});
+        Mockito.verify(listener, Mockito.times(2)).formFieldValueChanged(actual);
+    }
+
+    @Test
+    public void testValueChangedOnSelectionModeChange_shouldNotifyOnce() {
+        //noinspection unchecked
+        ListField<String> actualField = (ListField<String>)actual;
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        actual.addValueChangedListener(listener);
+        actualField.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        Mockito.verify(listener, Mockito.times(1)).formFieldValueChanged(actual);
+    }
+
+    @Test
+    public void testRemoveValueChangedListener() {
+        //noinspection unchecked
+        ListField<String> actualField = (ListField<String>)actual;
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        actual.addValueChangedListener(listener);
+        actual.removeValueChangedListener(listener);
+        actualField.setSelectedIndex(1);
+        actualField.setSelectedIndexes(new int[]{0, 1});
+        Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(actual);
     }
 
     @Test

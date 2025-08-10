@@ -41,6 +41,11 @@ public class ListField<T> extends FormField {
         list.setVisibleRowCount(4);
         list.setFixedCellWidth(20);
         fieldComponent = list;
+        list.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                fireValueChangedEvent();
+            }
+        });
     }
 
     /**
@@ -60,8 +65,12 @@ public class ListField<T> extends FormField {
         switch (selectionMode) {
             case ListSelectionModel.SINGLE_SELECTION:
             case ListSelectionModel.MULTIPLE_INTERVAL_SELECTION:
-            case ListSelectionModel.SINGLE_INTERVAL_SELECTION:
+            case ListSelectionModel.SINGLE_INTERVAL_SELECTION: {
+                list.setValueIsAdjusting(true);
+                list.clearSelection();
                 list.setSelectionMode(selectionMode);
+                list.setValueIsAdjusting(false);
+            }
         }
         return this;
     }
@@ -123,7 +132,9 @@ public class ListField<T> extends FormField {
             list.clearSelection();
             return this;
         }
+        list.setValueIsAdjusting(true);
         list.setSelectedIndices(selection);
+        list.setValueIsAdjusting(false);
         return this;
     }
 
@@ -134,7 +145,9 @@ public class ListField<T> extends FormField {
         if (index < 0 || index >= listModel.getSize()) {
             return this; // ignore out of bounds values
         }
+        list.setValueIsAdjusting(true);
         list.setSelectedIndex(index);
+        list.setValueIsAdjusting(false);
         return this;
     }
 
