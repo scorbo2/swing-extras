@@ -18,6 +18,8 @@ import java.util.logging.Logger;
  */
 public final class HashUtil {
 
+    private static final Logger log = Logger.getLogger(HashUtil.class.getName());
+
     public enum HashType {
         MD2, MD5, SHA1, SHA256, SHA384, SHA512
     }
@@ -39,9 +41,7 @@ public final class HashUtil {
         }
         catch (NoSuchAlgorithmException nsae) {
             // The above are all guaranteed to us by the java standard, so this *should* be okay
-            Logger.getLogger(HashUtil.class.getName()).log(Level.SEVERE,
-                                                           "Standard digest algorithms are not available in this JDK?! That's bad.",
-                                                           nsae);
+            log.log(Level.SEVERE, "Standard digest algorithms are not available in this JDK.", nsae);
         }
         for (MessageDigest digest : hashMap.values()) {
             digest.reset();

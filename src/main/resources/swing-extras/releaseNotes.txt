@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.4.0 [TODO] - swing-forms rewrite
+  #93 - HashUtil: log cleanup
   #89 - Make ListField more flexible and customizable
   #87 - Change FieldValidator from abstract class to interface
   #86 - Clean up resource handling in swing-forms
