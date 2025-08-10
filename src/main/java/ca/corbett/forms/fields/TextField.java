@@ -1,5 +1,6 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.extras.CoalescingDocumentListener;
 import ca.corbett.forms.validators.NonBlankFieldValidator;
 
 import javax.swing.BorderFactory;
@@ -10,6 +11,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import java.util.Objects;
 
 /**
  * A FormField implementation specifically for text input.
@@ -80,7 +82,9 @@ public final class TextField extends FormField {
             multiLine = false;
             fieldComponent = textComponent;
         }
-        textComponent.getDocument().addDocumentListener(changeListener);
+        CoalescingDocumentListener listener = new CoalescingDocumentListener(textComponent,
+                                                                             e -> fireValueChangedEvent());
+        textComponent.getDocument().addDocumentListener(listener);
         if (!allowBlank) {
             addFieldValidator(new NonBlankFieldValidator());
         }
@@ -98,9 +102,9 @@ public final class TextField extends FormField {
      * @param w Preferred pixel width of the text box's scroll pane.
      * @param h Preferred pixel height of the text box's scroll pane.
      */
-    public void setScrollPanePreferredSize(int w, int h) {
+    public TextField setScrollPanePreferredSize(int w, int h) {
         if (scrollPane == null) {
-            return;
+            return this;
         }
         scrollPaneWidth = w;
         scrollPaneHeight = h;
@@ -111,6 +115,7 @@ public final class TextField extends FormField {
         else {
             scrollPane.setPreferredSize(null);
         }
+        return this;
     }
 
 
@@ -128,8 +133,15 @@ public final class TextField extends FormField {
      *
      * @param text The new text.
      */
-    public void setText(String text) {
+    public TextField setText(String text) {
+        if (Objects.equals(textComponent.getText(), text)) {
+            return this; // reject no-op changes
+        }
+        if (text == null) {
+            text = ""; // if null, assume empty string
+        }
         textComponent.setText(text);
+        return this;
     }
 
     public JTextComponent getTextComponent() {
@@ -140,4 +152,6 @@ public final class TextField extends FormField {
     public boolean isMultiLine() {
         return multiLine;
     }
+
+    // TODO shouldExpand?
 }
