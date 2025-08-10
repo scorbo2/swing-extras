@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -154,20 +155,14 @@ public final class HashUtil {
 
     /**
      * Converts a byte array into a hex-encoded printable string.
+     * As of swing-extras 2.4, this method simply delegates to the java.util.HexFormat class,
+     * which is available as of Java 17.
      *
      * @param data An input array of any length.
      * @return A printable hex-encoded string equivalent.
      */
     public static String byteArrayToHexString(final byte[] data) {
-        final int BYTE = 0xff;
-        final int MAGIC = 0x100; // I literally don't remember why this is needed
-        final int BASE = 16;
-
-        StringBuilder sb = new StringBuilder();
-        for (byte b : data) {
-            sb.append(Integer.toString((b & BYTE) + MAGIC, BASE).substring(1));
-        }
-        return sb.toString();
+        return HexFormat.of().formatHex(data);
     }
 
 }
