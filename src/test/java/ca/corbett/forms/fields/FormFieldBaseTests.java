@@ -3,7 +3,6 @@ package ca.corbett.forms.fields;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.validators.FieldValidator;
-import ca.corbett.forms.validators.ValidationResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -244,9 +243,9 @@ public abstract class FormFieldBaseTests {
         if (field.hasHelpLabel()) {
             expectedComponentCount++;
         }
-        if (field.hasValidationLabel()) {
-            expectedComponentCount++;
-        }
+        //if (field.hasValidationLabel()) {
+        expectedComponentCount++; // validation label is rendered unconditionally because it's the rightmost thing
+        //}
 
         // But we should have an exact count of it:
         assertEquals(expectedComponentCount, panel.getComponentCount());
@@ -261,11 +260,4 @@ public abstract class FormFieldBaseTests {
         assertEquals(expectedGridWidth, gbc.gridwidth);
     }
 
-    protected static class AlwaysFalseValidator implements FieldValidator<FormField> {
-
-        @Override
-        public ValidationResult validate(FormField fieldToValidate) {
-            return ValidationResult.invalid("invalid");
-        }
-    }
 }

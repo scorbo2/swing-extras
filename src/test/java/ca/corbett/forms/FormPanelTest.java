@@ -1,13 +1,22 @@
 package ca.corbett.forms;
 
+import ca.corbett.forms.fields.AlwaysFalseValidator;
 import ca.corbett.forms.fields.NumberField;
+import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.TextField;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.JLabel;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class FormPanelTest {
 
@@ -41,6 +50,145 @@ class FormPanelTest {
         formPanel.removeAllFormFields();
         assertNull(formPanel.getFormField("numberField1"));
         assertNull(formPanel.getFormField("textField1"));
+    }
+
+    @Test
+    public void testGetFieldCount() {
+        FormPanel formPanel = new FormPanel();
+        assertEquals(0, formPanel.getFieldCount());
+        formPanel.add(new PanelField());
+        assertEquals(1, formPanel.getFieldCount());
+        formPanel.add(new PanelField());
+        assertEquals(2, formPanel.getFieldCount());
+        formPanel.removeAllFormFields();
+        assertEquals(0, formPanel.getFieldCount());
+    }
+
+    @Test
+    public void testClearValidationResults() {
+        FormPanel formPanel = new FormPanel();
+        PanelField field1 = new PanelField();
+        field1.addFieldValidator(new AlwaysFalseValidator());
+        PanelField field2 = new PanelField();
+        field2.addFieldValidator(new AlwaysFalseValidator());
+        formPanel.add(field1);
+        formPanel.add(field2);
+        formPanel.add(new PanelField().addFieldValidator(new AlwaysFalseValidator()));
+        assertInstanceOf(JLabel.class, formPanel.getComponent(3));
+        assertInstanceOf(JLabel.class, formPanel.getComponent(7));
+        JLabel validationLabel1 = (JLabel)formPanel.getComponent(3);
+        JLabel validationLabel2 = (JLabel)formPanel.getComponent(7);
+        assertSame(field1.getValidationLabel(), validationLabel1);
+        assertSame(field2.getValidationLabel(), validationLabel2);
+
+        formPanel.validateForm();
+        assertNotNull(validationLabel1.getIcon());
+        assertNotNull(validationLabel2.getIcon());
+        assertEquals(AlwaysFalseValidator.MESSAGE, validationLabel1.getToolTipText());
+        assertEquals(AlwaysFalseValidator.MESSAGE, validationLabel2.getToolTipText());
+        assertFalse(field1.isValid());
+        assertFalse(field2.isValid());
+
+        formPanel.clearValidationResults();
+        assertNull(validationLabel1.getIcon());
+        assertNull(validationLabel2.getIcon());
+        assertNull(validationLabel1.getToolTipText());
+        assertNull(validationLabel2.getToolTipText());
+    }
+
+    @Test
+    public void testSetBorderMargin_leftMargin() {
+        final int MARGIN = 11;
+        for (Alignment alignment : List.of(Alignment.CENTER_LEFT, Alignment.TOP_LEFT, Alignment.BOTTOM_LEFT)) {
+            FormPanel formPanel = new FormPanel(alignment);
+            formPanel.setBorderMargin(MARGIN);
+            assertEquals(MARGIN, formPanel.getBorderMargin());
+            PanelField field = new PanelField();
+            field.setMargins(new Margins(MARGIN));
+            formPanel.add(field);
+            assertExpectedComponentCount_borderMarginTest(formPanel);
+            GridBagConstraints gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getFieldComponent());
+            assertEquals(MARGIN * 2, gbc.insets.left); // form's border margin + field's left margin
+        }
+    }
+
+    @Test
+    public void testSetBorderMargin_rightMargin() {
+        final int MARGIN = 11;
+        for (Alignment alignment : List.of(Alignment.CENTER_RIGHT, Alignment.TOP_RIGHT, Alignment.BOTTOM_RIGHT)) {
+            FormPanel formPanel = new FormPanel(alignment);
+            formPanel.setBorderMargin(MARGIN);
+            assertEquals(MARGIN, formPanel.getBorderMargin());
+            PanelField field = new PanelField();
+            field.setMargins(new Margins(MARGIN));
+            formPanel.add(field);
+            assertExpectedComponentCount_borderMarginTest(formPanel);
+            GridBagConstraints gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getValidationLabel());
+            assertEquals(MARGIN * 2, gbc.insets.right); // form's border margin + field's right margin
+        }
+    }
+
+    @Test
+    public void testSetBorderMargin_topMargin() {
+        final int MARGIN = 11;
+        for (Alignment alignment : List.of(Alignment.TOP_CENTER, Alignment.TOP_RIGHT, Alignment.TOP_LEFT)) {
+            FormPanel formPanel = new FormPanel(alignment);
+            formPanel.setBorderMargin(MARGIN);
+            assertEquals(MARGIN, formPanel.getBorderMargin());
+            PanelField field = new PanelField();
+            field.setMargins(new Margins(MARGIN));
+            formPanel.add(field);
+            assertExpectedComponentCount_borderMarginTest(formPanel);
+            GridBagConstraints gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getFieldComponent());
+            assertEquals(MARGIN * 2, gbc.insets.top); // form's border margin + field's top margin
+            gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getValidationLabel());
+            assertEquals(MARGIN * 2, gbc.insets.top); // form's border margin + field's top margin
+        }
+    }
+
+    @Test
+    public void testSetBorderMargin_bottomMargin() {
+        final int MARGIN = 11;
+        for (Alignment alignment : List.of(Alignment.BOTTOM_LEFT, Alignment.BOTTOM_RIGHT, Alignment.BOTTOM_CENTER)) {
+            FormPanel formPanel = new FormPanel(alignment);
+            formPanel.setBorderMargin(MARGIN);
+            assertEquals(MARGIN, formPanel.getBorderMargin());
+            PanelField field = new PanelField();
+            field.setMargins(new Margins(MARGIN));
+            formPanel.add(field);
+            assertExpectedComponentCount_borderMarginTest(formPanel);
+            GridBagConstraints gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getFieldComponent());
+            assertEquals(MARGIN * 2, gbc.insets.bottom); // form's border margin + field's bottom margin
+            gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getValidationLabel());
+            assertEquals(MARGIN * 2, gbc.insets.bottom); // form's border margin + field's bottom margin
+        }
+    }
+
+    @Test
+    public void testSetBorderMargin_center_shouldHaveNoEffect() {
+        final int MARGIN = 11;
+        FormPanel formPanel = new FormPanel(Alignment.CENTER);
+        formPanel.setBorderMargin(MARGIN); // should be ignored for CENTER alignment
+        assertEquals(MARGIN, formPanel.getBorderMargin());
+        PanelField field = new PanelField();
+        field.setMargins(new Margins(MARGIN));
+        formPanel.add(field);
+        assertExpectedComponentCount_borderMarginTest(formPanel);
+        GridBagConstraints gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getFieldComponent());
+        assertEquals(MARGIN, gbc.insets.left); // only the field's margin should count!
+        assertEquals(MARGIN, gbc.insets.top); // only the field's margin should count!
+        assertEquals(MARGIN, gbc.insets.bottom); // only the field's margin should count!
+        gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getValidationLabel());
+        assertEquals(MARGIN, gbc.insets.bottom); // form's border margin + field's bottom margin
+        assertEquals(MARGIN, gbc.insets.right); // only the field's margin should count!
+        assertEquals(MARGIN, gbc.insets.top); // only the field's margin should count!
+    }
+
+    private void assertExpectedComponentCount_borderMarginTest(FormPanel formPanel) {
+        // There should be a margin label on each edge: top, right, bottom, left
+        // additionally, we should see our empty panel
+        // finally, we should see the validation label
+        assertEquals(6, formPanel.getComponentCount());
     }
 
 }

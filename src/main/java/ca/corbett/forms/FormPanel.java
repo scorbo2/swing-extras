@@ -44,6 +44,7 @@ public final class FormPanel extends JPanel {
     private final List<FormField> formFields = new ArrayList<>();
     private Alignment alignment;
     private int borderMargin = 0;
+    private boolean renderInProgress = false;
 
     /**
      * Creates a new, empty FormPanel with TOP_CENTER Alignment.
@@ -126,6 +127,19 @@ public final class FormPanel extends JPanel {
     public void removeAllFormFields() {
         formFields.clear();
         render();
+    }
+
+    /**
+     * Overridden here so we can also remove all FormField instances.
+     * This is effectively the same as calling removeAllFormFields() and
+     * it will trigger a re-render.
+     */
+    @Override
+    public void removeAll() {
+        super.removeAll();
+        if (!renderInProgress) {
+            removeAllFormFields(); // don't invoke if this call came from our own render() method, else infinite loop
+        }
     }
 
     /**
@@ -213,7 +227,9 @@ public final class FormPanel extends JPanel {
      * Invoked internally as needed to remove all UI components and re-do the form layout.
      */
     private void render() {
+        renderInProgress = true;
         this.removeAll();
+        renderInProgress = false;
         this.setLayout(new GridBagLayout());
 
         if (formFields.isEmpty()) {
@@ -313,9 +329,10 @@ public final class FormPanel extends JPanel {
      * Invoked internally to render the validation label for the given FormField, if it has one.
      */
     private void renderValidationLabel(FormField field, int row, Margins margins) {
-        if (!field.hasValidationLabel()) {
-            return;
-        }
+        // We need to render it unconditionally because it might have a right margin that we need to honor
+        //if (!field.hasValidationLabel()) {
+        //    return;
+        //}
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = VALIDATION_COLUMN;

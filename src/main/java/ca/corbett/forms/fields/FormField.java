@@ -79,11 +79,13 @@ public abstract class FormField {
      * are available. Some descendant classes might override this method to return
      * false if a validation label is not applicable (for example, for a LabelField).
      * <p>
-     * It is recommended that even if a FormField implementing class does not want
+     * It is <b>strongly recommended</b> that even if a FormField implementing class does not want
      * to show the validation label, it should still return true here if one or
      * more FieldValidator instances have been added to this field. Otherwise,
      * validation errors on the field won't be visible to the user.
+     * Suggested implementation for such cases:
      * </p>
+     * <blockquote><pre>return !fieldValidators.isEmpty();</pre></blockquote>
      */
     public boolean hasValidationLabel() {
         return true;
@@ -402,8 +404,10 @@ public abstract class FormField {
             validationLabel.setToolTipText(toolTip);
         }
         else {
-            validationLabel.setIcon(Resources.getValidIcon());
-            validationLabel.setToolTipText(null);
+            if (hasValidationLabel()) { // don't set the icon if this field doesn't show validation results
+                validationLabel.setIcon(Resources.getValidIcon());
+                validationLabel.setToolTipText(null);
+            }
         }
 
         return isValid;
