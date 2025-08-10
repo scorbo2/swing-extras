@@ -1,5 +1,6 @@
 package ca.corbett.extras;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -73,34 +74,34 @@ public final class HashUtil {
 
     /**
      * Returns a digest of the contents of the given file, using the given HashType.
-     * File must exist and be smaller than 2GB.
      *
      * @param hashType The HashType to use.
-     * @param file     The input file. Must exist and be smaller than 2GB.
+     * @param file     The input file. Must exist and be readable.
      * @return A hash of the file contents, in the specified digest type.
-     * @throws IOException If the file does not exist, is not readable, or is larger than 2GB.
+     * @throws IOException If the file does not exist or is not readable.
      */
     public static byte[] getHash(final HashType hashType, final File file) throws IOException {
         if (!file.exists() || !file.canRead() || file.isDirectory()) {
             throw new IOException("File " + file.getName() + " does not exist or cannot be read.");
         }
-        if (file.length() >= Integer.MAX_VALUE) {
-            throw new IOException("File " + file.getName() + " exceeds max length (2GB).");
+        try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(file))) {
+            MessageDigest digest = hashMap.get(hashType);
+            byte[] buffer = new byte[1024 * 1024 * 4]; // 4MB buffer
+            int len;
+            while ((len = is.read(buffer)) != -1) {
+                digest.update(buffer, 0, len);
+            }
+            return digest.digest();
         }
-        FileInputStream is = new FileInputStream(file);
-        byte[] data = new byte[(int)file.length()];
-        is.read(data);
-        is.close();
-        return getHash(hashType, data);
     }
 
     /**
      * Returns a digest of the contents of the given file. File must exist and
-     * be smaller than 2GB. Uses SHA-1 as the default hash type.
+     * be readable. Uses SHA-1 as the default hash type.
      *
-     * @param file The input file. Must exist and be smaller than 2GB.
+     * @param file The input file. Must exist and be readable.
      * @return A SHA-1 hash of the file contents.
-     * @throws IOException If the file does not exist, is not readable, or is larger than 2GB.
+     * @throws IOException If the file does not exist or is not readable.
      */
     public static byte[] getHash(final File file) throws IOException {
         return getHash(HashType.SHA1, file);
@@ -134,9 +135,9 @@ public final class HashUtil {
      * using the given HashType.
      *
      * @param hashType The HashType to use.
-     * @param file     The input file in question. Must exist and be smaller than 2GB.
+     * @param file     The input file in question. Must exist and be readable.
      * @return A hex-encoded printable string of the hash of the file contents.
-     * @throws IOException If the file does not exist, is not readable, or is too large (2GB).
+     * @throws IOException If the file does not exist or is not readable.
      */
     public static String getHashString(final HashType hashType, final File file) throws IOException {
         return byteArrayToHexString(getHash(hashType, file));
@@ -145,9 +146,9 @@ public final class HashUtil {
     /**
      * Returns a printable string (hex format) of the hash of the given file contents.
      *
-     * @param file The input file in question. Must exist and be smaller than 2GB.
+     * @param file The input file in question. Must exist and be readable.
      * @return A hex-encoded printable string equivalent of the hash of the file contents.
-     * @throws IOException If the file does not exist, is not readable, or is too large (2GB).
+     * @throws IOException If the file does not exist or is not readable.
      */
     public static String getHashString(final File file) throws IOException {
         return byteArrayToHexString(getHash(HashType.SHA1, file));

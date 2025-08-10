@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.4.0 [TODO] - swing-forms rewrite
   #96 - Upgrade Java 11 to Java 17
   #95 - HashUtil: update byteArrayToHexString
+  #94 - HashUtil: remove the 2GB file hash size limit
   #93 - HashUtil: log cleanup
   #89 - Make ListField more flexible and customizable
   #87 - Change FieldValidator from abstract class to interface
