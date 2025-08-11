@@ -153,5 +153,10 @@ public final class TextField extends FormField {
         return multiLine;
     }
 
+    @Override
+    public boolean shouldExpand() {
+        return true;
+    }
+
     // TODO shouldExpand?
 }
