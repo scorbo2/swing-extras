@@ -6,7 +6,7 @@ import ca.corbett.forms.validators.ValidationResult;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import javax.swing.JScrollPane;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class MultiLineTextFieldTest extends FormFieldBaseTests {
     @Test
     public void testGetFieldComponent() {
         assertNotNull(actual.getFieldComponent());
-        assertInstanceOf(JScrollPane.class, actual.getFieldComponent());
+        assertInstanceOf(JPanel.class, actual.getFieldComponent());
     }
 
     @Test
@@ -65,8 +65,8 @@ public class MultiLineTextFieldTest extends FormFieldBaseTests {
     @Test
     public void testPixelSizing() {
         TextField field = TextField.ofFixedPixelSizeMultiLine("test", 222, 111);
-        assertEquals(222, ((JScrollPane)field.getFieldComponent()).getPreferredSize().getWidth());
-        assertEquals(111, ((JScrollPane)field.getFieldComponent()).getPreferredSize().getHeight());
+        assertEquals(222, field.getScrollPane().getPreferredSize().getWidth());
+        assertEquals(111, field.getScrollPane().getPreferredSize().getHeight());
         assertFalse(field.shouldExpand());
     }
 
