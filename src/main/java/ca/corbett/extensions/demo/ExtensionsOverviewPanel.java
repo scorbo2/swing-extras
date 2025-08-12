@@ -149,8 +149,10 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
             List<AbstractProperty> props = new ArrayList<>();
             props.add(new LabelProperty("FakeExtension3.General.label1",
                                         "This extension defines some config properties"));
-            props.add(new TextProperty("FakeExtension3.General.text1", "Text field 1:", "Default value"));
-            props.add(new TextProperty("FakeExtension3.General.text2", "Text field 2:", "Hello"));
+            props.add(TextProperty.ofSingleLine("FakeExtension3.General.text1", "Text field 1:")
+                                  .setValue("Default value"));
+            props.add(TextProperty.ofSingleLine("FakeExtension3.General.text2", "Text field 2:")
+                                  .setValue("Hello"));
             props.add(new LabelProperty("FakeExtension3.General.label2", "You can view the defaults here."));
             return props;
         }

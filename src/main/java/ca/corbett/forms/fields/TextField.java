@@ -30,90 +30,73 @@ import java.util.Objects;
  */
 public final class TextField extends FormField {
 
+    public enum TextFieldType {
+        SINGLE_LINE,
+        MULTI_LINE_FIXED_ROWS_COLS,
+        MULTI_LINE_FIXED_PIXELS,
+        MULTI_LINE_DYNAMIC
+    }
+
     private final boolean multiLine;
     private JScrollPane scrollPane;
 
-    private final boolean shouldExpandMultiLine;
+    private boolean shouldExpandMultiLine;
     private boolean allowPopupEditing;
     private final JTextComponent textComponent;
 
-    private TextField(JTextArea textArea, boolean isExpandable) {
-        textComponent = textArea;
-        shouldExpandMultiLine = isExpandable;
-        multiLine = true;
-        scrollPane = createScrollPane(textComponent);
-        fieldComponent = scrollPane;
-    }
-
-    private TextField(JTextArea textArea, int pixelWidth, int pixelHeight) {
-        textComponent = textArea;
-        shouldExpandMultiLine = false;
-        multiLine = true;
-        scrollPane = createScrollPane(textComponent);
-        scrollPane.setPreferredSize(new Dimension(pixelWidth, pixelHeight));
-        fieldComponent = scrollPane;
-    }
-
-    private TextField(JTextField textField) {
-        textComponent = textField;
-        shouldExpandMultiLine = false;
-        multiLine = false;
-        fieldComponent = textComponent;
-    }
-
-    private void postConstructorInitialization(String label) {
+    /**
+     * Invoked internally by the static factory methods.
+     */
+    private TextField(String label, boolean isMultiLine) {
+        if (isMultiLine) {
+            JTextArea textArea = new JTextArea();
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            textComponent = textArea;
+            textComponent.setSize(textComponent.getPreferredSize());
+            scrollPane = new JScrollPane(textComponent);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            fieldComponent = scrollPane;
+        }
+        else {
+            textComponent = new JTextField();
+            fieldComponent = textComponent;
+        }
+        multiLine = isMultiLine;
         fieldLabel.setText(label);
         textComponent.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        textComponent.setSize(textComponent.getPreferredSize());
         CoalescingDocumentListener listener = new CoalescingDocumentListener(textComponent,
                                                                              e -> fireValueChangedEvent());
         textComponent.getDocument().addDocumentListener(listener);
         allowPopupEditing = false; // arbitrary default
+        shouldExpandMultiLine = false; // arbitrary default
     }
 
     public static TextField ofSingleLine(String label, int cols) {
-        JTextField textField = new JTextField();
-        textField.setColumns(cols);
-        TextField field = new TextField(textField);
-        field.postConstructorInitialization(label);
+        TextField field = new TextField(label, false);
+        ((JTextField)field.textComponent).setColumns(cols);
         return field;
     }
 
     public static TextField ofFixedSizeMultiLine(String label, int rows, int cols) {
-        JTextArea textArea = createTextArea();
-        textArea.setRows(rows);
-        textArea.setColumns(cols);
-        TextField field = new TextField(textArea, false);
-        field.postConstructorInitialization(label);
+        TextField field = new TextField(label, true);
+        ((JTextArea)field.textComponent).setRows(rows);
+        ((JTextArea)field.textComponent).setColumns(cols);
         return field;
     }
 
     public static TextField ofFixedPixelSizeMultiLine(String label, int width, int height) {
-        TextField field = new TextField(createTextArea(), width, height);
-        field.postConstructorInitialization(label);
+        TextField field = new TextField(label, true);
+        field.scrollPane.setPreferredSize(new Dimension(width, height));
         return field;
     }
 
     public static TextField ofDynamicSizingMultiLine(String label, int rows) {
-        JTextArea textArea = createTextArea();
-        textArea.setRows(rows);
-        TextField field = new TextField(textArea, true);
-        field.postConstructorInitialization(label);
+        TextField field = new TextField(label, true);
+        ((JTextArea)field.textComponent).setRows(rows);
+        field.shouldExpandMultiLine = true;
         return field;
-    }
-
-    private static JTextArea createTextArea() {
-        JTextArea textArea = new JTextArea();
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        return textArea;
-    }
-
-    private static JScrollPane createScrollPane(JTextComponent textComponent) {
-        JScrollPane scrollPane = new JScrollPane(textComponent);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        return scrollPane;
     }
 
     /**
