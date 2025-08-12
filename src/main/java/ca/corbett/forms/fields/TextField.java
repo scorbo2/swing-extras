@@ -5,12 +5,18 @@ import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.NonBlankFieldValidator;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 import javax.swing.text.JTextComponent;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +45,7 @@ public final class TextField extends FormField {
 
     private final boolean multiLine;
     private JScrollPane scrollPane;
+    private JPanel popoutPanel;
 
     private boolean shouldExpandMultiLine;
     private boolean allowPopupEditing;
@@ -57,7 +64,11 @@ public final class TextField extends FormField {
             scrollPane = new JScrollPane(textComponent);
             scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            fieldComponent = scrollPane;
+            JPanel wrapperPanel = new JPanel(new BorderLayout());
+            wrapperPanel.add(scrollPane, BorderLayout.CENTER);
+            popoutPanel = buildPopoutPanel();
+            wrapperPanel.add(popoutPanel, BorderLayout.SOUTH);
+            fieldComponent = wrapperPanel;
         }
         else {
             textComponent = new JTextField();
@@ -157,10 +168,23 @@ public final class TextField extends FormField {
 
     public TextField setAllowPopupEditing(boolean allow) {
         allowPopupEditing = allow;
-        // TODO set visible/invisible the expand button
+        if (popoutPanel != null) {
+            popoutPanel.setVisible(allow);
+        }
         return this;
     }
 
+    /**
+     * Returns the JScrollPane used for multi-line fields, or null if this is a single-line field.
+     */
+    public JScrollPane getScrollPane() {
+        return scrollPane;
+    }
+
+    /**
+     * Returns the underlying JTextComponent for this field, which is a JTextArea for multi-line
+     * fields or a JTextField for single-line fields.
+     */
     public JTextComponent getTextComponent() {
         return textComponent;
     }
@@ -173,6 +197,21 @@ public final class TextField extends FormField {
     @Override
     public boolean shouldExpand() {
         return shouldExpandMultiLine;
+    }
+
+    private static JPanel buildPopoutPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton btn = new JButton("Pop out...");
+        btn.setPreferredSize(new Dimension(90, 23));
+        btn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO launch pop-out edit dialog
+            }
+        });
+        panel.add(btn);
+        panel.setVisible(false);
+        return panel;
     }
 
     private void addNonBlankValidatorIfNotPresent() {
