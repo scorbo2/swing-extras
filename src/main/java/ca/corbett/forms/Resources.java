@@ -18,10 +18,12 @@ public final class Resources {
     private static final String VALID = PREFIX + "/images/formfield-valid.png";
     private static final String INVALID = PREFIX + "/images/formfield-invalid.png";
     private static final String HELP = PREFIX + "/images/formfield-help.png";
+    private static final String BLANK = PREFIX + "/images/formfield-blank.png";
 
     private static final ImageIcon validIcon;
     private static final ImageIcon invalidIcon;
     private static final ImageIcon helpIcon;
+    private static final ImageIcon blankIcon;
 
     static {
         URL url = Resources.class.getResource(VALID);
@@ -32,6 +34,9 @@ public final class Resources {
 
         url = Resources.class.getResource(HELP);
         helpIcon = url == null ? createIcon(Color.YELLOW) : new ImageIcon(url);
+
+        url = Resources.class.getResource(BLANK);
+        blankIcon = url == null ? createIcon(new Color(0, 0, 0, 0)) : new ImageIcon(url);
     }
 
     /**
@@ -56,6 +61,14 @@ public final class Resources {
      */
     public static ImageIcon getHelpIcon() {
         return helpIcon;
+    }
+
+    /**
+     * Returns a transparent ImageIcon of the same dimensions as the other formfield icons.
+     * This is useful for reserving space where an icon should go.
+     */
+    public static ImageIcon getBlankIcon() {
+        return blankIcon;
     }
 
     /**
