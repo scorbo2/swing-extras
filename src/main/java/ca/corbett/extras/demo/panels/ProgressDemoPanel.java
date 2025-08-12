@@ -19,7 +19,7 @@ import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -37,15 +37,15 @@ import java.awt.event.ActionListener;
  */
 public class ProgressDemoPanel extends PanelBuilder {
 
-    private TextField simpleProgressTextField;
+    private ShortTextField simpleProgressTextField;
     private NumberField simpleProgressStepsField;
 
-    private TextField majorProgressTextField;
-    private TextField minorProgressTextField;
+    private ShortTextField majorProgressTextField;
+    private ShortTextField minorProgressTextField;
     private NumberField majorProgressStepsField;
     private NumberField minorProgressStepsField;
 
-    private TextField splashAppNameField;
+    private ShortTextField splashAppNameField;
     private ColorField splashFgColorField;
     private GradientColorField splashBgColorField;
     private NumberField splashWidthField;
@@ -70,7 +70,7 @@ public class ProgressDemoPanel extends PanelBuilder {
 
         formPanel.add(LabelField.createPlainHeaderLabel("A simple replacement for ProgressMonitor!", 14));
 
-        simpleProgressTextField = TextField.ofSingleLine("Progress label:", 16).setAllowBlank(false);
+        simpleProgressTextField = new ShortTextField("Progress label:", 16).setAllowBlank(false);
         simpleProgressTextField.setText("Some task in progress...");
         formPanel.add(simpleProgressTextField);
 
@@ -101,14 +101,14 @@ public class ProgressDemoPanel extends PanelBuilder {
                         "simple scenarios. But, sometimes it's useful to be able to show major and<br>" +
                         "minor progress for a more complicated task. Meet the MultiProgressDialog!</html>", 14));
 
-        majorProgressTextField = TextField.ofSingleLine("Major progress label: ", 16).setAllowBlank(false);
+        majorProgressTextField = new ShortTextField("Major progress label: ", 16).setAllowBlank(false);
         majorProgressTextField.setText("Some major task");
         formPanel.add(majorProgressTextField);
 
         majorProgressStepsField = new NumberField("Major progress steps:", 3, 1, 10, 1);
         formPanel.add(majorProgressStepsField);
 
-        minorProgressTextField = TextField.ofSingleLine("Minor progress label:", 16).setAllowBlank(false);
+        minorProgressTextField = new ShortTextField("Minor progress label:", 16).setAllowBlank(false);
         minorProgressTextField.setText("Some minor task");
         formPanel.add(minorProgressTextField);
 
@@ -140,7 +140,7 @@ public class ProgressDemoPanel extends PanelBuilder {
                         "and you want to show a progress bar during startup. Let's look at SplashProgressWindow!</html>",
                 14));
 
-        splashAppNameField = TextField.ofSingleLine("Application name:", 15).setAllowBlank(false);
+        splashAppNameField = new ShortTextField("Application name:", 15).setAllowBlank(false);
         splashAppNameField.setText(Version.NAME);
         formPanel.add(splashAppNameField);
 

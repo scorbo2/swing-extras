@@ -8,7 +8,7 @@ import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.ValidationResult;
 
@@ -54,11 +54,11 @@ public class FormsValidationPanel extends PanelBuilder {
 
         final LabelField successLabel = LabelField.createPlainHeaderLabel("Hooray! No validation errors to fix.", 14);
 
-        final TextField textField = TextField.ofSingleLine("Must be 3+ chars long: ", 15).setAllowBlank(false);
+        final ShortTextField textField = new ShortTextField("Must be 3+ chars long: ", 15).setAllowBlank(false);
         textField.setText("Example");
-        textField.addFieldValidator(new FieldValidator<TextField>() {
+        textField.addFieldValidator(new FieldValidator<ShortTextField>() {
             @Override
-            public ValidationResult validate(TextField fieldToValidate) {
+            public ValidationResult validate(ShortTextField fieldToValidate) {
                 if (fieldToValidate.getText().length() < 3) {
                     return ValidationResult.invalid("Text must be at least three characters!");
                 }

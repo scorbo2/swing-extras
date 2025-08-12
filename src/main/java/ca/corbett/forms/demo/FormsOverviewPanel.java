@@ -5,7 +5,7 @@ import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -41,7 +41,7 @@ public class FormsOverviewPanel extends PanelBuilder {
                                                           "Most forms contain fields consisting of labels and components:</html>",
                                                   14));
 
-        ca.corbett.forms.fields.TextField exampleField = TextField.ofSingleLine("Example text field:", 12);
+        ShortTextField exampleField = new ShortTextField("Example text field:", 12);
         exampleField.setText("hello");
         exampleField.getMargins().setLeft(24).setTop(16).setBottom(16);
         introPanel.add(exampleField);

@@ -9,9 +9,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
-import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -22,90 +20,80 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A FormField implementation specifically for text input.
- * The wrapped field is either a JTextField or a JTextArea depending on whether
- * you specify multi-line input or not. Yes, that's right! All the niggly
- * details of setting up text input are hugely simplified here.
- * <p>
- * The underlying JTextComponent can be accessed directly if needed by
- * using getFieldComponent() and casting the result to JTextArea (for multi-line
- * fields) or JTextField (for single-line fields).
+ * A FormField implementation specifically for long (multi-line) text input.
+ * The wrapped component is a JTextArea, which you can access directly
+ * if needed via the getTextArea() method.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2019-11-23
  */
-public final class TextField extends FormField {
+public class LongTextField extends FormField {
 
     public enum TextFieldType {
-        SINGLE_LINE,
         MULTI_LINE_FIXED_ROWS_COLS,
         MULTI_LINE_FIXED_PIXELS,
         MULTI_LINE_DYNAMIC
     }
 
-    private final boolean multiLine;
-    private JScrollPane scrollPane;
-    private JPanel popoutPanel;
+    private final JTextArea textArea;
+    private final JScrollPane scrollPane;
+    private final JPanel popoutPanel;
 
     private boolean shouldExpandMultiLine;
-    private boolean allowPopupEditing;
-    private final JTextComponent textComponent;
+    private boolean allowPopoutEditing;
 
     /**
      * Invoked internally by the static factory methods.
      */
-    private TextField(String label, boolean isMultiLine) {
-        if (isMultiLine) {
-            JTextArea textArea = new JTextArea();
-            textArea.setLineWrap(true);
-            textArea.setWrapStyleWord(true);
-            textComponent = textArea;
-            textComponent.setSize(textComponent.getPreferredSize());
-            scrollPane = new JScrollPane(textComponent);
-            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            JPanel wrapperPanel = new JPanel(new BorderLayout());
-            wrapperPanel.add(scrollPane, BorderLayout.CENTER);
-            popoutPanel = buildPopoutPanel();
-            wrapperPanel.add(popoutPanel, BorderLayout.SOUTH);
-            fieldComponent = wrapperPanel;
-        }
-        else {
-            textComponent = new JTextField();
-            fieldComponent = textComponent;
-        }
-        multiLine = isMultiLine;
+    private LongTextField(String label) {
+        textArea = new JTextArea();
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setSize(textArea.getPreferredSize());
+        scrollPane = new JScrollPane(textArea);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        JPanel wrapperPanel = new JPanel(new BorderLayout());
+        wrapperPanel.add(scrollPane, BorderLayout.CENTER);
+        popoutPanel = buildPopoutPanel();
+        wrapperPanel.add(popoutPanel, BorderLayout.SOUTH);
+        fieldComponent = wrapperPanel;
         fieldLabel.setText(label);
-        textComponent.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        CoalescingDocumentListener listener = new CoalescingDocumentListener(textComponent,
+        textArea.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        CoalescingDocumentListener listener = new CoalescingDocumentListener(textArea,
                                                                              e -> fireValueChangedEvent());
-        textComponent.getDocument().addDocumentListener(listener);
-        allowPopupEditing = false; // arbitrary default
+        textArea.getDocument().addDocumentListener(listener);
+        allowPopoutEditing = false; // arbitrary default
         shouldExpandMultiLine = false; // arbitrary default
     }
 
-    public static TextField ofSingleLine(String label, int cols) {
-        TextField field = new TextField(label, false);
-        ((JTextField)field.textComponent).setColumns(cols);
+    /**
+     * Creates a JTextArea with the specified number of rows and columns.
+     */
+    public static LongTextField ofFixedSizeMultiLine(String label, int rows, int cols) {
+        LongTextField field = new LongTextField(label);
+        field.getTextArea().setRows(rows);
+        field.getTextArea().setColumns(cols);
         return field;
     }
 
-    public static TextField ofFixedSizeMultiLine(String label, int rows, int cols) {
-        TextField field = new TextField(label, true);
-        ((JTextArea)field.textComponent).setRows(rows);
-        ((JTextArea)field.textComponent).setColumns(cols);
-        return field;
-    }
-
-    public static TextField ofFixedPixelSizeMultiLine(String label, int width, int height) {
-        TextField field = new TextField(label, true);
+    /**
+     * Creates a JTextArea whose scroll pane will be fixed to the given pixel dimensions.
+     * Usage of explicit pixel dimensions is discouraged, as it doesn't play with with
+     * font size changes or with certain Look and Feels.
+     */
+    public static LongTextField ofFixedPixelSizeMultiLine(String label, int width, int height) {
+        LongTextField field = new LongTextField(label);
         field.scrollPane.setPreferredSize(new Dimension(width, height));
         return field;
     }
 
-    public static TextField ofDynamicSizingMultiLine(String label, int rows) {
-        TextField field = new TextField(label, true);
-        ((JTextArea)field.textComponent).setRows(rows);
+    /**
+     * Creates a JTextArea with dynamic width and with the specified number of rows. The width
+     * of the text area will expand to fill the available width in the container panel.
+     */
+    public static LongTextField ofDynamicSizingMultiLine(String label, int rows) {
+        LongTextField field = new LongTextField(label);
+        field.getTextArea().setRows(rows);
         field.shouldExpandMultiLine = true;
         return field;
     }
@@ -116,7 +104,7 @@ public final class TextField extends FormField {
      * @return The current text value.
      */
     public String getText() {
-        return textComponent.getText();
+        return textArea.getText();
     }
 
     /**
@@ -124,14 +112,14 @@ public final class TextField extends FormField {
      *
      * @param text The new text.
      */
-    public TextField setText(String text) {
-        if (Objects.equals(textComponent.getText(), text)) {
+    public LongTextField setText(String text) {
+        if (Objects.equals(textArea.getText(), text)) {
             return this; // reject no-op changes
         }
         if (text == null) {
             text = ""; // if null, assume empty string
         }
-        textComponent.setText(text);
+        textArea.setText(text);
         return this;
     }
 
@@ -152,7 +140,7 @@ public final class TextField extends FormField {
      * You can disallow that with this method - passing false will add a NonBlankFieldValidator
      * to this TextField. Passing true will remove the NonBlankFieldValidator if one is present.
      */
-    public TextField setAllowBlank(boolean allow) {
+    public LongTextField setAllowBlank(boolean allow) {
         if (allow) {
             removeNonBlankValidatorIfPresent();
         }
@@ -162,12 +150,18 @@ public final class TextField extends FormField {
         return this;
     }
 
-    public boolean isAllowPopupEditing() {
-        return allowPopupEditing;
+    /**
+     * Whether to show a button to allow a popup dialog with a much larger text edit option.
+     */
+    public boolean isAllowPopoutEditing() {
+        return allowPopoutEditing;
     }
 
-    public TextField setAllowPopupEditing(boolean allow) {
-        allowPopupEditing = allow;
+    /**
+     * Whether to show a button to allow a popup dialog with a much larger text edit option.
+     */
+    public LongTextField setAllowPopoutEditing(boolean allow) {
+        allowPopoutEditing = allow;
         if (popoutPanel != null) {
             popoutPanel.setVisible(allow);
         }
@@ -175,23 +169,22 @@ public final class TextField extends FormField {
     }
 
     /**
-     * Returns the JScrollPane used for multi-line fields, or null if this is a single-line field.
+     * Returns the JScrollPane if direct access is required.
      */
     public JScrollPane getScrollPane() {
         return scrollPane;
     }
 
     /**
-     * Returns the underlying JTextComponent for this field, which is a JTextArea for multi-line
-     * fields or a JTextField for single-line fields.
+     * Returns the underlying JTextArea for this field if direct access is required..
      */
-    public JTextComponent getTextComponent() {
-        return textComponent;
+    public JTextArea getTextArea() {
+        return textArea;
     }
 
     @Override
     public boolean isMultiLine() {
-        return multiLine;
+        return true;
     }
 
     @Override

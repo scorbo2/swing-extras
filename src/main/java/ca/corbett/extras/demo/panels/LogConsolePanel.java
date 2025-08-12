@@ -9,7 +9,7 @@ import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -24,7 +24,7 @@ import java.util.logging.Level;
 public class LogConsolePanel extends PanelBuilder {
 
     private FormPanel formPanel;
-    private TextField tokenField;
+    private ShortTextField tokenField;
     private FontField tokenFontField;
 
     public LogConsolePanel() {
@@ -94,7 +94,7 @@ public class LogConsolePanel extends PanelBuilder {
         labelField.getMargins().setTop(24);
         formPanel.add(labelField);
 
-        tokenField = TextField.ofSingleLine("Messages containing:", 20).setAllowBlank(false);
+        tokenField = new ShortTextField("Messages containing:", 20).setAllowBlank(false);
         tokenField.setText("My custom message");
         formPanel.add(tokenField);
 

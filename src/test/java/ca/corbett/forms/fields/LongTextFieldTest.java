@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,10 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MultiLineTextFieldTest extends FormFieldBaseTests {
+public class LongTextFieldTest extends FormFieldBaseTests {
     @Override
     protected FormField createTestObject() {
-        return TextField.ofFixedSizeMultiLine("label", 4, 10);
+        return LongTextField.ofFixedSizeMultiLine("label", 4, 10);
     }
 
     @Test
@@ -47,7 +46,7 @@ public class MultiLineTextFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testSetText() {
-        TextField actualField = (TextField)actual;
+        LongTextField actualField = (LongTextField)actual;
         for (String value : List.of("One", "Two", "Three")) {
             actualField.setText(value);
             assertEquals(value, actualField.getText());
@@ -56,15 +55,15 @@ public class MultiLineTextFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testRowColSizing() {
-        TextField actualField = (TextField)actual;
-        assertEquals(4, ((JTextArea)actualField.getTextComponent()).getRows());
-        assertEquals(10, ((JTextArea)actualField.getTextComponent()).getColumns());
+        LongTextField actualField = (LongTextField)actual;
+        assertEquals(4, actualField.getTextArea().getRows());
+        assertEquals(10, actualField.getTextArea().getColumns());
         assertFalse(actual.shouldExpand());
     }
 
     @Test
     public void testPixelSizing() {
-        TextField field = TextField.ofFixedPixelSizeMultiLine("test", 222, 111);
+        LongTextField field = LongTextField.ofFixedPixelSizeMultiLine("test", 222, 111);
         assertEquals(222, field.getScrollPane().getPreferredSize().getWidth());
         assertEquals(111, field.getScrollPane().getPreferredSize().getHeight());
         assertFalse(field.shouldExpand());
@@ -72,14 +71,14 @@ public class MultiLineTextFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testDynamicSizing() {
-        TextField field = TextField.ofDynamicSizingMultiLine("test", 8);
-        assertEquals(8, ((JTextArea)field.getTextComponent()).getRows());
+        LongTextField field = LongTextField.ofDynamicSizingMultiLine("test", 8);
+        assertEquals(8, field.getTextArea().getRows());
         assertTrue(field.shouldExpand());
     }
 
     @Test
     public void testAddValueChangedListener() throws Exception {
-        TextField actualField = (TextField)actual;
+        LongTextField actualField = (LongTextField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
         actualField.setText("Hello");
@@ -93,7 +92,7 @@ public class MultiLineTextFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testRemoveValueChangedListener() throws Exception {
-        TextField actualField = (TextField)actual;
+        LongTextField actualField = (LongTextField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
         actual.removeValueChangedListener(listener);
@@ -112,17 +111,17 @@ public class MultiLineTextFieldTest extends FormFieldBaseTests {
     @Test
     public void validate_validScenario() {
         actual.addFieldValidator(new TestValidator());
-        ((TextField)actual).setText("Hello");
+        ((LongTextField)actual).setText("Hello");
         assertTrue(actual.isValid());
         assertNull(actual.getValidationLabel().getToolTipText());
     }
 
-    private static class TestValidator implements FieldValidator<TextField> {
+    private static class TestValidator implements FieldValidator<LongTextField> {
 
         public static final String MSG = "text must say Hello";
 
         @Override
-        public ValidationResult validate(TextField fieldToValidate) {
+        public ValidationResult validate(LongTextField fieldToValidate) {
             return "Hello".equals(fieldToValidate.getText())
                     ? ValidationResult.valid()
                     : ValidationResult.invalid(MSG);

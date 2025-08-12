@@ -9,7 +9,7 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.LabelProperty;
-import ca.corbett.extras.properties.TextProperty;
+import ca.corbett.extras.properties.ShortTextProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
@@ -149,10 +149,8 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
             List<AbstractProperty> props = new ArrayList<>();
             props.add(new LabelProperty("FakeExtension3.General.label1",
                                         "This extension defines some config properties"));
-            props.add(TextProperty.ofSingleLine("FakeExtension3.General.text1", "Text field 1:")
-                                  .setValue("Default value"));
-            props.add(TextProperty.ofSingleLine("FakeExtension3.General.text2", "Text field 2:")
-                                  .setValue("Hello"));
+            props.add(new ShortTextProperty("FakeExtension3.General.text1", "Text field 1:", "Default value", 20));
+            props.add(new ShortTextProperty("FakeExtension3.General.text2", "Text field 2:", "Hello", 20));
             props.add(new LabelProperty("FakeExtension3.General.label2", "You can view the defaults here."));
             return props;
         }

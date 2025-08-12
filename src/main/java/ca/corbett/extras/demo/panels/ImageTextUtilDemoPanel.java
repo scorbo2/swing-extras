@@ -16,8 +16,8 @@ import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
-import ca.corbett.forms.fields.TextField;
 import ca.corbett.forms.fields.ValueChangedListener;
 
 import javax.swing.JPanel;
@@ -39,7 +39,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
     private final BufferedImage image = new BufferedImage(1024, 1024, BufferedImage.TYPE_INT_RGB);
     private ImagePanel imagePanel;
 
-    private TextField textField;
+    private LongTextField textField;
     private FontField fontField;
     private GradientColorField bgColorField;
     private ColorField textFillColorField;
@@ -105,7 +105,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         labelField.getMargins().setBottom(10);
         formPanel.add(labelField);
 
-        textField = TextField.ofFixedSizeMultiLine("Text:", 22, 4);
+        textField = LongTextField.ofFixedSizeMultiLine("Text:", 22, 4);
         textField.setText(text);
         textField.addValueChangedListener(changeListener);
         formPanel.add(textField);

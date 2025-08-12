@@ -8,7 +8,7 @@ import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.LongTextField;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -30,7 +30,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
     private ComboField fileSystemCombo;
     private ComboField rootDirCombo;
     private final DirTreeListener dirTreeListener;
-    private TextField listenerTextArea;
+    private LongTextField listenerTextArea;
 
     public DirTreeDemoPanel() {
         dirTreeListener = new DirTreeListener() {
@@ -155,9 +155,9 @@ public class DirTreeDemoPanel extends PanelBuilder {
         checkBoxField.getMargins().setBottom(12);
         formPanel.add(checkBoxField);
 
-        listenerTextArea = TextField.ofFixedPixelSizeMultiLine("", 65, 8);
-        listenerTextArea.getTextComponent().setEditable(false);
-        listenerTextArea.getTextComponent().setFont(new Font("Monospaced", Font.PLAIN, 10));
+        listenerTextArea = LongTextField.ofFixedPixelSizeMultiLine("", 65, 8);
+        listenerTextArea.getTextArea().setEditable(false);
+        listenerTextArea.getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 10));
         listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
         formPanel.add(listenerTextArea);
 

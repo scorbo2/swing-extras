@@ -15,7 +15,7 @@ import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -28,7 +28,7 @@ import java.util.List;
 
 public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
     private LogoConfig logoConfig;
-    private TextField textField;
+    private ShortTextField textField;
     private ImagePanel imagePanel;
     private ImagePanelConfig imagePanelConfig;
 
@@ -59,7 +59,7 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         labelField.setFont(FontField.DEFAULT_FONT.deriveFont(Font.PLAIN, 12f));
         controlPanel.add(labelField);
 
-        textField = TextField.ofSingleLine("Text:", 20);
+        textField = new ShortTextField("Text:", 20);
         textField.setText(Version.NAME);
         textField.addValueChangedListener(field -> {
             regenerate();

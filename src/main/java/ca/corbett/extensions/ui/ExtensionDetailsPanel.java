@@ -11,8 +11,8 @@ import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.PanelField;
-import ca.corbett.forms.fields.TextField;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
@@ -166,14 +166,14 @@ public class ExtensionDetailsPanel extends JPanel {
             }
         }
 
-        TextField descriptionField = TextField.ofDynamicSizingMultiLine("Description", 8);
+        LongTextField descriptionField = LongTextField.ofDynamicSizingMultiLine("Description", 8);
 
         // Marking the TextField as disabled will unfortunately change the text color to something
         // much lighter, which makes it very hard or almost impossible to read in some look and feels:
         //descriptionField.setEnabled(false);
 
         // So instead, we'll leave it as "enabled" but mark the JTextArea itself as read-only:
-        JTextArea jTextArea = (JTextArea)descriptionField.getTextComponent();
+        JTextArea jTextArea = descriptionField.getTextArea();
         jTextArea.setEditable(false);
 
         descriptionField.setText(extInfo == null ? "" : extInfo.getLongDescription());

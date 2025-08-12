@@ -8,7 +8,7 @@ import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -59,15 +59,15 @@ public class FormActionsPanel extends PanelBuilder {
         extraField1.getMargins().setLeft(32);
         formPanel.add(extraField1);
 
-        final TextField extraField2 = TextField.ofSingleLine("Extra text field 1:", 10);
+        final ShortTextField extraField2 = new ShortTextField("Extra text field 1:", 10);
         extraField2.setVisible(false);
         extraField2.getMargins().setLeft(32);
         formPanel.add(extraField2);
-        final TextField extraField3 = TextField.ofSingleLine("Extra text field 2:", 10);
+        final ShortTextField extraField3 = new ShortTextField("Extra text field 2:", 10);
         extraField3.setVisible(false);
         extraField3.getMargins().setLeft(32);
         formPanel.add(extraField3);
-        final TextField extraField4 = TextField.ofSingleLine("Extra text field 3:", 10);
+        final ShortTextField extraField4 = new ShortTextField("Extra text field 3:", 10);
         extraField4.setVisible(false);
         extraField4.getMargins().setLeft(32);
         formPanel.add(extraField4);

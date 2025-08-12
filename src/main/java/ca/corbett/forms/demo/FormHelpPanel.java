@@ -5,8 +5,9 @@ import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -29,7 +30,7 @@ public class FormHelpPanel extends PanelBuilder {
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         panel.add(headerLabel);
 
-        TextField textField = TextField.ofSingleLine("Text:", 18);
+        ShortTextField textField = new ShortTextField("Text:", 18);
         textField.setHelpText("Help icons show up whenever a field has help text");
         panel.add(textField);
 
@@ -37,7 +38,7 @@ public class FormHelpPanel extends PanelBuilder {
         numberField.setHelpText("Most form field types can have help text");
         panel.add(numberField);
 
-        TextField textBox = TextField.ofFixedSizeMultiLine("Text area:", 4, 22);
+        LongTextField textBox = LongTextField.ofFixedSizeMultiLine("Text area:", 4, 22);
         textBox.setHelpText("Even text areas can have help text");
         panel.add(textBox);
 

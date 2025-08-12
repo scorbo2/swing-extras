@@ -16,11 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SingleLineTextFieldTest extends FormFieldBaseTests {
+class ShortTextFieldTest extends FormFieldBaseTests {
 
     @Override
     protected FormField createTestObject() {
-        return TextField.ofSingleLine("label", 10).setText("value");
+        return new ShortTextField("label", 10).setText("value");
     }
 
     @Test
@@ -47,7 +47,7 @@ class SingleLineTextFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testSetText() {
-        TextField actualField = (TextField)actual;
+        ShortTextField actualField = (ShortTextField)actual;
         for (String value : List.of("One", "Two", "Three")) {
             actualField.setText(value);
             assertEquals(value, actualField.getText());
@@ -61,7 +61,7 @@ class SingleLineTextFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testAddValueChangedListener() throws Exception {
-        TextField actualField = (TextField)actual;
+        ShortTextField actualField = (ShortTextField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
         actualField.setText("Hello");
@@ -75,7 +75,7 @@ class SingleLineTextFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testRemoveValueChangedListener() throws Exception {
-        TextField actualField = (TextField)actual;
+        ShortTextField actualField = (ShortTextField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
         actual.removeValueChangedListener(listener);
@@ -94,17 +94,17 @@ class SingleLineTextFieldTest extends FormFieldBaseTests {
     @Test
     public void validate_validScenario() {
         actual.addFieldValidator(new TestValidator());
-        ((TextField)actual).setText("Hello");
+        ((ShortTextField)actual).setText("Hello");
         assertTrue(actual.isValid());
         assertNull(actual.getValidationLabel().getToolTipText());
     }
 
-    private static class TestValidator implements FieldValidator<TextField> {
+    private static class TestValidator implements FieldValidator<ShortTextField> {
 
         public static final String MSG = "text must say Hello";
 
         @Override
-        public ValidationResult validate(TextField fieldToValidate) {
+        public ValidationResult validate(ShortTextField fieldToValidate) {
             return "Hello".equals(fieldToValidate.getText())
                     ? ValidationResult.valid()
                     : ValidationResult.invalid(MSG);

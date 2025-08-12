@@ -3,7 +3,7 @@ package ca.corbett.forms;
 import ca.corbett.forms.fields.AlwaysFalseValidator;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.JLabel;
@@ -25,7 +25,7 @@ class FormPanelTest {
         FormPanel formPanel = new FormPanel();
         assertNull(formPanel.getFormField("hello"));
 
-        TextField textField = TextField.ofSingleLine("Text:", 12);
+        ShortTextField textField = new ShortTextField("Text:", 12);
         textField.setIdentifier("textField1");
         formPanel.add(textField);
 
@@ -42,7 +42,7 @@ class FormPanelTest {
         formPanel.add(List.of(numberField));
         assertNotNull(formPanel.getFormField("numberField1"));
 
-        TextField textField = TextField.ofSingleLine("Text:", 12);
+        ShortTextField textField = new ShortTextField("Text:", 12);
         textField.setIdentifier("textField1");
         formPanel.add(textField);
         assertNotNull(formPanel.getFormField("textField1"));

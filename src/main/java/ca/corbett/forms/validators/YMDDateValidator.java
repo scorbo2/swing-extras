@@ -1,6 +1,6 @@
 package ca.corbett.forms.validators;
 
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -12,7 +12,7 @@ import java.text.SimpleDateFormat;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
-public class YMDDateValidator implements FieldValidator<TextField> {
+public class YMDDateValidator implements FieldValidator<ShortTextField> {
 
     private final boolean allowBlankValues;
     private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -22,7 +22,7 @@ public class YMDDateValidator implements FieldValidator<TextField> {
     }
 
     @Override
-    public ValidationResult validate(TextField fieldToValidate) {
+    public ValidationResult validate(ShortTextField fieldToValidate) {
         String currentStr = fieldToValidate.getText().trim();
         if (currentStr.isEmpty() && allowBlankValues) {
             return ValidationResult.valid();

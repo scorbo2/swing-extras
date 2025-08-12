@@ -12,10 +12,11 @@ import ca.corbett.extras.properties.FileProperty;
 import ca.corbett.extras.properties.FontProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
+import ca.corbett.extras.properties.LongTextProperty;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
-import ca.corbett.extras.properties.TextProperty;
+import ca.corbett.extras.properties.ShortTextProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
@@ -165,10 +166,10 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new DirectoryProperty("Files.someDirProperty", "Directory:"));
         props.add(new FileProperty("Files.someFileProperty", "File:"));
 
-        props.add(TextProperty.ofSingleLine("Text.Single line.someTextProp1", "Text property1:").setValue("hello"));
-        props.add(TextProperty.ofSingleLine("Text.Single line.someTextProp2", "Text property2:"));
-        props.add(TextProperty.ofFixedSizeMultiLine("Text.Multi line.someMultiLineTextProp", "Text entry:", 4, 40)
-                              .setValue("You can support long text as well."));
+        props.add(new ShortTextProperty("Text.Single line.someTextProp1", "Text property1:", "hello"));
+        props.add(new ShortTextProperty("Text.Single line.someTextProp2", "Text property2:", ""));
+        props.add(LongTextProperty.ofFixedSizeMultiLine("Text.Multi line.someMultiLineTextProp", "Text entry:", 4, 40)
+                                  .setValue("You can support long text as well."));
 
         // This property is readable and settable by the client application but it won't show up in the user dialog:
         IntegerProperty hiddenProp = new IntegerProperty("Hidden.someHiddenProp", "hiddenProp", 77);

@@ -11,8 +11,9 @@ import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.ListField;
+import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.AbstractAction;
 import javax.swing.JList;
@@ -48,8 +49,8 @@ public class BasicFormPanel extends PanelBuilder {
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         formPanel.add(headerLabel);
 
-        formPanel.add(TextField.ofSingleLine("Single-line text:", 15));
-        TextField textField = TextField.ofFixedSizeMultiLine("Multi-line text:", 4, 18);
+        formPanel.add(new ShortTextField("Single-line text:", 15));
+        LongTextField textField = LongTextField.ofFixedSizeMultiLine("Multi-line text:", 4, 18);
         textField.getMargins().setBottom(12);
         formPanel.add(textField);
         formPanel.add(new CheckBoxField("Checkboxes", true));

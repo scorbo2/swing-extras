@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.4.0 [TODO] - swing-forms rewrite
+  #100 - Split TextField into short and long fields
   #97 - refactor TextField constructors
   #96 - Upgrade Java 11 to Java 17
   #95 - HashUtil: update byteArrayToHexString
