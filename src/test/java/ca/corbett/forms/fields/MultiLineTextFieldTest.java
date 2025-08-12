@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MultiLineTextFieldTest extends FormFieldBaseTests {
     @Override
     protected FormField createTestObject() {
-        return new TextField("label", 10,4, true);
+        return TextField.ofFixedSizeMultiLine("label", 4, 10);
     }
 
     @Test
@@ -51,6 +52,29 @@ public class MultiLineTextFieldTest extends FormFieldBaseTests {
             actualField.setText(value);
             assertEquals(value, actualField.getText());
         }
+    }
+
+    @Test
+    public void testRowColSizing() {
+        TextField actualField = (TextField)actual;
+        assertEquals(4, ((JTextArea)actualField.getTextComponent()).getRows());
+        assertEquals(10, ((JTextArea)actualField.getTextComponent()).getColumns());
+        assertFalse(actual.shouldExpand());
+    }
+
+    @Test
+    public void testPixelSizing() {
+        TextField field = TextField.ofFixedPixelSizeMultiLine("test", 222, 111);
+        assertEquals(222, ((JScrollPane)field.getFieldComponent()).getPreferredSize().getWidth());
+        assertEquals(111, ((JScrollPane)field.getFieldComponent()).getPreferredSize().getHeight());
+        assertFalse(field.shouldExpand());
+    }
+
+    @Test
+    public void testDynamicSizing() {
+        TextField field = TextField.ofDynamicSizingMultiLine("test", 8);
+        assertEquals(8, ((JTextArea)field.getTextComponent()).getRows());
+        assertTrue(field.shouldExpand());
     }
 
     @Test

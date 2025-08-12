@@ -35,6 +35,8 @@ class PanelFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testShouldExpand() {
+        assertFalse(actual.shouldExpand());
+        ((PanelField)actual).setShouldExpand(true);
         assertTrue(actual.shouldExpand());
     }
 

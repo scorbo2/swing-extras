@@ -74,7 +74,7 @@ class PropertiesDialogTest {
 
         props.add(LabelProperty.createHeaderLabel("test.test.label1", "HELLO"));
         props.add(LabelProperty.createLabel("test.test.label2", "This is only a test."));
-        props.add(new TextProperty("test.test.text1", "Text:", "", 12, 1));
+        props.add(TextProperty.ofSingleLine("test.test.text1", "Text:", 12));
 
         return props;
     }

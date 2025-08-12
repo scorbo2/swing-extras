@@ -25,7 +25,7 @@ class FormPanelTest {
         FormPanel formPanel = new FormPanel();
         assertNull(formPanel.getFormField("hello"));
 
-        TextField textField = new TextField("Text:", 12, 1, true);
+        TextField textField = TextField.ofSingleLine("Text:", 12);
         textField.setIdentifier("textField1");
         formPanel.add(textField);
 
@@ -42,7 +42,7 @@ class FormPanelTest {
         formPanel.add(List.of(numberField));
         assertNotNull(formPanel.getFormField("numberField1"));
 
-        TextField textField = new TextField("Text:", 12, 1, true);
+        TextField textField = TextField.ofSingleLine("Text:", 12);
         textField.setIdentifier("textField1");
         formPanel.add(textField);
         assertNotNull(formPanel.getFormField("textField1"));
@@ -165,7 +165,7 @@ class FormPanelTest {
     }
 
     @Test
-    public void testSetBorderMargin_center_shouldHaveNoEffect() {
+    public void testSetBorderMargin_center_shouldStillSetMargins() {
         final int MARGIN = 11;
         FormPanel formPanel = new FormPanel(Alignment.CENTER);
         formPanel.setBorderMargin(MARGIN); // should be ignored for CENTER alignment
@@ -175,13 +175,13 @@ class FormPanelTest {
         formPanel.add(field);
         assertExpectedComponentCount_borderMarginTest(formPanel);
         GridBagConstraints gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getFieldComponent());
-        assertEquals(MARGIN, gbc.insets.left); // only the field's margin should count!
-        assertEquals(MARGIN, gbc.insets.top); // only the field's margin should count!
-        assertEquals(MARGIN, gbc.insets.bottom); // only the field's margin should count!
+        assertEquals(MARGIN * 2, gbc.insets.left);
+        assertEquals(MARGIN * 2, gbc.insets.top);
+        assertEquals(MARGIN * 2, gbc.insets.bottom);
         gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getValidationLabel());
-        assertEquals(MARGIN, gbc.insets.bottom); // form's border margin + field's bottom margin
-        assertEquals(MARGIN, gbc.insets.right); // only the field's margin should count!
-        assertEquals(MARGIN, gbc.insets.top); // only the field's margin should count!
+        assertEquals(MARGIN * 2, gbc.insets.bottom);
+        assertEquals(MARGIN * 2, gbc.insets.right);
+        assertEquals(MARGIN * 2, gbc.insets.top);
     }
 
     private void assertExpectedComponentCount_borderMarginTest(FormPanel formPanel) {

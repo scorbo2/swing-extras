@@ -20,8 +20,7 @@ class SingleLineTextFieldTest extends FormFieldBaseTests {
 
     @Override
     protected FormField createTestObject() {
-        return new TextField("label", 10,1,true)
-                .setText("value");
+        return TextField.ofSingleLine("label", 10).setText("value");
     }
 
     @Test
@@ -53,6 +52,11 @@ class SingleLineTextFieldTest extends FormFieldBaseTests {
             actualField.setText(value);
             assertEquals(value, actualField.getText());
         }
+    }
+
+    @Test
+    public void testGetColumns() {
+        assertEquals(10, ((JTextField)actual.getFieldComponent()).getColumns());
     }
 
     @Test
