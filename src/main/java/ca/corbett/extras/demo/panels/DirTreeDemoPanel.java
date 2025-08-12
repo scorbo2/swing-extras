@@ -155,7 +155,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
         checkBoxField.getMargins().setBottom(12);
         formPanel.add(checkBoxField);
 
-        listenerTextArea = new TextField("", 65, 8, true);
+        listenerTextArea = TextField.ofFixedPixelSizeMultiLine("", 65, 8);
         listenerTextArea.getTextComponent().setEditable(false);
         listenerTextArea.getTextComponent().setFont(new Font("Monospaced", Font.PLAIN, 10));
         listenerTextArea.setText("(listener disabled)" + System.lineSeparator());

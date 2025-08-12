@@ -59,15 +59,15 @@ public class FormActionsPanel extends PanelBuilder {
         extraField1.getMargins().setLeft(32);
         formPanel.add(extraField1);
 
-        final TextField extraField2 = new TextField("Extra text field 1:", 10, 1, true);
+        final TextField extraField2 = TextField.ofSingleLine("Extra text field 1:", 10);
         extraField2.setVisible(false);
         extraField2.getMargins().setLeft(32);
         formPanel.add(extraField2);
-        final TextField extraField3 = new TextField("Extra text field 2:", 10, 1, true);
+        final TextField extraField3 = TextField.ofSingleLine("Extra text field 2:", 10);
         extraField3.setVisible(false);
         extraField3.getMargins().setLeft(32);
         formPanel.add(extraField3);
-        final TextField extraField4 = new TextField("Extra text field 3:", 10, 1, true);
+        final TextField extraField4 = TextField.ofSingleLine("Extra text field 3:", 10);
         extraField4.setVisible(false);
         extraField4.getMargins().setLeft(32);
         formPanel.add(extraField4);

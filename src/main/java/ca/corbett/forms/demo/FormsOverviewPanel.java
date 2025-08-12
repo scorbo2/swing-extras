@@ -41,7 +41,7 @@ public class FormsOverviewPanel extends PanelBuilder {
                                                           "Most forms contain fields consisting of labels and components:</html>",
                                                   14));
 
-        ca.corbett.forms.fields.TextField exampleField = new TextField("Example text field:", 12, 1, true);
+        ca.corbett.forms.fields.TextField exampleField = TextField.ofSingleLine("Example text field:", 12);
         exampleField.setText("hello");
         exampleField.getMargins().setLeft(24).setTop(16).setBottom(16);
         introPanel.add(exampleField);

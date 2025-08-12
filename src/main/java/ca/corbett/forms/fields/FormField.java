@@ -72,6 +72,7 @@ public abstract class FormField {
         fieldLabel.setFont(DEFAULT_FONT);
         fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
         helpLabel.setIcon(Resources.getHelpIcon());
+        validationLabel.setIcon(Resources.getBlankIcon()); // placeholder until validation occurs
     }
 
     /**
@@ -195,8 +196,9 @@ public abstract class FormField {
      * some fields may decide not to render the helpLabel even if helpText
      * is set for the field.
      */
-    public void setHelpText(String helpText) {
+    public FormField setHelpText(String helpText) {
         helpLabel.setToolTipText((helpText == null) ? "" : helpText);
+        return this;
     }
 
     /**

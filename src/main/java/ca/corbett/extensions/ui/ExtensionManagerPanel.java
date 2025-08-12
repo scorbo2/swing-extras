@@ -48,7 +48,7 @@ public class ExtensionManagerPanel extends JPanel {
     protected final ExtensionManager<AppExtension> extManager;
     protected JList extList;
     protected DefaultListModel<AppExtensionPlaceholder> extListModel;
-    protected final JPanel contentPanel = new JPanel();
+    protected final JPanel contentPanel = new JPanel(new BorderLayout());
     protected final List<AppExtensionPlaceholder> extensions;
     protected final Map<String, ExtensionDetailsPanel> detailsPanelMap;
     protected ExtensionDetailsPanel emptyPanel;

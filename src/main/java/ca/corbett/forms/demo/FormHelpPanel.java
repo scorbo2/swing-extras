@@ -29,7 +29,7 @@ public class FormHelpPanel extends PanelBuilder {
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         panel.add(headerLabel);
 
-        TextField textField = new TextField("Text:", 12, 1, true);
+        TextField textField = TextField.ofSingleLine("Text:", 18);
         textField.setHelpText("Help icons show up whenever a field has help text");
         panel.add(textField);
 
@@ -37,7 +37,7 @@ public class FormHelpPanel extends PanelBuilder {
         numberField.setHelpText("Most form field types can have help text");
         panel.add(numberField);
 
-        TextField textBox = new TextField("Text area:", 12, 4, true);
+        TextField textBox = TextField.ofFixedSizeMultiLine("Text area:", 4, 22);
         textBox.setHelpText("Even text areas can have help text");
         panel.add(textBox);
 
@@ -46,7 +46,7 @@ public class FormHelpPanel extends PanelBuilder {
                 "<html>Wow, even labels can have help text if you want<br>And they can be multiline<br>and as long as you need them to be<br><br>Even if you like them really long and wordy</html>");
         panel.add(label);
 
-        label = LabelField.createPlainHeaderLabel("If no help text is given, the icon remains hidden.", 14);
+        label = LabelField.createPlainHeaderLabel("If no help text is given, the icon is hidden.", 14);
         panel.add(label);
 
         return panel;

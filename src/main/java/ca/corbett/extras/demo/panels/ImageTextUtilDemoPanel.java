@@ -105,7 +105,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         labelField.getMargins().setBottom(10);
         formPanel.add(labelField);
 
-        textField = new TextField("Text:", 22, 4, true);
+        textField = TextField.ofFixedSizeMultiLine("Text:", 22, 4);
         textField.setText(text);
         textField.addValueChangedListener(changeListener);
         formPanel.add(textField);

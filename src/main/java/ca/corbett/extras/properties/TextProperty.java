@@ -90,7 +90,10 @@ public class TextProperty extends AbstractProperty {
 
     @Override
     protected FormField generateFormFieldImpl() {
-        TextField textField = new TextField(propertyLabel, columns, rows, allowBlank);
+        TextField textField = rows > 1
+                ? TextField.ofFixedSizeMultiLine(propertyLabel, rows, columns)
+                : TextField.ofSingleLine(propertyLabel, columns);
+        textField.setAllowBlank(allowBlank);
         textField.setText(value);
         return textField;
     }

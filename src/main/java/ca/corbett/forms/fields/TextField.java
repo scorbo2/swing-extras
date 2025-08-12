@@ -1,6 +1,7 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.CoalescingDocumentListener;
+import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.NonBlankFieldValidator;
 
 import javax.swing.BorderFactory;
@@ -8,9 +9,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -31,93 +33,88 @@ public final class TextField extends FormField {
     private final boolean multiLine;
     private JScrollPane scrollPane;
 
-    private int scrollPaneWidth;
-    private int scrollPaneHeight;
-
+    private final boolean shouldExpandMultiLine;
+    private boolean allowPopupEditing;
     private final JTextComponent textComponent;
-    private final DocumentListener changeListener = new DocumentListener() {
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            fireValueChangedEvent();
-        }
 
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            fireValueChangedEvent();
-        }
+    private TextField(JTextArea textArea, boolean isExpandable) {
+        textComponent = textArea;
+        shouldExpandMultiLine = isExpandable;
+        multiLine = true;
+        scrollPane = createScrollPane(textComponent);
+        fieldComponent = scrollPane;
+    }
 
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            fireValueChangedEvent();
-        }
+    private TextField(JTextArea textArea, int pixelWidth, int pixelHeight) {
+        textComponent = textArea;
+        shouldExpandMultiLine = false;
+        multiLine = true;
+        scrollPane = createScrollPane(textComponent);
+        scrollPane.setPreferredSize(new Dimension(pixelWidth, pixelHeight));
+        fieldComponent = scrollPane;
+    }
 
-    };
+    private TextField(JTextField textField) {
+        textComponent = textField;
+        shouldExpandMultiLine = false;
+        multiLine = false;
+        fieldComponent = textComponent;
+    }
 
-    /**
-     * Creates a new TextField with the specified parameters.
-     *
-     * @param label      The label to place next to the field.
-     * @param cols       The number of columns to set for the JTextField.
-     * @param rows       The number of rows. If greater than 1, a JTextArea will be used instead of
-     *                   JTextField.
-     * @param allowBlank If false, a FieldValidator will be attached to ensure the value isn't blank.
-     */
-    public TextField(String label, int cols, int rows, boolean allowBlank) {
+    private void postConstructorInitialization(String label) {
         fieldLabel.setText(label);
-        if (rows > 1) {
-            textComponent = new JTextArea(rows, cols);
-            ((JTextArea)textComponent).setLineWrap(true);
-            ((JTextArea)textComponent).setWrapStyleWord(true);
-            textComponent.setSize(textComponent.getPreferredSize());
-            textComponent.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-            scrollPane = new JScrollPane(textComponent);
-            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            multiLine = true;
-            fieldComponent = scrollPane;
-        }
-        else {
-            textComponent = new JTextField();
-            ((JTextField)textComponent).setColumns(cols);
-            multiLine = false;
-            fieldComponent = textComponent;
-        }
+        textComponent.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        textComponent.setSize(textComponent.getPreferredSize());
         CoalescingDocumentListener listener = new CoalescingDocumentListener(textComponent,
                                                                              e -> fireValueChangedEvent());
         textComponent.getDocument().addDocumentListener(listener);
-        if (!allowBlank) {
-            addFieldValidator(new NonBlankFieldValidator());
-        }
-        scrollPaneWidth = -1;
-        scrollPaneHeight = -1;
+        allowPopupEditing = false; // arbitrary default
     }
 
-    /**
-     * Optionally set a preferred size for the scroll pane for use with multi-line text fields.
-     * If the given width or height values are less than or equal to zero, the old behaviour
-     * is used, where the text box fills its grid bag cell. Setting both of these values to
-     * non-zero positive numbers will enable the scroll pane and fix its size to the given
-     * values. Does nothing for single-line text fields.
-     *
-     * @param w Preferred pixel width of the text box's scroll pane.
-     * @param h Preferred pixel height of the text box's scroll pane.
-     */
-    public TextField setScrollPanePreferredSize(int w, int h) {
-        if (scrollPane == null) {
-            return this;
-        }
-        scrollPaneWidth = w;
-        scrollPaneHeight = h;
-        if (scrollPaneWidth > 0 && scrollPaneHeight > 0) {
-            // TODO temporarily disabling this behaviour as setting pixel dimensions feels ugly... revisit this!
-            //scrollPane.setPreferredSize(new Dimension(scrollPaneWidth, scrollPaneHeight));
-        }
-        else {
-            scrollPane.setPreferredSize(null);
-        }
-        return this;
+    public static TextField ofSingleLine(String label, int cols) {
+        JTextField textField = new JTextField();
+        textField.setColumns(cols);
+        TextField field = new TextField(textField);
+        field.postConstructorInitialization(label);
+        return field;
     }
 
+    public static TextField ofFixedSizeMultiLine(String label, int rows, int cols) {
+        JTextArea textArea = createTextArea();
+        textArea.setRows(rows);
+        textArea.setColumns(cols);
+        TextField field = new TextField(textArea, false);
+        field.postConstructorInitialization(label);
+        return field;
+    }
+
+    public static TextField ofFixedPixelSizeMultiLine(String label, int width, int height) {
+        TextField field = new TextField(createTextArea(), width, height);
+        field.postConstructorInitialization(label);
+        return field;
+    }
+
+    public static TextField ofDynamicSizingMultiLine(String label, int rows) {
+        JTextArea textArea = createTextArea();
+        textArea.setRows(rows);
+        TextField field = new TextField(textArea, true);
+        field.postConstructorInitialization(label);
+        return field;
+    }
+
+    private static JTextArea createTextArea() {
+        JTextArea textArea = new JTextArea();
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        return textArea;
+    }
+
+    private static JScrollPane createScrollPane(JTextComponent textComponent) {
+        JScrollPane scrollPane = new JScrollPane(textComponent);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        return scrollPane;
+    }
 
     /**
      * Returns the text currently in this field.
@@ -144,6 +141,43 @@ public final class TextField extends FormField {
         return this;
     }
 
+    /**
+     * Reports whether a NonBlankFieldValidator has been added to this TextField.
+     */
+    public boolean isAllowBlank() {
+        for (FieldValidator<? extends FormField> validator : fieldValidators) {
+            if (validator instanceof NonBlankFieldValidator) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * By default, TextField will allow blank values (empty text) to pass validation.
+     * You can disallow that with this method - passing false will add a NonBlankFieldValidator
+     * to this TextField. Passing true will remove the NonBlankFieldValidator if one is present.
+     */
+    public TextField setAllowBlank(boolean allow) {
+        if (allow) {
+            removeNonBlankValidatorIfPresent();
+        }
+        else {
+            addNonBlankValidatorIfNotPresent();
+        }
+        return this;
+    }
+
+    public boolean isAllowPopupEditing() {
+        return allowPopupEditing;
+    }
+
+    public TextField setAllowPopupEditing(boolean allow) {
+        allowPopupEditing = allow;
+        // TODO set visible/invisible the expand button
+        return this;
+    }
+
     public JTextComponent getTextComponent() {
         return textComponent;
     }
@@ -155,8 +189,31 @@ public final class TextField extends FormField {
 
     @Override
     public boolean shouldExpand() {
-        return true;
+        return shouldExpandMultiLine;
     }
 
-    // TODO shouldExpand?
+    private void addNonBlankValidatorIfNotPresent() {
+        boolean found = false;
+        for (FieldValidator<? extends FormField> validator : fieldValidators) {
+            if (validator instanceof NonBlankFieldValidator) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            addFieldValidator(new NonBlankFieldValidator());
+        }
+    }
+
+    private void removeNonBlankValidatorIfPresent() {
+        List<FieldValidator<? extends FormField>> foundList = new ArrayList<>();
+        for (FieldValidator<? extends FormField> fieldValidator : fieldValidators) {
+            if (fieldValidator instanceof NonBlankFieldValidator) {
+                foundList.add(fieldValidator);
+            }
+        }
+        for (FieldValidator<? extends FormField> validator : foundList) {
+            fieldValidators.remove(validator);
+        }
+    }
 }

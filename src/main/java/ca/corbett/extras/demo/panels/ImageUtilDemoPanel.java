@@ -59,7 +59,7 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         labelField.setFont(FontField.DEFAULT_FONT.deriveFont(Font.PLAIN, 12f));
         controlPanel.add(labelField);
 
-        textField = new TextField("Text:", 20, 1, true);
+        textField = TextField.ofSingleLine("Text:", 20);
         textField.setText(Version.NAME);
         textField.addValueChangedListener(field -> {
             regenerate();

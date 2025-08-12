@@ -48,8 +48,8 @@ public class BasicFormPanel extends PanelBuilder {
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         formPanel.add(headerLabel);
 
-        formPanel.add(new TextField("Single-line text:", 15, 1, true));
-        TextField textField = new TextField("Multi-line text:", 18, 4, true);
+        formPanel.add(TextField.ofSingleLine("Single-line text:", 15));
+        TextField textField = TextField.ofFixedSizeMultiLine("Multi-line text:", 4, 18);
         textField.getMargins().setBottom(12);
         formPanel.add(textField);
         formPanel.add(new CheckBoxField("Checkboxes", true));

@@ -54,7 +54,7 @@ public class FormsValidationPanel extends PanelBuilder {
 
         final LabelField successLabel = LabelField.createPlainHeaderLabel("Hooray! No validation errors to fix.", 14);
 
-        final TextField textField = new TextField("Must be 3+ chars long: ", 15, 1, false);
+        final TextField textField = TextField.ofSingleLine("Must be 3+ chars long: ", 15).setAllowBlank(false);
         textField.setText("Example");
         textField.addFieldValidator(new FieldValidator<TextField>() {
             @Override

@@ -94,7 +94,7 @@ public class LogConsolePanel extends PanelBuilder {
         labelField.getMargins().setTop(24);
         formPanel.add(labelField);
 
-        tokenField = new TextField("Messages containing:", 20, 1, false);
+        tokenField = TextField.ofSingleLine("Messages containing:", 20).setAllowBlank(false);
         tokenField.setText("My custom message");
         formPanel.add(tokenField);
 

@@ -2,11 +2,13 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.4.0 [TODO] - swing-forms rewrite
+  #97 - refactor TextField constructors
   #96 - Upgrade Java 11 to Java 17
   #95 - HashUtil: update byteArrayToHexString
   #94 - HashUtil: remove the 2GB file hash size limit
   #93 - HashUtil: log cleanup
   #89 - Make ListField more flexible and customizable
+  #88 - TextField: allow popup editor
   #87 - Change FieldValidator from abstract class to interface
   #86 - Clean up resource handling in swing-forms
   #84 - Rewrite the swing-forms render pipeline
