@@ -29,6 +29,7 @@ import java.awt.LayoutManager;
 public class PanelField extends FormField {
 
     private final JPanel panel;
+    private boolean shouldExpand;
 
     /**
      * Creates a new PanelField with an empty wrapped JPanel.
@@ -43,6 +44,7 @@ public class PanelField extends FormField {
         panel = new JPanel();
         fieldComponent = panel;
         panel.setLayout(layoutManager);
+        shouldExpand = false; // arbitrary default
     }
 
     /**
@@ -63,6 +65,17 @@ public class PanelField extends FormField {
         return panel;
     }
 
+
+    /**
+     * Optionally make this FormField expand to fill the entire width of the parent
+     * FormPanel. Defaults to false.
+     */
+    public PanelField setShouldExpand(boolean expand) {
+        shouldExpand = expand;
+        return this;
+    }
+    
+
     @Override
     public boolean isMultiLine() {
         return true;
@@ -70,6 +83,6 @@ public class PanelField extends FormField {
 
     @Override
     public boolean shouldExpand() {
-        return true;
+        return shouldExpand;
     }
 }
