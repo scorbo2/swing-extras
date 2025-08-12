@@ -22,6 +22,12 @@ import java.util.List;
  *         your FormFields as needed, you don't need to write much manual validation code,
  *         and you don't need to write any UI code to show validation results. Just
  *         call formField.validate() and the validators will be invoked automatically.
+ *     <li><b>Optional inline help</b> - every FormField can have optional help text
+ *         which the FormPanel will render inline in the form of an information icon
+ *         next to the field, which will show tooltip help text.
+ *     <li><b>Generic FormField handling</b> - the FormField class is highly
+ *         extensible, so you can very easily provide your own FormField implementation
+ *         for custom display and editing of data.
  * </ul>
  *
  * <p>Handling oversized forms</p><br>
@@ -62,26 +68,16 @@ public final class FormPanel extends JPanel {
 
     /**
      * An optional pixel margin that will be applied to FormFields as necessary to keep them
-     * away from whichever form border is directly adjacent. For example, for left-aligned
-     * forms, this margin will be applied to the left edge of all FormFields. For top-aligned
-     * forms, this margin will be applied to the topmost FormField to keep it away from the
-     * top border. For bottom-right aligned forms, this margin will be applied to the right
-     * side of each FormField to keep them from the right border, and also to the bottom
-     * FormField to keep it away from the bottom border. If the form is centered both horizontally
-     * and vertically, then it touches no border, and so this value will be ignored.
-     * <p>
-     * The default value is zero, meaning no extra margins will be applied.
-     * </p>
-     * <p>
-     * Note that any value given here is added to whatever margins are already present on
+     * away from the form border. The default value is zero, meaning no extra margins will
+     * be applied. Note that any value given here is added to whatever margins are already present on
      * each FormField. This value does not replace those values. So, you can still indent
-     * a FormField from the others by setting its left margin, for example.
+     * a FormField from the others by setting its left margin on a left-aligned form, for example.
      * </p>
      *
      * @param margin The margin, in pixels, to apply to FormFields as needed. Negative values are treated as 0.
      */
     public FormPanel setBorderMargin(int margin) {
-        borderMargin = Math.max(0, margin); // Reject negative values
+        borderMargin = Math.max(0, margin); // Convert negative values to 0
         return this;
     }
 
@@ -296,6 +292,7 @@ public final class FormPanel extends JPanel {
         constraints.anchor = GridBagConstraints.NORTHWEST;
 
         if (field.shouldExpand()) {
+            constraints.weightx = 4; // this feels a bit hacky but it does force the component to form width
             constraints.fill = GridBagConstraints.BOTH;
         }
 
@@ -424,12 +421,12 @@ public final class FormPanel extends JPanel {
 
     /**
      * Applies our borderMargin to the FormField at the given fieldIndex based on its
-     * position without our form field list and based on our current alignment.
-     * For example, if we are left-aligned, all FormFields need to have borderMargin
-     * added to their left margin. If the form is top-aligned, the first FormField in
-     * the list needs to have borderMargin added to its top margin, and so on.
-     * The FormField's margins are not modified as a result of this calculation.
-     * Instead, a new Margins object will be created and returned.
+     * position within our form field list. The first field in the list is the topmost
+     * field, so it will receive an extra top margin, for example. All fields in the list
+     * will receive an extra left and right margin, and the last field in the list
+     * will receive an extra bottom margin. The borderMargin value is added to the
+     * FormField's existing margins. The FormField's margins are not modified as a
+     * result of this calculation. Instead, a new Margins object will be created and returned.
      */
     private Margins calculateFieldMargins(int fieldIndex) {
         FormField field = formFields.get(fieldIndex);
@@ -440,22 +437,14 @@ public final class FormPanel extends JPanel {
             return margins;
         }
 
-        boolean isFirstField = (fieldIndex == 0);
-        boolean isLastField = (fieldIndex == formFields.size() - 1);
-
-        if (alignment.isTopAligned() && isFirstField) {
+        if (fieldIndex == 0) {
             margins.setTop(margins.getTop() + borderMargin);
         }
 
-        if (alignment.isLeftAligned()) {
-            margins.setLeft(margins.getLeft() + borderMargin);
-        }
+        margins.setLeft(margins.getLeft() + borderMargin);
+        margins.setRight(margins.getRight() + borderMargin);
 
-        if (alignment.isRightAligned()) {
-            margins.setRight(margins.getRight() + borderMargin);
-        }
-
-        if (alignment.isBottomAligned() && isLastField) {
+        if (fieldIndex == formFields.size() - 1) {
             margins.setBottom(margins.getBottom() + borderMargin);
         }
 
