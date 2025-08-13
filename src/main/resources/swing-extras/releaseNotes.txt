@@ -8,6 +8,8 @@ Version 2.4.0 [TODO] - swing-forms rewrite
   #95 - HashUtil: update byteArrayToHexString
   #94 - HashUtil: remove the 2GB file hash size limit
   #93 - HashUtil: log cleanup
+  #91 - ComboField should allow custom cell renderers
+  #90 - Add custom renderer tab to the demo app
   #89 - Make ListField more flexible and customizable
   #88 - TextField: allow popup editor
   #87 - Change FieldValidator from abstract class to interface

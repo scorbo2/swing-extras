@@ -2,6 +2,7 @@ package ca.corbett.forms.fields;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.ListCellRenderer;
 import java.awt.event.ItemEvent;
 import java.util.List;
 
@@ -120,5 +121,20 @@ public class ComboField<T> extends FormField {
 
         comboBox.setSelectedIndex(index);
         return this;
+    }
+
+    /**
+     * You can optionally set a custom cell renderer if your combo items have special display requirements.
+     */
+    public ComboField<T> setCellRenderer(ListCellRenderer<T> renderer) {
+        comboBox.setRenderer(renderer);
+        return this;
+    }
+
+    /**
+     * Returns the effective cell renderer.
+     */
+    public ListCellRenderer<? super T> getCellRenderer() {
+        return comboBox.getRenderer();
     }
 }

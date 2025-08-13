@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import java.util.List;
 
@@ -28,7 +29,7 @@ class ListFieldTest extends FormFieldBaseTests {
     @Test
     public void testGetFieldComponent() {
         assertNotNull(actual.getFieldComponent());
-        assertInstanceOf(JList.class, actual.getFieldComponent());
+        assertInstanceOf(JScrollPane.class, actual.getFieldComponent());
     }
 
     @Test
@@ -51,8 +52,7 @@ class ListFieldTest extends FormFieldBaseTests {
     public void testSetSelectionMode() {
         //noinspection unchecked
         ListField<String> actualField = (ListField<String>)actual;
-        //noinspection unchecked
-        JList<String> actualList = (JList<String>)actualField.getFieldComponent();
+        JList<String> actualList = actualField.getList();
         assertEquals(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION, actualField.getSelectionMode());
         assertEquals(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION, actualList.getSelectionMode());
 
@@ -70,8 +70,7 @@ class ListFieldTest extends FormFieldBaseTests {
     public void testSetSelectionMode_ignoreStupidValues() {
         //noinspection unchecked
         ListField<String> actualField = (ListField<String>)actual;
-        //noinspection unchecked
-        JList<String> actualList = (JList<String>)actualField.getFieldComponent();
+        JList<String> actualList = actualField.getList();
         actualField.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         actualField.setSelectionMode(9999);
@@ -87,8 +86,7 @@ class ListFieldTest extends FormFieldBaseTests {
     public void testSetLayoutOrientation() {
         //noinspection unchecked
         ListField<String> actualField = (ListField<String>)actual;
-        //noinspection unchecked
-        JList<String> actualList = (JList<String>)actualField.getFieldComponent();
+        JList<String> actualList = actualField.getList();
 
         int[] orientation = new int[] {JList.VERTICAL,
                 JList.VERTICAL_WRAP,
@@ -104,8 +102,7 @@ class ListFieldTest extends FormFieldBaseTests {
     public void testVisibleRowCount() {
         //noinspection unchecked
         ListField<String> actualField = (ListField<String>)actual;
-        //noinspection unchecked
-        JList<String> actualList = (JList<String>)actualField.getFieldComponent();
+        JList<String> actualList = actualField.getList();
 
         int[] rowCounts = new int[] {7,11,5};
         for (int rowCount : rowCounts) {
@@ -119,8 +116,7 @@ class ListFieldTest extends FormFieldBaseTests {
     public void testVisibleRowCount_ignoreStupidValues() {
         //noinspection unchecked
         ListField<String> actualField = (ListField<String>)actual;
-        //noinspection unchecked
-        JList<String> actualList = (JList<String>)actualField.getFieldComponent();
+        JList<String> actualList = actualField.getList();
         final int expected = 3;
         actualField.setVisibleRowCount(expected);
 
@@ -138,8 +134,7 @@ class ListFieldTest extends FormFieldBaseTests {
     public void testCellWidth() {
         //noinspection unchecked
         ListField<String> actualField = (ListField<String>)actual;
-        //noinspection unchecked
-        JList<String> actualList = (JList<String>)actualField.getFieldComponent();
+        JList<String> actualList = actualField.getList();
 
         int[] cellWidths = new int[] {7,11,5,-1};
         for (int cellWidth : cellWidths) {
@@ -153,8 +148,7 @@ class ListFieldTest extends FormFieldBaseTests {
     public void testCellWidth_rejectStupidValues() {
         //noinspection unchecked
         ListField<String> actualField = (ListField<String>)actual;
-        //noinspection unchecked
-        JList<String> actualList = (JList<String>)actualField.getFieldComponent();
+        JList<String> actualList = actualField.getList();
 
         final int expected = 5;
         actualField.setFixedCellWidth(expected);

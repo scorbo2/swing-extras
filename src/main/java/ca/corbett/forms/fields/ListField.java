@@ -3,6 +3,7 @@ package ca.corbett.forms.fields;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import java.util.List;
@@ -11,8 +12,7 @@ import java.util.List;
  * Wraps a JList to allow for multi-selection of some object type.
  * A common use case would be ListField&lt;String&gt; to wrap a simple
  * list of Strings. The underlying JList can be obtained by calling
- * getFieldComponent() and casting the result to JList, if you need to
- * do custom styling or whatnot on the JList.
+ * getList(), if you need to do custom styling or whatnot on the JList.
  *
  * @since swing-extras 2.3
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -39,8 +39,8 @@ public class ListField<T> extends FormField {
         this.listModel = listModel;
         list = new JList<>(listModel);
         list.setVisibleRowCount(4);
-        list.setFixedCellWidth(20);
-        fieldComponent = list;
+        list.setFixedCellWidth(100);
+        fieldComponent = new JScrollPane(list);
         list.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 fireValueChangedEvent();
@@ -149,6 +149,13 @@ public class ListField<T> extends FormField {
         list.setSelectedIndex(index);
         list.setValueIsAdjusting(false);
         return this;
+    }
+
+    /**
+     * Provides direct access to the underlying JList if needed.
+     */
+    public JList<T> getList() {
+        return list;
     }
 
     /**
