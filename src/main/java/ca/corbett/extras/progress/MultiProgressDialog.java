@@ -395,12 +395,12 @@ public final class MultiProgressDialog extends JDialog {
         formFields.add(panelField);
 
         minorProgressLabel = new LabelField("");
-        minorProgressLabel.getMargins().setAll(0).setLeft(16).setInternalSpacing(2);
+        minorProgressLabel.getMargins().setAll(0).setLeft(16).setTop(12).setInternalSpacing(2);
         formFields.add(minorProgressLabel);
 
         minorProgressBar = new JProgressBar();
         minorProgressBar.setStringPainted(true);
-        //minorProgressBar.setForeground(Color.BLUE);
+        minorProgressBar.setPreferredSize(new Dimension(450, 20));
         panelField = new PanelField();
         panelField.getMargins().setAll(0);
         panelField.getPanel().setLayout(new BorderLayout());
