@@ -75,7 +75,7 @@ public final class Resources {
      * Cheesy fallback in case our images can't be loaded for some reason.
      */
     private static ImageIcon createIcon(Color color) {
-        BufferedImage image = new BufferedImage(22, 22, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(22, 22, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         g.setColor(color);
         g.fillRect(0, 0, 22, 22);
