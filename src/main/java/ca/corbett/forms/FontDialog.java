@@ -5,8 +5,8 @@ import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.NumberField;
-import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.ValueChangedListener;
 
 import javax.swing.BorderFactory;
@@ -15,9 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
@@ -48,11 +46,11 @@ public final class FontDialog extends JDialog {
 
     public static final Font INITIAL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
     private DefaultListModel<String> fontListModel;
-    private JList<String> fontList;
     private boolean wasOkayed;
 
-    private ComboField typeField;
-    private ComboField styleField;
+    private ComboField<String> typeField;
+    private ComboField<String> styleField;
+    private ListField<String> listField;
     private NumberField sizeField;
     private boolean showSizeField = true;
     private LabelField sampleLabel;
@@ -164,22 +162,16 @@ public final class FontDialog extends JDialog {
      * can update the sample label with the new settings.
      */
     private void fontChanged() {
-        String fontFamily = fontList.getSelectedValue() == null ? selectedFont.getFamily() : fontList.getSelectedValue();
+        String fontFamily = listField.getList().getSelectedValue() == null
+                ? selectedFont.getFamily()
+                : listField.getList().getSelectedValue();
         int size = (Integer)sizeField.getCurrentValue();
-        int style;
-        switch (styleField.getSelectedIndex()) {
-            case 1:
-                style = Font.BOLD;
-                break;
-            case 2:
-                style = Font.ITALIC;
-                break;
-            case 3:
-                style = Font.BOLD + Font.ITALIC;
-                break;
-            default:
-                style = Font.PLAIN;
-        }
+        int style = switch (styleField.getSelectedIndex()) {
+            case 1 -> Font.BOLD;
+            case 2 -> Font.ITALIC;
+            case 3 -> Font.BOLD + Font.ITALIC;
+            default -> Font.PLAIN;
+        };
         selectedFont = new Font(fontFamily, style, size);
 
         String labelText = fontFamily.length() > 11 ? fontFamily.substring(0, 11) + "..." : fontFamily;
@@ -209,19 +201,19 @@ public final class FontDialog extends JDialog {
 
                 // Not guaranteed that the selected font will exist in this list:
                 if (!isBuiltInFont(selectedFont)) {
-                    fontList.setSelectedIndex(0);
+                    listField.setSelectedIndex(0);
                     fontChanged();
                 }
 
                 // Now we can select it:
-                fontList.setSelectedValue(selectedFont.getFamily(), true);
+                listField.getList().setSelectedValue(selectedFont.getFamily(), true);
                 break;
             case 1:
                 fontListModel.addAll(
                         Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
 
                 // Guaranteed that the selected font will exist in this list, so select it:
-                fontList.setSelectedValue(selectedFont.getFamily(), true);
+                listField.getList().setSelectedValue(selectedFont.getFamily(), true);
                 break;
         }
     }
@@ -247,7 +239,7 @@ public final class FontDialog extends JDialog {
     private void populateUIFromFont(Font font) {
         selectedFont = font;
         typeField.setSelectedIndex(isBuiltInFont(selectedFont) ? 0 : 1);
-        fontList.setSelectedValue(font.getFamily(), true);
+        listField.getList().setSelectedValue(font.getFamily(), true);
         sizeField.setCurrentValue(font.getSize());
         switch (font.getStyle()) {
             case Font.PLAIN:
@@ -319,17 +311,13 @@ public final class FontDialog extends JDialog {
         });
         formPanel.add(typeField);
 
-        PanelField panelField = new PanelField();
-        JPanel panel = panelField.getPanel();
-        panel.setLayout(new BorderLayout());
         fontListModel = new DefaultListModel<>();
-        fontList = new JList<>(fontListModel);
-        fontList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fontList.addListSelectionListener(e -> fontChanged());
-        JScrollPane scrollPane = new JScrollPane(fontList);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        formPanel.add(panelField);
+        listField = new ListField<>("", fontListModel);
+        listField.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listField.addValueChangedListener(e -> fontChanged());
+        listField.setVisibleRowCount(6);
+        listField.setShouldExpand(true);
+        formPanel.add(listField);
 
         options = new ArrayList<>();
         options.add("Plain");
