@@ -88,13 +88,14 @@ public final class FileField extends FormField {
         fieldLabel.setText(label);
         textField = new JTextField(initialValue == null ? "" : initialValue.getAbsolutePath());
         textField.setColumns(cols);
+        textField.setFont(getDefaultFont());
         textField.getDocument()
                  .addDocumentListener(new CoalescingDocumentListener(textField, e -> fireValueChangedEvent()));
         fileChooser = new JFileChooser(initialValue);
         fileChooser.setMultiSelectionEnabled(false);
         setSelectionType(selectionType, allowBlank);
         chooseButton = new JButton("Choose...");
-        chooseButton.setFont(DEFAULT_FONT);
+        chooseButton.setFont(getDefaultFont());
         JPanel dirPanel = new JPanel();
         dirPanel.setLayout(new BoxLayout(dirPanel, BoxLayout.X_AXIS));
         dirPanel.add(textField);

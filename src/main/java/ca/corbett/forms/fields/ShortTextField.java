@@ -27,6 +27,7 @@ public class ShortTextField extends FormField {
     public ShortTextField(String label, int cols) {
         fieldLabel.setText(label);
         fieldComponent = new JTextField(cols);
+        fieldComponent.setFont(getDefaultFont());
         CoalescingDocumentListener listener = new CoalescingDocumentListener((JTextField)fieldComponent,
                                                                              e -> fireValueChangedEvent());
         ((JTextField)fieldComponent).getDocument().addDocumentListener(listener);

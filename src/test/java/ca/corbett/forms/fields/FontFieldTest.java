@@ -23,7 +23,7 @@ class FontFieldTest extends FormFieldBaseTests {
 
     @Override
     protected FormField createTestObject() {
-        return new FontField("Test", FormField.DEFAULT_FONT, Color.BLUE, Color.BLACK);
+        return new FontField("Test", FormField.getDefaultFont(), Color.BLUE, Color.BLACK);
     }
 
     @Test
@@ -51,7 +51,7 @@ class FontFieldTest extends FormFieldBaseTests {
     @Test
     public void testSetSelectedFont() {
         FontField actualField = (FontField)actual;
-        assertEquals(FormField.DEFAULT_FONT, actualField.getSelectedFont());
+        assertEquals(FormField.getDefaultFont(), actualField.getSelectedFont());
 
         Font expectedFont = new Font(Font.MONOSPACED, Font.BOLD, 18);
         actualField.setSelectedFont(expectedFont);

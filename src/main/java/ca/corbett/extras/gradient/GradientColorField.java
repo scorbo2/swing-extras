@@ -61,7 +61,6 @@ public class GradientColorField extends FormField {
 
         // Initialize our UI components:
         fieldLabel.setText(label);
-        fieldLabel.setFont(DEFAULT_FONT);
         ImagePanelConfig ipc = ImagePanelConfig.createSimpleReadOnlyProperties();
         colorPanel = new ImagePanel((BufferedImage)null, ipc);
         fieldComponent = colorPanel;

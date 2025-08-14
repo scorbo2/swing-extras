@@ -56,7 +56,7 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         LabelField labelField = new LabelField("<html>ImageUtil and the associated color<br>"
                                             + "gradient classes can generate images with<br>"
                                             + "a variety of options. Here are just a few!</html>");
-        labelField.setFont(FontField.DEFAULT_FONT.deriveFont(Font.PLAIN, 12f));
+        labelField.setFont(FontField.getDefaultFont().deriveFont(Font.PLAIN, 12f));
         controlPanel.add(labelField);
 
         textField = new ShortTextField("Text:", 20);

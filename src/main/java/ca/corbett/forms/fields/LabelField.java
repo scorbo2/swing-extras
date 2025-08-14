@@ -50,9 +50,6 @@ public final class LabelField extends FormField {
     private static int extraTopMarginHeader = 12;
     private static int extraBottomMarginHeader = 8;
 
-    private static final Font DEFAULT_HEADER_FONT = new Font(Font.DIALOG, Font.BOLD, 16);
-    private static final Font DEFAULT_LABEL_FONT = DEFAULT_FONT;
-
     private final JLabel label;
     private Action hyperlinkAction;
 
@@ -74,7 +71,7 @@ public final class LabelField extends FormField {
      */
     public LabelField(String fieldLabelText, String labelText) {
         label = new JLabel(labelText == null ? "" : labelText);
-        label.setFont(DEFAULT_FONT);
+        label.setFont(getDefaultFont());
         label.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
         label.addMouseListener(new HyperlinkMouseListener());
         fieldLabel.setText(fieldLabelText == null ? "" : fieldLabelText);
@@ -99,11 +96,11 @@ public final class LabelField extends FormField {
      * @return A LabelField suitable for use as a header.
      */
     public static LabelField createBoldHeaderLabel(String text) {
-        return createHeaderLabel(text, DEFAULT_HEADER_FONT, extraTopMarginHeader, extraBottomMarginHeader);
+        return createHeaderLabel(text, getDefaultHeaderFont(), extraTopMarginHeader, extraBottomMarginHeader);
     }
 
     public static LabelField createBoldHeaderLabel(String text, int fontSize) {
-        return createHeaderLabel(text, DEFAULT_HEADER_FONT.deriveFont((float)fontSize), extraTopMarginHeader,
+        return createHeaderLabel(text, getDefaultHeaderFont().deriveFont((float)fontSize), extraTopMarginHeader,
                                  extraBottomMarginHeader);
     }
 
@@ -121,7 +118,7 @@ public final class LabelField extends FormField {
      * @return A LabelField suitable for use as a regular header label.
      */
     public static LabelField createPlainHeaderLabel(String text) {
-        return createHeaderLabel(text, DEFAULT_LABEL_FONT, extraTopMarginNormal, extraBottomMarginNormal);
+        return createHeaderLabel(text, getDefaultFont(), extraTopMarginNormal, extraBottomMarginNormal);
     }
 
     /**
@@ -138,7 +135,7 @@ public final class LabelField extends FormField {
      * @return A LabelField suitable for use as a regular header label.
      */
     public static LabelField createPlainHeaderLabel(String text, int fontSize) {
-        return createHeaderLabel(text, DEFAULT_LABEL_FONT.deriveFont((float)fontSize), extraTopMarginNormal,
+        return createHeaderLabel(text, getDefaultFont().deriveFont((float)fontSize), extraTopMarginNormal,
                                  extraBottomMarginNormal);
     }
 
@@ -175,11 +172,11 @@ public final class LabelField extends FormField {
     }
 
     public static Font getDefaultHeaderFont() {
-        return DEFAULT_HEADER_FONT.deriveFont((float)DEFAULT_HEADER_FONT.getSize());
+        return getDefaultFont().deriveFont(Font.BOLD, 16);
     }
 
     public static Font getDefaultLabelFont() {
-        return DEFAULT_LABEL_FONT.deriveFont((float)DEFAULT_LABEL_FONT.getSize());
+        return getDefaultFont();
     }
 
     /**

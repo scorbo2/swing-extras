@@ -21,6 +21,7 @@ public class ListField<T> extends FormField {
 
     private final JList<T> list;
     private final AbstractListModel<T> listModel;
+    private boolean shouldExpand = false;
 
     /**
      * If you supply a List of T, we will create and use a DefaultListModel implicitly.
@@ -40,6 +41,7 @@ public class ListField<T> extends FormField {
         list = new JList<>(listModel);
         list.setVisibleRowCount(4);
         list.setFixedCellWidth(100);
+        list.setFont(getDefaultFont());
         fieldComponent = new JScrollPane(list);
         list.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -204,12 +206,29 @@ public class ListField<T> extends FormField {
     }
 
     /**
+     * Sets whether this list should expand horizontally to fill available form panel width.
+     * The default is false, meaning the list will be just wide enough to display the longest item.
+     */
+    public void setShouldExpand(boolean should) {
+        shouldExpand = should;
+    }
+
+    /**
      * ListFields occupy more than one form row (generally - you can of course set
      * a visibleRowCount of 1, but why would you do that).
      */
     @Override
     public boolean isMultiLine() {
         return true;
+    }
+
+    /**
+     * Overridden here to allow optional width expansion of the list to fill the form panel's width.
+     * The default is false.
+     */
+    @Override
+    public boolean shouldExpand() {
+        return shouldExpand;
     }
 
     private static <T> DefaultListModel<T> createDefaultListModel(List<T> items) {

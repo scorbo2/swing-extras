@@ -21,7 +21,7 @@ public final class CheckBoxField extends FormField {
 
     public CheckBoxField(String labelText, boolean isChecked) {
         fieldComponent = new JCheckBox(labelText, isChecked);
-        fieldComponent.setFont(DEFAULT_FONT);
+        fieldComponent.setFont(defaultFont);
         ((JCheckBox)fieldComponent).addItemListener(e -> fireValueChangedEvent());
     }
 

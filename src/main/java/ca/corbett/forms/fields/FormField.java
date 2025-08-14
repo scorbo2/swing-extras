@@ -49,7 +49,8 @@ import java.util.Objects;
  */
 public abstract class FormField {
 
-    public static final Font DEFAULT_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
+    protected static final Font DEFAULT_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
+    protected static Font defaultFont = DEFAULT_FONT;
 
     protected final List<ValueChangedListener> valueChangedListeners = new ArrayList<>();
     protected final List<FieldValidator<? extends FormField>> fieldValidators = new ArrayList<>();
@@ -69,7 +70,7 @@ public abstract class FormField {
     protected final Map<String, Object> extraAttributes = new HashMap<>();
 
     public FormField() {
-        fieldLabel.setFont(DEFAULT_FONT);
+        fieldLabel.setFont(defaultFont);
         fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
         helpLabel.setIcon(Resources.getHelpIcon());
         validationLabel.setIcon(Resources.getBlankIcon()); // placeholder until validation occurs
@@ -136,6 +137,23 @@ public abstract class FormField {
 
     public JLabel getFieldLabel() {
         return fieldLabel;
+    }
+
+    /**
+     * Returns the prototype Font that will be used in all new FormField constructors.
+     * There is a built-in default value which can be overridden via setDefaultFont().
+     */
+    public static Font getDefaultFont() {
+        return defaultFont;
+    }
+
+    /**
+     * Sets the default Font to use with all FormField instances created after this call completes.
+     * This does not affect any FormField instance that was instantiated before this call.
+     * Passing null will revert this property to FormField.DEFAULT_FONT.
+     */
+    public static void setDefaultFont(Font newFont) {
+        defaultFont = newFont == null ? DEFAULT_FONT : newFont;
     }
 
     /**

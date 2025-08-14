@@ -100,7 +100,7 @@ public final class GradientConfigPanel extends ConfigPanel<GradientConfig> {
         FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
 
         LabelField labelField = new LabelField("Gradient configuration");
-        labelField.setFont(FormField.DEFAULT_FONT.deriveFont(Font.BOLD, 14f));
+        labelField.setFont(FormField.getDefaultFont().deriveFont(Font.BOLD, 14f));
         formPanel.add(labelField);
 
         gradientTypeCombo = new ComboField<>("Type:", List.of(GradientUtil.GradientType.values()), 0, false);

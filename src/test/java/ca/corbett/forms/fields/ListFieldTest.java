@@ -46,6 +46,9 @@ class ListFieldTest extends FormFieldBaseTests {
     @Test
     public void testShouldExpand() {
         assertFalse(actual.shouldExpand());
+
+        ((ListField)actual).setShouldExpand(true);
+        assertTrue(actual.shouldExpand());
     }
 
     @Test

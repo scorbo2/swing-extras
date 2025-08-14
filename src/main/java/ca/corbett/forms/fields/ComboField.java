@@ -28,6 +28,7 @@ public class ComboField<T> extends FormField {
         fieldLabel.setText(label);
         comboModel = new DefaultComboBoxModel<>();
         comboBox = new JComboBox<>(comboModel);
+        comboBox.setFont(getDefaultFont());
         comboBox.setEditable(false);
         comboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {

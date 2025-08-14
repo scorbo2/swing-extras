@@ -67,6 +67,7 @@ public final class NumberField extends FormField {
         });
         fieldComponent = spinner;
         fieldComponent.setPreferredSize(new Dimension(60, 22)); // arbitrary default value
+        fieldComponent.setFont(getDefaultFont());
         fieldLabel.setText(labelText);
     }
 

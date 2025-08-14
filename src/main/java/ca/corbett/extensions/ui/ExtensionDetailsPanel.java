@@ -123,7 +123,7 @@ public class ExtensionDetailsPanel extends JPanel {
         AppExtensionInfo extInfo = extension == null ? null : extension.getInfo();
         String name = extInfo == null ? "" : trimString(extInfo.getName(), 40);
         LabelField nameField = new LabelField(name);
-        nameField.setFont(FontField.DEFAULT_FONT.deriveFont(Font.BOLD, 16f));
+        nameField.setFont(FontField.getDefaultFont().deriveFont(Font.BOLD, 16f));
         nameField.getMargins().setAll(0).setTop(4).setRight(6);
         formPanel.add(nameField);
 
