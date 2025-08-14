@@ -10,6 +10,7 @@ import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 
@@ -129,32 +130,28 @@ public final class AboutPanel extends JPanel {
 
         String labelText = info.applicationName + " " + info.applicationVersion;
         LabelField labelField = new LabelField(labelText);
-        labelField.setFont(new Font("SansSerif", Font.BOLD, 24));
+        labelField.setFont(FormField.getDefaultFont().deriveFont(Font.BOLD, 24));
         labelField.getMargins().setAll(2);
         labelField.getMargins().setTop(8);
         formPanel.add(labelField);
 
-        Font labelFont = new Font("SansSerif", Font.PLAIN, 12);
         if (info.shortDescription != null && !info.shortDescription.isBlank()) {
             String desc = (info.shortDescription.length() > 60)
                     ? info.shortDescription.substring(0, 60) + "..."
                     : info.shortDescription;
             labelField = new LabelField("\"" + desc + "\"");
-            labelField.setFont(labelFont);
             labelField.getMargins().setAll(2).setTop(8);
             formPanel.add(labelField);
         }
 
         if (info.copyright != null && !info.copyright.isBlank()) {
             labelField = new LabelField(info.copyright);
-            labelField.setFont(labelFont);
             labelField.getMargins().setAll(2).setTop(8);
             formPanel.add(labelField);
         }
 
         if (info.projectUrl != null && !info.projectUrl.isBlank()) {
             labelField = new LabelField(info.projectUrl);
-            labelField.setFont(labelFont);
             if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.projectUrl)) {
                 try {
                     labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.projectUrl)));
@@ -169,7 +166,6 @@ public final class AboutPanel extends JPanel {
 
         if (info.license != null && !info.license.isBlank()) {
             labelField = new LabelField(info.license);
-            labelField.setFont(labelFont);
             if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.license)) {
                 try {
                     labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.license)));
@@ -183,13 +179,11 @@ public final class AboutPanel extends JPanel {
         }
 
         memoryUsageField = new LabelField(getMemoryStats());
-        memoryUsageField.setFont(labelFont);
         memoryUsageField.getMargins().setAll(2).setTop(8);
         formPanel.add(memoryUsageField);
 
         for (String customField : info.getCustomFieldNames()) {
             labelField = new LabelField(customField, info.getCustomFieldValue(customField));
-            labelField.setFont(labelFont);
             labelField.getMargins().setAll(4).setTop(8).setBottom(2);
             formPanel.add(labelField);
             customFields.put(customField, labelField);
