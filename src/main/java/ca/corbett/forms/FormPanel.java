@@ -196,18 +196,7 @@ public final class FormPanel extends JPanel {
      */
     public FormPanel setAlignment(Alignment alignment) {
         this.alignment = alignment;
-        render();
-
-        // swing wonkiness... changing layouts requires rejiggering the container:
-        final Component component = this;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                component.invalidate();
-                component.revalidate();
-                component.repaint();
-            }
-        });
+        forceRerender();
 
         return this;
     }
@@ -217,6 +206,24 @@ public final class FormPanel extends JPanel {
      */
     public Alignment getAlignment() {
         return alignment;
+    }
+
+    /**
+     * If it is required to re-render the form panel for some reason, you can do it manually here.
+     * Generally, this should not be necessary, as a re-render will happen automatically as fields
+     * are added or removed. But, if a field has changed structurally in some way that requires
+     * a re-render, this option exists.
+     */
+    public void forceRerender() {
+        render();
+
+        // swing wonkiness... changing layouts requires rejiggering the container:
+        final Component component = this;
+        SwingUtilities.invokeLater(() -> {
+            component.invalidate();
+            component.revalidate();
+            component.repaint();
+        });
     }
 
     /**

@@ -5,6 +5,8 @@ Version 2.4.0 [TODO] - swing-forms rewrite
   #102 - Make AboutPanel smarter about fonts
   #101 - Make FormField's default font customizable
   #100 - Split TextField into short and long fields
+  #99 - Deprecate ConfigObject
+  #98 - Deprecate ConfigPanel
   #97 - refactor TextField constructors
   #96 - Upgrade Java 11 to Java 17
   #95 - HashUtil: update byteArrayToHexString

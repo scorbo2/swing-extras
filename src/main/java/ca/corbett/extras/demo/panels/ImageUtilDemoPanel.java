@@ -7,14 +7,13 @@ import ca.corbett.extras.gradient.GradientUtil;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.LogoConfig;
-import ca.corbett.extras.image.LogoConfigPanel;
+import ca.corbett.extras.image.LogoFormField;
 import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JPanel;
@@ -59,7 +58,7 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         labelField.setFont(FontField.getDefaultFont().deriveFont(Font.PLAIN, 12f));
         controlPanel.add(labelField);
 
-        textField = new ShortTextField("Text:", 20);
+        textField = new ShortTextField("Text:", 14);
         textField.setText(Version.NAME);
         textField.addValueChangedListener(field -> {
             regenerate();
@@ -89,14 +88,19 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         });
         controlPanel.add(displayModeChooser);
 
-        PanelField panelField = new PanelField();
-        JPanel containerPanel = panelField.getPanel();
-        containerPanel.setLayout(new BorderLayout());
-        logoConfig = createDefaultLogoConfig();
-        LogoConfigPanel configPanel = new LogoConfigPanel("Image options", logoConfig);
-        configPanel.addChangeListener(this);
-        containerPanel.add(configPanel, BorderLayout.NORTH);
-        controlPanel.add(panelField);
+        LogoFormField logoField = new LogoFormField("Image options");
+        logoField.setShouldExpand(false);
+        controlPanel.add(logoField);
+        logoConfig = createDefaultLogoConfig(); // TODO wire it up using LogoFormField
+
+//        PanelField panelField = new PanelField();
+//        JPanel containerPanel = panelField.getPanel();
+//        containerPanel.setLayout(new BorderLayout());
+//        logoConfig = createDefaultLogoConfig();
+//        LogoConfigPanel configPanel = new LogoConfigPanel("Image options", logoConfig);
+//        configPanel.addChangeListener(this);
+//        containerPanel.add(configPanel, BorderLayout.NORTH);
+//        controlPanel.add(panelField);
 
         leftPanel.add(controlPanel, BorderLayout.CENTER);
         panel.add(leftPanel, BorderLayout.WEST);
