@@ -1,5 +1,14 @@
 package ca.corbett.extras.gradient;
 
+import ca.corbett.extras.image.ImagePanel;
+import ca.corbett.extras.image.ImagePanelConfig;
+import ca.corbett.forms.Alignment;
+import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FormField;
+import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.PanelField;
+
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
@@ -11,9 +20,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 /**
  * Combines a JColorChooser with a GradientConfigDialog to allow you to select
@@ -70,7 +81,7 @@ public final class GradientColorChooser extends JPanel {
 
     public void resetToDefaults() {
         colorChooser.setColor(Color.BLACK);
-        gradientChooser.setModelObject(new GradientConfig());
+        gradientChooser.load(new GradientConfig());
     }
 
     public Color getSelectedColor() {
@@ -174,8 +185,8 @@ public final class GradientColorChooser extends JPanel {
         dialogResult = CANCEL; // safe default
         final JDialog dialog = new JDialog(owner, title);
         dialog.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
-        dialog.setSize(new Dimension(500, 300));
-        dialog.setMinimumSize(new Dimension(500, 300));
+        dialog.setSize(new Dimension(640, 350));
+        dialog.setMinimumSize(new Dimension(640, 350));
         dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         dialog.setLayout(new BorderLayout());
         dialog.add(this, BorderLayout.CENTER);
@@ -233,6 +244,108 @@ public final class GradientColorChooser extends JPanel {
             candidate = candidate.getParent();
         }
         return null;
+    }
+
+    public static class GradientConfigPanel extends JPanel {
+
+        private static final int PREVIEW_WIDTH = 500;
+        private static final int PREVIEW_HEIGHT = 500;
+
+        private GradientConfig gradientConfig;
+        private ImagePanel previewPanel;
+        private GradientColorField color1Field;
+        private GradientColorField color2Field;
+        private ComboField<GradientUtil.GradientType> gradientTypeCombo;
+
+        public GradientConfigPanel(String title) {
+            this(title, new GradientConfig());
+        }
+
+        public GradientConfigPanel(String title, GradientConfig config) {
+            this.gradientConfig = config == null ? new GradientConfig() : config;
+            initComponents();
+        }
+
+        public GradientConfig getSelectedValue() {
+            return new GradientConfig(gradientConfig);
+        }
+
+        /**
+         * Loads settings from the given GradientConfig.
+         */
+        public void load(GradientConfig obj) {
+            gradientConfig = new GradientConfig(obj);
+            if (color1Field != null) {
+                color1Field.setColor(obj.getColor1());
+                color2Field.setColor(obj.getColor2());
+                gradientTypeCombo.setSelectedItem(obj.getGradientType());
+                updatePreview();
+            }
+        }
+
+        private void initComponents() {
+            setLayout(new BorderLayout());
+
+            FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
+
+            LabelField labelField = new LabelField("Gradient configuration");
+            labelField.setFont(FormField.getDefaultFont().deriveFont(Font.BOLD, 14f));
+            formPanel.add(labelField);
+
+            gradientTypeCombo = new ComboField<>("Type:", List.of(GradientUtil.GradientType.values()), 0, false);
+            gradientTypeCombo.addValueChangedListener(field -> {
+                gradientConfig.setGradientType(gradientTypeCombo.getSelectedItem());
+                updatePreview();
+            });
+            formPanel.add(gradientTypeCombo);
+
+            color1Field = new GradientColorField("Color 1:", gradientConfig.getColor1());
+            color1Field.addValueChangedListener(field -> {
+                gradientConfig.setColor1(color1Field.getColor());
+                updatePreview();
+            });
+            formPanel.add(color1Field);
+
+            color2Field = new GradientColorField("Color 2:", gradientConfig.getColor2());
+            color2Field.addValueChangedListener(field -> {
+                gradientConfig.setColor2(color2Field.getColor());
+                updatePreview();
+            });
+            formPanel.add(color2Field);
+
+            PanelField panelField = new PanelField();
+            panelField.getPanel().setLayout(new FlowLayout(FlowLayout.CENTER));
+            JButton button = new JButton("Swap colours");
+            button.setPreferredSize(new Dimension(140, 23));
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Object obj1 = color1Field.getSelectedValue();
+                    color1Field.setSelectedValue(color2Field.getSelectedValue());
+                    gradientConfig.setColor1(color2Field.getColor());
+                    color2Field.setSelectedValue(obj1);
+                    gradientConfig.setColor2((Color)obj1);
+                    updatePreview();
+                }
+
+            });
+            panelField.getPanel().add(button);
+            formPanel.add(panelField);
+
+            add(formPanel, BorderLayout.WEST);
+
+            ImagePanelConfig iPanelConf = ImagePanelConfig.createSimpleReadOnlyProperties();
+            iPanelConf.setDisplayMode(ImagePanelConfig.DisplayMode.STRETCH);
+            previewPanel = new ImagePanel(
+                    GradientUtil.createGradientImage(gradientConfig, PREVIEW_WIDTH, PREVIEW_HEIGHT),
+                    iPanelConf);
+            add(previewPanel, BorderLayout.CENTER);
+        }
+
+        private void updatePreview() {
+            previewPanel.setImage(GradientUtil.createGradientImage(gradientConfig, PREVIEW_WIDTH, PREVIEW_HEIGHT));
+        }
+
     }
 
 }
