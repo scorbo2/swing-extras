@@ -1,7 +1,8 @@
 package ca.corbett.extras.image;
 
 import ca.corbett.extras.config.ConfigObject;
-import ca.corbett.extras.gradient.GradientConfig;
+import ca.corbett.extras.gradient.Gradient;
+import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.properties.Properties;
 
 import java.awt.Color;
@@ -43,19 +44,17 @@ public final class LogoConfig implements ConfigObject {
 
     }
 
-    ;
-
     private ColorType bgColorType;
     private Color bgColor;
-    private GradientConfig bgGradient;
+    private Gradient bgGradient;
 
     private ColorType borderColorType;
     private Color borderColor;
-    private GradientConfig borderGradient;
+    private Gradient borderGradient;
 
     private ColorType textColorType;
     private Color textColor;
-    private GradientConfig textGradient;
+    private Gradient textGradient;
 
     private int borderWidth;
     private boolean hasBorder;
@@ -148,8 +147,8 @@ public final class LogoConfig implements ConfigObject {
      *
      * @return A GradientConfig object for the background fill of this logo image.
      */
-    public GradientConfig getBgGradient() {
-        return new GradientConfig(bgGradient);
+    public Gradient getBgGradient() {
+        return bgGradient;
     }
 
     /**
@@ -168,8 +167,8 @@ public final class LogoConfig implements ConfigObject {
      *
      * @param bgGradient The GradientConfig to use with this object.
      */
-    public void setBgGradient(GradientConfig bgGradient) {
-        this.bgGradient = new GradientConfig(bgGradient);
+    public void setBgGradient(Gradient bgGradient) {
+        this.bgGradient = bgGradient;
     }
 
     /**
@@ -207,7 +206,7 @@ public final class LogoConfig implements ConfigObject {
      *
      * @return A GradientConfig object for the border of this logo image.
      */
-    public GradientConfig getBorderGradient() {
+    public Gradient getBorderGradient() {
         return borderGradient;
     }
 
@@ -227,7 +226,7 @@ public final class LogoConfig implements ConfigObject {
      *
      * @param borderGradient The GradientConfig to use for the border of this object.
      */
-    public void setBorderGradient(GradientConfig borderGradient) {
+    public void setBorderGradient(Gradient borderGradient) {
         this.borderGradient = borderGradient;
     }
 
@@ -354,7 +353,7 @@ public final class LogoConfig implements ConfigObject {
      *
      * @return A GradientConfig object for the text of this logo image.
      */
-    public GradientConfig getTextGradient() {
+    public Gradient getTextGradient() {
         return textGradient;
     }
 
@@ -374,7 +373,7 @@ public final class LogoConfig implements ConfigObject {
      *
      * @param textGradient The GradientConfig to use with for the text of this object.
      */
-    public void setTextGradient(GradientConfig textGradient) {
+    public void setTextGradient(Gradient textGradient) {
         this.textGradient = textGradient;
     }
 
@@ -442,13 +441,13 @@ public final class LogoConfig implements ConfigObject {
     public void resetToDefaults() {
         this.bgColorType = ColorType.SOLID;
         this.bgColor = Color.BLACK;
-        this.bgGradient = new GradientConfig();
+        this.bgGradient = Gradient.createDefault();
         this.borderColorType = ColorType.SOLID;
         this.borderColor = Color.GRAY;
-        this.borderGradient = new GradientConfig();
+        this.borderGradient = Gradient.createDefault();
         this.textColorType = ColorType.SOLID;
         this.textColor = Color.WHITE;
-        this.textGradient = new GradientConfig();
+        this.textGradient = Gradient.createDefault();
         this.borderWidth = 1;
         this.hasBorder = true;
         this.autoSize = false;
@@ -477,13 +476,13 @@ public final class LogoConfig implements ConfigObject {
 
         bgColorType = ColorType.valueOf(props.getString(pfx + "bgColorType", bgColorType.name()));
         bgColor = props.getColor(pfx + "bgColor", bgColor);
-        bgGradient.loadFromProps(props, pfx + "bgGradient");
+        bgGradient = loadGradientFromProps(props, pfx + "bgGradient");
         borderColorType = ColorType.valueOf(props.getString(pfx + "borderColorType", borderColorType.name()));
         borderColor = props.getColor(pfx + "borderColor", borderColor);
-        borderGradient.loadFromProps(props, pfx + "borderGradient");
+        borderGradient = loadGradientFromProps(props, pfx + "borderGradient");
         textColorType = ColorType.valueOf(props.getString(pfx + "textColorType", textColorType.name()));
         textColor = props.getColor(pfx + "textColor", textColor);
-        textGradient.loadFromProps(props, pfx + "textGradient");
+        textGradient = loadGradientFromProps(props, pfx + "textGradient");
         borderWidth = props.getInteger(pfx + "borderWidth", borderWidth);
         hasBorder = props.getBoolean(pfx + "hasBorder", hasBorder);
         font = props.getFont(pfx + "font", font);
@@ -492,6 +491,14 @@ public final class LogoConfig implements ConfigObject {
         yTweak = props.getInteger(pfx + "yTweak", yTweak);
         autoSize = props.getBoolean(pfx + "autoSize", autoSize);
         name = props.getString(pfx + "name", name);
+    }
+
+    private Gradient loadGradientFromProps(Properties props, String pfx) {
+        GradientType gradientType = GradientType.valueOf(
+                props.getString(pfx + ".gradientType", bgGradient.type().name()));
+        Color gradientColor1 = props.getColor(pfx + ".color1", bgGradient.color1());
+        Color gradientColor2 = props.getColor(pfx + ".color2", bgGradient.color2());
+        return new Gradient(gradientType, gradientColor1, gradientColor2);
     }
 
     /**
@@ -511,14 +518,14 @@ public final class LogoConfig implements ConfigObject {
         String pfx = (prefix == null) ? "" : prefix;
 
         props.setString(pfx + "bgColorType", bgColorType.name());
-        bgGradient.saveToProps(props, pfx + "bgGradient");
+        saveGradientToProps(props, pfx + "bgGradient", bgGradient);
         props.setColor(pfx + "bgColor", bgColor);
         props.setString(pfx + "borderColorType", borderColorType.name());
         props.setColor(pfx + "borderColor", borderColor);
-        borderGradient.saveToProps(props, pfx + "borderGradient");
+        saveGradientToProps(props, pfx + "borderGradient", borderGradient);
         props.setString(pfx + "textColorType", textColorType.name());
         props.setColor(pfx + "textColor", textColor);
-        textGradient.saveToProps(props, pfx + "textGradient");
+        saveGradientToProps(props, pfx + "textGradient", textGradient);
         props.setInteger(pfx + "borderWidth", borderWidth);
         props.setBoolean(pfx + "hasBorder", hasBorder);
         props.setFont(pfx + "font", font);
@@ -527,5 +534,11 @@ public final class LogoConfig implements ConfigObject {
         props.setInteger(pfx + "yTweak", yTweak);
         props.setBoolean(pfx + "autoSize", autoSize);
         props.setString(pfx + "name", name);
+    }
+
+    private void saveGradientToProps(Properties props, String name, Gradient gradient) {
+        props.setString(name + ".gradientType", gradient.type().name());
+        props.setColor(name + ".color1", gradient.color1());
+        props.setColor(name + ".color2", gradient.color2());
     }
 }

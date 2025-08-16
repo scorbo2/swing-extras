@@ -1,5 +1,6 @@
 package ca.corbett.forms;
 
+import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
@@ -337,7 +338,7 @@ public final class FontDialog extends JDialog {
         formPanel.add(sampleLabel);
 
         if (textColor != null) {
-            textColorField = new ColorField("Text color:", textColor);
+            textColorField = new ColorField("Text color:", ColorSelectionType.SOLID).setColor(textColor);
             textColorField.addValueChangedListener(field -> {
                 colorChanged();
             });
@@ -346,7 +347,7 @@ public final class FontDialog extends JDialog {
         }
 
         if (bgColor != null) {
-            bgColorField = new ColorField("Background:", bgColor);
+            bgColorField = new ColorField("Background:", ColorSelectionType.SOLID).setColor(bgColor);
             bgColorField.addValueChangedListener(field -> {
                 colorChanged();
             });

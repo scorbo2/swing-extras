@@ -2,8 +2,8 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
-import ca.corbett.extras.gradient.GradientConfig;
-import ca.corbett.extras.gradient.GradientUtil;
+import ca.corbett.extras.gradient.Gradient;
+import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.LogoConfig;
@@ -120,15 +120,10 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         logoConfig.setAutoSize(true);
         logoConfig.setLogoWidth(400);
         logoConfig.setLogoHeight(400);
-        GradientConfig gradient = new GradientConfig();
-        gradient.setColor1(Color.BLUE);
-        gradient.setColor2(Color.BLACK);
-        gradient.setGradientType(GradientUtil.GradientType.DIAGONAL2);
+        Gradient gradient = new Gradient(GradientType.DIAGONAL2, Color.BLUE, Color.BLACK);
         logoConfig.setBgGradient(gradient);
         logoConfig.setBgColorType(LogoConfig.ColorType.GRADIENT);
-        GradientConfig gradient2 = new GradientConfig(gradient);
-        gradient2.setColor1(Color.WHITE);
-        gradient2.setColor2(Color.BLUE);
+        Gradient gradient2 = new Gradient(GradientType.DIAGONAL2, Color.WHITE, Color.BLUE);
         logoConfig.setTextGradient(gradient2);
         logoConfig.setTextColorType(LogoConfig.ColorType.GRADIENT);
         return logoConfig;

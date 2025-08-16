@@ -2,8 +2,9 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
-import ca.corbett.extras.gradient.GradientColorField;
-import ca.corbett.extras.gradient.GradientConfig;
+import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.gradient.Gradient;
+import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.gradient.GradientUtil;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
@@ -41,7 +42,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
 
     private LongTextField textField;
     private FontField fontField;
-    private GradientColorField bgColorField;
+    private ColorField bgColorField;
     private ColorField textFillColorField;
     private ColorField textOutlineColorField;
     private ComboField<String> outlineWidthField;
@@ -52,7 +53,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
     private String fontFamily;
     private boolean isBold;
     private boolean isItalic;
-    private GradientConfig bgGradient;
+    private Gradient bgGradient;
     private Color bgSolidColor;
     private Color fillColor;
     private Color outlineColor;
@@ -65,10 +66,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         fontFamily = Font.SANS_SERIF;
         isBold = false;
         isItalic = false;
-        bgGradient = new GradientConfig();
-        bgGradient.setColor1(Color.BLUE);
-        bgGradient.setColor2(Color.BLACK);
-        bgGradient.setGradientType(GradientUtil.GradientType.HORIZONTAL_STRIPE);
+        bgGradient = new Gradient(GradientType.HORIZONTAL_STRIPE, Color.BLUE, Color.BLACK);
         fillColor = Color.CYAN;
         outlineColor = Color.ORANGE;
         outlineWidth = 20;
@@ -115,15 +113,15 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         fontField.setShowSizeField(false);
         formPanel.add(fontField);
 
-        bgColorField = new GradientColorField("Background:", bgGradient);
+        bgColorField = new ColorField("Background:", ColorSelectionType.GRADIENT).setGradient(bgGradient);
         bgColorField.addValueChangedListener(changeListener);
         formPanel.add(bgColorField);
 
-        textFillColorField = new ColorField("Text fill:", fillColor);
+        textFillColorField = new ColorField("Text fill:", ColorSelectionType.SOLID).setColor(fillColor);
         textFillColorField.addValueChangedListener(changeListener);
         formPanel.add(textFillColorField);
 
-        textOutlineColorField = new ColorField("Text outline:", outlineColor);
+        textOutlineColorField = new ColorField("Text outline:", ColorSelectionType.SOLID).setColor(outlineColor);
         textOutlineColorField.addValueChangedListener(changeListener);
         formPanel.add(textOutlineColorField);
 
@@ -191,7 +189,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
             }
             else {
                 bgSolidColor = null;
-                bgGradient = (GradientConfig)something;
+                bgGradient = (Gradient)something;
             }
             fillColor = textFillColorField.getColor();
             outlineColor = textOutlineColorField.getColor();

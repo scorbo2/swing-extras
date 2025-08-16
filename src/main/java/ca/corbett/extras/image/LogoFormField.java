@@ -1,11 +1,11 @@
 package ca.corbett.extras.image;
 
-import ca.corbett.extras.gradient.GradientColorField;
-import ca.corbett.extras.gradient.GradientConfig;
-import ca.corbett.extras.gradient.GradientUtil;
+import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
+import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.NumberField;
@@ -29,9 +29,9 @@ public class LogoFormField extends FormField {
     private final JPanel wrapperPanel;
     private final FormPanel formPanel;
     private String labelText;
-    private GradientColorField bgColorField;
-    private GradientColorField borderColorField;
-    private GradientColorField textColorField;
+    private ColorField bgColorField;
+    private ColorField borderColorField;
+    private ColorField textColorField;
     private FontField fontField;
     private NumberField borderWidthField;
     private NumberField imageWidthField;
@@ -119,6 +119,10 @@ public class LogoFormField extends FormField {
         return this;
     }
 
+    public Object getBackgroundColor() {
+        return bgColorField.getSelectedValue();
+    }
+
     //TODO all property getters and setters
 
     private FormPanel createFormPanel() {
@@ -127,22 +131,22 @@ public class LogoFormField extends FormField {
         // Arbitrary defaults:
         final Color DEFAULT_BG = Color.BLACK;
         final Color DEFAULT_FG = Color.WHITE;
-        final GradientConfig DEFAULT_GRADIENT = new GradientConfig();
-        DEFAULT_GRADIENT.setColor1(Color.BLACK);
-        DEFAULT_GRADIENT.setColor2(Color.WHITE);
-        DEFAULT_GRADIENT.setGradientType(GradientUtil.GradientType.VERTICAL_STRIPE);
+        final Gradient DEFAULT_GRADIENT = Gradient.createDefault();
 
         final ValueChangedListener listener = field -> fireValueChangedEvent();
 
-        bgColorField = new GradientColorField("Background:", DEFAULT_BG, DEFAULT_GRADIENT, true);
+        bgColorField = new ColorField("Background:", ColorSelectionType.EITHER).setGradient(DEFAULT_GRADIENT)
+                                                                               .setColor(DEFAULT_BG);
         bgColorField.addValueChangedListener(listener);
         formPanel.add(bgColorField);
 
-        borderColorField = new GradientColorField("Border color:", DEFAULT_FG, DEFAULT_GRADIENT, true);
+        borderColorField = new ColorField("Border color:", ColorSelectionType.EITHER).setGradient(DEFAULT_GRADIENT)
+                                                                                     .setColor(DEFAULT_FG);
         borderColorField.addValueChangedListener(listener);
         formPanel.add(borderColorField);
 
-        textColorField = new GradientColorField("Text color:", DEFAULT_FG, DEFAULT_GRADIENT, true);
+        textColorField = new ColorField("Text color:", ColorSelectionType.EITHER).setGradient(DEFAULT_GRADIENT)
+                                                                                 .setColor(DEFAULT_FG);
         textColorField.addValueChangedListener(listener);
         formPanel.add(textColorField);
 

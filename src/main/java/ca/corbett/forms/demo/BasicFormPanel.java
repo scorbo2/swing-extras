@@ -3,6 +3,7 @@ package ca.corbett.forms.demo;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
@@ -55,7 +56,7 @@ public class BasicFormPanel extends PanelBuilder {
         formPanel.add(textField);
         formPanel.add(new CheckBoxField("Checkboxes", true));
         formPanel.add(buildComboField());
-        formPanel.add(new ColorField("Color chooser:", Color.BLUE));
+        formPanel.add(new ColorField("Color chooser:", ColorSelectionType.SOLID).setColor(Color.BLUE));
 
         LabelField labelField = LabelField.createPlainHeaderLabel(
                 "Header fields help to organize the form.");

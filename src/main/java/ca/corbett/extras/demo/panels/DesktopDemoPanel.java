@@ -1,13 +1,14 @@
 package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.CustomizableDesktopPane;
-import ca.corbett.extras.gradient.GradientColorField;
-import ca.corbett.extras.gradient.GradientConfig;
-import ca.corbett.extras.gradient.GradientUtil;
+import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.gradient.Gradient;
+import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
@@ -28,14 +29,11 @@ import java.util.List;
 
 public class DesktopDemoPanel extends PanelBuilder {
 
-    private GradientConfig gradient;
+    private Gradient gradient;
     private CustomizableDesktopPane desktopPane;
 
     public DesktopDemoPanel() {
-        gradient = new GradientConfig();
-        gradient.setColor1(Color.BLACK);
-        gradient.setColor2(Color.BLUE);
-        gradient.setGradientType(GradientUtil.GradientType.STAR);
+        gradient = new Gradient(GradientType.STAR, Color.BLACK, Color.BLUE);
 
         LogoConfig logoConfig = new LogoConfig("demo");
         logoConfig.setLogoHeight(80);
@@ -64,15 +62,16 @@ public class DesktopDemoPanel extends PanelBuilder {
         labelField.getMargins().setTop(14).setBottom(18);
         formPanel.add(labelField);
 
-        final GradientColorField bgColorField = new GradientColorField("Background:", Color.BLACK, gradient, false);
+        final ColorField bgColorField = new ColorField("Background:", ColorSelectionType.EITHER).setGradient(gradient)
+                                                                                                .setColor(Color.BLACK);
         bgColorField.addValueChangedListener(field -> {
             Object val = bgColorField.getSelectedValue();
             if (val instanceof Color) {
-                gradient.setColor1((Color)val);
-                gradient.setColor2((Color)val);
+                //TODO wtf is this trying to do gradient.setColor1((Color)val);
+                //TODO and this gradient.setColor2((Color)val);
             }
             else {
-                gradient = (GradientConfig)val;
+                gradient = (Gradient)val;
             }
             desktopPane.setGradientConfig(gradient);
         });

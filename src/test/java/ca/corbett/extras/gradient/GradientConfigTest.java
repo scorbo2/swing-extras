@@ -20,10 +20,10 @@ class GradientConfigTest {
         GradientConfig config = new GradientConfig();
         Color initialColor1 = config.getColor1();
         Color initialColor2 = config.getColor2();
-        GradientUtil.GradientType initialType = config.getGradientType();
+        GradientType initialType = config.getGradientType();
         config.setColor1(Color.RED);
         config.setColor2(Color.BLUE);
-        config.setGradientType(GradientUtil.GradientType.STAR);
+        config.setGradientType(GradientType.STAR);
         config.resetToDefaults();
         assertEquals(initialColor1, config.getColor1());
         assertEquals(initialColor2, config.getColor2());
@@ -35,7 +35,7 @@ class GradientConfigTest {
         GradientConfig config1 = new GradientConfig();
         config1.setColor1(Color.RED);
         config1.setColor2(Color.BLUE);
-        config1.setGradientType(GradientUtil.GradientType.STAR);
+        config1.setGradientType(GradientType.STAR);
         Properties props = new Properties();
         config1.saveToProps(props, "test.");
 

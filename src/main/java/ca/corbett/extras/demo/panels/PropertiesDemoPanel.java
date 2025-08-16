@@ -2,6 +2,7 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
+import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
 import ca.corbett.extras.properties.ColorProperty;
@@ -154,9 +155,10 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new LabelProperty("Intro.Labels.scrollSummary",
                                     "Long properties forms will automatically get scrollbars (horizontal and vertical as needed) so you can scroll to view everything - even long lines like this!"));
 
-        props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorProperty.ColorType.SOLID, Color.RED));
-        props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorProperty.ColorType.GRADIENT));
-        props.add(new ColorProperty("Colors.someMultiColor", "Both:", ColorProperty.ColorType.BOTH));
+        props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorSelectionType.SOLID).setSolidColor(
+                Color.RED));
+        props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorSelectionType.GRADIENT));
+        props.add(new ColorProperty("Colors.someMultiColor", "Both:", ColorSelectionType.EITHER));
         FontProperty fontProperty = new FontProperty("Colors.fontColor", "Font with color:",
                                                      new Font(Font.SANS_SERIF, Font.PLAIN, 14), Color.CYAN,
                                                      Color.DARK_GRAY);

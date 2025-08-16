@@ -2,8 +2,8 @@ package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
-import ca.corbett.extras.gradient.GradientConfig;
-import ca.corbett.extras.gradient.GradientUtil;
+import ca.corbett.extras.gradient.Gradient;
+import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.LogoConfig;
@@ -92,10 +92,9 @@ public class FormsRendererPanel extends PanelBuilder {
             ImagePanel panel = new ImagePanel(ImagePanelConfig.createSimpleReadOnlyProperties());
             panel.stretchImage();
 
-            GradientConfig gradient = new GradientConfig();
-            gradient.setGradientType(GradientUtil.GradientType.HORIZONTAL_STRIPE);
-            gradient.setColor1(isSelected ? Color.GREEN : Color.BLACK);
-            gradient.setColor2(isSelected ? Color.BLUE : Color.GREEN);
+            Gradient gradient = new Gradient(GradientType.HORIZONTAL_STRIPE,
+                                             isSelected ? Color.GREEN : Color.BLACK,
+                                             isSelected ? Color.BLUE : Color.GREEN);
 
             LogoConfig config = new LogoConfig(value);
             config.setLogoWidth(cellWidth);

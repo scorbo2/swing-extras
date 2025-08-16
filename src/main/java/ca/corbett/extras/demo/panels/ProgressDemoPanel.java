@@ -3,9 +3,9 @@ package ca.corbett.extras.demo.panels;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
-import ca.corbett.extras.gradient.GradientColorField;
-import ca.corbett.extras.gradient.GradientConfig;
-import ca.corbett.extras.gradient.GradientUtil;
+import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.gradient.Gradient;
+import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.progress.MultiProgressAdapter;
 import ca.corbett.extras.progress.MultiProgressDialog;
@@ -47,7 +47,7 @@ public class ProgressDemoPanel extends PanelBuilder {
 
     private ShortTextField splashAppNameField;
     private ColorField splashFgColorField;
-    private GradientColorField splashBgColorField;
+    private ColorField splashBgColorField;
     private NumberField splashWidthField;
     private NumberField splashHeightField;
     private NumberField splashBorderWidthField;
@@ -144,14 +144,12 @@ public class ProgressDemoPanel extends PanelBuilder {
         splashAppNameField.setText(Version.NAME);
         formPanel.add(splashAppNameField);
 
-        GradientConfig gradient = new GradientConfig();
-        gradient.setColor1(Color.BLACK);
-        gradient.setColor2(Color.BLUE);
-        gradient.setGradientType(GradientUtil.GradientType.HORIZONTAL_STRIPE);
-        splashBgColorField = new GradientColorField("Background:", Color.BLACK, gradient, false);
+        Gradient gradient = new Gradient(GradientType.HORIZONTAL_STRIPE, Color.BLACK, Color.BLUE);
+        splashBgColorField = new ColorField("Background:", ColorSelectionType.EITHER).setColor(Color.BLACK)
+                                                                                     .setGradient(gradient);
         formPanel.add(splashBgColorField);
 
-        splashFgColorField = new ColorField("Foreground:", Color.WHITE);
+        splashFgColorField = new ColorField("Foreground:", ColorSelectionType.SOLID).setColor(Color.WHITE);
         formPanel.add(splashFgColorField);
 
         splashWidthField = new NumberField("Logo width:", 400, 100, 2000, 25);
@@ -227,9 +225,9 @@ public class ProgressDemoPanel extends PanelBuilder {
         String appName = splashAppNameField.getText().isBlank() ? Version.NAME : splashAppNameField.getText();
         LogoConfig config = new LogoConfig(appName);
         Object something = splashBgColorField.getSelectedValue();
-        if (something instanceof GradientConfig) {
+        if (something instanceof Gradient) {
             config.setBgColorType(LogoConfig.ColorType.GRADIENT);
-            config.setBgGradient((GradientConfig)something);
+            config.setBgGradient((Gradient)something);
         }
         else {
             config.setBgColorType(LogoConfig.ColorType.SOLID);

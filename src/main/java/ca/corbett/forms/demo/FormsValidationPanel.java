@@ -2,6 +2,7 @@ package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
@@ -67,7 +68,8 @@ public class FormsValidationPanel extends PanelBuilder {
         });
         formPanel.add(textField);
 
-        final ColorField colorField = new ColorField("Don't choose black!", Color.BLACK);
+        final ColorField colorField = new ColorField("Don't choose black!", ColorSelectionType.SOLID).setColor(
+                Color.BLACK);
         colorField.addFieldValidator(new FieldValidator<ColorField>() {
             @Override
             public ValidationResult validate(ColorField fieldToValidate) {

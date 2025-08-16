@@ -1,11 +1,12 @@
 package ca.corbett.extras.image;
 
 import ca.corbett.extras.config.ConfigPanel;
-import ca.corbett.extras.gradient.GradientColorField;
-import ca.corbett.extras.gradient.GradientConfig;
+import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.FormField;
@@ -26,9 +27,9 @@ import java.util.List;
  */
 public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
 
-    private GradientColorField bgColorField;
-    private GradientColorField borderColorField;
-    private GradientColorField textColorField;
+    private ColorField bgColorField;
+    private ColorField borderColorField;
+    private ColorField textColorField;
     private FontField fontField;
     private NumberField borderWidthField;
     private NumberField imageWidthField;
@@ -129,8 +130,10 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
         setLayout(new BorderLayout());
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
 
-        bgColorField = new GradientColorField("Background:", modelObject.getBgColor(), modelObject.getBgGradient(),
-                                              modelObject.getBgColorType() == LogoConfig.ColorType.SOLID);
+        bgColorField = new ColorField("Background:", ColorSelectionType.EITHER).setColor(modelObject.getBgColor())
+                                                                               .setGradient(
+                                                                                       modelObject.getBgGradient());
+        //TODO showSOlidColorInitially modelObject.getBgColorType() == LogoConfig.ColorType.SOLID);
         bgColorField.addValueChangedListener(field -> {
             Object selectedValue = bgColorField.getSelectedValue();
             if (selectedValue instanceof Color) {
@@ -139,16 +142,16 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
             }
             else {
                 modelObject.setBgColorType(LogoConfig.ColorType.GRADIENT);
-                modelObject.setBgGradient((GradientConfig)selectedValue);
+                modelObject.setBgGradient((Gradient)selectedValue);
             }
             notifyChangeListeners();
 
         });
         formPanel.add(bgColorField);
 
-        borderColorField = new GradientColorField("Border color:", modelObject.getBorderColor(),
-                                                  modelObject.getBorderGradient(),
-                                                  modelObject.getBorderColorType() == LogoConfig.ColorType.SOLID);
+        borderColorField = new ColorField("Border color:", ColorSelectionType.EITHER)
+                .setColor(modelObject.getBorderColor()).setGradient(modelObject.getBorderGradient());
+        //TODO showSolidColorInitially == modelObject.getBorderColorType() == LogoConfig.ColorType.SOLID);
         borderColorField.addValueChangedListener(field -> {
             Object selectedValue = borderColorField.getSelectedValue();
             if (selectedValue instanceof Color) {
@@ -157,15 +160,16 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
             }
             else {
                 modelObject.setBorderColorType(LogoConfig.ColorType.GRADIENT);
-                modelObject.setBorderGradient((GradientConfig)selectedValue);
+                modelObject.setBorderGradient((Gradient)selectedValue);
             }
             notifyChangeListeners();
         });
         formPanel.add(borderColorField);
 
-        textColorField = new GradientColorField("Text color:", modelObject.getTextColor(),
-                                                modelObject.getTextGradient(),
-                                                modelObject.getTextColorType() == LogoConfig.ColorType.SOLID);
+        textColorField = new ColorField("Text color:", ColorSelectionType.EITHER).setColor(modelObject.getTextColor())
+                                                                                 .setGradient(
+                                                                                         modelObject.getTextGradient());
+        //TODO setSolidColorInitially == modelObject.getTextColorType() == LogoConfig.ColorType.SOLID);
         textColorField.addValueChangedListener(field -> {
             Object selectedValue = textColorField.getSelectedValue();
             if (selectedValue instanceof Color) {
@@ -174,7 +178,7 @@ public final class LogoConfigPanel extends ConfigPanel<LogoConfig> {
             }
             else {
                 modelObject.setTextColorType(LogoConfig.ColorType.GRADIENT);
-                modelObject.setTextGradient((GradientConfig)selectedValue);
+                modelObject.setTextGradient((Gradient)selectedValue);
             }
             notifyChangeListeners();
         });

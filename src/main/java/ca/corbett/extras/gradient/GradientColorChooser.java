@@ -4,6 +4,7 @@ import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
@@ -37,32 +38,17 @@ public final class GradientColorChooser extends JPanel {
     public static final int OK = 0;
     public static final int CANCEL = 1;
 
-    public enum SelectionMode {
-        SOLID_COLOR,
-        GRADIENT,
-        BOTH;
-
-        public boolean includesSolidColor() {
-            return this == SOLID_COLOR || this == BOTH;
-        }
-
-        public boolean includesGradient() {
-            return this == GRADIENT || this == BOTH;
-        }
-
-    }
-
     private final JColorChooser colorChooser;
     private final GradientConfigPanel gradientChooser;
-    private final SelectionMode selectionMode;
+    private final ColorSelectionType selectionMode;
     private JTabbedPane tabPane;
     private int dialogResult = OK;
 
     public GradientColorChooser() {
-        this(SelectionMode.SOLID_COLOR);
+        this(ColorSelectionType.SOLID);
     }
 
-    public GradientColorChooser(SelectionMode selectionMode) {
+    public GradientColorChooser(ColorSelectionType selectionMode) {
         colorChooser = new JColorChooser();
         gradientChooser = new GradientConfigPanel("Gradient");
         gradientChooser.setBorder(null);
@@ -75,26 +61,34 @@ public final class GradientColorChooser extends JPanel {
         colorChooser.setColor(c);
     }
 
-    public void setGradient(GradientConfig gradient) {
-        gradientChooser.load(gradient);
+    public void setGradient(Gradient gradient) {
+        gradientChooser.setGradient(gradient);
     }
 
     public void resetToDefaults() {
         colorChooser.setColor(Color.BLACK);
-        gradientChooser.load(new GradientConfig());
+        gradientChooser.setGradient(Gradient.createDefault());
     }
 
     public Color getSelectedColor() {
         return colorChooser.getColor();
     }
 
-    public GradientConfig getSelectedGradient() {
-        return gradientChooser.getSelectedValue();
+    public GradientType getGradientType() {
+        return gradientChooser.getGradientType();
+    }
+
+    public Color getGradientColor1() {
+        return gradientChooser.getGradientColor1();
+    }
+
+    public Color getGradientColor2() {
+        return gradientChooser.getGradientColor2();
     }
 
     public Object getSelectedValue() {
         if (tabPane.getSelectedComponent() == gradientChooser) {
-            return gradientChooser.getSelectedValue();
+            return gradientChooser.getGradient();
         }
         else {
             return colorChooser.getColor();
@@ -104,13 +98,13 @@ public final class GradientColorChooser extends JPanel {
     private void initComponents() {
         tabPane = new JTabbedPane();
 
-        if (selectionMode.includesSolidColor()) {
+        if (selectionMode == ColorSelectionType.SOLID || selectionMode == ColorSelectionType.EITHER) {
             for (AbstractColorChooserPanel panel : colorChooser.getChooserPanels()) {
                 tabPane.addTab(panel.getDisplayName(), panel);
             }
         }
 
-        if (selectionMode.includesGradient()) {
+        if (selectionMode == ColorSelectionType.GRADIENT || selectionMode == ColorSelectionType.EITHER) {
             tabPane.addTab("Gradient", gradientChooser);
         }
 
@@ -130,12 +124,12 @@ public final class GradientColorChooser extends JPanel {
         return showDialog(findParentWindow(owner), title, color, null, false);
     }
 
-    public int showDialog(Component owner, String title, GradientConfig gradient) {
+    public int showDialog(Component owner, String title, Gradient gradient) {
         return showDialog(findParentWindow(owner), title, null, gradient, false);
     }
 
-    public int showDialog(Component owner, String title, Color color, GradientConfig config, boolean displaySolidColorInitially) {
-        return showDialog(findParentWindow(owner), title, color, config, displaySolidColorInitially);
+    public int showDialog(Component owner, String title, Color color, Gradient gradient, boolean displaySolidColorInitially) {
+        return showDialog(findParentWindow(owner), title, color, gradient, displaySolidColorInitially);
     }
 
     public int showDialog(Window owner) {
@@ -150,11 +144,11 @@ public final class GradientColorChooser extends JPanel {
         return showDialog(owner, title, color, null, false);
     }
 
-    public int showDialog(Window owner, String title, GradientConfig gradient) {
+    public int showDialog(Window owner, String title, Gradient gradient) {
         return showDialog(owner, title, null, gradient, false);
     }
 
-    public int showDialog(Window owner, String title, Color color, GradientConfig gradient, boolean displaySolidColorInitially) {
+    public int showDialog(Window owner, String title, Color color, Gradient gradient, boolean displaySolidColorInitially) {
         // Safeguard: if both were null, show solid color:
         if (color == null && gradient == null) {
             color = Color.BLACK;
@@ -251,36 +245,70 @@ public final class GradientColorChooser extends JPanel {
         private static final int PREVIEW_WIDTH = 500;
         private static final int PREVIEW_HEIGHT = 500;
 
-        private GradientConfig gradientConfig;
         private ImagePanel previewPanel;
-        private GradientColorField color1Field;
-        private GradientColorField color2Field;
-        private ComboField<GradientUtil.GradientType> gradientTypeCombo;
+        private ColorField color1Field;
+        private ColorField color2Field;
+        private ComboField<GradientType> gradientTypeCombo;
 
         public GradientConfigPanel(String title) {
-            this(title, new GradientConfig());
+            this(title, null);
         }
 
-        public GradientConfigPanel(String title, GradientConfig config) {
-            this.gradientConfig = config == null ? new GradientConfig() : config;
+        public GradientConfigPanel(String title, Gradient gradient) {
+            if (gradient == null) {
+                gradient = new Gradient(GradientType.VERTICAL_LINEAR, Color.WHITE, Color.BLACK);
+            }
+
+            gradientTypeCombo = new ComboField<>("Type:", List.of(GradientType.values()), 0);
+            gradientTypeCombo.setSelectedItem(gradient.type());
+            gradientTypeCombo.addValueChangedListener(e -> updatePreview());
+
+            color1Field = new ColorField("Color 1:", ColorSelectionType.SOLID);
+            color1Field.setColor(gradient.color1());
+            color1Field.addValueChangedListener(e -> updatePreview());
+
+            color2Field = new ColorField("Color 2:", ColorSelectionType.SOLID);
+            color2Field.setColor(gradient.color2());
+            color2Field.addValueChangedListener(e -> updatePreview());
+
             initComponents();
         }
 
-        public GradientConfig getSelectedValue() {
-            return new GradientConfig(gradientConfig);
+        public Gradient getGradient() {
+            return new Gradient(getGradientType(), getGradientColor1(), getGradientColor2());
         }
 
-        /**
-         * Loads settings from the given GradientConfig.
-         */
-        public void load(GradientConfig obj) {
-            gradientConfig = new GradientConfig(obj);
-            if (color1Field != null) {
-                color1Field.setColor(obj.getColor1());
-                color2Field.setColor(obj.getColor2());
-                gradientTypeCombo.setSelectedItem(obj.getGradientType());
-                updatePreview();
-            }
+        public GradientType getGradientType() {
+            return gradientTypeCombo.getSelectedItem();
+        }
+
+        public Color getGradientColor1() {
+            return color1Field.getColor();
+        }
+
+        public Color getGradientColor2() {
+            return color2Field.getColor();
+        }
+
+        public void setGradient(Gradient gradient) {
+            setGradientType(gradient.type());
+            setGradientColor1(gradient.color1());
+            setGradientColor2(gradient.color2());
+        }
+
+        public void setGradientType(GradientType t) {
+            gradientTypeCombo.setSelectedItem(t);
+            updatePreview();
+        }
+
+        public void setGradientColor1(Color c1) {
+            color1Field.setColor(c1);
+            updatePreview();
+        }
+
+        public void setGradientColor2(Color c2) {
+            color2Field.setColor(c2);
+            updatePreview();
         }
 
         private void initComponents() {
@@ -292,25 +320,8 @@ public final class GradientColorChooser extends JPanel {
             labelField.setFont(FormField.getDefaultFont().deriveFont(Font.BOLD, 14f));
             formPanel.add(labelField);
 
-            gradientTypeCombo = new ComboField<>("Type:", List.of(GradientUtil.GradientType.values()), 0, false);
-            gradientTypeCombo.addValueChangedListener(field -> {
-                gradientConfig.setGradientType(gradientTypeCombo.getSelectedItem());
-                updatePreview();
-            });
             formPanel.add(gradientTypeCombo);
-
-            color1Field = new GradientColorField("Color 1:", gradientConfig.getColor1());
-            color1Field.addValueChangedListener(field -> {
-                gradientConfig.setColor1(color1Field.getColor());
-                updatePreview();
-            });
             formPanel.add(color1Field);
-
-            color2Field = new GradientColorField("Color 2:", gradientConfig.getColor2());
-            color2Field.addValueChangedListener(field -> {
-                gradientConfig.setColor2(color2Field.getColor());
-                updatePreview();
-            });
             formPanel.add(color2Field);
 
             PanelField panelField = new PanelField();
@@ -322,12 +333,9 @@ public final class GradientColorChooser extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     Object obj1 = color1Field.getSelectedValue();
                     color1Field.setSelectedValue(color2Field.getSelectedValue());
-                    gradientConfig.setColor1(color2Field.getColor());
                     color2Field.setSelectedValue(obj1);
-                    gradientConfig.setColor2((Color)obj1);
                     updatePreview();
                 }
-
             });
             panelField.getPanel().add(button);
             formPanel.add(panelField);
@@ -337,13 +345,13 @@ public final class GradientColorChooser extends JPanel {
             ImagePanelConfig iPanelConf = ImagePanelConfig.createSimpleReadOnlyProperties();
             iPanelConf.setDisplayMode(ImagePanelConfig.DisplayMode.STRETCH);
             previewPanel = new ImagePanel(
-                    GradientUtil.createGradientImage(gradientConfig, PREVIEW_WIDTH, PREVIEW_HEIGHT),
+                    GradientUtil.createGradientImage(getGradient(), PREVIEW_WIDTH, PREVIEW_HEIGHT),
                     iPanelConf);
             add(previewPanel, BorderLayout.CENTER);
         }
 
         private void updatePreview() {
-            previewPanel.setImage(GradientUtil.createGradientImage(gradientConfig, PREVIEW_WIDTH, PREVIEW_HEIGHT));
+            previewPanel.setImage(GradientUtil.createGradientImage(getGradient(), PREVIEW_WIDTH, PREVIEW_HEIGHT));
         }
 
     }
