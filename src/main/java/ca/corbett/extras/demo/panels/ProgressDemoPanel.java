@@ -6,7 +6,7 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.gradient.GradientType;
-import ca.corbett.extras.image.LogoConfig;
+import ca.corbett.extras.image.LogoProperty;
 import ca.corbett.extras.progress.MultiProgressAdapter;
 import ca.corbett.extras.progress.MultiProgressDialog;
 import ca.corbett.extras.progress.MultiProgressWorker;
@@ -223,19 +223,19 @@ public class ProgressDemoPanel extends PanelBuilder {
 
     private void showSplashProgress() {
         String appName = splashAppNameField.getText().isBlank() ? Version.NAME : splashAppNameField.getText();
-        LogoConfig config = new LogoConfig(appName);
+        LogoProperty config = new LogoProperty(appName);
         Object something = splashBgColorField.getSelectedValue();
         if (something instanceof Gradient) {
-            config.setBgColorType(LogoConfig.ColorType.GRADIENT);
+            config.setBgColorType(LogoProperty.ColorType.GRADIENT);
             config.setBgGradient((Gradient)something);
         }
         else {
-            config.setBgColorType(LogoConfig.ColorType.SOLID);
+            config.setBgColorType(LogoProperty.ColorType.SOLID);
             config.setBgColor((Color)something);
         }
-        config.setTextColorType(LogoConfig.ColorType.SOLID);
+        config.setTextColorType(LogoProperty.ColorType.SOLID);
         config.setTextColor(splashFgColorField.getColor());
-        config.setBorderColorType(LogoConfig.ColorType.SOLID);
+        config.setBorderColorType(LogoProperty.ColorType.SOLID);
         config.setBorderColor(splashFgColorField.getColor());
         config.setBorderWidth((Integer)splashBorderWidthField.getCurrentValue());
         config.setLogoWidth((Integer)splashWidthField.getCurrentValue());

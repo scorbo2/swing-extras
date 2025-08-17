@@ -4,8 +4,8 @@ import ca.corbett.extras.CustomizableDesktopPane;
 import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.gradient.GradientType;
-import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.extras.image.LogoProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ColorField;
@@ -35,9 +35,9 @@ public class DesktopDemoPanel extends PanelBuilder {
     public DesktopDemoPanel() {
         gradient = new Gradient(GradientType.STAR, Color.BLACK, Color.BLUE);
 
-        LogoConfig logoConfig = new LogoConfig("demo");
-        logoConfig.setLogoHeight(80);
-        BufferedImage logoImage = LogoGenerator.generateImage("Logo", logoConfig);
+        LogoProperty logoProperty = new LogoProperty("demo");
+        logoProperty.setLogoHeight(80);
+        BufferedImage logoImage = LogoGenerator.generateImage("Logo", logoProperty);
         desktopPane = new CustomizableDesktopPane(logoImage, CustomizableDesktopPane.LogoPlacement.BOTTOM_RIGHT, 0.5f,
                                                   gradient);
     }

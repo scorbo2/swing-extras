@@ -6,9 +6,9 @@ import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
-import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoFormField;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.extras.image.LogoProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
@@ -26,10 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
-    private LogoConfig logoConfig;
     private ShortTextField textField;
     private ImagePanel imagePanel;
     private ImagePanelConfig imagePanelConfig;
+    private LogoFormField logoFormField;
+    private LogoProperty logo;
 
     @Override
     public String getTitle() {
@@ -88,19 +89,12 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         });
         controlPanel.add(displayModeChooser);
 
-        LogoFormField logoField = new LogoFormField("Image options");
-        logoField.setShouldExpand(false);
-        controlPanel.add(logoField);
-        logoConfig = createDefaultLogoConfig(); // TODO wire it up using LogoFormField
-
-//        PanelField panelField = new PanelField();
-//        JPanel containerPanel = panelField.getPanel();
-//        containerPanel.setLayout(new BorderLayout());
-//        logoConfig = createDefaultLogoConfig();
-//        LogoConfigPanel configPanel = new LogoConfigPanel("Image options", logoConfig);
-//        configPanel.addChangeListener(this);
-//        containerPanel.add(configPanel, BorderLayout.NORTH);
-//        controlPanel.add(panelField);
+        logo = createDefaultLogo();
+        logoFormField = (LogoFormField)logo.generateFormField(controlPanel);
+        logoFormField.setFieldLabelText("Image options");
+        logoFormField.addValueChangedListener(e -> regenerate());
+        logoFormField.setShouldExpand(false);
+        controlPanel.add(logoFormField);
 
         leftPanel.add(controlPanel, BorderLayout.CENTER);
         panel.add(leftPanel, BorderLayout.WEST);
@@ -115,18 +109,18 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         return panel;
     }
 
-    private LogoConfig createDefaultLogoConfig() {
-        LogoConfig logoConfig = new LogoConfig("Image options");
-        logoConfig.setAutoSize(true);
-        logoConfig.setLogoWidth(400);
-        logoConfig.setLogoHeight(400);
+    private LogoProperty createDefaultLogo() {
+        LogoProperty logoProperty = new LogoProperty("logoPropertyDemoApp", "Image options");
+        logoProperty.setAutoSize(true);
+        logoProperty.setLogoWidth(400);
+        logoProperty.setLogoHeight(400);
         Gradient gradient = new Gradient(GradientType.DIAGONAL2, Color.BLUE, Color.BLACK);
-        logoConfig.setBgGradient(gradient);
-        logoConfig.setBgColorType(LogoConfig.ColorType.GRADIENT);
+        logoProperty.setBgGradient(gradient);
+        logoProperty.setBgColorType(LogoProperty.ColorType.GRADIENT);
         Gradient gradient2 = new Gradient(GradientType.DIAGONAL2, Color.WHITE, Color.BLUE);
-        logoConfig.setTextGradient(gradient2);
-        logoConfig.setTextColorType(LogoConfig.ColorType.GRADIENT);
-        return logoConfig;
+        logoProperty.setTextGradient(gradient2);
+        logoProperty.setTextColorType(LogoProperty.ColorType.GRADIENT);
+        return logoProperty;
     }
 
     @Override
@@ -135,9 +129,9 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
     }
 
     private void regenerate() {
+        String text = textField.getText().isBlank() ? Version.NAME : textField.getText();
+        logo.loadFromFormField(logoFormField);
         imagePanel.applyProperties(imagePanelConfig);
-        imagePanel.setImage(
-                LogoGenerator.generateImage(textField.getText().isBlank() ? Version.NAME : textField.getText(),
-                                            logoConfig));
+        imagePanel.setImage(LogoGenerator.generateImage(text, logo));
     }
 }

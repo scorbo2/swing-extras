@@ -1,12 +1,14 @@
 package ca.corbett.extras.image;
 
-import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.gradient.GradientType;
+import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.forms.fields.FormField;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -14,9 +16,9 @@ import java.util.logging.Logger;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public final class LogoConfig implements ConfigObject {
+public final class LogoProperty extends AbstractProperty {
 
-    private static final Logger logger = Logger.getLogger(LogoConfig.class.getName());
+    private static final Logger logger = Logger.getLogger(LogoProperty.class.getName());
 
     public enum ColorType {
         SOLID("Solid colour"),
@@ -63,15 +65,13 @@ public final class LogoConfig implements ConfigObject {
     private int logoWidth;
     private int logoHeight;
     private int yTweak;
-    private String name;
 
-    /**
-     * Creates a new LogoConfig instance with some reasonable default values set.
-     *
-     * @param name The short name of this Preset. Any String to uniquely identify this config.
-     */
-    public LogoConfig(String name) {
-        this.name = name;
+    public LogoProperty(String fullyQualifiedName) {
+        this(fullyQualifiedName, "");
+    }
+
+    public LogoProperty(String fullyQualifiedName, String label) {
+        super(fullyQualifiedName, label);
         resetToDefaults();
     }
 
@@ -416,26 +416,6 @@ public final class LogoConfig implements ConfigObject {
     }
 
     /**
-     * Returns the String name of this config image, if set.
-     *
-     * @return A name that hopefully uniquely identifies this configuration.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets a String name for this configuration. Applications can make use of this property
-     * to provide various named configurations for the user to choose from. The name property
-     * isn't used internally.
-     *
-     * @param name Any string which hopefully uniquely identifies this configuration.
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
      * Resets this configuration object to reasonable default values.
      */
     public void resetToDefaults() {
@@ -457,65 +437,9 @@ public final class LogoConfig implements ConfigObject {
         this.yTweak = 0;
     }
 
-    /**
-     * Loads all settings from the given Properties object. You can use the optional "prefix"
-     * parameter to put a given label at the start of each property name. This allows you
-     * to save multiple LogoConfig objects to the same Properties instance, keeping
-     * them separated by prefix. For example, if a property name is "enableOutline" and you
-     * supply a prefix of "waveform1.", the property value will be saved under the name
-     * "waveform1.enableOutline". If you specify null or an empty string, property names
-     * will be specified as-is, and will overwrite any previous value.
-     *
-     * @param props  The Properties instance from which to load.
-     * @param prefix An optional string prefix to apply to all property names, or null.
-     */
     @Override
-    public void loadFromProps(Properties props, String prefix) {
-        String pfx = (prefix == null) ? "" : prefix;
-        resetToDefaults();
-
-        bgColorType = ColorType.valueOf(props.getString(pfx + "bgColorType", bgColorType.name()));
-        bgColor = props.getColor(pfx + "bgColor", bgColor);
-        bgGradient = loadGradientFromProps(props, pfx + "bgGradient");
-        borderColorType = ColorType.valueOf(props.getString(pfx + "borderColorType", borderColorType.name()));
-        borderColor = props.getColor(pfx + "borderColor", borderColor);
-        borderGradient = loadGradientFromProps(props, pfx + "borderGradient");
-        textColorType = ColorType.valueOf(props.getString(pfx + "textColorType", textColorType.name()));
-        textColor = props.getColor(pfx + "textColor", textColor);
-        textGradient = loadGradientFromProps(props, pfx + "textGradient");
-        borderWidth = props.getInteger(pfx + "borderWidth", borderWidth);
-        hasBorder = props.getBoolean(pfx + "hasBorder", hasBorder);
-        font = props.getFont(pfx + "font", font);
-        logoWidth = props.getInteger(pfx + "width", logoWidth);
-        logoHeight = props.getInteger(pfx + "height", logoHeight);
-        yTweak = props.getInteger(pfx + "yTweak", yTweak);
-        autoSize = props.getBoolean(pfx + "autoSize", autoSize);
-        name = props.getString(pfx + "name", name);
-    }
-
-    private Gradient loadGradientFromProps(Properties props, String pfx) {
-        GradientType gradientType = GradientType.valueOf(
-                props.getString(pfx + ".gradientType", bgGradient.type().name()));
-        Color gradientColor1 = props.getColor(pfx + ".color1", bgGradient.color1());
-        Color gradientColor2 = props.getColor(pfx + ".color2", bgGradient.color2());
-        return new Gradient(gradientType, gradientColor1, gradientColor2);
-    }
-
-    /**
-     * Saves all settings to the given Properties object. You can use the optional "prefix"
-     * parameter to put a given label at the start of each property name. This allows you
-     * to save multiple LogoConfig objects to the same Properties instance, keeping
-     * them separated by prefix. For example, if a property name is "enableOutline" and you
-     * supply a prefix of "waveform1.", the property value will be saved under the name
-     * "waveform1.enableOutline". If you specify null or an empty string, property names
-     * will be specified as-is, and will overwrite any previous value.
-     *
-     * @param props  The Properties instance to which to save.
-     * @param prefix An optional string prefix to apply to all property names, or null.
-     */
-    @Override
-    public void saveToProps(Properties props, String prefix) {
-        String pfx = (prefix == null) ? "" : prefix;
+    public void saveToProps(Properties props) {
+        String pfx = fullyQualifiedName + ".";
 
         props.setString(pfx + "bgColorType", bgColorType.name());
         saveGradientToProps(props, pfx + "bgGradient", bgGradient);
@@ -533,12 +457,104 @@ public final class LogoConfig implements ConfigObject {
         props.setInteger(pfx + "height", logoHeight);
         props.setInteger(pfx + "yTweak", yTweak);
         props.setBoolean(pfx + "autoSize", autoSize);
-        props.setString(pfx + "name", name);
     }
 
     private void saveGradientToProps(Properties props, String name, Gradient gradient) {
         props.setString(name + ".gradientType", gradient.type().name());
         props.setColor(name + ".color1", gradient.color1());
         props.setColor(name + ".color2", gradient.color2());
+    }
+
+    @Override
+    public void loadFromProps(Properties props) {
+        String pfx = fullyQualifiedName + ".";
+        resetToDefaults(); // to provide sensible defaults for any value not specified in props
+
+        bgColorType = ColorType.valueOf(props.getString(pfx + "bgColorType", bgColorType.name()));
+        bgColor = props.getColor(pfx + "bgColor", bgColor);
+        bgGradient = loadGradientFromProps(props, pfx + "bgGradient");
+        borderColorType = ColorType.valueOf(props.getString(pfx + "borderColorType", borderColorType.name()));
+        borderColor = props.getColor(pfx + "borderColor", borderColor);
+        borderGradient = loadGradientFromProps(props, pfx + "borderGradient");
+        textColorType = ColorType.valueOf(props.getString(pfx + "textColorType", textColorType.name()));
+        textColor = props.getColor(pfx + "textColor", textColor);
+        textGradient = loadGradientFromProps(props, pfx + "textGradient");
+        borderWidth = props.getInteger(pfx + "borderWidth", borderWidth);
+        hasBorder = props.getBoolean(pfx + "hasBorder", hasBorder);
+        font = props.getFont(pfx + "font", font);
+        logoWidth = props.getInteger(pfx + "width", logoWidth);
+        logoHeight = props.getInteger(pfx + "height", logoHeight);
+        yTweak = props.getInteger(pfx + "yTweak", yTweak);
+        autoSize = props.getBoolean(pfx + "autoSize", autoSize);
+    }
+
+    private Gradient loadGradientFromProps(Properties props, String pfx) {
+        GradientType gradientType = GradientType.valueOf(
+                props.getString(pfx + ".gradientType", bgGradient.type().name()));
+        Color gradientColor1 = props.getColor(pfx + ".color1", bgGradient.color1());
+        Color gradientColor2 = props.getColor(pfx + ".color2", bgGradient.color2());
+        return new Gradient(gradientType, gradientColor1, gradientColor2);
+    }
+
+    @Override
+    protected FormField generateFormFieldImpl() {
+        LogoFormField formField = new LogoFormField("Logo image");
+        formField.setIdentifier(fullyQualifiedName);
+        formField.setBackgroundColor(bgColorType == ColorType.SOLID ? bgColor : bgGradient);
+        formField.setBorderColor(borderColorType == ColorType.SOLID ? borderColor : borderGradient);
+        formField.setTextColor(textColorType == ColorType.SOLID ? textColor : textGradient);
+        formField.setBorderWidth(hasBorder ? borderWidth : 0);
+        formField.setFontAutoScale(autoSize);
+        formField.setImageWidth(logoWidth);
+        formField.setImageHeight(logoHeight);
+        formField.setYTweak(yTweak);
+        formField.setSelectedFont(font);
+
+        return formField;
+    }
+
+    @Override
+    public void loadFromFormField(FormField field) {
+        if (field.getIdentifier() == null
+                || !field.getIdentifier().equals(fullyQualifiedName)
+                || !(field instanceof LogoFormField)) {
+            logger.log(Level.SEVERE, "LogoProperty.loadFromFormField: received the wrong field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+        LogoFormField logoField = (LogoFormField)field;
+
+        bgColorType = logoField.getBackgroundColor() instanceof Color ? ColorType.SOLID : ColorType.GRADIENT;
+        if (bgColorType == ColorType.SOLID) {
+            bgColor = (Color)logoField.getBackgroundColor();
+        }
+        else {
+            bgGradient = (Gradient)logoField.getBackgroundColor();
+        }
+
+        borderColorType = logoField.getBorderColor() instanceof Color ? ColorType.SOLID : ColorType.GRADIENT;
+        if (borderColorType == ColorType.SOLID) {
+            borderColor = (Color)logoField.getBorderColor();
+        }
+        else {
+            borderGradient = (Gradient)logoField.getBorderColor();
+        }
+
+        textColorType = logoField.getTextColor() instanceof Color ? ColorType.SOLID : ColorType.GRADIENT;
+        if (textColorType == ColorType.SOLID) {
+            textColor = (Color)logoField.getTextColor();
+        }
+        else {
+            textGradient = (Gradient)logoField.getTextColor();
+        }
+
+        borderWidth = logoField.getBorderWidth();
+        hasBorder = borderWidth > 0;
+
+        autoSize = logoField.isFontAutoScale();
+        font = logoField.getSelectedFont();
+        logoWidth = logoField.getImageWidth();
+        logoHeight = logoField.getImageHeight();
+        yTweak = logoField.getYTweak();
     }
 }

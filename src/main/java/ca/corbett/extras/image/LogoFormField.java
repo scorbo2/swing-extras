@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 
 /**
  * A compound (multi-component) FormField for grouping all of the fields required
@@ -66,13 +67,19 @@ public class LogoFormField extends FormField {
         return shouldExpand;
     }
 
+    /**
+     * This field itself typically will not show a validation label, as we delegate field validation
+     * to our embedded form fields. But, in keeping with the swing-forms general contract, you can
+     * still assign FieldValidators to instances of this field if you wish.
+     */
     @Override
     public boolean hasValidationLabel() {
-        return false;
+        return !fieldValidators.isEmpty();
     }
 
     @Override
     public boolean validate() {
+        super.validate(); // in case we have any FieldValidators assigned here
         return formPanel.isFormValid();
     }
 
@@ -123,18 +130,121 @@ public class LogoFormField extends FormField {
         return bgColorField.getSelectedValue();
     }
 
-    public LogoFormField setBackgroundColor(Color color) {
-        if (bgColorField.getSelectedValue().equals(color)) {
+    public LogoFormField setBackgroundColor(Object object) {
+        if (bgColorField.getSelectedValue().equals(object)) {
             return this; // reject no-op requests
         }
-        if (color == null) {
+        if (object == null) {
             return this; // reject null
         }
-        bgColorField.setColor(color);
+        bgColorField.setSelectedValue(object);
         return this;
     }
 
-    //TODO all property getters and setters
+    public Object getBorderColor() {
+        return borderColorField.getSelectedValue();
+    }
+
+    public LogoFormField setBorderColor(Object object) {
+        if (borderColorField.getSelectedValue().equals(object)) {
+            return this; // reject no-op requests
+        }
+        if (object == null) {
+            return this; // reject null
+        }
+        borderColorField.setSelectedValue(object);
+        return this;
+    }
+
+    public Font getSelectedFont() {
+        return fontField.getSelectedFont();
+    }
+
+    public LogoFormField setSelectedFont(Font font) {
+        if (getSelectedFont().equals(font)) {
+            return this; // reject no-op requests
+        }
+        if (font == null) {
+            return this; // reject null
+        }
+        fontField.setSelectedFont(font);
+        return this;
+    }
+
+    public Object getTextColor() {
+        return textColorField.getSelectedValue();
+    }
+
+    public LogoFormField setTextColor(Object object) {
+        if (textColorField.getSelectedValue().equals(object)) {
+            return this; // reject no-op requests
+        }
+        if (object == null) {
+            return this; // reject null
+        }
+        textColorField.setSelectedValue(object);
+        return this;
+    }
+
+    public int getBorderWidth() {
+        return (Integer)borderWidthField.getCurrentValue();
+    }
+
+    public LogoFormField setBorderWidth(int value) {
+        if (getBorderWidth() == value) {
+            return this; // reject no-op requests
+        }
+        borderWidthField.setCurrentValue(value);
+        return this;
+    }
+
+    public int getImageWidth() {
+        return (Integer)imageWidthField.getCurrentValue();
+    }
+
+    public LogoFormField setImageWidth(int value) {
+        if (getImageWidth() == value) {
+            return this; // reject no-op requests
+        }
+        imageWidthField.setCurrentValue(value);
+        return this;
+    }
+
+    public int getImageHeight() {
+        return (Integer)imageHeightField.getCurrentValue();
+    }
+
+    public LogoFormField setImageHeight(int value) {
+        if (getImageHeight() == value) {
+            return this; // reject no-op requests
+        }
+        imageHeightField.setCurrentValue(value);
+        return this;
+    }
+
+    public int getYTweak() {
+        return (Integer)yTweakField.getCurrentValue();
+    }
+
+    public LogoFormField setYTweak(int value) {
+        if (getYTweak() == value) {
+            return this; // reject no-op requests
+        }
+        yTweakField.setCurrentValue(value);
+        return this;
+    }
+
+    public boolean isFontAutoScale() {
+        return fontSizeOverrideField.isChecked();
+    }
+
+    public LogoFormField setFontAutoScale(boolean autoScale) {
+        if (isFontAutoScale() == autoScale) {
+            return this; // reject no-op requests
+        }
+        fontSizeOverrideField.setChecked(autoScale);
+        return this;
+    }
 
     private FormPanel createFormPanel() {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);

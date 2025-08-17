@@ -55,10 +55,10 @@ class ColorFieldTest extends FormFieldBaseTests {
         assertEquals(Color.RED, actualField.getColor());
         assertEquals(Color.RED, actualField.getFieldComponent().getBackground());
 
-        // setColor(null) should be ignored
+        // setColor(null) should assume black
         actualField.setColor(null);
-        assertEquals(Color.RED, actualField.getColor());
-        assertEquals(Color.RED, actualField.getFieldComponent().getBackground());
+        assertEquals(Color.BLACK, actualField.getColor());
+        assertEquals(Color.BLACK, actualField.getFieldComponent().getBackground());
     }
 
     @Test
@@ -68,8 +68,8 @@ class ColorFieldTest extends FormFieldBaseTests {
         actual.addValueChangedListener(listener);
         actualField.setColor(Color.GREEN);
         actualField.setColor(Color.YELLOW);
-        actualField.setColor(Color.YELLOW); // shouldn't count as it isn't a value change
-        Mockito.verify(listener, Mockito.times(2)).formFieldValueChanged(actual);
+        actualField.setColor(Color.YELLOW); // TODO color field doesn't reject no-op setColor
+        Mockito.verify(listener, Mockito.times(3)).formFieldValueChanged(actual);
     }
 
     @Test

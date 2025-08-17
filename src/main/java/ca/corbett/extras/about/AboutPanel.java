@@ -5,8 +5,8 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
-import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.extras.image.LogoProperty;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
@@ -318,7 +318,7 @@ public final class AboutPanel extends JPanel {
     }
 
     private BufferedImage generateLogoImage(int width, int height, String name) {
-        LogoConfig config = new LogoConfig(getClass().getName());
+        LogoProperty config = new LogoProperty(getClass().getName());
         config.setLogoWidth(width);
         config.setLogoHeight(height);
         config.setBgColor(Color.WHITE);

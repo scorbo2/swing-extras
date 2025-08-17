@@ -13,10 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class LogoConfigTest {
+public class LogoPropertyTest {
 
-    private LogoConfig generateTestObject() {
-        LogoConfig conf = new LogoConfig("test");
+    private LogoProperty generateTestObject() {
+        LogoProperty conf = new LogoProperty("test");
         conf.setAutoSize(false);
         conf.setBgColor(Color.YELLOW);
         conf.setBorderColor(Color.WHITE);
@@ -30,7 +30,7 @@ public class LogoConfigTest {
         return conf;
     }
 
-    private void assertConfObjectsEqual(LogoConfig conf1, LogoConfig conf2) {
+    private void assertConfObjectsEqual(LogoProperty conf1, LogoProperty conf2) {
         assertEquals(conf1.isAutoSize(), conf2.isAutoSize());
         assertEquals(conf1.getBgColor(), conf2.getBgColor());
         assertEquals(conf1.getBorderColor(), conf2.getBorderColor());
@@ -47,19 +47,19 @@ public class LogoConfigTest {
 
     @Test
     public void testPropsLoadSave() {
-        LogoConfig conf1 = generateTestObject();
+        LogoProperty conf1 = generateTestObject();
         Properties props = new Properties();
-        conf1.saveToProps(props, "test.");
-        LogoConfig conf2 = new LogoConfig("blah");
-        conf2.loadFromProps(props, "test.");
+        conf1.saveToProps(props);
+        LogoProperty conf2 = new LogoProperty("test");
+        conf2.loadFromProps(props);
         assertConfObjectsEqual(conf1, conf2);
     }
 
     @Test
     public void testResetToDefaults() {
-        LogoConfig conf1 = generateTestObject();
+        LogoProperty conf1 = generateTestObject();
         conf1.resetToDefaults();
-        LogoConfig conf2 = new LogoConfig("blah");
+        LogoProperty conf2 = new LogoProperty("test");
         assertConfObjectsEqual(conf1, conf2);
     }
 

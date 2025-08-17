@@ -6,8 +6,8 @@ import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
-import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.extras.image.LogoProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
@@ -96,10 +96,10 @@ public class FormsRendererPanel extends PanelBuilder {
                                              isSelected ? Color.GREEN : Color.BLACK,
                                              isSelected ? Color.BLUE : Color.GREEN);
 
-            LogoConfig config = new LogoConfig(value);
+            LogoProperty config = new LogoProperty(value);
             config.setLogoWidth(cellWidth);
             config.setLogoHeight(cellHeight);
-            config.setBgColorType(LogoConfig.ColorType.GRADIENT);
+            config.setBgColorType(LogoProperty.ColorType.GRADIENT);
             config.setBgGradient(gradient);
             config.setAutoSize(true);
             config.setFont(new Font(Font.MONOSPACED, Font.BOLD, 11));

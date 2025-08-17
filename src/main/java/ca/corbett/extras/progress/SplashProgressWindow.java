@@ -2,8 +2,8 @@ package ca.corbett.extras.progress;
 
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
-import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.extras.image.LogoProperty;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultBoundedRangeModel;
@@ -45,7 +45,7 @@ public final class SplashProgressWindow extends JWindow {
      * @param appName The name of the application.
      * @param config  The LogoConfig instance containing cosmetic parameters for the logo image.
      */
-    public SplashProgressWindow(String appName, LogoConfig config) {
+    public SplashProgressWindow(String appName, LogoProperty config) {
         this(null, appName, config);
     }
 
@@ -59,7 +59,7 @@ public final class SplashProgressWindow extends JWindow {
      * @param appName The name of the application (used as logo text)
      * @param config  The LogoConfig instance containing cosmetic parameters for the logo image.
      */
-    public SplashProgressWindow(Frame owner, String appName, LogoConfig config) {
+    public SplashProgressWindow(Frame owner, String appName, LogoProperty config) {
         super(owner);
         this.splashWidth = config.getLogoWidth();
         this.splashHeight = config.getLogoHeight();

@@ -3,7 +3,6 @@ package ca.corbett.forms.fields;
 import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.gradient.GradientColorChooser;
-import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.gradient.GradientUtil;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
@@ -34,21 +33,31 @@ public class ColorField extends FormField {
      * values should be accepted, or both.
      */
     public ColorField(String label, ColorSelectionType colorSelectionType) {
+        this(label, colorSelectionType, true);
+    }
+
+    public ColorField(String label, ColorSelectionType colorSelectionType, boolean showSolidColorInitially) {
         // Wonky case, if you pass null for colorType, we'll assume you're okay with either:
         if (colorSelectionType == null) {
             colorSelectionType = ColorSelectionType.EITHER;
         }
         this.colorSelectionType = colorSelectionType;
         this.solidColor = Color.BLACK;
-        this.gradient = new Gradient(GradientType.VERTICAL_STRIPE, Color.WHITE, Color.BLACK);
+        this.gradient = Gradient.createDefault();
 
         fieldLabel.setText(label);
         ImagePanelConfig ipc = ImagePanelConfig.createSimpleReadOnlyProperties();
         colorPanel = new ImagePanel((BufferedImage)null, ipc);
         fieldComponent = colorPanel;
         colorPanel.setPreferredSize(new Dimension(30, 20));
-        colorPanel.setBackground(solidColor);
         colorPanel.addMouseListener(new Listener());
+
+        if (showSolidColorInitially) {
+            setColor(solidColor);
+        }
+        else {
+            setGradient(gradient);
+        }
     }
 
     /**
@@ -66,11 +75,8 @@ public class ColorField extends FormField {
      * @param color The new color.
      */
     public ColorField setColor(Color color) {
-        if (solidColor.equals(color)) {
-            return this; // reject no-op requests
-        }
         if (color == null) {
-            return this; // reject null;
+            color = Color.BLACK;
         }
         solidColor = color;
         colorPanel.setImage(null);
@@ -102,11 +108,8 @@ public class ColorField extends FormField {
      * @param gradient The new gradient.
      */
     public ColorField setGradient(Gradient gradient) {
-        if (this.gradient.equals(gradient)) {
-            return this; // reject no-op requests
-        }
         if (gradient == null) {
-            return this; // reject null
+            gradient = Gradient.createDefault();
         }
         this.gradient = gradient;
         colorPanel.setImage(GradientUtil.createGradientImage(gradient, 30, 20));

@@ -40,13 +40,13 @@ public final class LogoGenerator {
      * @param preset The LogoConfig instance containing config settings to use.
      * @return A BufferedImage containing the rendered final product.
      */
-    public static BufferedImage generateImage(String text, LogoConfig preset) {
+    public static BufferedImage generateImage(String text, LogoProperty preset) {
         int width = preset.getLogoWidth();
         int height = preset.getLogoHeight();
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
 
-        if (preset.getBgColorType() == LogoConfig.ColorType.SOLID) {
+        if (preset.getBgColorType() == LogoProperty.ColorType.SOLID) {
             graphics.setColor(preset.getBgColor());
             graphics.fillRect(0, 0, width, height);
         }
@@ -55,7 +55,7 @@ public final class LogoGenerator {
         }
 
         if (preset.hasBorder()) {
-            if (preset.getBorderColorType() == LogoConfig.ColorType.SOLID) {
+            if (preset.getBorderColorType() == LogoProperty.ColorType.SOLID) {
                 graphics.setColor(preset.getBorderColor());
                 for (int offset = 0; offset < preset.getBorderWidth(); offset++) {
                     graphics.drawRect(offset, offset, width - (offset * 2) - 1, height - (offset * 2) - 1);
@@ -122,7 +122,7 @@ public final class LogoGenerator {
         // Kludge alert: and sometimes even that doesn't work... hence "yTweak"
         int textX = (width - textWidth) / 2;
         int textY = (height / 2) + (int)(textHeight / 4) + preset.getYTweak();
-        if (preset.getTextColorType() == LogoConfig.ColorType.SOLID) {
+        if (preset.getTextColorType() == LogoProperty.ColorType.SOLID) {
             graphics.setColor(preset.getTextColor());
             graphics.drawString(text, textX, textY);
         }
@@ -149,7 +149,7 @@ public final class LogoGenerator {
      * @param outputFile The file to which the image will be saved. Must be writable.
      * @throws IOException if something goes wrong.
      */
-    public static void generateAndSaveImage(String text, LogoConfig preset, File outputFile) throws IOException {
+    public static void generateAndSaveImage(String text, LogoProperty preset, File outputFile) throws IOException {
         BufferedImage image = LogoGenerator.generateImage(text, preset);
 
         ImageWriter imageWriter = null;
