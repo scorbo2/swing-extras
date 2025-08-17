@@ -1,7 +1,8 @@
 package ca.corbett.extras.logging;
 
-import ca.corbett.extras.config.ConfigObject;
+import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.forms.fields.FormField;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -37,9 +38,9 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-03-17
  */
-public final class LogConsoleStyle implements ConfigObject {
+public final class LogConsoleStyleProperty extends AbstractProperty {
 
-    private static final Logger logger = Logger.getLogger(LogConsoleStyle.class.getName());
+    private static final Logger logger = Logger.getLogger(LogConsoleStyleProperty.class.getName());
 
     private final List<ChangeListener> changeListeners = new ArrayList<>();
     private Level logLevel;
@@ -56,7 +57,8 @@ public final class LogConsoleStyle implements ConfigObject {
     /**
      * Creates a style with all default properties and no matchers.
      */
-    public LogConsoleStyle() {
+    public LogConsoleStyleProperty(String fullyQualifiedName) {
+        super(fullyQualifiedName, "");
         setDefaults();
     }
 
@@ -229,48 +231,6 @@ public final class LogConsoleStyle implements ConfigObject {
         changeListeners.remove(listener);
     }
 
-    @Override
-    public void loadFromProps(Properties props, String prefix) {
-        setDefaults();
-        String pfx = (prefix == null) ? "" : prefix;
-        String levelName = props.getString(pfx + "logLevel", "");
-        try {
-            logLevel = levelName.isEmpty() ? null : Level.parse(levelName);
-        }
-        catch (IllegalArgumentException iae) {
-            logLevel = null;
-            logger.log(Level.SEVERE, "Unknown log level name found in properties: {0}", levelName);
-        }
-        logToken = props.getString(pfx + "logToken", logToken);
-        logTokenIsCaseSensitive = props.getBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
-        fontColor = props.getColor(pfx + "fontColor", fontColor);
-        boolean hasFontBgColor = props.getBoolean(pfx + "fontBgColorIsSet", (fontBgColor != null));
-        fontBgColor = hasFontBgColor ? props.getColor(pfx + "fontBgColor", fontBgColor) : null;
-        fontFamilyName = props.getString(pfx + "fontFamilyName", fontFamilyName);
-        isBold = props.getBoolean(pfx + "isBold", isBold);
-        isItalic = props.getBoolean(pfx + "isItalic", isItalic);
-        isUnderline = props.getBoolean(pfx + "isUnderline", isUnderline);
-        fontPointSize = props.getInteger(pfx + "fontPointSize", fontPointSize);
-    }
-
-    @Override
-    public void saveToProps(Properties props, String prefix) {
-        String pfx = (prefix == null) ? "" : prefix;
-        props.setString(pfx + "logLevel", logLevel != null ? logLevel.getName() : "");
-        props.setString(pfx + "logToken", logToken);
-        props.setBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
-        props.setColor(pfx + "fontColor", fontColor);
-        props.setBoolean(pfx + "fontBgColorIsSet", (fontBgColor != null));
-        if (fontBgColor != null) {
-            props.setColor(pfx + "fontBgColor", fontBgColor);
-        }
-        props.setString(pfx + "fontFamilyName", fontFamilyName);
-        props.setBoolean(pfx + "isBold", isBold);
-        props.setBoolean(pfx + "isItalic", isItalic);
-        props.setBoolean(pfx + "isUnderline", isUnderline);
-        props.setInteger(pfx + "fontPointSize", fontPointSize);
-    }
-
     private void setDefaults() {
         logLevel = null;
         logToken = "";
@@ -291,4 +251,56 @@ public final class LogConsoleStyle implements ConfigObject {
         }
     }
 
+    @Override
+    public void saveToProps(Properties props) {
+        String pfx = fullyQualifiedName + ".";
+        props.setString(pfx + "logLevel", logLevel != null ? logLevel.getName() : "");
+        props.setString(pfx + "logToken", logToken);
+        props.setBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
+        props.setColor(pfx + "fontColor", fontColor);
+        props.setBoolean(pfx + "fontBgColorIsSet", (fontBgColor != null));
+        if (fontBgColor != null) {
+            props.setColor(pfx + "fontBgColor", fontBgColor);
+        }
+        props.setString(pfx + "fontFamilyName", fontFamilyName);
+        props.setBoolean(pfx + "isBold", isBold);
+        props.setBoolean(pfx + "isItalic", isItalic);
+        props.setBoolean(pfx + "isUnderline", isUnderline);
+        props.setInteger(pfx + "fontPointSize", fontPointSize);
+    }
+
+    @Override
+    public void loadFromProps(Properties props) {
+        setDefaults();
+        String pfx = fullyQualifiedName + ".";
+        String levelName = props.getString(pfx + "logLevel", "");
+        try {
+            logLevel = levelName.isEmpty() ? null : Level.parse(levelName);
+        }
+        catch (IllegalArgumentException iae) {
+            logLevel = null;
+            logger.log(Level.SEVERE, "Unknown log level name found in properties: {0}", levelName);
+        }
+        logToken = props.getString(pfx + "logToken", logToken);
+        logTokenIsCaseSensitive = props.getBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
+        fontColor = props.getColor(pfx + "fontColor", fontColor);
+        boolean hasFontBgColor = props.getBoolean(pfx + "fontBgColorIsSet", (fontBgColor != null));
+        fontBgColor = hasFontBgColor ? props.getColor(pfx + "fontBgColor", fontBgColor) : null;
+        fontFamilyName = props.getString(pfx + "fontFamilyName", fontFamilyName);
+        isBold = props.getBoolean(pfx + "isBold", isBold);
+        isItalic = props.getBoolean(pfx + "isItalic", isItalic);
+        isUnderline = props.getBoolean(pfx + "isUnderline", isUnderline);
+        fontPointSize = props.getInteger(pfx + "fontPointSize", fontPointSize);
+
+    }
+
+    @Override
+    protected FormField generateFormFieldImpl() {
+        throw new UnsupportedOperationException("LogConsoleStyleProperty does not support FormField generation.");
+    }
+
+    @Override
+    public void loadFromFormField(FormField field) {
+        throw new UnsupportedOperationException("LogConsoleStyleProperty does not support FormField generation.");
+    }
 }

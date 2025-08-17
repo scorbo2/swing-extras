@@ -2,7 +2,7 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.logging.LogConsole;
-import ca.corbett.extras.logging.LogConsoleStyle;
+import ca.corbett.extras.logging.LogConsoleStyleProperty;
 import ca.corbett.extras.logging.LogConsoleTheme;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
@@ -133,7 +133,7 @@ public class LogConsolePanel extends PanelBuilder {
     private void initializeLogConsole() {
         LogConsoleTheme theme = LogConsoleTheme.createMatrixStyledTheme();
 
-        LogConsoleStyle style = new LogConsoleStyle();
+        LogConsoleStyleProperty style = new LogConsoleStyleProperty("swing-extras-custom-style");
         style.setLogToken(tokenField.getText(), true);
         style.setFontFamilyName(tokenFontField.getSelectedFont().getFamily());
         style.setFontPointSize(tokenFontField.getSelectedFont().getSize());

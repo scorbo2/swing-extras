@@ -62,7 +62,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
 
     private static final Logger logger = Logger.getLogger(LogConsoleTheme.class.getName());
     private final List<ChangeListener> changeListeners = new ArrayList<>();
-    private final Map<String, LogConsoleStyle> logStyles = new HashMap<>();
+    private final Map<String, LogConsoleStyleProperty> logStyles = new HashMap<>();
     private Color defaultBgColor;
 
     /**
@@ -83,7 +83,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
     public void clear() {
         logStyles.clear();
         defaultBgColor = Color.WHITE;
-        LogConsoleStyle defaultStyle = new LogConsoleStyle();
+        LogConsoleStyleProperty defaultStyle = new LogConsoleStyleProperty("default");
         defaultStyle.addChangeListener(this);
         logStyles.put(DEFAULT_STYLE_NAME, defaultStyle);
     }
@@ -110,14 +110,14 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
     public static LogConsoleTheme createDefaultStyledTheme() {
         LogConsoleTheme theme = new LogConsoleTheme();
 
-        LogConsoleStyle warningStyle = new LogConsoleStyle();
+        LogConsoleStyleProperty warningStyle = new LogConsoleStyleProperty("default-warning");
         warningStyle.addChangeListener(theme);
         warningStyle.setLogLevel(Level.WARNING);
         warningStyle.setIsBold(true);
         warningStyle.setFontColor(Color.ORANGE);
         theme.setStyle("Warnings", warningStyle);
 
-        LogConsoleStyle errorStyle = new LogConsoleStyle();
+        LogConsoleStyleProperty errorStyle = new LogConsoleStyleProperty("default-error");
         errorStyle.addChangeListener(theme);
         errorStyle.setLogLevel(Level.SEVERE);
         errorStyle.setIsBold(true);
@@ -138,14 +138,14 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
         theme.defaultBgColor = Color.BLACK;
         theme.getStyle(DEFAULT_STYLE_NAME).setFontColor(Color.GREEN);
 
-        LogConsoleStyle style = new LogConsoleStyle();
+        LogConsoleStyleProperty style = new LogConsoleStyleProperty("matrix-warning");
         style.addChangeListener(theme);
         style.setLogLevel(Level.WARNING);
         style.setIsBold(true);
         style.setFontColor(Color.YELLOW);
         theme.setStyle("Warnings", style);
 
-        style = new LogConsoleStyle();
+        style = new LogConsoleStyleProperty("matrix-error");
         style.addChangeListener(theme);
         style.setLogLevel(Level.SEVERE);
         style.setIsBold(true);
@@ -217,7 +217,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @param size The new font point size to apply to all styles in this theme.
      */
     public void setFontPointSize(int size) {
-        for (LogConsoleStyle style : logStyles.values()) {
+        for (LogConsoleStyleProperty style : logStyles.values()) {
             style.setFontPointSize(size);
         }
         fireChangeEvent();
@@ -230,7 +230,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @param name  The name of the style to set. Will replace if already exists.
      * @param style The style object to set. If null, will invoke removeStyle(name).
      */
-    public void setStyle(String name, LogConsoleStyle style) {
+    public void setStyle(String name, LogConsoleStyleProperty style) {
         if (style == null) {
             removeStyle(name);
         }
@@ -247,7 +247,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @param name The name of the style in question.
      * @return A LogConsolStyle object, or null if name not found.
      */
-    public LogConsoleStyle getStyle(String name) {
+    public LogConsoleStyleProperty getStyle(String name) {
         return logStyles.get(name);
     }
 
@@ -279,7 +279,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @param style A LogConsoleStyle instance.
      * @return The name of the given LogConsoleStyle if it is present, else null.
      */
-    public String getStyleName(LogConsoleStyle style) {
+    public String getStyleName(LogConsoleStyleProperty style) {
         if (style == null) {
             return null;
         }
@@ -309,7 +309,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
         if (name.equals(DEFAULT_STYLE_NAME)) {
             throw new IllegalArgumentException("Attempted to remove default style.");
         }
-        LogConsoleStyle style = logStyles.get(name);
+        LogConsoleStyleProperty style = logStyles.get(name);
         if (style != null) {
             style.removeChangeListener(this);
             logStyles.remove(name);
@@ -326,12 +326,12 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @param logLevel The Level at which this message was logged.
      * @return A LogConsoleStyle from this theme that matches the given parameters.
      */
-    public LogConsoleStyle getMatchingStyle(String logMsg, Level logLevel) {
-        LogConsoleStyle matchingStyle = null;
+    public LogConsoleStyleProperty getMatchingStyle(String logMsg, Level logLevel) {
+        LogConsoleStyleProperty matchingStyle = null;
 
         List<String> styleNames = getStyleNames();
         for (String styleName : styleNames) {
-            LogConsoleStyle style = logStyles.get(styleName);
+            LogConsoleStyleProperty style = logStyles.get(styleName);
 
             // Skip default style... this will be matched by default if nothing else hits:
             if (style == matchingStyle) {
@@ -389,8 +389,8 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
         defaultBgColor = props.getColor(pfx + "defaultBgColor", defaultBgColor);
         String[] styleNames = props.getString(pfx + "styleNames", DEFAULT_STYLE_NAME).split(",");
         for (String name : styleNames) {
-            LogConsoleStyle style = new LogConsoleStyle();
-            style.loadFromProps(props, pfx + "style." + name + ".");
+            LogConsoleStyleProperty style = new LogConsoleStyleProperty(name);
+            style.loadFromProps(props);
             logStyles.put(name, style);
         }
     }
@@ -403,8 +403,8 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
         String nameList = String.join(",", styleNames);
         props.setString(pfx + "styleNames", nameList);
         for (String name : styleNames) {
-            LogConsoleStyle style = logStyles.get(name);
-            style.saveToProps(props, pfx + "style." + name + ".");
+            LogConsoleStyleProperty style = logStyles.get(name);
+            style.saveToProps(props);
         }
     }
 

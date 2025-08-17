@@ -27,7 +27,7 @@ public class LogConsoleThemeTest {
     public void testClear() {
         LogConsoleTheme theme = new LogConsoleTheme();
         theme.setDefaultBgColor(Color.yellow);
-        theme.setStyle("blah", new LogConsoleStyle());
+        theme.setStyle("blah", new LogConsoleStyleProperty("test"));
         assertEquals(Color.yellow, theme.getDefaultBgColor());
         assertEquals(2, theme.getStyleNames().size());
         theme.clear();
@@ -53,7 +53,7 @@ public class LogConsoleThemeTest {
     @Test
     public void testSetFontPointSize_withVariousSizes_shouldSucceed() {
         LogConsoleTheme instance = LogConsoleTheme.createMatrixStyledTheme();
-        LogConsoleStyle errorStyle = instance.getStyle("Errors");
+        LogConsoleStyleProperty errorStyle = instance.getStyle("Errors");
         assertNotNull(errorStyle);
         assertEquals(12, errorStyle.getFontPointSize());
         instance.setFontPointSize(16);
@@ -83,24 +83,24 @@ public class LogConsoleThemeTest {
 
     @Test
     public void testGetMatchingStyle_withVariousConditions_shouldMatchCorrectly() {
-        LogConsoleStyle defaultStyle = new LogConsoleStyle();
+        LogConsoleStyleProperty defaultStyle = new LogConsoleStyleProperty("test");
 
-        LogConsoleStyle errorStyle = new LogConsoleStyle();
+        LogConsoleStyleProperty errorStyle = new LogConsoleStyleProperty("test-error");
         errorStyle.setLogLevel(Level.SEVERE);
         errorStyle.setFontColor(Color.RED);
 
-        LogConsoleStyle infoStyle = new LogConsoleStyle();
+        LogConsoleStyleProperty infoStyle = new LogConsoleStyleProperty("test-info");
         infoStyle.setLogLevel(Level.INFO);
         infoStyle.setFontColor(Color.GREEN);
 
-        LogConsoleStyle warningStyle = new LogConsoleStyle();
+        LogConsoleStyleProperty warningStyle = new LogConsoleStyleProperty("test-warning");
         warningStyle.setLogLevel(Level.WARNING);
         warningStyle.setFontColor(Color.YELLOW);
 
-        LogConsoleStyle customStyle1 = new LogConsoleStyle();
+        LogConsoleStyleProperty customStyle1 = new LogConsoleStyleProperty("test-foobar");
         customStyle1.setLogToken("foobar", true);
 
-        LogConsoleStyle customStyle2 = new LogConsoleStyle();
+        LogConsoleStyleProperty customStyle2 = new LogConsoleStyleProperty("test-barfoo");
         customStyle2.setLogLevel(Level.INFO);
         customStyle2.setLogToken("barfoo", true);
 
@@ -130,8 +130,8 @@ public class LogConsoleThemeTest {
         assertEquals(customStyle1, theme.getMatchingStyle("foobar barfoo", Level.INFO));
     }
 
-    private LogConsoleStyle createTestStyle() {
-        LogConsoleStyle style = new LogConsoleStyle();
+    private LogConsoleStyleProperty createTestStyle() {
+        LogConsoleStyleProperty style = new LogConsoleStyleProperty("test");
         style.setIsBold(true);
         style.setFontColor(Color.BLUE);
         style.setLogToken("test", true);
@@ -144,7 +144,7 @@ public class LogConsoleThemeTest {
         return style;
     }
 
-    public boolean areStylesEqual(LogConsoleStyle style1, LogConsoleStyle style2) {
+    public boolean areStylesEqual(LogConsoleStyleProperty style1, LogConsoleStyleProperty style2) {
         boolean allEqual = (style1.isBold() == style2.isBold());
         allEqual = allEqual && (style1.getFontColor().equals(style2.getFontColor()));
         allEqual = allEqual && (style1.getLogToken().equals(style2.getLogToken()));
