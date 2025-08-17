@@ -1,5 +1,6 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.ValidationResult;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ class ColorFieldTest extends FormFieldBaseTests {
 
     @Override
     protected FormField createTestObject() {
-        return new ColorField("Test", Color.BLUE);
+        return new ColorField("Test", ColorSelectionType.SOLID).setColor(Color.BLUE);
     }
 
     @Test

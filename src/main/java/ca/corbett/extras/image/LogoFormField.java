@@ -123,6 +123,17 @@ public class LogoFormField extends FormField {
         return bgColorField.getSelectedValue();
     }
 
+    public LogoFormField setBackgroundColor(Color color) {
+        if (bgColorField.getSelectedValue().equals(color)) {
+            return this; // reject no-op requests
+        }
+        if (color == null) {
+            return this; // reject null
+        }
+        bgColorField.setColor(color);
+        return this;
+    }
+
     //TODO all property getters and setters
 
     private FormPanel createFormPanel() {

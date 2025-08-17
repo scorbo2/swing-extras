@@ -30,6 +30,8 @@ public class ColorField extends FormField {
 
     /**
      * Creates a ColorField with the given color selection option.
+     * The ColorSelectionType determines whether solid color values or gradient
+     * values should be accepted, or both.
      */
     public ColorField(String label, ColorSelectionType colorSelectionType) {
         // Wonky case, if you pass null for colorType, we'll assume you're okay with either:
@@ -64,10 +66,25 @@ public class ColorField extends FormField {
      * @param color The new color.
      */
     public ColorField setColor(Color color) {
+        if (solidColor.equals(color)) {
+            return this; // reject no-op requests
+        }
+        if (color == null) {
+            return this; // reject null;
+        }
         solidColor = color;
         colorPanel.setImage(null);
         colorPanel.setBackground(color);
+        fireValueChangedEvent();
         return this;
+    }
+
+    /**
+     * Returns whether this ColorField allows solid color selection,
+     * gradient selection, or both.
+     */
+    public ColorSelectionType getColorSelectionType() {
+        return colorSelectionType;
     }
 
     /**
@@ -85,8 +102,15 @@ public class ColorField extends FormField {
      * @param gradient The new gradient.
      */
     public ColorField setGradient(Gradient gradient) {
+        if (this.gradient.equals(gradient)) {
+            return this; // reject no-op requests
+        }
+        if (gradient == null) {
+            return this; // reject null
+        }
         this.gradient = gradient;
         colorPanel.setImage(GradientUtil.createGradientImage(gradient, 30, 20));
+        fireValueChangedEvent();
         return this;
     }
 
@@ -127,7 +151,6 @@ public class ColorField extends FormField {
             if (!colorPanel.isEnabled()) {
                 return;
             }
-            ImagePanel srcPanel = (ImagePanel)e.getSource();
             GradientColorChooser colorChooser = new GradientColorChooser(colorSelectionType);
             final Color theColor = colorPanel.getImage() == null ? solidColor : null;
             final Gradient theGradient = colorPanel.getImage() == null ? null : gradient;
@@ -135,15 +158,11 @@ public class ColorField extends FormField {
                                         false) == GradientColorChooser.OK) {
                 Object value = colorChooser.getSelectedValue();
                 if (value instanceof Color) {
-                    solidColor = (Color)value;
-                    srcPanel.setImage(null);
-                    srcPanel.setBackground(solidColor);
+                    setColor((Color)value);
                 }
                 else {
-                    gradient = (Gradient)value;
-                    srcPanel.setImage(GradientUtil.createGradientImage(gradient, 30, 20));
+                    setGradient((Gradient)value);
                 }
-                fireValueChangedEvent();
             }
         }
     }
