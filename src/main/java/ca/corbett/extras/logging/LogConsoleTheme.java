@@ -1,7 +1,8 @@
 package ca.corbett.extras.logging;
 
-import ca.corbett.extras.config.ConfigObject;
+import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.forms.fields.FormField;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -56,13 +57,13 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-03-17
  */
-public final class LogConsoleTheme implements ConfigObject, ChangeListener {
+public final class LogConsoleTheme extends AbstractProperty implements ChangeListener {
 
     public static final String DEFAULT_STYLE_NAME = "Default";
 
     private static final Logger logger = Logger.getLogger(LogConsoleTheme.class.getName());
     private final List<ChangeListener> changeListeners = new ArrayList<>();
-    private final Map<String, LogConsoleStyleProperty> logStyles = new HashMap<>();
+    private final Map<String, LogConsoleStyle> logStyles = new HashMap<>();
     private Color defaultBgColor;
 
     /**
@@ -72,7 +73,8 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * to look at the static factory methods in this class to create something
      * with some preset styling options already set.
      */
-    public LogConsoleTheme() {
+    public LogConsoleTheme(String fullyQualifiedName) {
+        super(fullyQualifiedName, "");
         clear();
     }
 
@@ -83,7 +85,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
     public void clear() {
         logStyles.clear();
         defaultBgColor = Color.WHITE;
-        LogConsoleStyleProperty defaultStyle = new LogConsoleStyleProperty("default");
+        LogConsoleStyle defaultStyle = new LogConsoleStyle();
         defaultStyle.addChangeListener(this);
         logStyles.put(DEFAULT_STYLE_NAME, defaultStyle);
     }
@@ -96,7 +98,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @return A new, default, rather boringly unstyled LogConsoleTheme.
      */
     public static LogConsoleTheme createPlainTheme() {
-        return new LogConsoleTheme();
+        return new LogConsoleTheme("Plain");
     }
 
     /**
@@ -108,16 +110,16 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @return A LogConsoleTheme with a default styling (black on white).
      */
     public static LogConsoleTheme createDefaultStyledTheme() {
-        LogConsoleTheme theme = new LogConsoleTheme();
+        LogConsoleTheme theme = new LogConsoleTheme(DEFAULT_STYLE_NAME);
 
-        LogConsoleStyleProperty warningStyle = new LogConsoleStyleProperty("default-warning");
+        LogConsoleStyle warningStyle = new LogConsoleStyle();
         warningStyle.addChangeListener(theme);
         warningStyle.setLogLevel(Level.WARNING);
         warningStyle.setIsBold(true);
         warningStyle.setFontColor(Color.ORANGE);
         theme.setStyle("Warnings", warningStyle);
 
-        LogConsoleStyleProperty errorStyle = new LogConsoleStyleProperty("default-error");
+        LogConsoleStyle errorStyle = new LogConsoleStyle();
         errorStyle.addChangeListener(theme);
         errorStyle.setLogLevel(Level.SEVERE);
         errorStyle.setIsBold(true);
@@ -134,18 +136,18 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @return A LogConsoleTheme with a "matrix" styling (green on black).
      */
     public static LogConsoleTheme createMatrixStyledTheme() {
-        LogConsoleTheme theme = new LogConsoleTheme();
+        LogConsoleTheme theme = new LogConsoleTheme("Matrix");
         theme.defaultBgColor = Color.BLACK;
         theme.getStyle(DEFAULT_STYLE_NAME).setFontColor(Color.GREEN);
 
-        LogConsoleStyleProperty style = new LogConsoleStyleProperty("matrix-warning");
+        LogConsoleStyle style = new LogConsoleStyle();
         style.addChangeListener(theme);
         style.setLogLevel(Level.WARNING);
         style.setIsBold(true);
         style.setFontColor(Color.YELLOW);
         theme.setStyle("Warnings", style);
 
-        style = new LogConsoleStyleProperty("matrix-error");
+        style = new LogConsoleStyle();
         style.addChangeListener(theme);
         style.setLogLevel(Level.SEVERE);
         style.setIsBold(true);
@@ -162,8 +164,23 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @return A LogConsoleTheme with a "paper" styling (black on grey).
      */
     public static LogConsoleTheme createPaperStyledTheme() {
-        LogConsoleTheme theme = createDefaultStyledTheme();
+        LogConsoleTheme theme = new LogConsoleTheme("Paper");
         theme.defaultBgColor = Color.LIGHT_GRAY; // literally only difference from default
+
+        LogConsoleStyle warningStyle = new LogConsoleStyle();
+        warningStyle.addChangeListener(theme);
+        warningStyle.setLogLevel(Level.WARNING);
+        warningStyle.setIsBold(true);
+        warningStyle.setFontColor(Color.ORANGE);
+        theme.setStyle("Warnings", warningStyle);
+
+        LogConsoleStyle errorStyle = new LogConsoleStyle();
+        errorStyle.addChangeListener(theme);
+        errorStyle.setLogLevel(Level.SEVERE);
+        errorStyle.setIsBold(true);
+        errorStyle.setFontColor(Color.RED);
+        theme.setStyle("Errors", errorStyle);
+
         return theme;
     }
 
@@ -217,7 +234,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @param size The new font point size to apply to all styles in this theme.
      */
     public void setFontPointSize(int size) {
-        for (LogConsoleStyleProperty style : logStyles.values()) {
+        for (LogConsoleStyle style : logStyles.values()) {
             style.setFontPointSize(size);
         }
         fireChangeEvent();
@@ -227,10 +244,9 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * Sets or replaces the style with the given name. If the given style is null,
      * then this method will defer to removeStyle(name).
      *
-     * @param name  The name of the style to set. Will replace if already exists.
      * @param style The style object to set. If null, will invoke removeStyle(name).
      */
-    public void setStyle(String name, LogConsoleStyleProperty style) {
+    public void setStyle(String name, LogConsoleStyle style) {
         if (style == null) {
             removeStyle(name);
         }
@@ -247,7 +263,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @param name The name of the style in question.
      * @return A LogConsolStyle object, or null if name not found.
      */
-    public LogConsoleStyleProperty getStyle(String name) {
+    public LogConsoleStyle getStyle(String name) {
         return logStyles.get(name);
     }
 
@@ -279,7 +295,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @param style A LogConsoleStyle instance.
      * @return The name of the given LogConsoleStyle if it is present, else null.
      */
-    public String getStyleName(LogConsoleStyleProperty style) {
+    public String getStyleName(LogConsoleStyle style) {
         if (style == null) {
             return null;
         }
@@ -309,7 +325,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
         if (name.equals(DEFAULT_STYLE_NAME)) {
             throw new IllegalArgumentException("Attempted to remove default style.");
         }
-        LogConsoleStyleProperty style = logStyles.get(name);
+        LogConsoleStyle style = logStyles.get(name);
         if (style != null) {
             style.removeChangeListener(this);
             logStyles.remove(name);
@@ -326,12 +342,12 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
      * @param logLevel The Level at which this message was logged.
      * @return A LogConsoleStyle from this theme that matches the given parameters.
      */
-    public LogConsoleStyleProperty getMatchingStyle(String logMsg, Level logLevel) {
-        LogConsoleStyleProperty matchingStyle = null;
+    public LogConsoleStyle getMatchingStyle(String logMsg, Level logLevel) {
+        LogConsoleStyle matchingStyle = null;
 
         List<String> styleNames = getStyleNames();
         for (String styleName : styleNames) {
-            LogConsoleStyleProperty style = logStyles.get(styleName);
+            LogConsoleStyle style = logStyles.get(styleName);
 
             // Skip default style... this will be matched by default if nothing else hits:
             if (style == matchingStyle) {
@@ -345,7 +361,7 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
                 continue;
             }
 
-            // Adjust for case sensitivy if needed:
+            // Adjust for case sensitivity if needed:
             String message = logMsg == null ? "" : logMsg;
             if (!style.isLogTokenCaseSensitive()) {
                 message = message.toLowerCase();
@@ -382,32 +398,6 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
         return matchingStyle == null ? getStyle(DEFAULT_STYLE_NAME) : matchingStyle;
     }
 
-    @Override
-    public void loadFromProps(Properties props, String prefix) {
-        clear();
-        String pfx = prefix == null ? "" : prefix;
-        defaultBgColor = props.getColor(pfx + "defaultBgColor", defaultBgColor);
-        String[] styleNames = props.getString(pfx + "styleNames", DEFAULT_STYLE_NAME).split(",");
-        for (String name : styleNames) {
-            LogConsoleStyleProperty style = new LogConsoleStyleProperty(name);
-            style.loadFromProps(props);
-            logStyles.put(name, style);
-        }
-    }
-
-    @Override
-    public void saveToProps(Properties props, String prefix) {
-        String pfx = prefix == null ? "" : prefix;
-        props.setColor(pfx + "defaultBgColor", defaultBgColor);
-        List<String> styleNames = getStyleNames();
-        String nameList = String.join(",", styleNames);
-        props.setString(pfx + "styleNames", nameList);
-        for (String name : styleNames) {
-            LogConsoleStyleProperty style = logStyles.get(name);
-            style.saveToProps(props);
-        }
-    }
-
     /**
      * Invoked internally when style properties are changed. We notify listeners
      * so they can update as needed.
@@ -430,4 +420,39 @@ public final class LogConsoleTheme implements ConfigObject, ChangeListener {
         fireChangeEvent();
     }
 
+    @Override
+    public void saveToProps(Properties props) {
+        String pfx = fullyQualifiedName + ".";
+        props.setColor(pfx + "defaultBgColor", defaultBgColor);
+        List<String> styleNames = getStyleNames();
+        String nameList = String.join(",", styleNames);
+        props.setString(pfx + "styleNames", nameList);
+        for (String name : styleNames) {
+            LogConsoleStyle style = logStyles.get(name);
+            style.saveToProps(props, pfx + name + ".");
+        }
+    }
+
+    @Override
+    public void loadFromProps(Properties props) {
+        clear();
+        String pfx = fullyQualifiedName + ".";
+        defaultBgColor = props.getColor(pfx + "defaultBgColor", defaultBgColor);
+        String[] styleNames = props.getString(pfx + "styleNames", DEFAULT_STYLE_NAME).split(",");
+        for (String name : styleNames) {
+            LogConsoleStyle style = new LogConsoleStyle();
+            style.loadFromProps(props, pfx + name + ".");
+            logStyles.put(name, style);
+        }
+    }
+
+    @Override
+    protected FormField generateFormFieldImpl() {
+        throw new UnsupportedOperationException("LogConsoleTheme does not support FormField generation.");
+    }
+
+    @Override
+    public void loadFromFormField(FormField field) {
+        throw new UnsupportedOperationException("LogConsoleTheme does not support FormField generation.");
+    }
 }

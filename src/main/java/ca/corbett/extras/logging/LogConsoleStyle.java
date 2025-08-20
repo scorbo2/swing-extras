@@ -1,8 +1,6 @@
 package ca.corbett.extras.logging;
 
-import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.Properties;
-import ca.corbett.forms.fields.FormField;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -38,9 +36,9 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-03-17
  */
-public final class LogConsoleStyleProperty extends AbstractProperty {
+public final class LogConsoleStyle {
 
-    private static final Logger logger = Logger.getLogger(LogConsoleStyleProperty.class.getName());
+    private static final Logger logger = Logger.getLogger(LogConsoleStyle.class.getName());
 
     private final List<ChangeListener> changeListeners = new ArrayList<>();
     private Level logLevel;
@@ -57,8 +55,7 @@ public final class LogConsoleStyleProperty extends AbstractProperty {
     /**
      * Creates a style with all default properties and no matchers.
      */
-    public LogConsoleStyleProperty(String fullyQualifiedName) {
-        super(fullyQualifiedName, "");
+    public LogConsoleStyle() {
         setDefaults();
     }
 
@@ -251,9 +248,8 @@ public final class LogConsoleStyleProperty extends AbstractProperty {
         }
     }
 
-    @Override
-    public void saveToProps(Properties props) {
-        String pfx = fullyQualifiedName + ".";
+    public void saveToProps(Properties props, String prefix) {
+        String pfx = prefix.endsWith(".") ? prefix : prefix + ".";
         props.setString(pfx + "logLevel", logLevel != null ? logLevel.getName() : "");
         props.setString(pfx + "logToken", logToken);
         props.setBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
@@ -269,10 +265,9 @@ public final class LogConsoleStyleProperty extends AbstractProperty {
         props.setInteger(pfx + "fontPointSize", fontPointSize);
     }
 
-    @Override
-    public void loadFromProps(Properties props) {
+    public void loadFromProps(Properties props, String prefix) {
         setDefaults();
-        String pfx = fullyQualifiedName + ".";
+        String pfx = prefix.endsWith(".") ? prefix : prefix + ".";
         String levelName = props.getString(pfx + "logLevel", "");
         try {
             logLevel = levelName.isEmpty() ? null : Level.parse(levelName);
@@ -291,16 +286,5 @@ public final class LogConsoleStyleProperty extends AbstractProperty {
         isItalic = props.getBoolean(pfx + "isItalic", isItalic);
         isUnderline = props.getBoolean(pfx + "isUnderline", isUnderline);
         fontPointSize = props.getInteger(pfx + "fontPointSize", fontPointSize);
-
-    }
-
-    @Override
-    protected FormField generateFormFieldImpl() {
-        throw new UnsupportedOperationException("LogConsoleStyleProperty does not support FormField generation.");
-    }
-
-    @Override
-    public void loadFromFormField(FormField field) {
-        throw new UnsupportedOperationException("LogConsoleStyleProperty does not support FormField generation.");
     }
 }

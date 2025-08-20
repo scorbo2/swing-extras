@@ -254,7 +254,7 @@ public final class LogConsole extends JFrame implements ChangeListener {
         comboBox.addItemListener(itemListener);
 
         for (String styleName : currentTheme.getStyleNames()) {
-            LogConsoleStyleProperty style = currentTheme.getStyle(styleName);
+            LogConsoleStyle style = currentTheme.getStyle(styleName);
             setNamedStyle(styleName, style);
         }
 
@@ -316,7 +316,7 @@ public final class LogConsole extends JFrame implements ChangeListener {
             logHistory.add(msg);
             logLevelHistory.add(level);
 
-            LogConsoleStyleProperty consoleStyle = currentTheme.getMatchingStyle(msg, level);
+            LogConsoleStyle consoleStyle = currentTheme.getMatchingStyle(msg, level);
             String styleName = currentTheme.getStyleName(consoleStyle);
             Style textPaneStyle = textPane.getStyle(styleName);
             if (textPaneStyle == null) {
@@ -362,7 +362,7 @@ public final class LogConsole extends JFrame implements ChangeListener {
      * @param styleName    The name of the style to create or update.
      * @param consoleStyle The LogConsoleStyle instance to use for styling.
      */
-    private void setNamedStyle(String styleName, LogConsoleStyleProperty consoleStyle) {
+    private void setNamedStyle(String styleName, LogConsoleStyle consoleStyle) {
         Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
         Style style = textPane.getStyle(styleName);
         if (style == null) {
@@ -455,7 +455,7 @@ public final class LogConsole extends JFrame implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         for (String styleName : currentTheme.getStyleNames()) {
-            LogConsoleStyleProperty style = currentTheme.getStyle(styleName);
+            LogConsoleStyle style = currentTheme.getStyle(styleName);
             setNamedStyle(styleName, style);
         }
 
