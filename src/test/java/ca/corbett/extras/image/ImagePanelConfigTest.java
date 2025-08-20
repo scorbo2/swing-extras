@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ImagePanelConfigTest {
 
     private ImagePanelConfig generateTestObject() {
-        ImagePanelConfig conf = new ImagePanelConfig();
+        ImagePanelConfig conf = new ImagePanelConfig("test");
         conf.setBgColor(Color.YELLOW);
         conf.setDisplayMode(ImagePanelConfig.DisplayMode.CUSTOM);
         conf.setEnableMouseCursor(false);
@@ -42,9 +42,9 @@ public class ImagePanelConfigTest {
     public void testPropsSaveLoad() {
         ImagePanelConfig conf1 = generateTestObject();
         Properties props = new Properties();
-        conf1.saveToProps(props, "test.");
-        ImagePanelConfig conf2 = new ImagePanelConfig();
-        conf2.loadFromProps(props, "test.");
+        conf1.saveToProps(props);
+        ImagePanelConfig conf2 = new ImagePanelConfig("test");
+        conf2.loadFromProps(props);
         assertConfObjectsEqual(conf1, conf2);
     }
 

@@ -67,7 +67,7 @@ public final class LogoProperty extends AbstractProperty {
     private int yTweak;
 
     public LogoProperty(String fullyQualifiedName) {
-        this(fullyQualifiedName, "");
+        this(fullyQualifiedName, "Logo image");
     }
 
     public LogoProperty(String fullyQualifiedName, String label) {
@@ -498,7 +498,7 @@ public final class LogoProperty extends AbstractProperty {
 
     @Override
     protected FormField generateFormFieldImpl() {
-        LogoFormField formField = new LogoFormField("Logo image");
+        LogoFormField formField = new LogoFormField(propertyLabel);
         formField.setIdentifier(fullyQualifiedName);
         formField.setBackgroundColor(bgColorType == ColorType.SOLID ? bgColor : bgGradient);
         formField.setBorderColor(borderColorType == ColorType.SOLID ? borderColor : borderGradient);
