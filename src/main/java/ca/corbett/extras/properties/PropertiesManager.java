@@ -365,11 +365,17 @@ public class PropertiesManager {
                 // Show all the properties in this subcategory:
                 List<AbstractProperty> propList = getProperties(props, category, subCategory);
                 for (AbstractProperty prop : propList) {
-                    FormField field = prop.generateFormField(formPanel);
-                    if (alignment.isLeftAligned()) {
-                        field.getMargins().setLeft(leftMargin);
+                    try {
+                        FormField field = prop.generateFormField(formPanel);
+                        if (alignment.isLeftAligned()) {
+                            field.getMargins().setLeft(leftMargin);
+                        }
+                        formPanel.add(field);
                     }
-                    formPanel.add(field);
+                    catch (UnsupportedOperationException use) {
+                        logger.warning(
+                                "Property \"" + prop.getFullyQualifiedName() + "\" does not support FormField generation. Skipping.");
+                    }
                 }
             }
             formPanelList.add(formPanel);
