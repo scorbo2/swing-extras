@@ -6,8 +6,9 @@ import ca.corbett.extras.audio.AudioUtil;
 import ca.corbett.extras.audio.AudioWaveformPanel;
 import ca.corbett.extras.audio.PlaybackThread;
 import ca.corbett.extras.audio.WaveformConfig;
-import ca.corbett.extras.audio.WaveformConfigPanel;
+import ca.corbett.extras.audio.WaveformConfigField;
 import ca.corbett.extras.audio.WaveformPanelConfigPanel;
+import ca.corbett.forms.FormPanel;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
@@ -55,7 +56,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
     private File selectedAudioFile;
     private File recordedAudioFile;
     private final WaveformConfig wavePrefs;
-    private WaveformConfigPanel wavePrefsPanel;
+    private WaveformConfigField waveformConfigField;
     private WaveformPanelConfigPanel audioPanelPrefsPanel;
     private final JLabel waveformLabel;
     private JPanel panel;
@@ -69,8 +70,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         wavePrefs = new WaveformConfig();
-        wavePrefs.setXScale(DEFAULT_XSCALE);
-        wavePrefs.setYScale(DEFAULT_YSCALE);
+        wavePrefs.setCompression(WaveformConfigField.Compression.LOW);
         PlaybackThread.setUpdateIntervalMs(75); // super fast updates
 
         waveformLabel = new JLabel("(not yet generated)");
@@ -116,10 +116,10 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         constraints.fill = GridBagConstraints.BOTH;
         panel.add(audioPanelPrefsPanel, constraints);
 
-        wavePrefsPanel = new WaveformConfigPanel(wavePrefs);
         constraints.gridx = 2;
         constraints.gridheight = 2;
-        panel.add(wavePrefsPanel, constraints);
+        waveformConfigField = (WaveformConfigField)wavePrefs.generateFormField(new FormPanel());
+        panel.add(waveformConfigField.getFieldComponent(), constraints);
 
         JPanel controlPanel = buildControlPanel(panel);
         constraints.gridx = 1;
@@ -155,6 +155,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
 
     public void generateWaveform() {
         waveformPanel.clear();
+        wavePrefs.loadFromFormField(waveformConfigField);
         try {
             if (audioSourceCombo.getSelectedIndex() == 0) {
                 waveformPanel.setWaveformPreferences(wavePrefs);

@@ -82,6 +82,49 @@ public class ImagePanelFormField extends FormField {
         return formPanel.isFormValid();
     }
 
+    /**
+     * Decides whether to use a titled border around this field component (the default), or
+     * to use a traditional FormField field label instead.
+     */
+    public ImagePanelFormField setUseTitleBorder(boolean use) {
+        if (use == useTitleBorder) {
+            return this; // ignore no-op requests
+        }
+        if (use) {
+            wrapperPanel.setBorder(BorderFactory.createTitledBorder(labelText));
+            fieldLabel.setText("");
+        }
+        else {
+            wrapperPanel.setBorder(null);
+            fieldLabel.setText(labelText);
+        }
+        useTitleBorder = use;
+        return this;
+    }
+
+    public boolean isUseTitleBorder() {
+        return useTitleBorder;
+    }
+
+    /**
+     * Returns the text that is either showing in the field label OR in the
+     * field's title border, depending on the value of useTitleBorder.
+     */
+    public String getFieldLabelText() {
+        return labelText;
+    }
+
+    public ImagePanelFormField setFieldLabelText(String text) {
+        labelText = text;
+        if (useTitleBorder && (wrapperPanel.getBorder() instanceof TitledBorder)) {
+            ((TitledBorder)wrapperPanel.getBorder()).setTitle(labelText);
+        }
+        else if (!useTitleBorder) {
+            fieldLabel.setText(labelText);
+        }
+        return this;
+    }
+
     public ImagePanelFormField setBgColor(Color col) {
         if (Objects.equals(getBgColor(), col)) {
             return this; // ignore no-op requests
@@ -181,49 +224,6 @@ public class ImagePanelFormField extends FormField {
 
     public boolean isEnableZoomOnMouseWheel() {
         return zoomOnWheelField.isChecked();
-    }
-
-    /**
-     * Decides whether to use a titled border around this field component (the default), or
-     * to use a traditional FormField field label instead.
-     */
-    public ImagePanelFormField setUseTitleBorder(boolean use) {
-        if (use == useTitleBorder) {
-            return this; // ignore no-op requests
-        }
-        if (use) {
-            wrapperPanel.setBorder(BorderFactory.createTitledBorder(labelText));
-            fieldLabel.setText("");
-        }
-        else {
-            wrapperPanel.setBorder(null);
-            fieldLabel.setText(labelText);
-        }
-        useTitleBorder = use;
-        return this;
-    }
-
-    public boolean isUseTitleBorder() {
-        return useTitleBorder;
-    }
-
-    /**
-     * Returns the text that is either showing in the field label OR in the
-     * field's title border, depending on the value of useTitleBorder.
-     */
-    public String getFieldLabelText() {
-        return labelText;
-    }
-
-    public ImagePanelFormField setFieldLabelText(String text) {
-        labelText = text;
-        if (useTitleBorder && (wrapperPanel.getBorder() instanceof TitledBorder)) {
-            ((TitledBorder)wrapperPanel.getBorder()).setTitle(labelText);
-        }
-        else if (!useTitleBorder) {
-            fieldLabel.setText(labelText);
-        }
-        return this;
     }
 
     private FormPanel createFormPanel() {

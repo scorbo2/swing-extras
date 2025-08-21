@@ -374,13 +374,13 @@ public class AudioUtil {
         int maxY1 = 0;
         int maxY2 = 0;
         for (int i = 0; i < audioData[0].length; i++) {
-            int sample1 = Math.abs(audioData[topChannelIndex][i] / prefs.getYScale());
-            int sample2 = Math.abs(audioData[btmChannelIndex][i] / prefs.getYScale());
+            int sample1 = Math.abs(audioData[topChannelIndex][i] / prefs.getCompression().getYValue());
+            int sample2 = Math.abs(audioData[btmChannelIndex][i] / prefs.getCompression().getYValue());
 
             averagedSample1 += sample1;
             averagedSample2 += sample2;
             averagedSampleCount++;
-            if (averagedSampleCount > prefs.getXScale()) {
+            if (averagedSampleCount > prefs.getCompression().getXValue()) {
                 averagedSample1 /= averagedSampleCount;
                 averagedSample2 /= averagedSampleCount;
 
@@ -393,13 +393,13 @@ public class AudioUtil {
         }
 
         // We can now create a blank image of the appropriate size based on this scale:
-        int xScale = prefs.getXScale();
-        int width = audioData[0].length / prefs.getXScale();
-        if (width > prefs.getXLimit()) {
-            width = prefs.getXLimit();
-            xScale = audioData[0].length / prefs.getXLimit();
+        int xScale = prefs.getCompression().getXValue();
+        int width = audioData[0].length / prefs.getCompression().getXValue();
+        if (width > prefs.getWidthLimit().getLimit()) {
+            width = prefs.getWidthLimit().getLimit();
+            xScale = audioData[0].length / prefs.getWidthLimit().getLimit();
             logger.log(Level.INFO, "AudioUtil: Adjusted xScale from {0} to {1} to accomodate x limit of {2}.",
-                       new Object[]{prefs.getXScale(), xScale, prefs.getXLimit()});
+                       new Object[]{prefs.getCompression().getXValue(), xScale, prefs.getCompression().getXValue()});
         }
         int height = maxY1 + maxY2;
         height = (height <= 0) ? 100 : height; // height can be zero if there's no audio data.
@@ -417,8 +417,8 @@ public class AudioUtil {
         int previousSample2 = 0;
         int x = 0;
         for (int sample = 0; sample < audioData[0].length; sample++) {
-            averagedSample1 += Math.abs(audioData[topChannelIndex][sample] / prefs.getYScale());
-            averagedSample2 += Math.abs(audioData[btmChannelIndex][sample] / prefs.getYScale());
+            averagedSample1 += Math.abs(audioData[topChannelIndex][sample] / prefs.getCompression().getYValue());
+            averagedSample2 += Math.abs(audioData[btmChannelIndex][sample] / prefs.getCompression().getYValue());
             averagedSampleCount++;
 
             if (averagedSampleCount > xScale) {

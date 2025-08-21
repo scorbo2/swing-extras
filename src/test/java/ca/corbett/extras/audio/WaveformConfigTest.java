@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class WaveformConfigTest {
 
     private WaveformConfig generateTestObject() {
-        WaveformConfig config = new WaveformConfig();
+        WaveformConfig config = new WaveformConfig("test");
         config.setBaselineColor(Color.BLUE);
         config.setBaselineEnabled(false);
         config.setBaselineThickness(4);
@@ -24,8 +24,7 @@ public class WaveformConfigTest {
         config.setOutlineColor(Color.BLACK);
         config.setOutlineEnabled(true);
         config.setOutlineThickness(5);
-        config.setXScale(123);
-        config.setYScale(456);
+        config.setCompression(WaveformConfigField.Compression.NORMAL);
         return config;
     }
 
@@ -38,17 +37,17 @@ public class WaveformConfigTest {
         assertEquals(conf1.getOutlineColor(), conf2.getOutlineColor());
         assertEquals(conf1.isOutlineEnabled(), conf2.isOutlineEnabled());
         assertEquals(conf1.getOutlineThickness(), conf2.getOutlineThickness());
-        assertEquals(conf1.getXScale(), conf2.getXScale());
-        assertEquals(conf1.getYScale(), conf2.getYScale());
+        assertEquals(conf1.getCompression(), conf2.getCompression());
+        assertEquals(conf1.getWidthLimit(), conf2.getWidthLimit());
     }
 
     @Test
     public void testWaveformSaveRestore() {
         WaveformConfig config = generateTestObject();
         Properties props = new Properties();
-        config.saveToProps(props, "test.");
-        WaveformConfig config2 = new WaveformConfig();
-        config2.loadFromProps(props, "test.");
+        config.saveToProps(props);
+        WaveformConfig config2 = new WaveformConfig("test");
+        config2.loadFromProps(props);
         assertConfigsEqual(config, config2);
     }
 

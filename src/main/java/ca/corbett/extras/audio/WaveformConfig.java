@@ -1,9 +1,12 @@
 package ca.corbett.extras.audio;
 
-import ca.corbett.extras.config.ConfigObject;
+import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.forms.fields.FormField;
 
 import java.awt.Color;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents a preferences object that can be used with AudioUtil.generateWaveform().
@@ -11,7 +14,9 @@ import java.awt.Color;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-03
  */
-public class WaveformConfig implements ConfigObject {
+public class WaveformConfig extends AbstractProperty {
+
+    private static final Logger logger = Logger.getLogger(WaveformConfig.class.getName());
 
     private Color fillColor;
     private Color bgColor;
@@ -27,10 +32,8 @@ public class WaveformConfig implements ConfigObject {
     private int topChannelIndex;
     private int bottomChannelIndex;
 
-    private int xScale;
-    private int yScale;
-
-    private int xLimit;
+    private WaveformConfigField.Compression compression;
+    private WaveformConfigField.WidthLimit widthLimit;
 
     /**
      * Returns a clone of the given WaveformConfig instance. If you pass in null,
@@ -41,7 +44,7 @@ public class WaveformConfig implements ConfigObject {
      * @return A clone of the given WaveformConfig, or a defaulted WaveformConfig.
      */
     public static WaveformConfig clonePreferences(WaveformConfig other) {
-        WaveformConfig clone = new WaveformConfig();
+        WaveformConfig clone = new WaveformConfig(other == null ? "Waveform config" : other.fullyQualifiedName);
         if (other != null) {
             clone.setOutlineEnabled(other.isOutlineEnabled());
             clone.setOutlineColor(other.getOutlineColor());
@@ -53,11 +56,14 @@ public class WaveformConfig implements ConfigObject {
             clone.setBaselineColor(other.getBaselineColor());
             clone.setTopChannelIndex(other.getTopChannelIndex());
             clone.setBottomChannelIndex(other.getBottomChannelIndex());
-            clone.setXScale(other.getXScale());
-            clone.setYScale(other.getYScale());
-            clone.setXLimit(other.getXLimit());
+            clone.setWidthLimit(other.getWidthLimit());
+            clone.setCompression(other.getCompression());
         }
         return clone;
+    }
+
+    public WaveformConfig() {
+        this("WaveformConfig");
     }
 
     /**
@@ -74,7 +80,8 @@ public class WaveformConfig implements ConfigObject {
      * <li>Bottom half will be channel 1 (or mirror of channel 0 if single channel).</li>
      * </ul>
      */
-    public WaveformConfig() {
+    public WaveformConfig(String fullyQualifiedName) {
+        super(fullyQualifiedName, "Waveform config");
         enableOutline = true;
         outlineColor = Color.BLACK;
         fillColor = Color.LIGHT_GRAY;
@@ -85,78 +92,11 @@ public class WaveformConfig implements ConfigObject {
 
         outlineThickness = 1;
 
-        xScale = 1024;
-        yScale = 64;
-        xLimit = Integer.MAX_VALUE;
+        compression = WaveformConfigField.Compression.NORMAL;
+        widthLimit = WaveformConfigField.WidthLimit.NO_LIMIT;
 
         topChannelIndex = 0;
         bottomChannelIndex = 1;
-    }
-
-    /**
-     * Loads all settings from the given Properties object. You can use the optional "prefix"
-     * parameter to put a given label at the start of each property name. This allows you
-     * to save multiple WaveformConfig objects to the same Properties instance, keeping
-     * them separated by prefix. For example, if a property name is "enableOutline" and you
-     * supply a prefix of "waveform1.", the property value will be saved under the name
-     * "waveform1.enableOutline". If you specify null or an empty string for prefix, property names
-     * will be specified as-is, and will overwrite any previous value.
-     *
-     * @param props  The Properties instance from which to load.
-     * @param prefix An optional string prefix to apply to all property names, or null.
-     */
-    @Override
-    public void loadFromProps(Properties props, String prefix) {
-        if (prefix == null) {
-            prefix = "";
-        }
-
-        setOutlineEnabled(props.getBoolean(prefix + "outlineEnabled", isOutlineEnabled()));
-        setOutlineColor(props.getColor(prefix + "outlineColor", getOutlineColor()));
-        setOutlineThickness(props.getInteger(prefix + "outlineThickness", getOutlineThickness()));
-        setFillColor(props.getColor(prefix + "fillColor", getFillColor()));
-        setBgColor(props.getColor(prefix + "bgColor", getBgColor()));
-        setBaselineEnabled(props.getBoolean(prefix + "baselineEnabled", isBaselineEnabled()));
-        setBaselineThickness(props.getInteger(prefix + "baselineThickness", getBaselineThickness()));
-        setBaselineColor(props.getColor(prefix + "baselineColor", getBaselineColor()));
-        setTopChannelIndex(props.getInteger(prefix + "topChannelIndex", getTopChannelIndex()));
-        setBottomChannelIndex(props.getInteger(prefix + "bottomChannelIndex", getBottomChannelIndex()));
-        setXScale(props.getInteger(prefix + "xScale", getXScale()));
-        setYScale(props.getInteger(prefix + "yScale", getYScale()));
-        setXLimit(props.getInteger(prefix + "xLimit", getXLimit()));
-    }
-
-    /**
-     * Saves all settings to the given Properties object. You can use the optional "prefix"
-     * parameter to put a given label at the start of each property name. This allows you
-     * to save multiple WaveformConfig objects to the same Properties instance, keeping
-     * them separated by prefix. For example, if a property name is "enableOutline" and you
-     * supply a prefix of "waveform1.", the property value will be saved under the name
-     * "waveform1.enableOutline". If you specify null or an empty string for prefix, property names
-     * will be specified as-is, and will overwrite any previous value.
-     *
-     * @param props  The Properties instance to which to save.
-     * @param prefix An optional string prefix to apply to all property names, or null.
-     */
-    @Override
-    public void saveToProps(Properties props, String prefix) {
-        if (prefix == null) {
-            prefix = "";
-        }
-
-        props.setBoolean(prefix + "outlineEnabled", isOutlineEnabled());
-        props.setColor(prefix + "outlineColor", getOutlineColor());
-        props.setInteger(prefix + "outlineThickness", getOutlineThickness());
-        props.setColor(prefix + "fillColor", getFillColor());
-        props.setColor(prefix + "bgColor", getBgColor());
-        props.setBoolean(prefix + "baselineEnabled", isBaselineEnabled());
-        props.setInteger(prefix + "baselineThickness", getBaselineThickness());
-        props.setColor(prefix + "baselineColor", getBaselineColor());
-        props.setInteger(prefix + "topChannelIndex", getTopChannelIndex());
-        props.setInteger(prefix + "bottomChannelIndex", getBottomChannelIndex());
-        props.setInteger(prefix + "xScale", getXScale());
-        props.setInteger(prefix + "yScale", getYScale());
-        props.setInteger(prefix + "xLimit", getXLimit());
     }
 
     /**
@@ -287,37 +227,20 @@ public class WaveformConfig implements ConfigObject {
         return bottomChannelIndex;
     }
 
-    /**
-     * Returns the current horizontal scale factor. A value of 1 means no scaling. Values greater
-     * than one indicate how many consecutive samples are averaged together for each horizontal
-     * pixel of the generated image. Default value is 1024.
-     *
-     * @return The current horizontal scale factor.
-     */
-    public int getXScale() {
-        return xScale;
+    public WaveformConfigField.Compression getCompression() {
+        return compression;
     }
 
-    /**
-     * Returns the current vertical scale factor. A value of 1 means no scaling. Values greater
-     * than one will be applied to each sample (sample value is divided by this number). Default
-     * value is 64.
-     *
-     * @return The current vertical scale factor.
-     */
-    public int getYScale() {
-        return yScale;
+    public void setCompression(WaveformConfigField.Compression compression) {
+        this.compression = compression;
     }
 
-    /**
-     * Returns the current width limit of the generated image. This is Integer.MAX_VALUE by default
-     * to indicate effectively no limit. Smaller values will cause the generated image to be
-     * scaled down (if needed) to fit within the width limit.
-     *
-     * @return The maximum width of the generated image, or Integer.MAX_VALUE if no limit.
-     */
-    public int getXLimit() {
-        return xLimit;
+    public WaveformConfigField.WidthLimit getWidthLimit() {
+        return widthLimit;
+    }
+
+    public void setWidthLimit(WaveformConfigField.WidthLimit limit) {
+        widthLimit = limit;
     }
 
     /**
@@ -396,42 +319,80 @@ public class WaveformConfig implements ConfigObject {
         this.bottomChannelIndex = (bottomChannelIndex < 0) ? 0 : bottomChannelIndex;
     }
 
-    /**
-     * Sets the horizontal scale factor. Set this to 1 to disable scaling, but be aware this will
-     * result in huge images - CD quality audio is 44.1Khz (samples per second), meaning you will
-     * need over 44 thousand horizontal pixels to represent one second of audio. The default value
-     * is 1024. The value represents how many consecutive samples are averaged together to form
-     * each horizontal pixel of the waveform.
-     *
-     * @param xScale The horizontal scale factor, as described above.
-     */
-    public void setXScale(int xScale) {
-        this.xScale = (xScale < 1) ? 1 : ((xScale > 10000) ? 10000 : xScale);
+    @Override
+    public void saveToProps(Properties props) {
+        String prefix = fullyQualifiedName + ".";
+
+        props.setBoolean(prefix + "outlineEnabled", isOutlineEnabled());
+        props.setColor(prefix + "outlineColor", getOutlineColor());
+        props.setInteger(prefix + "outlineThickness", getOutlineThickness());
+        props.setColor(prefix + "fillColor", getFillColor());
+        props.setColor(prefix + "bgColor", getBgColor());
+        props.setBoolean(prefix + "baselineEnabled", isBaselineEnabled());
+        props.setInteger(prefix + "baselineThickness", getBaselineThickness());
+        props.setColor(prefix + "baselineColor", getBaselineColor());
+        props.setInteger(prefix + "topChannelIndex", getTopChannelIndex());
+        props.setInteger(prefix + "bottomChannelIndex", getBottomChannelIndex());
+        props.setString(prefix + "compression", compression.name());
+        props.setString(prefix + "widthLimit", widthLimit.name());
     }
 
-    /**
-     * Sets the vertical scale factor. Set this to 1 to disable scaling, but be aware this will
-     * result in huge images - 16 bit sample sizes can yield values up to 32K, which is doubled
-     * to mirror the waveform, so in the worst case your image will be 64K pixels tall. The default
-     * value is 64. The value specified here will be used as a divisor - each sample is divided
-     * by this value.
-     *
-     * @param yScale The verticala scale factor, as described above.
-     */
-    public void setYScale(int yScale) {
-        this.yScale = (yScale < 1) ? 1 : ((yScale > 1024) ? 1024 : yScale);
+    @Override
+    public void loadFromProps(Properties props) {
+        String prefix = fullyQualifiedName + ".";
+
+        setOutlineEnabled(props.getBoolean(prefix + "outlineEnabled", isOutlineEnabled()));
+        setOutlineColor(props.getColor(prefix + "outlineColor", getOutlineColor()));
+        setOutlineThickness(props.getInteger(prefix + "outlineThickness", getOutlineThickness()));
+        setFillColor(props.getColor(prefix + "fillColor", getFillColor()));
+        setBgColor(props.getColor(prefix + "bgColor", getBgColor()));
+        setBaselineEnabled(props.getBoolean(prefix + "baselineEnabled", isBaselineEnabled()));
+        setBaselineThickness(props.getInteger(prefix + "baselineThickness", getBaselineThickness()));
+        setBaselineColor(props.getColor(prefix + "baselineColor", getBaselineColor()));
+        setTopChannelIndex(props.getInteger(prefix + "topChannelIndex", getTopChannelIndex()));
+        setBottomChannelIndex(props.getInteger(prefix + "bottomChannelIndex", getBottomChannelIndex()));
+        setCompression(WaveformConfigField.Compression.valueOf(
+                props.getString(prefix + "compression", WaveformConfigField.Compression.NORMAL.name())));
+        setWidthLimit(WaveformConfigField.WidthLimit.valueOf(
+                props.getString(prefix + "widthLimit", WaveformConfigField.WidthLimit.NO_LIMIT.name())));
     }
 
-    /**
-     * Sets the maximum width of the generated image. This is set to Integer.MAX_VALUE by default
-     * to indicate effectively no limit. Setting this to a smaller value will cause the generated
-     * image to be scaled down (if needed) to fit within the maximum width.
-     *
-     * @param xLimit The width limit of the generated image, or Integer.MAX_VALUE for effectively no
-     *               limit.
-     */
-    public void setXLimit(int xLimit) {
-        this.xLimit = xLimit;
+    @Override
+    protected FormField generateFormFieldImpl() {
+        WaveformConfigField formField = new WaveformConfigField(propertyLabel);
+        formField.setBgColor(bgColor);
+        formField.setWaveformColor(fillColor);
+        formField.setOutlineColor(outlineColor);
+        formField.setBaselineColor(baselineColor);
+        formField.setBaselineWidth(baselineThickness);
+        formField.setOutlineWidth(outlineThickness);
+        formField.setEnableDrawBaseline(enableBaseline);
+        formField.setEnableDrawOutline(enableOutline);
+        formField.setCompression(compression);
+        formField.setWidthLimit(widthLimit);
+
+        return formField;
     }
 
+    @Override
+    public void loadFromFormField(FormField field) {
+        if (field.getIdentifier() == null
+                || !field.getIdentifier().equals(fullyQualifiedName)
+                || !(field instanceof WaveformConfigField)) {
+            logger.log(Level.SEVERE, "WaveformConfig.loadFromFormField: received the wrong field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+        WaveformConfigField formField = (WaveformConfigField)field;
+        bgColor = formField.getBgColor();
+        fillColor = formField.getWaveformColor();
+        outlineColor = formField.getOutlineColor();
+        baselineColor = formField.getBaselineColor();
+        baselineThickness = formField.getBaselineWidth();
+        outlineThickness = formField.getOutlineWidth();
+        enableBaseline = formField.isEnableDrawBaseline();
+        enableOutline = formField.isEnableDrawOutline();
+        compression = formField.getCompression();
+        widthLimit = formField.getWidthLimit();
+    }
 }
