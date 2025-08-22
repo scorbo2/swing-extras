@@ -7,8 +7,10 @@ import ca.corbett.extras.audio.AudioWaveformPanel;
 import ca.corbett.extras.audio.PlaybackThread;
 import ca.corbett.extras.audio.WaveformConfig;
 import ca.corbett.extras.audio.WaveformConfigField;
-import ca.corbett.extras.audio.WaveformPanelConfigPanel;
+import ca.corbett.extras.audio.WaveformPanelFormField;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.FormField;
+import ca.corbett.forms.fields.ValueChangedListener;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
@@ -57,7 +59,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
     private File recordedAudioFile;
     private final WaveformConfig wavePrefs;
     private WaveformConfigField waveformConfigField;
-    private WaveformPanelConfigPanel audioPanelPrefsPanel;
+    private WaveformPanelFormField audioPanelPrefsPanel;
     private final JLabel waveformLabel;
     private JPanel panel;
 
@@ -107,14 +109,26 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         waveformPanel.setWaveformPreferences(wavePrefs);
 
         String s = "Audio panel preferences";
-        audioPanelPrefsPanel = new WaveformPanelConfigPanel(s, waveformPanel);
+        audioPanelPrefsPanel = new WaveformPanelFormField(s);
+        audioPanelPrefsPanel.setControlType(waveformPanel.getControlType());
+        audioPanelPrefsPanel.setControlSize(waveformPanel.getControlPanelSize());
+        audioPanelPrefsPanel.setControlPosition(waveformPanel.getControlPanelPosition());
+        audioPanelPrefsPanel.addValueChangedListener(new ValueChangedListener() {
+            @Override
+            public void formFieldValueChanged(FormField field) {
+                WaveformPanelFormField formField = (WaveformPanelFormField)field;
+                waveformPanel.setControlType(formField.getControlType());
+                waveformPanel.setControlPanelSize(formField.getControlSize());
+                waveformPanel.setControlPanelPosition(formField.getControlPosition());
+            }
+        });
         constraints.gridx = 1;
         constraints.gridwidth = 1;
         constraints.gridy++;
         constraints.insets = new Insets(12, leftMargin, 2, 2);
         constraints.weightx = 0;
         constraints.fill = GridBagConstraints.BOTH;
-        panel.add(audioPanelPrefsPanel, constraints);
+        panel.add(audioPanelPrefsPanel.getFieldComponent(), constraints);
 
         constraints.gridx = 2;
         constraints.gridheight = 2;
