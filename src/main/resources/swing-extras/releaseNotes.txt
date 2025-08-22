@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.4.0 [TODO] - swing-forms rewrite
+  #106 - Allow ESC key to cancel props dialog
   #104 - Log and skip UnsupportedOpException in PropsManager
   #103 - Merge ColorField and GradientColorField into one
   #102 - Make AboutPanel smarter about fonts

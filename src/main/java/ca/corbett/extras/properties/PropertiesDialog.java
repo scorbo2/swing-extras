@@ -3,12 +3,16 @@ package ca.corbett.extras.properties;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -17,6 +21,8 @@ import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -88,6 +94,16 @@ public class PropertiesDialog extends JDialog {
         this.owner = owner;
         setSize(INITIAL_WIDTH, INITIAL_HEIGHT);
         setMinimumSize(new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT));
+
+        JRootPane rootPane = getRootPane();
+        KeyStroke escapeKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeKeyStroke, "ESCAPE");
+        rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispatchEvent(new WindowEvent(PropertiesDialog.this, WindowEvent.WINDOW_CLOSING));
+            }
+        });
     }
 
     /**
