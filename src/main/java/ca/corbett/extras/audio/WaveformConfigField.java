@@ -170,8 +170,8 @@ public final class WaveformConfigField extends FormField {
 
     @Override
     public boolean validate() {
-        super.validate(); // in case we have any FieldValidators assigned here
-        return formPanel.isFormValid();
+        // ask the parent to validate also, in case we have any FieldValidators assigned here
+        return super.validate() && formPanel.isFormValid();
     }
 
     /**

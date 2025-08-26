@@ -1,5 +1,7 @@
 package ca.corbett.extras.audio;
 
+import ca.corbett.extras.properties.AbstractProperty;
+import ca.corbett.extras.properties.AbstractPropertyBaseTests;
 import ca.corbett.extras.properties.Properties;
 import org.junit.jupiter.api.Test;
 
@@ -12,10 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class WaveformConfigTest {
+public class WaveformConfigTest extends AbstractPropertyBaseTests {
 
-    private WaveformConfig generateTestObject() {
-        WaveformConfig config = new WaveformConfig("test");
+    @Override
+    protected AbstractProperty createTestObject(String name, String label) {
+        WaveformConfig config = new WaveformConfig(name);
+        config.setPropertyLabel(label);
         config.setBaselineColor(Color.BLUE);
         config.setBaselineEnabled(false);
         config.setBaselineThickness(4);
@@ -43,7 +47,7 @@ public class WaveformConfigTest {
 
     @Test
     public void testWaveformSaveRestore() {
-        WaveformConfig config = generateTestObject();
+        WaveformConfig config = (WaveformConfig)createTestObject("test", "test");
         Properties props = new Properties();
         config.saveToProps(props);
         WaveformConfig config2 = new WaveformConfig("test");
@@ -53,7 +57,7 @@ public class WaveformConfigTest {
 
     @Test
     public void testWaveformClone() {
-        WaveformConfig conf1 = generateTestObject();
+        WaveformConfig conf1 = (WaveformConfig)createTestObject("test", "test");
         WaveformConfig conf2 = WaveformConfig.clonePreferences(conf1);
         assertConfigsEqual(conf1, conf2);
     }
