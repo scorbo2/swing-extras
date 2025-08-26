@@ -27,6 +27,7 @@ public class LongTextProperty extends AbstractProperty {
     protected int width;
     protected int height;
     protected boolean allowBlank;
+    protected boolean allowPopoutEditing;
 
     /**
      * Invoked internally by the static factory methods.
@@ -82,6 +83,15 @@ public class LongTextProperty extends AbstractProperty {
         return allowBlank;
     }
 
+    public LongTextProperty setAllowPopoutEditing(boolean allow) {
+        allowPopoutEditing = allow;
+        return this;
+    }
+
+    public boolean isAllowPopoutEditing() {
+        return allowPopoutEditing;
+    }
+
     @Override
     public void saveToProps(Properties props) {
         props.setString(fullyQualifiedName + ".fieldType", textFieldType.name());
@@ -89,6 +99,7 @@ public class LongTextProperty extends AbstractProperty {
         props.setInteger(fullyQualifiedName + ".height", height);
         props.setString(fullyQualifiedName + ".value", value);
         props.setBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
+        props.setBoolean(fullyQualifiedName + ".allowPopoutEditing", allowPopoutEditing);
     }
 
     @Override
@@ -98,6 +109,7 @@ public class LongTextProperty extends AbstractProperty {
         height = props.getInteger(fullyQualifiedName + ".height", height);
         value = props.getString(fullyQualifiedName + ".value", value);
         allowBlank = props.getBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
+        allowPopoutEditing = props.getBoolean(fullyQualifiedName + ".allowPopoutEditing", allowPopoutEditing);
     }
 
     @Override
@@ -108,6 +120,7 @@ public class LongTextProperty extends AbstractProperty {
             case MULTI_LINE_DYNAMIC -> LongTextField.ofDynamicSizingMultiLine(propertyLabel, height);
         };
         textField.setAllowBlank(allowBlank);
+        textField.setAllowPopoutEditing(allowPopoutEditing);
         textField.setText(value);
         return textField;
     }

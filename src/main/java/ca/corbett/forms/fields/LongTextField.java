@@ -6,15 +6,23 @@ import ca.corbett.forms.validators.NonBlankFieldValidator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -97,6 +105,15 @@ public class LongTextField extends FormField {
         field.getTextArea().setRows(rows);
         field.shouldExpandMultiLine = true;
         return field;
+    }
+
+    /**
+     * Overridden here so we can also enable or disable our text area.
+     */
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        textArea.setEnabled(enabled);
     }
 
     /**
@@ -193,14 +210,32 @@ public class LongTextField extends FormField {
         return shouldExpandMultiLine;
     }
 
-    private static JPanel buildPopoutPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    private JPanel buildPopoutPanel() {
+        final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btn = new JButton("Pop out...");
         btn.setPreferredSize(new Dimension(90, 23));
         btn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO launch pop-out edit dialog
+                Window owningWindow = SwingUtilities.getWindowAncestor(panel);
+                if (!(owningWindow instanceof Frame) && !(owningWindow instanceof Dialog)) {
+                    JOptionPane.showMessageDialog(panel, "Unable to determine owner window for popout editor!", "Error",
+                                                  JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                PopoutEditor editor;
+                if (owningWindow instanceof Frame) {
+                    editor = new PopoutEditor((Frame)owningWindow, fieldLabel.getText(), textArea.getText(),
+                                              isEnabled());
+                }
+                else {
+                    editor = new PopoutEditor((Dialog)owningWindow, fieldLabel.getText(), textArea.getText(),
+                                              isEnabled());
+                }
+                editor.setVisible(true);
+                if (editor.wasOkayed()) {
+                    textArea.setText(editor.getText());
+                }
             }
         });
         panel.add(btn);
@@ -231,5 +266,88 @@ public class LongTextField extends FormField {
         for (FieldValidator<? extends FormField> validator : foundList) {
             fieldValidators.remove(validator);
         }
+    }
+
+    private static class PopoutEditor extends JDialog {
+
+        public static int lastWidth = 400; // arbitrary default
+        public static int lastHeight = 300; // arbitrary default
+        private JTextArea textArea;
+        private boolean wasOkayed;
+
+        public PopoutEditor(Dialog owner, String label, String text, boolean isEnabled) {
+            super(owner, label);
+            setModal(true);
+            setSize(lastWidth, lastHeight);
+            setLocationRelativeTo(owner);
+            setResizable(true);
+            initComponents(text, isEnabled);
+        }
+
+        public PopoutEditor(Frame owner, String label, String text, boolean isEnabled) {
+            super(owner, label, true);
+            setSize(new Dimension(lastWidth, lastHeight));
+            setLocationRelativeTo(owner);
+            setResizable(true);
+            initComponents(text, isEnabled);
+        }
+
+        public boolean wasOkayed() {
+            return wasOkayed;
+        }
+
+        public String getText() {
+            return textArea.getText();
+        }
+
+        private void initComponents(String text, boolean isEnabled) {
+            setLayout(new BorderLayout());
+            add(buildTextArea(text), BorderLayout.CENTER);
+            add(buildButtonPanel(), BorderLayout.SOUTH);
+            textArea.setEditable(isEnabled);
+
+            // Add ComponentListener to track resize events
+            addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    // Update static variables with current size
+                    Dimension currentSize = getSize();
+                    lastWidth = currentSize.width;
+                    lastHeight = currentSize.height;
+                }
+            });
+        }
+
+        private JScrollPane buildTextArea(String text) {
+            textArea = new JTextArea(text);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            textArea.setFont(getDefaultFont());
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            return scrollPane;
+        }
+
+        private JPanel buildButtonPanel() {
+            JPanel panel = new JPanel();
+            panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+            JButton button = new JButton("OK");
+            button.setPreferredSize(new Dimension(90, 23));
+            button.addActionListener(e -> {
+                wasOkayed = true;
+                dispose();
+            });
+            panel.add(button);
+            button = new JButton("Cancel");
+            button.setPreferredSize(new Dimension(90, 23));
+            button.addActionListener(e -> {
+                wasOkayed = false;
+                dispose();
+            });
+            panel.add(button);
+            return panel;
+        }
+
     }
 }

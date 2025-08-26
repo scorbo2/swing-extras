@@ -171,7 +171,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new ShortTextProperty("Text.Single line.someTextProp1", "Text property1:", "hello"));
         props.add(new ShortTextProperty("Text.Single line.someTextProp2", "Text property2:", ""));
         props.add(LongTextProperty.ofFixedSizeMultiLine("Text.Multi line.someMultiLineTextProp", "Text entry:", 4, 40)
-                                  .setValue("You can support long text as well."));
+                                  .setValue("You can support long text as well.\n\nPop-out editing is optional.")
+                                  .setAllowPopoutEditing(true));
 
         // This property is readable and settable by the client application but it won't show up in the user dialog:
         IntegerProperty hiddenProp = new IntegerProperty("Hidden.someHiddenProp", "hiddenProp", 77);

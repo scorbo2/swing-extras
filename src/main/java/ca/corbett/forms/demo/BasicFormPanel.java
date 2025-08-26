@@ -52,6 +52,7 @@ public class BasicFormPanel extends PanelBuilder {
 
         formPanel.add(new ShortTextField("Single-line text:", 15));
         LongTextField textField = LongTextField.ofFixedSizeMultiLine("Multi-line text:", 4, 18);
+        textField.setAllowPopoutEditing(true);
         textField.getMargins().setBottom(12);
         formPanel.add(textField);
         formPanel.add(new CheckBoxField("Checkboxes", true));
