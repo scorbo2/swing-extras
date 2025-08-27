@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.4.0 [TODO] - swing-forms rewrite
+  #107 - Fix minor form field alignment bug
   #106 - Allow ESC key to cancel props dialog
   #105 - Add unit tests for all Properties
   #104 - Log and skip UnsupportedOpException in PropsManager

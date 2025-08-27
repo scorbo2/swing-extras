@@ -295,7 +295,7 @@ public final class FormPanel extends JPanel {
                                         margins.getInternalSpacing());
         constraints.gridx = CONTROL_COLUMN;
         constraints.gridy = row;
-        constraints.anchor = GridBagConstraints.NORTHWEST;
+        constraints.anchor = field.isMultiLine() ? GridBagConstraints.NORTHWEST : GridBagConstraints.WEST;
 
         if (field.shouldExpand()) {
             constraints.weightx = 4; // this feels a bit hacky but it does force the component to form width
