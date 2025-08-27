@@ -1,7 +1,11 @@
 package ca.corbett.extras.image;
 
+import ca.corbett.extras.properties.AbstractProperty;
+import ca.corbett.extras.properties.AbstractPropertyBaseTests;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.extras.properties.PropertyFormFieldChangeListener;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.awt.Color;
 
@@ -13,7 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class LogoPropertyTest {
+public class LogoPropertyTest extends AbstractPropertyBaseTests {
+
+    @Override
+    protected AbstractProperty createTestObject(String name, String label) {
+        return new LogoProperty(name, label);
+    }
 
     private LogoProperty generateTestObject() {
         LogoProperty conf = new LogoProperty("test");
@@ -72,6 +81,22 @@ public class LogoPropertyTest {
         Color result2 = new Color(Long.decode(colorStr).intValue());
         assertEquals(testColor, result1);
         assertEquals(result1, result2);
+    }
+
+    @Test
+    public void testChangeListener() throws Exception {
+        // GIVEN a property with a mocked change listener:
+        LogoProperty testProp = (LogoProperty)createTestObject("test", "test");
+        PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);
+        testProp.addFormFieldChangeListener(listener);
+
+        // WHEN we generate a form field and mess with it:
+        LogoFormField formField = (LogoFormField)testProp.generateFormField();
+        formField.setBackgroundColor(Color.BLUE);
+        formField.setImageWidth(99);
+
+        // THEN we should see our change listener get invoked:
+        Mockito.verify(listener, Mockito.times(2)).valueChanged(Mockito.any());
     }
 
 }
