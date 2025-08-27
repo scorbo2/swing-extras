@@ -139,6 +139,10 @@ public abstract class FormField {
         return fieldLabel;
     }
 
+    public void setFieldLabelFont(Font font) {
+        fieldLabel.setFont(font);
+    }
+
     /**
      * Returns the prototype Font that will be used in all new FormField constructors.
      * There is a built-in default value which can be overridden via setDefaultFont().
