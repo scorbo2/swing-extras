@@ -72,7 +72,6 @@ public final class FormPanel extends JPanel {
      * be applied. Note that any value given here is added to whatever margins are already present on
      * each FormField. This value does not replace those values. So, you can still indent
      * a FormField from the others by setting its left margin on a left-aligned form, for example.
-     * </p>
      *
      * @param margin The margin, in pixels, to apply to FormFields as needed. Negative values are treated as 0.
      */
