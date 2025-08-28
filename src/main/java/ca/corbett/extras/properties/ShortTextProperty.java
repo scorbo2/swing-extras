@@ -33,6 +33,15 @@ public class ShortTextProperty extends AbstractProperty {
         return this;
     }
 
+    public ShortTextProperty setColumns(int cols) {
+        this.cols = cols;
+        return this;
+    }
+
+    public int getColumns() {
+        return cols;
+    }
+
     public ShortTextProperty setAllowBlank(boolean allow) {
         allowBlank = allow;
         return this;
