@@ -23,7 +23,7 @@ public class FormHelpPanel extends PanelBuilder {
         FormPanel panel = new FormPanel(Alignment.TOP_LEFT);
         panel.setBorderMargin(24);
 
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have help text!", 20);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have help text!", 20, 0, 8);
         headerLabel.getMargins().setBottom(24);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(

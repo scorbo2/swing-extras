@@ -35,7 +35,8 @@ public class FormsRendererPanel extends PanelBuilder {
     public JPanel build() {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(24);
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("Lists and combos can have custom renderers!", 20);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("Lists and combos can have custom renderers!", 20, 0,
+                                                                  8);
         headerLabel.getMargins().setBottom(24);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(

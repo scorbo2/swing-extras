@@ -43,7 +43,7 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(24);
 
-        LabelField label = LabelField.createBoldHeaderLabel("Welcome to app-extensions!", 24);
+        LabelField label = LabelField.createBoldHeaderLabel("Welcome to app-extensions!", 24, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));

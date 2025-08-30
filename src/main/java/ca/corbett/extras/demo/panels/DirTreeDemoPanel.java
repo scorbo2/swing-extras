@@ -90,7 +90,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(12);
 
-        LabelField label = LabelField.createBoldHeaderLabel("DirTree", 20);
+        LabelField label = LabelField.createBoldHeaderLabel("DirTree", 20, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));

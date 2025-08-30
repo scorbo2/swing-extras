@@ -36,7 +36,7 @@ public class IntroPanel extends PanelBuilder {
         FormPanel introPanel = new FormPanel(Alignment.TOP_LEFT);
         introPanel.setBorderMargin(24);
 
-        LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-extras!", 24);
+        LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-extras!", 24, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
@@ -52,17 +52,16 @@ public class IntroPanel extends PanelBuilder {
                 "library has to offer. Refer to the full documentation and developer guide below for<br>" +
                 "many more details!</html>";
         LabelField labelField = LabelField.createPlainHeaderLabel(txt, 14);
-        label.getMargins().setTop(14);
         introPanel.add(labelField);
 
         txt = "<html>swing-extras is licensed under the MIT license, which allows you to use it as you<br/>"
                 + "wish, provided the copyright notices remain intact.</html>";
         labelField = LabelField.createPlainHeaderLabel(txt, 14);
-        label.getMargins().setTop(14);
+        labelField.getMargins().setTop(14);
         introPanel.add(labelField);
 
         labelField = LabelField.createPlainHeaderLabel("Important links and references:", 14);
-        label.getMargins().setTop(12);
+        labelField.getMargins().setTop(12);
         introPanel.add(labelField);
 
         labelField = new LabelField("Source code:", Version.PROJECT_URL);

@@ -85,7 +85,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(24);
 
-        final LabelField label = LabelField.createBoldHeaderLabel("PropertiesManager", 20);
+        final LabelField label = LabelField.createBoldHeaderLabel("PropertiesManager", 20, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));

@@ -47,7 +47,7 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         FormPanel controlPanel = new FormPanel(Alignment.TOP_LEFT);
         controlPanel.setBorderMargin(12);
 
-        final LabelField label = LabelField.createBoldHeaderLabel("ImageUtil", 20);
+        final LabelField label = LabelField.createBoldHeaderLabel("ImageUtil", 20, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));

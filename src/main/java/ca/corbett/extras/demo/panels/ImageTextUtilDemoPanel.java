@@ -90,7 +90,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(12);
 
-        final LabelField label = LabelField.createBoldHeaderLabel("ImageTextUtil", 20);
+        final LabelField label = LabelField.createBoldHeaderLabel("ImageTextUtil", 20, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));

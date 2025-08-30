@@ -23,7 +23,7 @@ public class CustomFormFieldPanel extends PanelBuilder {
         formPanel.setBorderMargin(24);
 
         final LabelField headerLabel = LabelField.createBoldHeaderLabel("Creating a custom FormField implementation",
-                                                                        20);
+                                                                        20, 0, 8);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));

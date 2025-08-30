@@ -40,7 +40,7 @@ public class LogConsolePanel extends PanelBuilder {
         formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(24);
 
-        final LabelField label = LabelField.createBoldHeaderLabel("LogConsole", 24);
+        final LabelField label = LabelField.createBoldHeaderLabel("LogConsole", 24, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));

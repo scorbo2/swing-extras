@@ -46,7 +46,7 @@ public class AnimationTextDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("AnimatedTextRenderer demo", 20);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("AnimatedTextRenderer demo", 20, 0, 8);
         headerLabel.getMargins().setBottom(24);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(

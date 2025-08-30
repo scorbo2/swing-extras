@@ -38,7 +38,7 @@ public class FormsValidationPanel extends PanelBuilder {
         final FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(24);
 
-        final LabelField headerLabel = LabelField.createBoldHeaderLabel("Form validation is super easy!", 20);
+        final LabelField headerLabel = LabelField.createBoldHeaderLabel("Form validation is super easy!", 20, 0, 8);
         headerLabel.getMargins().setBottom(12);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(

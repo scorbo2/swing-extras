@@ -38,7 +38,8 @@ public class FormActionsPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have customizable Actions:", 20);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have customizable Actions:", 20, 0,
+                                                                  8);
         headerLabel.getMargins().setBottom(24);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(

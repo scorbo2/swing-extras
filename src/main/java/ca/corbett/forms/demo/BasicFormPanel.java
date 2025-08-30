@@ -44,7 +44,7 @@ public class BasicFormPanel extends PanelBuilder {
         formPanel.setBorderMargin(24);
 
         LabelField headerLabel = LabelField.createBoldHeaderLabel("Looking for basic Swing components? No problem!",
-                                                                  20);
+                                                                  20, 0, 8);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));

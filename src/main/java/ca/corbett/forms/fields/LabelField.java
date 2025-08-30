@@ -100,8 +100,12 @@ public final class LabelField extends FormField {
     }
 
     public static LabelField createBoldHeaderLabel(String text, int fontSize) {
-        return createHeaderLabel(text, getDefaultHeaderFont().deriveFont((float)fontSize), extraTopMarginHeader,
-                                 extraBottomMarginHeader);
+        return createBoldHeaderLabel(text, fontSize, extraTopMarginHeader, extraBottomMarginHeader);
+    }
+
+    public static LabelField createBoldHeaderLabel(String text, int fontSize, int extraTopMargin, int extraBottomMargin) {
+        return createHeaderLabel(text, getDefaultHeaderFont().deriveFont((float)fontSize), extraTopMargin,
+                                 extraBottomMargin);
     }
 
     /**

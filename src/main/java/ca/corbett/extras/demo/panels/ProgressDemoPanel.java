@@ -62,7 +62,7 @@ public class ProgressDemoPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(24);
 
-        final LabelField simpleLabel = LabelField.createBoldHeaderLabel("SimpleProgressDialog", 20);
+        final LabelField simpleLabel = LabelField.createBoldHeaderLabel("SimpleProgressDialog", 20, 0, 8);
         simpleLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> simpleLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
