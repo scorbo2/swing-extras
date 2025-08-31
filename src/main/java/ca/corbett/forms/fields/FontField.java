@@ -3,12 +3,12 @@ package ca.corbett.forms.fields;
 import ca.corbett.forms.FontDialog;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -88,14 +88,13 @@ public final class FontField extends FormField {
         button.setPreferredSize(new Dimension(95, 23));
         button.setFont(button.getFont().deriveFont(Font.PLAIN));
         wrapperPanel = new JPanel();
-        wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
+        wrapperPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         sampleLabel = new JLabel();
         sampleLabel.setOpaque(true);
         sampleLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         updateSampleLabel();
         fieldComponent = wrapperPanel;
         wrapperPanel.add(sampleLabel);
-        wrapperPanel.add(new JLabel(" ")); // spacer
         wrapperPanel.add(button);
     }
 
