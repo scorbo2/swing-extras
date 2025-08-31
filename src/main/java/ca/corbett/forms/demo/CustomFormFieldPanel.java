@@ -49,7 +49,7 @@ public class CustomFormFieldPanel extends PanelBuilder {
                 new FontField("Font and fg/bg color:", FontDialog.INITIAL_FONT, Color.BLUE, Color.ORANGE));
 
         label = LabelField.createPlainHeaderLabel("Full source code for this component is included!", 14);
-        headerLabel.getMargins().setTop(24);
+        label.getMargins().setTop(24);
         formPanel.add(label);
         label = LabelField.createPlainHeaderLabel("See the swing-extras book for a walkthrough of this form field!",
                                                   14);
