@@ -1,22 +1,19 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.util.Objects;
 
 /**
  * A FormField that wraps a JSpinner to allow numeric input.
+ * The underlying JSpinner is accessible by invoking getFieldComponent() and
+ * casting the result to JSpinner.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2020-09-25
  */
 public final class NumberField extends FormField {
@@ -70,27 +67,23 @@ public final class NumberField extends FormField {
         });
         fieldComponent = spinner;
         fieldComponent.setPreferredSize(new Dimension(60, 22)); // arbitrary default value
-        fieldLabel = new JLabel(labelText);
+        fieldComponent.setFont(getDefaultFont());
+        fieldLabel.setText(labelText);
     }
 
     public Number getCurrentValue() {
         return (Number)spinner.getValue();
     }
 
-    public void setCurrentValue(Number value) {
+    public NumberField setCurrentValue(Number value) {
+        if (Objects.equals(spinner.getValue(), value)) {
+            return this; // reject no-op changes
+        }
+        if (value == null) {
+            return this; // reject null
+        }
         spinner.setValue(value);
+        return this;
     }
 
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(fieldComponent, constraints);
-    }
 }

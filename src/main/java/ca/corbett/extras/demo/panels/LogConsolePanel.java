@@ -4,11 +4,12 @@ import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.extras.logging.LogConsoleTheme;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -23,7 +24,7 @@ import java.util.logging.Level;
 public class LogConsolePanel extends PanelBuilder {
 
     private FormPanel formPanel;
-    private TextField tokenField;
+    private ShortTextField tokenField;
     private FontField tokenFontField;
 
     public LogConsolePanel() {
@@ -36,81 +37,75 @@ public class LogConsolePanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
-        final LabelField label = LabelField.createBoldHeaderLabel("LogConsole", 24);
+        final LabelField label = LabelField.createBoldHeaderLabel("LogConsole", 24, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
         LabelField labelField = LabelField.createPlainHeaderLabel(
                 "<html>We can create a custom live-updated view of a log file with<br>" +
                         "configurable styles that can decide how to render the<br>" +
                         "log output based on string tokens within the log message.<br><br>" +
                         "This can make it visually easy to see what's going on!", 14);
-        formPanel.addFormField(labelField);
+        formPanel.add(labelField);
 
         PanelField panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
-        panelField.setLeftMargin(32);
+        panelField.getMargins().setLeft(32);
         JButton button = generateButton("Show LogConsole");
         button.addActionListener(e -> LogConsole.getInstance().setVisible(true));
         panelField.getPanel().add(button);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         labelField = LabelField.createPlainHeaderLabel("Regular log messages will use whatever log theme is selected.",
                                                        14);
-        labelField.setTopMargin(24);
-        formPanel.addFormField(labelField);
+        labelField.getMargins().setTop(24);
+        formPanel.add(labelField);
 
         panelField = new PanelField();
-        panelField.setLeftMargin(32);
-        panelField.setTopMargin(0);
-        panelField.setBottomMargin(0);
+        panelField.getMargins().setLeft(32).setTop(0).setBottom(0);
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         button = generateButton("Generate INFO message");
         button.addActionListener(e -> logMessage("This is a regular info log message.", Level.INFO));
         panelField.getPanel().add(button);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         panelField = new PanelField();
-        panelField.setLeftMargin(32);
-        panelField.setTopMargin(0);
-        panelField.setBottomMargin(0);
+        panelField.getMargins().setLeft(32).setTop(0).setBottom(0);
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         button = generateButton("Generate WARNING message");
         button.addActionListener(e -> logMessage("This is a regular warning log message.", Level.WARNING));
         panelField.getPanel().add(button);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         panelField = new PanelField();
-        panelField.setLeftMargin(32);
-        panelField.setTopMargin(0);
+        panelField.getMargins().setLeft(32).setTop(0);
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         button = generateButton("Generate SEVERE message");
         button.addActionListener(e -> logMessage("This is a regular SEVERE log message.", Level.SEVERE));
         panelField.getPanel().add(button);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         labelField = LabelField.createPlainHeaderLabel("We can create a custom swing-extras log theme!", 14);
-        labelField.setTopMargin(24);
-        formPanel.addFormField(labelField);
+        labelField.getMargins().setTop(24);
+        formPanel.add(labelField);
 
-        tokenField = new TextField("Messages containing:", 20, 1, false);
+        tokenField = new ShortTextField("Messages containing:", 20).setAllowBlank(false);
         tokenField.setText("My custom message");
-        formPanel.addFormField(tokenField);
+        formPanel.add(tokenField);
 
         tokenFontField = new FontField("Will look like this:", new Font(Font.MONOSPACED, Font.BOLD, 12), Color.WHITE,
                                        Color.BLACK);
-        tokenFontField.setShowValidationLabel(false);
+        //TODO this was kind of a nice feature... shame to lose it: tokenFontField.setShowValidationLabel(false);
         tokenFontField.setShowSizeField(false);
-        formPanel.addFormField(tokenFontField);
+        formPanel.add(tokenFontField);
 
         panelField = new PanelField();
-        panelField.setLeftMargin(32);
-        panelField.setTopMargin(0);
+        panelField.getMargins().setLeft(32).setTop(0);
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         button = generateButton("Try it!");
         button.addActionListener(new ActionListener() {
@@ -121,9 +116,7 @@ public class LogConsolePanel extends PanelBuilder {
             }
         });
         panelField.getPanel().add(button);
-        formPanel.addFormField(panelField);
-
-        formPanel.render();
+        formPanel.add(panelField);
 
         initializeLogConsole();
 
@@ -148,7 +141,7 @@ public class LogConsolePanel extends PanelBuilder {
         style.setIsItalic(tokenFontField.getSelectedFont().isItalic());
         style.setFontColor(tokenFontField.getTextColor());
         style.setFontBgColor(tokenFontField.getBgColor());
-        theme.setStyle("customStyle", style);
+        theme.setStyle("swing-extras-custom-style", style);
 
         LogConsole.getInstance().registerTheme("swing-extras custom", theme);
     }

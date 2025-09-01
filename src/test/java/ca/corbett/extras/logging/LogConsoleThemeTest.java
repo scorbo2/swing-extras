@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Unit tests for LogConsoleTheme.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class LogConsoleThemeTest {
 
@@ -25,7 +25,7 @@ public class LogConsoleThemeTest {
 
     @Test
     public void testClear() {
-        LogConsoleTheme theme = new LogConsoleTheme();
+        LogConsoleTheme theme = new LogConsoleTheme("test");
         theme.setDefaultBgColor(Color.yellow);
         theme.setStyle("blah", new LogConsoleStyle());
         assertEquals(Color.yellow, theme.getDefaultBgColor());
@@ -43,10 +43,10 @@ public class LogConsoleThemeTest {
         tmpFile.deleteOnExit();
         FileBasedProperties test = new FileBasedProperties(tmpFile);
         test.setEagerSave(true);
-        theme.saveToProps(test, "defaultTheme.");
+        theme.saveToProps(test);
 
-        LogConsoleTheme restoredTheme = new LogConsoleTheme();
-        restoredTheme.loadFromProps(test, "defaultTheme.");
+        LogConsoleTheme restoredTheme = new LogConsoleTheme(LogConsoleTheme.DEFAULT_STYLE_NAME);
+        restoredTheme.loadFromProps(test);
         assertTrue(areStylesEqual(theme.getStyle("testStyle"), restoredTheme.getStyle("testStyle")));
     }
 

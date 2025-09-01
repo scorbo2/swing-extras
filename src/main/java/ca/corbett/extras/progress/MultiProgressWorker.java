@@ -7,7 +7,7 @@ import java.util.List;
  * Represents some generic worker thread that performs a complex task, and can be subscribed
  * to for major and minor progress events. Intended for use with MultiProgressDialog.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public abstract class MultiProgressWorker implements Runnable {

@@ -1,21 +1,18 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.LookAndFeelManager;
-import ca.corbett.forms.FormPanel;
 
 import javax.swing.Action;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents a form field that just presents a static label without any
@@ -34,10 +31,16 @@ import java.util.Map;
  * <p>
  * You can make a multiline label by wrapping the label text in html tags:
  * </p>
- * <blockquote><pre>labelField.setText("&lt;html&gt;Hello&lt;br&gt;second line&lt;br&gt;another line&lt;/html&gt;");</pre>
+ * <blockquote>
+ *     <pre>labelField.setText("&lt;html&gt;Hello&lt;br&gt;second line&lt;br&gt;another line&lt;/html&gt;");</pre>
  * </blockquote>
  *
- * @author scorbp2
+ * <p>Hyperlinks</p><br>
+ * Hyperlinked labels are supported by using the setHyperlink() method and providing some Action to be invoked
+ * when the link is clicked. This will change the color of the label to blue and change the mouse pointer
+ * when the cursor is over the label, to indicate that the label is clickable.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-26
  */
 public final class LabelField extends FormField {
@@ -47,13 +50,8 @@ public final class LabelField extends FormField {
     private static int extraTopMarginHeader = 12;
     private static int extraBottomMarginHeader = 8;
 
-    private static final Font DEFAULT_HEADER_FONT = new Font(Font.DIALOG, Font.BOLD, 16);
-    private static final Font DEFAULT_LABEL_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
-
     private final JLabel label;
     private Action hyperlinkAction;
-    private Font font;
-    private Color color;
 
     /**
      * Creates a form-width label in the format "labelText".
@@ -68,20 +66,25 @@ public final class LabelField extends FormField {
      * Creates a label field in the format "fieldLabel:labelText". If fieldLabel
      * is null or blank, only "labelText" will be displayed.
      *
-     * @param fieldLabel The optional string to show as a prefix. Can be null or blank to omit.
+     * @param fieldLabelText The optional string to show as a prefix. Can be null or blank to omit.
      * @param labelText  The text of the actual label.
      */
-    public LabelField(String fieldLabel, String labelText) {
-        if (fieldLabel == null) {
-            fieldLabel = "";
-        }
-        label = new JLabel(labelText);
-        font = label.getFont();
-        color = LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK);
-        this.fieldLabel = new JLabel(fieldLabel);
-        this.fieldLabel.setFont(fieldLabelFont);
+    public LabelField(String fieldLabelText, String labelText) {
+        label = new JLabel(labelText == null ? "" : labelText);
+        label.setFont(getDefaultFont());
+        label.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
+        label.addMouseListener(new HyperlinkMouseListener());
+        fieldLabel.setText(fieldLabelText == null ? "" : fieldLabelText);
         fieldComponent = label;
-        showValidationLabel = false;
+    }
+
+    /**
+     * Overridden here as we generally don't want to show a validation label on a label.
+     * Will return true only if one or more FieldValidators have been explicitly assigned.
+     */
+    @Override
+    public boolean hasValidationLabel() {
+        return !fieldValidators.isEmpty();
     }
 
     /**
@@ -93,12 +96,16 @@ public final class LabelField extends FormField {
      * @return A LabelField suitable for use as a header.
      */
     public static LabelField createBoldHeaderLabel(String text) {
-        return createHeaderLabel(text, DEFAULT_HEADER_FONT, extraTopMarginHeader, extraBottomMarginHeader);
+        return createHeaderLabel(text, getDefaultHeaderFont(), extraTopMarginHeader, extraBottomMarginHeader);
     }
 
     public static LabelField createBoldHeaderLabel(String text, int fontSize) {
-        return createHeaderLabel(text, DEFAULT_HEADER_FONT.deriveFont((float)fontSize), extraTopMarginHeader,
-                                 extraBottomMarginHeader);
+        return createBoldHeaderLabel(text, fontSize, extraTopMarginHeader, extraBottomMarginHeader);
+    }
+
+    public static LabelField createBoldHeaderLabel(String text, int fontSize, int extraTopMargin, int extraBottomMargin) {
+        return createHeaderLabel(text, getDefaultHeaderFont().deriveFont((float)fontSize), extraTopMargin,
+                                 extraBottomMargin);
     }
 
     /**
@@ -115,7 +122,7 @@ public final class LabelField extends FormField {
      * @return A LabelField suitable for use as a regular header label.
      */
     public static LabelField createPlainHeaderLabel(String text) {
-        return createHeaderLabel(text, DEFAULT_LABEL_FONT, extraTopMarginNormal, extraBottomMarginNormal);
+        return createHeaderLabel(text, getDefaultFont(), extraTopMarginNormal, extraBottomMarginNormal);
     }
 
     /**
@@ -132,7 +139,7 @@ public final class LabelField extends FormField {
      * @return A LabelField suitable for use as a regular header label.
      */
     public static LabelField createPlainHeaderLabel(String text, int fontSize) {
-        return createHeaderLabel(text, DEFAULT_LABEL_FONT.deriveFont((float)fontSize), extraTopMarginNormal,
+        return createHeaderLabel(text, getDefaultFont().deriveFont((float)fontSize), extraTopMarginNormal,
                                  extraBottomMarginNormal);
     }
 
@@ -169,11 +176,11 @@ public final class LabelField extends FormField {
     }
 
     public static Font getDefaultHeaderFont() {
-        return DEFAULT_HEADER_FONT.deriveFont((float)DEFAULT_HEADER_FONT.getSize());
+        return getDefaultFont().deriveFont(Font.BOLD, 16);
     }
 
     public static Font getDefaultLabelFont() {
-        return DEFAULT_LABEL_FONT.deriveFont((float)DEFAULT_LABEL_FONT.getSize());
+        return getDefaultFont();
     }
 
     /**
@@ -189,8 +196,7 @@ public final class LabelField extends FormField {
     public static LabelField createHeaderLabel(String text, Font font, int topMargin, int bottomMargin) {
         LabelField label = new LabelField(text);
         label.setFont(font);
-        label.setTopMargin(topMargin);
-        label.setBottomMargin(bottomMargin);
+        label.getMargins().setTop(topMargin).setBottom(bottomMargin);
         return label;
 
     }
@@ -200,7 +206,7 @@ public final class LabelField extends FormField {
      * is blank or empty, so instead of a fieldLabel:labeltext pairing, we just
      * have a formwidth-spanning labeltext instead.
      *
-     * @return true if this is a single bigass label instead of this:that style.
+     * @return true if this is a single label instead of this:that style.
      */
     public boolean isHeaderLabel() {
         return fieldLabel.getText().isEmpty();
@@ -218,40 +224,36 @@ public final class LabelField extends FormField {
     /**
      * Converts the field label (if present) or the header label (if isHeaderLabel()) into
      * a hyperlink, by adding a custom mouse cursor and mouse listener with the given
-     * ActionListener attached to the single click event. You can optionally use setFieldLabelFont()
-     * to change the label colour and underline it.
+     * ActionListener attached to the single click event. The label font is also modified
+     * with color and underline and custom mouse cursor as hints that it is now clickable.
      *
      * @param action The Action to fire when the label is clicked.
      */
-    public void setHyperlink(Action action) {
+    public LabelField setHyperlink(Action action) {
         JLabel linkLabel = label; // whether header label or not, put the link on "label" and not "fieldLabel"
         linkLabel.setForeground(Color.BLUE);
         linkLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         Map attributes = linkLabel.getFont().getAttributes();
         attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
         linkLabel.setFont(linkLabel.getFont().deriveFont(attributes));
-        linkLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                action.actionPerformed(new ActionEvent(linkLabel, 0, ""));
-                fireValueChangedEvent(); // Also notify listeners that the action was triggered
-            }
-        });
+        hyperlinkAction = action;
+        return this;
     }
 
     /**
      * Removes any previously set hyperlink, if any.
+     * This will return the label to DEFAULT_FONT and default label text color.
      */
     public void clearHyperlink() {
         hyperlinkAction = null;
         if (isHeaderLabel()) {
-            label.setForeground(color);
-            label.setFont(font);
+            label.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
+            label.setFont(DEFAULT_FONT);
             label.setCursor(Cursor.getDefaultCursor());
         }
         else {
             fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
-            fieldLabel.setFont(fieldLabelFont);
+            fieldLabel.setFont(DEFAULT_FONT);
             fieldLabel.setCursor(Cursor.getDefaultCursor());
         }
     }
@@ -270,8 +272,16 @@ public final class LabelField extends FormField {
      *
      * @param text The new label text.
      */
-    public void setText(String text) {
+    public LabelField setText(String text) {
+        if (Objects.equals(label.getText(), text)) {
+            return this; // reject no-op changes
+        }
+        if (text == null) {
+            text = "";
+        }
         label.setText(text);
+        fireValueChangedEvent(); // debatable, but arguably this is a "value change" even if labels don't have a "value"
+        return this;
     }
 
     /**
@@ -280,9 +290,16 @@ public final class LabelField extends FormField {
      *
      * @param font The new Font to use.
      */
-    public void setFont(Font font) {
-        this.font = font;
+    public LabelField setFont(Font font) {
+        if (font == null) {
+            return this;
+        }
         label.setFont(font);
+        return this;
+    }
+
+    public Font getFont() {
+        return label.getFont();
     }
 
     /**
@@ -291,39 +308,26 @@ public final class LabelField extends FormField {
      *
      * @param c The new text colour.
      */
-    public void setColor(Color c) {
-        this.color = c;
+    public LabelField setColor(Color c) {
+        if (c == null) {
+            return this;
+        }
         label.setForeground(c);
+        return this;
     }
 
-    /**
-     * Renders this label field into the given container.
-     * This will either be in the format "(fieldLabel):(labelText)" in two columns,
-     * or just "(labelText)" spanning the width of the form, if "fieldLabel" is blank.
-     *
-     * @param container   The container into which to render
-     * @param constraints The GridBagConstraints to use.
-     */
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.gridy = constraints.gridy + 1;
+    public Color getColor() {
+        return label.getForeground();
+    }
 
-        if (!isHeaderLabel()) {
-            constraints.gridx = FormPanel.LABEL_COLUMN;
-            constraints.gridwidth = 1;
-            constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-            fieldLabel.setFont(fieldLabelFont);
-            container.add(fieldLabel, constraints);
-            constraints.gridx = FormPanel.CONTROL_COLUMN;
-            constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        }
-        else {
-            constraints.gridx = FormPanel.LABEL_COLUMN;
-            constraints.gridwidth = 2;
-            constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
+    private final class HyperlinkMouseListener extends MouseAdapter {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (hyperlinkAction == null) {
+                return; // do nothing if there is no link action
+            }
+            hyperlinkAction.actionPerformed(new ActionEvent(fieldComponent, 0, ""));
         }
 
-        label.setFont(font);
-        container.add(label, constraints);
     }
 }

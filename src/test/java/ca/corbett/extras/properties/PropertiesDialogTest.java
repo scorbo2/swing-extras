@@ -3,7 +3,7 @@ package ca.corbett.extras.properties;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.JFrame;
@@ -23,7 +23,7 @@ class PropertiesDialogTest {
 
         // WHEN we search for specific fields:
         LabelField labelField = (LabelField)dialog.findFormField("test.test.label2");
-        TextField textField = (TextField)dialog.findFormField("test.test.text1");
+        ShortTextField textField = (ShortTextField)dialog.findFormField("test.test.text1");
         FormField formField = dialog.findFormField("this.field.does.not.exist");
 
         // THEN we should see expected results:
@@ -74,7 +74,7 @@ class PropertiesDialogTest {
 
         props.add(LabelProperty.createHeaderLabel("test.test.label1", "HELLO"));
         props.add(LabelProperty.createLabel("test.test.label2", "This is only a test."));
-        props.add(new TextProperty("test.test.text1", "Text:", "", 12, 1));
+        props.add(new ShortTextProperty("test.test.text1", "Text:", "", 12));
 
         return props;
     }

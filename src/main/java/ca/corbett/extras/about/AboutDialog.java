@@ -1,5 +1,7 @@
 package ca.corbett.extras.about;
 
+import ca.corbett.extras.properties.PropertiesDialog;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -22,7 +24,7 @@ import java.awt.event.KeyEvent;
  * See also AboutPanel if you'd rather embed a JPanel somewhere instead of popping
  * up a dialog.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-02-14
  */
 public final class AboutDialog extends JDialog implements KeyEventDispatcher {
@@ -73,11 +75,11 @@ public final class AboutDialog extends JDialog implements KeyEventDispatcher {
      * Invoked internally to set the layout and build the dialog's components.
      */
     private void initComponents() {
-        setSize(540, 600);
+        setSize(560, 620);
         setResizable(false);
         setLayout(new BorderLayout());
 
-        add(aboutPanel, BorderLayout.CENTER);
+        add(PropertiesDialog.buildScrollPane(aboutPanel), BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));

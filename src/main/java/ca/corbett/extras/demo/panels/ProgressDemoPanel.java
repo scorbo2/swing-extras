@@ -3,22 +3,23 @@ package ca.corbett.extras.demo.panels;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
-import ca.corbett.extras.gradient.GradientColorField;
-import ca.corbett.extras.gradient.GradientConfig;
-import ca.corbett.extras.gradient.GradientUtil;
-import ca.corbett.extras.image.LogoConfig;
+import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.gradient.Gradient;
+import ca.corbett.extras.gradient.GradientType;
+import ca.corbett.extras.image.LogoProperty;
 import ca.corbett.extras.progress.MultiProgressAdapter;
 import ca.corbett.extras.progress.MultiProgressDialog;
 import ca.corbett.extras.progress.MultiProgressWorker;
 import ca.corbett.extras.progress.SimpleProgressAdapter;
 import ca.corbett.extras.progress.SimpleProgressWorker;
 import ca.corbett.extras.progress.SplashProgressWindow;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -31,22 +32,22 @@ import java.awt.event.ActionListener;
 /**
  * A quick demo of the capabilities of the progress classes.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-15
  */
 public class ProgressDemoPanel extends PanelBuilder {
 
-    private TextField simpleProgressTextField;
+    private ShortTextField simpleProgressTextField;
     private NumberField simpleProgressStepsField;
 
-    private TextField majorProgressTextField;
-    private TextField minorProgressTextField;
+    private ShortTextField majorProgressTextField;
+    private ShortTextField minorProgressTextField;
     private NumberField majorProgressStepsField;
     private NumberField minorProgressStepsField;
 
-    private TextField splashAppNameField;
+    private ShortTextField splashAppNameField;
     private ColorField splashFgColorField;
-    private GradientColorField splashBgColorField;
+    private ColorField splashBgColorField;
     private NumberField splashWidthField;
     private NumberField splashHeightField;
     private NumberField splashBorderWidthField;
@@ -58,23 +59,23 @@ public class ProgressDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
-        final LabelField simpleLabel = LabelField.createBoldHeaderLabel("SimpleProgressDialog", 20);
+        final LabelField simpleLabel = LabelField.createBoldHeaderLabel("SimpleProgressDialog", 20, 0, 8);
         simpleLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> simpleLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(simpleLabel);
+        formPanel.add(simpleLabel);
 
-        formPanel.addFormField(LabelField.createPlainHeaderLabel("A simple replacement for ProgressMonitor!", 14));
+        formPanel.add(LabelField.createPlainHeaderLabel("A simple replacement for ProgressMonitor!", 14));
 
-        simpleProgressTextField = new TextField("Progress label:", 16, 1, false);
+        simpleProgressTextField = new ShortTextField("Progress label:", 16).setAllowBlank(false);
         simpleProgressTextField.setText("Some task in progress...");
-        formPanel.addFormField(simpleProgressTextField);
+        formPanel.add(simpleProgressTextField);
 
         simpleProgressStepsField = new NumberField("Progress steps:", 6, 1, 10, 1);
-        formPanel.addFormField(simpleProgressStepsField);
+        formPanel.add(simpleProgressStepsField);
 
         PanelField panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -86,33 +87,33 @@ public class ProgressDemoPanel extends PanelBuilder {
             }
         });
         panelField.getPanel().add(btn);
-        panelField.setBottomMargin(24);
-        formPanel.addFormField(panelField);
+        panelField.getMargins().setBottom(24);
+        formPanel.add(panelField);
 
         final LabelField label = LabelField.createBoldHeaderLabel("MultiProgressDialog", 20);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
-        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+        formPanel.add(LabelField.createPlainHeaderLabel(
                 "<html>Java Swing comes with the ProgressMonitor class, which is great for<br>" +
                         "simple scenarios. But, sometimes it's useful to be able to show major and<br>" +
                         "minor progress for a more complicated task. Meet the MultiProgressDialog!</html>", 14));
 
-        majorProgressTextField = new TextField("Major progress label: ", 16, 1, false);
+        majorProgressTextField = new ShortTextField("Major progress label: ", 16).setAllowBlank(false);
         majorProgressTextField.setText("Some major task");
-        formPanel.addFormField(majorProgressTextField);
+        formPanel.add(majorProgressTextField);
 
         majorProgressStepsField = new NumberField("Major progress steps:", 3, 1, 10, 1);
-        formPanel.addFormField(majorProgressStepsField);
+        formPanel.add(majorProgressStepsField);
 
-        minorProgressTextField = new TextField("Minor progress label:", 16, 1, false);
+        minorProgressTextField = new ShortTextField("Minor progress label:", 16).setAllowBlank(false);
         minorProgressTextField.setText("Some minor task");
-        formPanel.addFormField(minorProgressTextField);
+        formPanel.add(minorProgressTextField);
 
         minorProgressStepsField = new NumberField("Minor progress steps:", 5, 1, 15, 1);
-        formPanel.addFormField(minorProgressStepsField);
+        formPanel.add(minorProgressStepsField);
 
         panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -124,43 +125,41 @@ public class ProgressDemoPanel extends PanelBuilder {
             }
         });
         panelField.getPanel().add(btn);
-        panelField.setBottomMargin(24);
-        formPanel.addFormField(panelField);
+        panelField.getMargins().setBottom(24);
+        formPanel.add(panelField);
 
         final LabelField labelField = LabelField.createBoldHeaderLabel("SplashProgress", 20);
         labelField.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> labelField.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(labelField);
+        formPanel.add(labelField);
 
-        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+        formPanel.add(LabelField.createPlainHeaderLabel(
                 "<html>Java offers the SplashScreen class for showing a splash screen as your application<br>" +
                         "starts up. But sometimes, your application startup may involve some complex loading<br>" +
                         "and you want to show a progress bar during startup. Let's look at SplashProgressWindow!</html>",
                 14));
 
-        splashAppNameField = new TextField("Application name:", 15, 1, false);
+        splashAppNameField = new ShortTextField("Application name:", 15).setAllowBlank(false);
         splashAppNameField.setText(Version.NAME);
-        formPanel.addFormField(splashAppNameField);
+        formPanel.add(splashAppNameField);
 
-        GradientConfig gradient = new GradientConfig();
-        gradient.setColor1(Color.BLACK);
-        gradient.setColor2(Color.BLUE);
-        gradient.setGradientType(GradientUtil.GradientType.HORIZONTAL_STRIPE);
-        splashBgColorField = new GradientColorField("Background:", Color.BLACK, gradient, false);
-        formPanel.addFormField(splashBgColorField);
+        Gradient gradient = new Gradient(GradientType.HORIZONTAL_STRIPE, Color.BLACK, Color.BLUE);
+        splashBgColorField = new ColorField("Background:", ColorSelectionType.EITHER).setColor(Color.BLACK)
+                                                                                     .setGradient(gradient);
+        formPanel.add(splashBgColorField);
 
-        splashFgColorField = new ColorField("Foreground:", Color.WHITE);
-        formPanel.addFormField(splashFgColorField);
+        splashFgColorField = new ColorField("Foreground:", ColorSelectionType.SOLID).setColor(Color.WHITE);
+        formPanel.add(splashFgColorField);
 
         splashWidthField = new NumberField("Logo width:", 400, 100, 2000, 25);
-        formPanel.addFormField(splashWidthField);
+        formPanel.add(splashWidthField);
 
         splashHeightField = new NumberField("Logo height:", 100, 50, 1000, 10);
-        formPanel.addFormField(splashHeightField);
+        formPanel.add(splashHeightField);
 
         splashBorderWidthField = new NumberField("Border width:", 0, 0, 6, 1);
-        formPanel.addFormField(splashBorderWidthField);
+        formPanel.add(splashBorderWidthField);
 
         panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -172,9 +171,8 @@ public class ProgressDemoPanel extends PanelBuilder {
             }
         });
         panelField.getPanel().add(btn);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
-        formPanel.render();
         return formPanel;
     }
 
@@ -225,19 +223,19 @@ public class ProgressDemoPanel extends PanelBuilder {
 
     private void showSplashProgress() {
         String appName = splashAppNameField.getText().isBlank() ? Version.NAME : splashAppNameField.getText();
-        LogoConfig config = new LogoConfig(appName);
+        LogoProperty config = new LogoProperty(appName);
         Object something = splashBgColorField.getSelectedValue();
-        if (something instanceof GradientConfig) {
-            config.setBgColorType(LogoConfig.ColorType.GRADIENT);
-            config.setBgGradient((GradientConfig)something);
+        if (something instanceof Gradient) {
+            config.setBgColorType(LogoProperty.ColorType.GRADIENT);
+            config.setBgGradient((Gradient)something);
         }
         else {
-            config.setBgColorType(LogoConfig.ColorType.SOLID);
+            config.setBgColorType(LogoProperty.ColorType.SOLID);
             config.setBgColor((Color)something);
         }
-        config.setTextColorType(LogoConfig.ColorType.SOLID);
+        config.setTextColorType(LogoProperty.ColorType.SOLID);
         config.setTextColor(splashFgColorField.getColor());
-        config.setBorderColorType(LogoConfig.ColorType.SOLID);
+        config.setBorderColorType(LogoProperty.ColorType.SOLID);
         config.setBorderColor(splashFgColorField.getColor());
         config.setBorderWidth((Integer)splashBorderWidthField.getCurrentValue());
         config.setLogoWidth((Integer)splashWidthField.getCurrentValue());

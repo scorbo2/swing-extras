@@ -1,22 +1,22 @@
 package ca.corbett.forms;
 
+import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.NumberField;
-import ca.corbett.forms.fields.PanelField;
+import ca.corbett.forms.fields.ValueChangedListener;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
@@ -28,7 +28,6 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,20 +36,22 @@ import java.util.List;
 /**
  * Represents a dialog that can be shown to the user to allow
  * selection of a font with style properties and optional
- * foreground/background color selection.
+ * foreground/background color selection. This dialog was
+ * written for and is used by the FontField, but you could
+ * also invoke this dialog standalone if needed.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-04-07
  */
 public final class FontDialog extends JDialog {
 
     public static final Font INITIAL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
     private DefaultListModel<String> fontListModel;
-    private JList<String> fontList;
     private boolean wasOkayed;
 
-    private ComboField typeField;
-    private ComboField styleField;
+    private ComboField<String> typeField;
+    private ComboField<String> styleField;
+    private ListField<String> listField;
     private NumberField sizeField;
     private boolean showSizeField = true;
     private LabelField sampleLabel;
@@ -162,22 +163,16 @@ public final class FontDialog extends JDialog {
      * can update the sample label with the new settings.
      */
     private void fontChanged() {
-        String fontFamily = fontList.getSelectedValue() == null ? selectedFont.getFamily() : fontList.getSelectedValue();
+        String fontFamily = listField.getList().getSelectedValue() == null
+                ? selectedFont.getFamily()
+                : listField.getList().getSelectedValue();
         int size = (Integer)sizeField.getCurrentValue();
-        int style;
-        switch (styleField.getSelectedIndex()) {
-            case 1:
-                style = Font.BOLD;
-                break;
-            case 2:
-                style = Font.ITALIC;
-                break;
-            case 3:
-                style = Font.BOLD + Font.ITALIC;
-                break;
-            default:
-                style = Font.PLAIN;
-        }
+        int style = switch (styleField.getSelectedIndex()) {
+            case 1 -> Font.BOLD;
+            case 2 -> Font.ITALIC;
+            case 3 -> Font.BOLD + Font.ITALIC;
+            default -> Font.PLAIN;
+        };
         selectedFont = new Font(fontFamily, style, size);
 
         String labelText = fontFamily.length() > 11 ? fontFamily.substring(0, 11) + "..." : fontFamily;
@@ -207,19 +202,19 @@ public final class FontDialog extends JDialog {
 
                 // Not guaranteed that the selected font will exist in this list:
                 if (!isBuiltInFont(selectedFont)) {
-                    fontList.setSelectedIndex(0);
+                    listField.setSelectedIndex(0);
                     fontChanged();
                 }
 
                 // Now we can select it:
-                fontList.setSelectedValue(selectedFont.getFamily(), true);
+                listField.getList().setSelectedValue(selectedFont.getFamily(), true);
                 break;
             case 1:
                 fontListModel.addAll(
                         Arrays.asList(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
 
                 // Guaranteed that the selected font will exist in this list, so select it:
-                fontList.setSelectedValue(selectedFont.getFamily(), true);
+                listField.getList().setSelectedValue(selectedFont.getFamily(), true);
                 break;
         }
     }
@@ -245,7 +240,7 @@ public final class FontDialog extends JDialog {
     private void populateUIFromFont(Font font) {
         selectedFont = font;
         typeField.setSelectedIndex(isBuiltInFont(selectedFont) ? 0 : 1);
-        fontList.setSelectedValue(font.getFamily(), true);
+        listField.getList().setSelectedValue(font.getFamily(), true);
         sizeField.setCurrentValue(font.getSize());
         switch (font.getStyle()) {
             case Font.PLAIN:
@@ -298,11 +293,11 @@ public final class FontDialog extends JDialog {
      * @return A JPanel wrapped in a scroll pane
      */
     private JComponent buildFontChooserPanel(Color textColor, Color bgColor) {
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
 
-        AbstractAction changeAction = new AbstractAction() {
+        ValueChangedListener changeListener = new ValueChangedListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void formFieldValueChanged(FormField field) {
                 fontChanged();
             }
         };
@@ -310,72 +305,58 @@ public final class FontDialog extends JDialog {
         List<String> options = new ArrayList<>();
         options.add("Java built-in fonts");
         options.add("System installed fonts");
-        typeField = new ComboField("Type:", options, 0, false);
-        typeField.setTopMargin(16);
-        typeField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fontTypeChanged();
-            }
+        typeField = new ComboField<>("Type:", options, 0, false);
+        typeField.getMargins().setTop(16);
+        typeField.addValueChangedListener(field -> {
+            fontTypeChanged();
         });
-        formPanel.addFormField(typeField);
+        formPanel.add(typeField);
 
-        PanelField panelField = new PanelField();
-        JPanel panel = panelField.getPanel();
-        panel.setLayout(new BorderLayout());
         fontListModel = new DefaultListModel<>();
-        fontList = new JList<>(fontListModel);
-        fontList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fontList.addListSelectionListener(e -> fontChanged());
-        JScrollPane scrollPane = new JScrollPane(fontList);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        formPanel.addFormField(panelField);
+        listField = new ListField<>("", fontListModel);
+        listField.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listField.addValueChangedListener(e -> fontChanged());
+        listField.setVisibleRowCount(6);
+        listField.setShouldExpand(true);
+        formPanel.add(listField);
 
         options = new ArrayList<>();
         options.add("Plain");
         options.add("Bold");
         options.add("Italic");
         options.add("Bold+Italic");
-        styleField = new ComboField("Style:", options, 0, false);
-        styleField.addValueChangedAction(changeAction);
-        formPanel.addFormField(styleField);
+        styleField = new ComboField<>("Style:", options, 0, false);
+        styleField.addValueChangedListener(changeListener);
+        formPanel.add(styleField);
 
         sizeField = new NumberField("Size:", 12, 6, 300, 2);
-        sizeField.addValueChangedAction(changeAction);
-        formPanel.addFormField(sizeField);
+        sizeField.addValueChangedListener(changeListener);
+        formPanel.add(sizeField);
 
         sampleLabel = new LabelField("Sample:", "Sample text");
         sampleLabel.setFont(INITIAL_FONT.deriveFont(16f));
-        formPanel.addFormField(sampleLabel);
+        formPanel.add(sampleLabel);
 
         if (textColor != null) {
-            textColorField = new ColorField("Text color:", textColor);
-            textColorField.addValueChangedAction(new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    colorChanged();
-                }
+            textColorField = new ColorField("Text color:", ColorSelectionType.SOLID).setColor(textColor);
+            textColorField.addValueChangedListener(field -> {
+                colorChanged();
             });
             sampleLabel.setColor(textColor);
-            formPanel.addFormField(textColorField);
+            formPanel.add(textColorField);
         }
 
         if (bgColor != null) {
-            bgColorField = new ColorField("Background:", bgColor);
-            bgColorField.addValueChangedAction(new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    colorChanged();
-                }
+            bgColorField = new ColorField("Background:", ColorSelectionType.SOLID).setColor(bgColor);
+            bgColorField.addValueChangedListener(field -> {
+                colorChanged();
             });
             ((JLabel)sampleLabel.getFieldComponent()).setOpaque(true);
             ((JLabel)sampleLabel.getFieldComponent()).setBackground(bgColor);
             ((JLabel)sampleLabel.getFieldComponent()).setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-            formPanel.addFormField(bgColorField);
+            formPanel.add(bgColorField);
         }
 
-        formPanel.render();
         return PropertiesDialog.buildScrollPane(formPanel);
     }
 

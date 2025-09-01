@@ -1,5 +1,7 @@
 package ca.corbett.extras.audio;
 
+import ca.corbett.extras.properties.AbstractProperty;
+import ca.corbett.extras.properties.AbstractPropertyBaseTests;
 import ca.corbett.extras.properties.Properties;
 import org.junit.jupiter.api.Test;
 
@@ -10,12 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Unit tests for WaveformConfig.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class WaveformConfigTest {
+public class WaveformConfigTest extends AbstractPropertyBaseTests {
 
-    private WaveformConfig generateTestObject() {
-        WaveformConfig config = new WaveformConfig();
+    @Override
+    protected AbstractProperty createTestObject(String name, String label) {
+        WaveformConfig config = new WaveformConfig(name);
+        config.setPropertyLabel(label);
         config.setBaselineColor(Color.BLUE);
         config.setBaselineEnabled(false);
         config.setBaselineThickness(4);
@@ -24,8 +28,7 @@ public class WaveformConfigTest {
         config.setOutlineColor(Color.BLACK);
         config.setOutlineEnabled(true);
         config.setOutlineThickness(5);
-        config.setXScale(123);
-        config.setYScale(456);
+        config.setCompression(WaveformConfigField.Compression.NORMAL);
         return config;
     }
 
@@ -38,23 +41,23 @@ public class WaveformConfigTest {
         assertEquals(conf1.getOutlineColor(), conf2.getOutlineColor());
         assertEquals(conf1.isOutlineEnabled(), conf2.isOutlineEnabled());
         assertEquals(conf1.getOutlineThickness(), conf2.getOutlineThickness());
-        assertEquals(conf1.getXScale(), conf2.getXScale());
-        assertEquals(conf1.getYScale(), conf2.getYScale());
+        assertEquals(conf1.getCompression(), conf2.getCompression());
+        assertEquals(conf1.getWidthLimit(), conf2.getWidthLimit());
     }
 
     @Test
     public void testWaveformSaveRestore() {
-        WaveformConfig config = generateTestObject();
+        WaveformConfig config = (WaveformConfig)createTestObject("test", "test");
         Properties props = new Properties();
-        config.saveToProps(props, "test.");
-        WaveformConfig config2 = new WaveformConfig();
-        config2.loadFromProps(props, "test.");
+        config.saveToProps(props);
+        WaveformConfig config2 = new WaveformConfig("test");
+        config2.loadFromProps(props);
         assertConfigsEqual(config, config2);
     }
 
     @Test
     public void testWaveformClone() {
-        WaveformConfig conf1 = generateTestObject();
+        WaveformConfig conf1 = (WaveformConfig)createTestObject("test", "test");
         WaveformConfig conf2 = WaveformConfig.clonePreferences(conf1);
         assertConfigsEqual(conf1, conf2);
     }

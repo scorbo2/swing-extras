@@ -33,7 +33,7 @@ import java.awt.Frame;
  * </p>
  *
  * @param <T> Any implementation of AppExtension
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {

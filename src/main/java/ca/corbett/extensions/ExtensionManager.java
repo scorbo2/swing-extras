@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  * </p>
  *
  * @param <T> Any class that implements AppExtension - this is the class we'll scan for.
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public abstract class ExtensionManager<T extends AppExtension> {
@@ -525,6 +525,12 @@ public abstract class ExtensionManager<T extends AppExtension> {
                         }
                         catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
                             logger.log(Level.WARNING, "Failed to instantiate " + candidate.getName(), ex);
+                            continue;
+                        }
+                        catch (IncompatibleClassChangeError ex) {
+                            logger.log(Level.WARNING,
+                                       "Ignoring extension with incompatible class version: " + candidate.getName(),
+                                       ex);
                             continue;
                         }
                         logger.log(Level.FINE, "Found qualifying AppExtension class: {0} in jar: {1}",

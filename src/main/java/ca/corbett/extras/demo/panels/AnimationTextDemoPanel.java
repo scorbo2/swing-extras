@@ -4,6 +4,7 @@ import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.animation.AnimatedTextRenderer;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
@@ -30,8 +31,8 @@ public class AnimationTextDemoPanel extends PanelBuilder {
     private ImagePanel imagePanel;
 
     public AnimationTextDemoPanel() {
-        formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
         image = new BufferedImage(IMG_WIDTH,IMG_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
         g.setColor(Color.BLACK);
@@ -45,18 +46,18 @@ public class AnimationTextDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("AnimatedTextRenderer demo", 20);
-        headerLabel.setBottomMargin(24);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("AnimatedTextRenderer demo", 20, 0, 8);
+        headerLabel.getMargins().setBottom(24);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(headerLabel);
+        formPanel.add(headerLabel);
 
         fontField = new FontField("Text style:", new Font(Font.MONOSPACED, Font.PLAIN, 16), Color.GREEN, Color.BLACK);
-        formPanel.addFormField(fontField);
+        formPanel.add(fontField);
 
         speedField = new NumberField("Chars/second:", 8, 1, 15, 1);
-        formPanel.addFormField(speedField);
+        formPanel.add(speedField);
 
         PanelField panelField = new PanelField();
         JPanel panel = panelField.getPanel();
@@ -66,7 +67,7 @@ public class AnimationTextDemoPanel extends PanelBuilder {
         imagePanel.setPreferredSize(new Dimension(IMG_WIDTH, IMG_HEIGHT));
         imagePanel.setImage(image);
         panel.add(imagePanel);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         panelField = new PanelField();
         panel = panelField.getPanel();
@@ -75,9 +76,8 @@ public class AnimationTextDemoPanel extends PanelBuilder {
         JButton button = new JButton("Restart animation");
         button.addActionListener(e -> go());
         panel.add(button);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
-        formPanel.render();
         return formPanel;
     }
 

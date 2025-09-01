@@ -5,10 +5,12 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
-import ca.corbett.extras.image.LogoConfig;
 import ca.corbett.extras.image.LogoGenerator;
+import ca.corbett.extras.image.LogoProperty;
 import ca.corbett.extras.logging.LogConsole;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 
@@ -45,7 +47,7 @@ import java.util.logging.Logger;
  * This is used by AboutDialog, but can be used also by applications that simply want
  * to embed the AboutPanel directly somewhere other than a popup dialog.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-02-14 (generified from existing code)
  */
 public final class AboutPanel extends JPanel {
@@ -55,7 +57,7 @@ public final class AboutPanel extends JPanel {
     private final Map<String, LabelField> customFields;
 
     public AboutPanel(AboutInfo info) {
-        this(info, FormPanel.Alignment.TOP_CENTER, 24);
+        this(info, Alignment.TOP_CENTER, 24);
     }
 
     /**
@@ -63,17 +65,18 @@ public final class AboutPanel extends JPanel {
      *
      * @param info The AboutInfo object to display.
      */
-    public AboutPanel(AboutInfo info, FormPanel.Alignment alignment, int leftMargin) {
+    public AboutPanel(AboutInfo info, Alignment alignment, int leftMargin) {
         super();
 
         customFields = new HashMap<>();
         info.registerAboutPanel(this);
         setLayout(new BorderLayout());
         FormPanel formPanel = new FormPanel(alignment);
-        formPanel.setStandardLeftMargin(leftMargin);
+        formPanel.setBorderMargin(leftMargin);
 
         BufferedImage logoImage = getLogoImage(info);
         PanelField logoPanel = new PanelField();
+        logoPanel.setShouldExpand(true);
 
         if (info.logoDisplayMode != AboutInfo.LogoDisplayMode.STRETCH) {
             logoPanel.getPanel().setLayout(
@@ -101,7 +104,8 @@ public final class AboutPanel extends JPanel {
             }
         }
         else {
-            logoPanel.setMargins(8, 8, 8, 8, 0);
+            logoPanel.getMargins().setAll(8);
+            logoPanel.getMargins().setInternalSpacing(0);
             logoPanel.getPanel().setLayout(new BorderLayout());
             ImagePanelConfig ipc = ImagePanelConfig.createDefaultProperties();
             ipc.setDisplayMode(ImagePanelConfig.DisplayMode.STRETCH);
@@ -123,35 +127,31 @@ public final class AboutPanel extends JPanel {
                 });
             }
         }
-        formPanel.addFormField(logoPanel);
+        formPanel.add(logoPanel);
 
         String labelText = info.applicationName + " " + info.applicationVersion;
         LabelField labelField = new LabelField(labelText);
-        labelField.setFont(new Font("SansSerif", Font.BOLD, 24));
-        labelField.setMargins(2, 8, 2, 2, 0);
-        formPanel.addFormField(labelField);
+        labelField.setFont(FormField.getDefaultFont().deriveFont(Font.BOLD, 24));
+        labelField.getMargins().setLeft(12);
+        formPanel.add(labelField);
 
-        Font labelFont = new Font("SansSerif", Font.PLAIN, 12);
         if (info.shortDescription != null && !info.shortDescription.isBlank()) {
             String desc = (info.shortDescription.length() > 60)
                     ? info.shortDescription.substring(0, 60) + "..."
                     : info.shortDescription;
             labelField = new LabelField("\"" + desc + "\"");
-            labelField.setFont(labelFont);
-            labelField.setMargins(2, 8, 2, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setLeft(12).setBottom(2);
+            formPanel.add(labelField);
         }
 
         if (info.copyright != null && !info.copyright.isBlank()) {
             labelField = new LabelField(info.copyright);
-            labelField.setFont(labelFont);
-            labelField.setMargins(2, 8, 2, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setLeft(12).setBottom(2);
+            formPanel.add(labelField);
         }
 
         if (info.projectUrl != null && !info.projectUrl.isBlank()) {
             labelField = new LabelField(info.projectUrl);
-            labelField.setFont(labelFont);
             if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.projectUrl)) {
                 try {
                     labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.projectUrl)));
@@ -160,13 +160,12 @@ public final class AboutPanel extends JPanel {
                     logger.warning("Project URL is not well-formed.");
                 }
             }
-            labelField.setMargins(2, 8, 2, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setLeft(12).setBottom(2);
+            formPanel.add(labelField);
         }
 
         if (info.license != null && !info.license.isBlank()) {
             labelField = new LabelField(info.license);
-            labelField.setFont(labelFont);
             if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.license)) {
                 try {
                     labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.license)));
@@ -175,28 +174,27 @@ public final class AboutPanel extends JPanel {
                     logger.warning("License URL is not well-formed.");
                 }
             }
-            labelField.setMargins(2, 8, 2, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setLeft(12).setBottom(2);
+            formPanel.add(labelField);
         }
 
         memoryUsageField = new LabelField(getMemoryStats());
-        memoryUsageField.setFont(labelFont);
-        memoryUsageField.setMargins(2, 8, 2, 2, 0);
-        formPanel.addFormField(memoryUsageField);
+        memoryUsageField.getMargins().setLeft(12).setBottom(2);
+        formPanel.add(memoryUsageField);
 
         for (String customField : info.getCustomFieldNames()) {
             labelField = new LabelField(customField, info.getCustomFieldValue(customField));
-            labelField.setFont(labelFont);
-            labelField.setMargins(4, 8, 4, 2, 0);
-            formPanel.addFormField(labelField);
+            labelField.getMargins().setLeft(12).setBottom(2);
+            formPanel.add(labelField);
             customFields.put(customField, labelField);
         }
 
         String releaseNotes = getReleaseNotesText(info);
         if (releaseNotes != null && !releaseNotes.isBlank()) {
             PanelField releaseNotesField = new PanelField();
+            releaseNotesField.setShouldExpand(true);
             releaseNotesField.getPanel().setLayout(new BorderLayout());
-            releaseNotesField.setMargins(12, 0, 0, 0, 4);
+            releaseNotesField.getMargins().setAll(0).setTop(12).setLeft(12).setInternalSpacing(4);
             JTextArea textArea = new JTextArea();
             textArea.setLineWrap(true);
             textArea.setWrapStyleWord(true);
@@ -215,7 +213,8 @@ public final class AboutPanel extends JPanel {
             constraints.fill = GridBagConstraints.BOTH;
             constraints.weightx = 0.5;
             constraints.weighty = 0.5;
-            if (formPanel.getAlignment().isCentered()) {
+            if (formPanel.getAlignment().isCenteredHorizontally()
+                    || formPanel.getAlignment().isCenteredVertically()) {
                 wrapperPanel.add(dummy1, constraints);
             }
             constraints.gridx = 2;
@@ -234,11 +233,10 @@ public final class AboutPanel extends JPanel {
             constraints.fill = GridBagConstraints.BOTH;
             wrapperPanel.add(dummy1, constraints);
             releaseNotesField.getPanel().add(wrapperPanel, BorderLayout.CENTER);
-            formPanel.addFormField(releaseNotesField);
+            formPanel.add(releaseNotesField);
             textArea.setCaretPosition(0);
         }
 
-        formPanel.render();
         add(formPanel, BorderLayout.CENTER);
     }
 
@@ -321,7 +319,7 @@ public final class AboutPanel extends JPanel {
     }
 
     private BufferedImage generateLogoImage(int width, int height, String name) {
-        LogoConfig config = new LogoConfig(getClass().getName());
+        LogoProperty config = new LogoProperty(getClass().getName());
         config.setLogoWidth(width);
         config.setLogoHeight(height);
         config.setBgColor(Color.WHITE);

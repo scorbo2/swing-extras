@@ -1,6 +1,45 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.4.0 [2025-09-01] - swing-forms rewrite
+  #108 - ExtensionManager: fix config preview bug
+  #107 - Fix minor form field alignment bug
+  #106 - Allow ESC key to cancel props dialog
+  #105 - Add unit tests for all Properties
+  #104 - Log and skip UnsupportedOpException in PropsManager
+  #103 - Merge ColorField and GradientColorField into one
+  #102 - Make AboutPanel smarter about fonts
+  #101 - Make FormField's default font customizable
+  #100 - Split TextField into short and long fields
+  #99 - Deprecate ConfigObject
+  #98 - Deprecate ConfigPanel
+  #97 - refactor TextField constructors
+  #96 - Upgrade Java 11 to Java 17
+  #95 - HashUtil: update byteArrayToHexString
+  #94 - HashUtil: remove the 2GB file hash size limit
+  #93 - HashUtil: log cleanup
+  #91 - ComboField should allow custom cell renderers
+  #90 - Add custom renderer tab to the demo app
+  #89 - Make ListField more flexible and customizable
+  #88 - TextField: allow popup editor
+  #87 - Change FieldValidator from abstract class to interface
+  #86 - Clean up resource handling in swing-forms
+  #84 - Rewrite the swing-forms render pipeline
+  #83 - Add deprecation warning for ConfigObject and ConfigPanel
+  #82 - Refactor FieldValidator
+  #80 - Refactor ValidationResult
+  #79 - Thorough javadoc pass on swing-forms
+  #78 - Refactor FormPanel
+  #77 - Refactor FormField
+  #76 - Remove ugly hack in FormField
+  #75 - Add unit tests for swing-forms
+  #74 - ComboProperty and ComboField are now generic
+  #73 - Refactor FormField.render()
+  #72 - Fix some goofiness in FileField
+  #70 - Fix array index out of bounds in ListProperty
+  #69 - Fix uncaught exception during extension loading
+  #68 - Change the way AbstractProperty exposes form fields
+
 Version 2.3.0 [2025-07-20] - Maintenance release
   #67 - Minor bug in extension config preview
   #66 - Allow subclasses to control PropertiesDialog size

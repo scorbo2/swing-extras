@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  * You can configure the field to allow blank values or not - this does not affect
  * this class, but rather is used when generating a FormField to allow selection.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-08
  */
 public class FileProperty extends AbstractProperty {

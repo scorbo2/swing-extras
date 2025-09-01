@@ -2,19 +2,16 @@ package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.ShortTextField;
 
-import javax.swing.AbstractAction;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +19,7 @@ import java.util.List;
  * Builds a FormPanel that gives some examples of attaching a custom Action
  * to FormFields to do certain things when their value changes.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2029-11-25
  */
 public class FormActionsPanel extends PanelBuilder {
@@ -30,8 +27,8 @@ public class FormActionsPanel extends PanelBuilder {
     private ComboField mainComboField;
 
     public FormActionsPanel() {
-        formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
     }
 
     @Override
@@ -41,98 +38,69 @@ public class FormActionsPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have customizable Actions:", 20);
-        headerLabel.setBottomMargin(24);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("Form fields can have customizable Actions:", 20, 0,
+                                                                  8);
+        headerLabel.getMargins().setBottom(24);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(headerLabel);
+        formPanel.add(headerLabel);
 
-        formPanel.addFormField(buildAlignmentChooser());
+        formPanel.add(buildAlignmentChooser());
 
         List<String> options = new ArrayList<>();
         options.add("This option has no extra settings");
         options.add("This option has 1 extra setting");
         options.add("This option has lot of extra settings");
-        mainComboField = new ComboField("Show/hide extra fields:", options, 0, false);
-        formPanel.addFormField(mainComboField);
+        mainComboField = new ComboField<>("Show/hide extra fields:", options, 0, false);
+        formPanel.add(mainComboField);
 
         final CheckBoxField extraField1 = new CheckBoxField("Extra setting", false);
         extraField1.setVisible(false);
-        extraField1.setLeftMargin(32);
-        formPanel.addFormField(extraField1);
+        extraField1.getMargins().setLeft(32);
+        formPanel.add(extraField1);
 
-        final TextField extraField2 = new TextField("Extra text field 1:", 10, 1, true);
+        final ShortTextField extraField2 = new ShortTextField("Extra text field 1:", 10);
         extraField2.setVisible(false);
-        extraField2.setLeftMargin(32);
-        formPanel.addFormField(extraField2);
-        final TextField extraField3 = new TextField("Extra text field 2:", 10, 1, true);
+        extraField2.getMargins().setLeft(32);
+        formPanel.add(extraField2);
+        final ShortTextField extraField3 = new ShortTextField("Extra text field 2:", 10);
         extraField3.setVisible(false);
-        extraField3.setLeftMargin(32);
-        formPanel.addFormField(extraField3);
-        final TextField extraField4 = new TextField("Extra text field 3:", 10, 1, true);
+        extraField3.getMargins().setLeft(32);
+        formPanel.add(extraField3);
+        final ShortTextField extraField4 = new ShortTextField("Extra text field 3:", 10);
         extraField4.setVisible(false);
-        extraField4.setLeftMargin(32);
-        formPanel.addFormField(extraField4);
+        extraField4.getMargins().setLeft(32);
+        formPanel.add(extraField4);
 
         final NumberField numberField1 = new NumberField("Linked number field 1: ", 15, 0, 9999, 1);
-        formPanel.addFormField(numberField1);
+        formPanel.add(numberField1);
         final NumberField numberField2 = new NumberField("Linked number field 2: ", 15, 0, 9999, 1);
-        formPanel.addFormField(numberField2);
+        formPanel.add(numberField2);
 
-        mainComboField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedIndex = mainComboField.getSelectedIndex();
-                extraField1.setVisible(selectedIndex == 1);
-                extraField2.setVisible(selectedIndex == 2);
-                extraField3.setVisible(selectedIndex == 2);
-                extraField4.setVisible(selectedIndex == 2);
-            }
+        mainComboField.addValueChangedListener(field -> {
+            int selectedIndex = mainComboField.getSelectedIndex();
+            extraField1.setVisible(selectedIndex == 1);
+            extraField2.setVisible(selectedIndex == 2);
+            extraField3.setVisible(selectedIndex == 2);
+            extraField4.setVisible(selectedIndex == 2);
         });
 
-        numberField1.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                numberField2.setCurrentValue(numberField1.getCurrentValue());
-            }
+        numberField1.addValueChangedListener(field -> {
+            numberField2.setCurrentValue(numberField1.getCurrentValue());
         });
 
-        numberField2.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                numberField1.setCurrentValue(numberField2.getCurrentValue());
-            }
+        numberField2.addValueChangedListener(field -> {
+            numberField1.setCurrentValue(numberField2.getCurrentValue());
         });
 
-        formPanel.render();
         return formPanel;
     }
 
-    private ComboField buildAlignmentChooser() {
-        List<String> options = new ArrayList<>();
-        for (FormPanel.Alignment alignment : FormPanel.Alignment.values()) {
-            options.add(alignment.name());
-        }
-        final ComboField combo = new ComboField("Change form alignment:", options, 1, false);
-        combo.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                formPanel.setAlignment(FormPanel.Alignment.valueOf(combo.getSelectedItem()));
-                formPanel.render();
-                final Component component = formPanel;
-
-                // swing wonkiness... changing layouts requires rejiggering the container:
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        component.invalidate();
-                        component.revalidate();
-                        component.repaint();
-                    }
-                });
-            }
-        });
+    private ComboField<Alignment> buildAlignmentChooser() {
+        final ComboField<Alignment> combo = new ComboField<>("Change form alignment:",
+                                                             List.of(Alignment.values()), 0, false);
+        combo.addValueChangedListener(field -> formPanel.setAlignment(combo.getSelectedItem()));
         return combo;
     }
 }

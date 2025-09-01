@@ -1,6 +1,6 @@
 package ca.corbett.extras;
 
-import ca.corbett.extras.gradient.GradientConfig;
+import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.gradient.GradientUtil;
 
 import javax.swing.JDesktopPane;
@@ -56,7 +56,7 @@ public class CustomizableDesktopPane extends JDesktopPane {
 
     private static final Logger logger = Logger.getLogger(CustomizableDesktopPane.class.getName());
     private LogoPlacement logoPlacement;
-    private GradientConfig gradientConfig;
+    private Gradient gradientConfig;
     private final BufferedImage logoImage;
     private float logoImageAlpha;
 
@@ -66,7 +66,7 @@ public class CustomizableDesktopPane extends JDesktopPane {
      *
      * @param gradient The GradientConfig to use initially for drawing the background.
      */
-    public CustomizableDesktopPane(GradientConfig gradient) {
+    public CustomizableDesktopPane(Gradient gradient) {
         this(null, LogoPlacement.OFF, 0f, gradient);
     }
 
@@ -80,19 +80,19 @@ public class CustomizableDesktopPane extends JDesktopPane {
      * @param alpha     The transparency value to use for the logo image (0=invisible, 1=opaque).
      * @param gradient  The GradientConfig to use initially for drawing the background.
      */
-    public CustomizableDesktopPane(BufferedImage image, LogoPlacement placement, float alpha, GradientConfig gradient) {
+    public CustomizableDesktopPane(BufferedImage image, LogoPlacement placement, float alpha, Gradient gradient) {
         super();
 
         this.logoImage = image;
         this.logoPlacement = placement;
         this.logoImageAlpha = alpha;
-        this.gradientConfig = new GradientConfig(gradient);
+        this.gradientConfig = gradient;
 
         logger.log(Level.FINE, "CustomizableDesktopPane created: logo:{0}, {1}, {2}, {3}",
                    new Object[]{logoImage == null ? "no" : "yes",
                            logoPlacement.name(),
                            logoImageAlpha,
-                           gradientConfig.getGradientType().name()});
+                           gradientConfig.type().name()});
     }
 
     /**
@@ -111,8 +111,8 @@ public class CustomizableDesktopPane extends JDesktopPane {
      *
      * @param conf The new GradientConfig to use.
      */
-    public void setGradientConfig(GradientConfig conf) {
-        gradientConfig = new GradientConfig(conf);
+    public void setGradientConfig(Gradient conf) {
+        gradientConfig = conf;
         logger.fine("CustomizableDesktopPane: new GradientConfig set");
         redraw();
     }

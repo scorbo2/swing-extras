@@ -7,10 +7,12 @@ import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesManager;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.PanelField;
-import ca.corbett.forms.fields.TextField;
 
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
@@ -33,7 +35,7 @@ import java.util.Map;
  * to instantiate this panel yourself... much easier to go through ExtensionPanel
  * or ExtensionDialog.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public class ExtensionDetailsPanel extends JPanel {
@@ -103,11 +105,10 @@ public class ExtensionDetailsPanel extends JPanel {
 
     protected void initComponents(boolean isEnabled) {
         setLayout(new BorderLayout());
-        formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
+        formPanel = new FormPanel(Alignment.TOP_LEFT);
 
-        PanelField panelField = new PanelField();
+        PanelField panelField = new PanelField(new FlowLayout(FlowLayout.RIGHT));
         JPanel panel = panelField.getPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         enabledCheckBox = new JCheckBox("Enabled", isEnabled);
         enabledCheckBox.setOpaque(false);
         if (extension == null) {
@@ -116,29 +117,29 @@ public class ExtensionDetailsPanel extends JPanel {
         }
         enabledCheckBox.addActionListener(e -> fireEnableChangeEvent());
         panel.add(enabledCheckBox);
-        panelField.setMargins(0, 0, 0, 0, 2);
-        formPanel.addFormField(panelField);
+        panelField.getMargins().setAll(0).setInternalSpacing(2);
+        formPanel.add(panelField);
 
         AppExtensionInfo extInfo = extension == null ? null : extension.getInfo();
         String name = extInfo == null ? "" : trimString(extInfo.getName(), 40);
         LabelField nameField = new LabelField(name);
-        nameField.setFont(nameField.getFieldLabelFont().deriveFont(Font.BOLD, 16f));
-        nameField.setMargins(0, 4, 6, 0, 0);
-        formPanel.addFormField(nameField);
+        nameField.setFont(FontField.getDefaultFont().deriveFont(Font.BOLD, 16f));
+        nameField.getMargins().setAll(0).setTop(4).setRight(6);
+        formPanel.add(nameField);
 
         File jarFile = getSourceJar();
-        formPanel.addFormField(new LabelField("Type:", extInfo == null ? "" : determineExtensionType()));
+        formPanel.add(new LabelField("Type:", extInfo == null ? "" : determineExtensionType()));
         if (jarFile != null) {
             String location = trimString(jarFile.getParentFile().getAbsolutePath());
-            formPanel.addFormField(new LabelField("Location:", location));
-            formPanel.addFormField(new LabelField("Jar file:", trimString(jarFile.getName())));
+            formPanel.add(new LabelField("Location:", location));
+            formPanel.add(new LabelField("Jar file:", trimString(jarFile.getName())));
         }
-        formPanel.addFormField(new LabelField("Version:", extInfo == null ? "" : trimString(extInfo.getVersion())));
+        formPanel.add(new LabelField("Version:", extInfo == null ? "" : trimString(extInfo.getVersion())));
         if (extInfo != null && extInfo.getTargetAppName() != null && extInfo.getTargetAppVersion() != null) {
             String requires = trimString(extInfo.getTargetAppName() + " " + extInfo.getTargetAppVersion());
-            formPanel.addFormField(new LabelField("Requires:", requires));
+            formPanel.add(new LabelField("Requires:", requires));
         }
-        formPanel.addFormField(new LabelField("Author:", extInfo == null ? "" : trimString(extInfo.getAuthor())));
+        formPanel.add(new LabelField("Author:", extInfo == null ? "" : trimString(extInfo.getAuthor())));
 
         if (extension != null) {
             final List<AbstractProperty> configProps = extension.getConfigProperties();
@@ -152,7 +153,7 @@ public class ExtensionDetailsPanel extends JPanel {
                         showConfigPreview(configProps);
                     }
                 });
-                formPanel.addFormField(labelField);
+                formPanel.add(labelField);
             }
         }
 
@@ -161,28 +162,25 @@ public class ExtensionDetailsPanel extends JPanel {
             for (String fieldName : customFieldNames) {
                 String fieldNameShort = trimString(fieldName, 20);
                 String fieldValueShort = trimString(extInfo.getCustomFieldValue(fieldName));
-                formPanel.addFormField(new LabelField(fieldNameShort + ":", fieldValueShort));
+                formPanel.add(new LabelField(fieldNameShort + ":", fieldValueShort));
             }
         }
 
-        TextField descriptionField = new TextField("Description:", 40, 5, true);
+        LongTextField descriptionField = LongTextField.ofDynamicSizingMultiLine("Description", 8);
 
         // Marking the TextField as disabled will unfortunately change the text color to something
         // much lighter, which makes it very hard or almost impossible to read in some look and feels:
         //descriptionField.setEnabled(false);
 
         // So instead, we'll leave it as "enabled" but mark the JTextArea itself as read-only:
-        JTextArea jTextArea = (JTextArea)descriptionField.getFieldComponent();
+        JTextArea jTextArea = descriptionField.getTextArea();
         jTextArea.setEditable(false);
 
-        jTextArea.setLineWrap(true);
         descriptionField.setText(extInfo == null ? "" : extInfo.getLongDescription());
         jTextArea.setCaretPosition(0); // scroll to top
-        descriptionField.setScrollPanePreferredSize(460, 100);
-        descriptionField.setMargins(10, 4, 4, 4, 4);
-        formPanel.addFormField(descriptionField);
+        descriptionField.getMargins().setAll(4);
+        formPanel.add(descriptionField);
 
-        formPanel.render();
         add(formPanel, BorderLayout.CENTER);
     }
 
@@ -286,16 +284,19 @@ public class ExtensionDetailsPanel extends JPanel {
      * @param configProps A list of AbstractProperty instances to show.
      */
     protected void showConfigPreview(final List<AbstractProperty> configProps) {
-        // Make a note of the existing initiallyEditable state of each Property, as we will be changing it:
+        // Make a note of the existing initiallyEditable and enabled state of each Property, as we will be changing it:
         Map<String, Boolean> initiallyEditableMap = new HashMap<>();
+        Map<String, Boolean> enabledMap = new HashMap<>();
         for (AbstractProperty prop : configProps) {
             initiallyEditableMap.put(prop.getFullyQualifiedName(), prop.isInitiallyEditable());
+            enabledMap.put(prop.getFullyQualifiedName(), prop.isEnabled());
         }
 
         // Make a copy of the list so we can add our preview note label field:
         List<AbstractProperty> copy = new ArrayList<>(configProps);
         for (AbstractProperty prop : copy) {
             prop.setInitiallyEditable(false);
+            prop.setEnabled(true); // unconditionally force them all enabled so they show up even if extension disabled
         }
         copy.add(new LabelProperty("Preview note.Config preview.label1",
                                    "<html>Read-only config preview generated by ExtensionManager.<br>"
@@ -309,6 +310,7 @@ public class ExtensionDetailsPanel extends JPanel {
         // Now restore all properties to their previous initiallyEditable state:
         for (AbstractProperty prop : configProps) {
             prop.setInitiallyEditable(initiallyEditableMap.get(prop.getFullyQualifiedName()));
+            prop.setEnabled(enabledMap.get(prop.getFullyQualifiedName()));
         }
     }
 }

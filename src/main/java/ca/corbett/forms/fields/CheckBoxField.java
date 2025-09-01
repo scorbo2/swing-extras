@@ -1,55 +1,45 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
-
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 
 /**
  * A FormField to wrap a JCheckBox.
  * <p>
  * A note about validation: checkboxes don't generally "count" when a FormPanel validates itself.
- * That is, they won't show a little checkbox label to indicate that the selected value is "correct".
- * However, if you invoked addFieldValidator(), then the field will automatically be included
- * in any calls to formPanel.isFormValid().
- * </p>
+ * That is, they won't show a validation label to indicate that the selected value is "correct".
+ * You can change this behavior by using addFieldValidator() - if any FieldValidators are present
+ * on this field, then it will be included when the FormPanel is validated.
+ * <p>
+ * <b>Getting access to the underlying JCheckBox</b> - if you need access to the underlying
+ * JCheckBox (for example, for styling purposes, changing the font, etc), you can
+ * use getFieldComponent() and cast the return to JCheckBox.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-27
  */
 public final class CheckBoxField extends FormField {
 
     public CheckBoxField(String labelText, boolean isChecked) {
-        fieldLabel = new JLabel();
-        fieldLabel.setFont(fieldLabelFont);
         fieldComponent = new JCheckBox(labelText, isChecked);
-        fieldComponent.setFont(fieldLabelFont);
+        fieldComponent.setFont(defaultFont);
         ((JCheckBox)fieldComponent).addItemListener(e -> fireValueChangedEvent());
-        showValidationLabel = false;
+    }
+
+    /**
+     * Overridden here as we generally don't want to show a validation label on a checkbox.
+     * Will return true only if one or more FieldValidators have been explicitly assigned.
+     */
+    @Override
+    public boolean hasValidationLabel() {
+        return !fieldValidators.isEmpty();
     }
 
     public boolean isChecked() {
         return ((JCheckBox)fieldComponent).isSelected();
     }
 
-    public void setChecked(boolean checked) {
+    public CheckBoxField setChecked(boolean checked) {
         ((JCheckBox)fieldComponent).setSelected(checked);
-    }
-
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        // Note we don't add the fieldLabel here because a checkbox has its own label built in.
-
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.gridwidth = 2;
-        constraints.gridy = constraints.gridy + 1;
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.fill = GridBagConstraints.NONE;
-        fieldComponent.setFont(fieldLabelFont);
-        container.add(fieldComponent, constraints);
+        return this;
     }
 }

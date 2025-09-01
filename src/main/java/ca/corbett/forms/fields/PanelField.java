@@ -1,11 +1,8 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
-
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.awt.FlowLayout;
+import java.awt.LayoutManager;
 
 /**
  * A FormField that wraps and exposes a JPanel, into which callers can render
@@ -18,14 +15,21 @@ import java.awt.Insets;
  * the form is validated. But if you add a FieldValidator
  * to your PanelField, then the validation label will appear
  * when the form is validated.
- * </p>
+ * <p>
+ * The purpose of a PanelField is to allow a very easy way to create a custom
+ * FormField without actually extending the FormField class yourself. You can
+ * simply instantiate a PanelField and then render whatever you need. You can
+ * of course also write a corresponding FieldValidator for your PanelField to
+ * validate whatever value it contains, but at that point it might be easier
+ * to just extend FormField and create a custom implementation.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2020-09-27
  */
 public class PanelField extends FormField {
 
     private final JPanel panel;
+    private boolean shouldExpand;
 
     /**
      * Creates a new PanelField with an empty wrapped JPanel.
@@ -33,12 +37,24 @@ public class PanelField extends FormField {
      * components to it.
      */
     public PanelField() {
-        fieldLabel = new JLabel();
-        showValidationLabel = false;
-        panel = new JPanel();
-        fieldComponent = panel;
+        this(new FlowLayout());
     }
 
+    public PanelField(LayoutManager layoutManager) {
+        panel = new JPanel();
+        fieldComponent = panel;
+        panel.setLayout(layoutManager);
+        shouldExpand = false; // arbitrary default
+    }
+
+    /**
+     * Overridden here as we generally don't want to show a validation label on a panel field.
+     * Will return true only if one or more FieldValidators have been explicitly assigned.
+     */
+    @Override
+    public boolean hasValidationLabel() {
+        return !fieldValidators.isEmpty();
+    }
 
     /**
      * Exposes the wrapped JPanel so that callers can add custom components to it.
@@ -51,21 +67,22 @@ public class PanelField extends FormField {
 
 
     /**
-     * Renders our wrapped JPanel into the given container. The panel will span the width
-     * of the form and will respect any supplied margin parameters.
-     *
-     * @param container   The container into which we will render the wrapped JPanel.
-     * @param constraints The constraints to use for rendering.
+     * Optionally make this FormField expand to fill the entire width of the parent
+     * FormPanel. Defaults to false.
      */
+    public PanelField setShouldExpand(boolean expand) {
+        shouldExpand = expand;
+        return this;
+    }
+    
+
     @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, rightMargin);
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.gridwidth = 2;
-        constraints.fill = GridBagConstraints.BOTH;
-        constraints.gridy = constraints.gridy + 1;
-        constraints.weightx = 0.05;
-        container.add(fieldComponent, constraints);
-        constraints.weightx = 0.0;
+    public boolean isMultiLine() {
+        return true;
+    }
+
+    @Override
+    public boolean shouldExpand() {
+        return shouldExpand;
     }
 }

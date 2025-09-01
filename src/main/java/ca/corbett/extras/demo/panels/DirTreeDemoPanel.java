@@ -3,20 +3,18 @@ package ca.corbett.extras.demo.panels;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.dirtree.DirTreeListener;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.TextField;
+import ca.corbett.forms.fields.LongTextField;
 
-import javax.swing.AbstractAction;
 import javax.swing.JPanel;
-import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.FileSystem;
@@ -32,7 +30,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
     private ComboField fileSystemCombo;
     private ComboField rootDirCombo;
     private final DirTreeListener dirTreeListener;
-    private TextField listenerTextArea;
+    private LongTextField listenerTextArea;
 
     public DirTreeDemoPanel() {
         dirTreeListener = new DirTreeListener() {
@@ -89,14 +87,14 @@ public class DirTreeDemoPanel extends PanelBuilder {
     }
 
     private FormPanel buildFormPanel() {
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(12);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(12);
 
-        LabelField label = LabelField.createBoldHeaderLabel("DirTree", 20);
+        LabelField label = LabelField.createBoldHeaderLabel("DirTree", 20, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
         StringBuilder sb = new StringBuilder();
         sb.append("<html>The <b>DirTree</b> component gives you a read-only view<br>");
@@ -106,23 +104,20 @@ public class DirTreeDemoPanel extends PanelBuilder {
         sb.append("You can also respond to selection changes as the user<br>");
         sb.append("selects different nodes.</html>");
         LabelField labelField = LabelField.createPlainHeaderLabel(sb.toString(), 14);
-        labelField.setTopMargin(12);
-        labelField.setBottomMargin(16);
-        formPanel.addFormField(labelField);
+        labelField.getMargins().setTop(12).setBottom(16);
+        formPanel.add(labelField);
 
         List<String> options = new ArrayList<>();
         for (FileSystem system : fileSystems) {
             options.add(system.getClass().getSimpleName());
         }
-        ComboField comboField = new ComboField("File system:", options, 0, false);
-        comboField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedIndex = ((ComboField)e.getSource()).getSelectedIndex();
-                changeFileSystem(selectedIndex);
-            }
+        ComboField<String> comboField = new ComboField<>("File system:", options, 0, false);
+        comboField.addValueChangedListener(field -> {
+            //noinspection unchecked
+            int selectedIndex = ((ComboField<String>)field).getSelectedIndex();
+            changeFileSystem(selectedIndex);
         });
-        formPanel.addFormField(comboField);
+        formPanel.add(comboField);
 
         options = new ArrayList<>();
         if (!fileSystems.isEmpty()) {
@@ -130,51 +125,42 @@ public class DirTreeDemoPanel extends PanelBuilder {
                 options.add(file.getAbsolutePath());
             }
         }
-        comboField = new ComboField("Root node:", options, 0, false);
-        comboField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedIndex = ((ComboField)e.getSource()).getSelectedIndex();
-                changeRootNode(selectedIndex);
-            }
+        comboField = new ComboField<>("Root node:", options, 0, false);
+        comboField.addValueChangedListener(field -> {
+            //noinspection unchecked
+            int selectedIndex = ((ComboField<String>)field).getSelectedIndex();
+            changeRootNode(selectedIndex);
         });
-        formPanel.addFormField(comboField);
+        formPanel.add(comboField);
 
         CheckBoxField checkBoxField = new CheckBoxField("Allow right-click to lock/unlock the tree", true);
-        checkBoxField.setTopMargin(12);
-        checkBoxField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dirTree.setAllowLock(((CheckBoxField)e.getSource()).isChecked());
-            }
+        checkBoxField.getMargins().setTop(12);
+        checkBoxField.addValueChangedListener(field -> {
+            dirTree.setAllowLock(((CheckBoxField)field).isChecked());
         });
-        formPanel.addFormField(checkBoxField);
+        formPanel.add(checkBoxField);
 
         checkBoxField = new CheckBoxField("Listen for events", false);
-        checkBoxField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                boolean isSelected = ((CheckBoxField)e.getSource()).isChecked();
-                if (isSelected) {
-                    dirTree.addDirTreeListener(dirTreeListener);
-                    listenerTextArea.setText("Listening for events..." + System.lineSeparator());
-                }
-                else {
-                    dirTree.removeDirTreeListener(dirTreeListener);
-                    listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
-                }
+        checkBoxField.addValueChangedListener(field -> {
+            boolean isSelected = ((CheckBoxField)field).isChecked();
+            if (isSelected) {
+                dirTree.addDirTreeListener(dirTreeListener);
+                listenerTextArea.setText("Listening for events..." + System.lineSeparator());
+            }
+            else {
+                dirTree.removeDirTreeListener(dirTreeListener);
+                listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
             }
         });
-        checkBoxField.setBottomMargin(12);
-        formPanel.addFormField(checkBoxField);
+        checkBoxField.getMargins().setBottom(12);
+        formPanel.add(checkBoxField);
 
-        listenerTextArea = new TextField("", 65, 8, true);
-        ((JTextComponent)listenerTextArea.getFieldComponent()).setEditable(false);
-        ((JTextComponent)listenerTextArea.getFieldComponent()).setFont(new Font("Monospaced", Font.PLAIN, 10));
+        listenerTextArea = LongTextField.ofDynamicSizingMultiLine("", 8);
+        listenerTextArea.getTextArea().setEditable(false);
+        listenerTextArea.getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 10));
         listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
-        formPanel.addFormField(listenerTextArea);
+        formPanel.add(listenerTextArea);
 
-        formPanel.render();
         return formPanel;
     }
 

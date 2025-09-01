@@ -5,19 +5,18 @@ import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.image.animation.ImageScroller;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 
-import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,8 +35,8 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
     private ImagePanel imagePanel;
 
     public AnimationScrollDemoPanel() {
-        formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
         canvas = new BufferedImage(IMG_WIDTH, IMG_HEIGHT, BufferedImage.TYPE_INT_RGB);
         BufferedImage img;
         try {
@@ -56,42 +55,33 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("ImageScroller demo", 20);
-        headerLabel.setBottomMargin(24);
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("ImageScroller demo", 20, 0, 8);
+        headerLabel.getMargins().setBottom(24);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(headerLabel);
+        formPanel.add(headerLabel);
 
         List<String> options = new ArrayList<>(List.of("Very slow", "Slow", "Medium", "Fast", "Very fast"));
-        speedField = new ComboField("Scroll speed:", options, 1, false);
-        speedField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateSpeed();
-            }
+        speedField = new ComboField<>("Scroll speed:", options, 1, false);
+        speedField.addValueChangedListener(field -> {
+            updateSpeed();
         });
-        formPanel.addFormField(speedField);
+        formPanel.add(speedField);
 
         options = List.of("None", "Linear", "Quadratic", "Cubic");
-        bounceTypeField = new ComboField("Bounce type:", options, 1, false);
-        bounceTypeField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateBounceType();
-            }
+        bounceTypeField = new ComboField<>("Bounce type:", options, 1, false);
+        bounceTypeField.addValueChangedListener(field -> {
+            updateBounceType();
         });
-        formPanel.addFormField(bounceTypeField);
+        formPanel.add(bounceTypeField);
 
         options = List.of("Small", "Medium", "Large");
-        bounceMarginField = new ComboField("Bounce margin:", options, 1, false);
-        bounceMarginField.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateBounceMargin();
-            }
+        bounceMarginField = new ComboField<>("Bounce margin:", options, 1, false);
+        bounceMarginField.addValueChangedListener(field -> {
+            updateBounceMargin();
         });
-        formPanel.addFormField(bounceMarginField);
+        formPanel.add(bounceMarginField);
 
         PanelField panelField = new PanelField();
         JPanel panel = panelField.getPanel();
@@ -101,7 +91,7 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         imagePanel.setPreferredSize(new Dimension(IMG_WIDTH, IMG_HEIGHT));
         imagePanel.setImage(canvas);
         panel.add(imagePanel);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
         panelField = new PanelField();
         panel = panelField.getPanel();
@@ -114,12 +104,11 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         button = new JButton("Stop");
         button.addActionListener(e -> stop());
         panel.add(button);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
-        formPanel.addFormField(new LabelField("ImageScroller is better suited for fullscreen applications!"));
-        formPanel.addFormField(new LabelField("It can scroll an oversized image with configurable 'bounce' parameters."));
+        formPanel.add(new LabelField("ImageScroller is better suited for fullscreen applications!"));
+        formPanel.add(new LabelField("It can scroll an oversized image with configurable 'bounce' parameters."));
 
-        formPanel.render();
         return formPanel;
     }
 

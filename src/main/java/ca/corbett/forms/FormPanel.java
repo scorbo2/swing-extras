@@ -2,58 +2,42 @@ package ca.corbett.forms;
 
 import ca.corbett.forms.fields.FormField;
 
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This FormPanel wraps a collection of FormField instances and provides an
- * easy mechanism for rendering and form validation.
- * <p>
- * You can either create a new, empty FormPanel and then use addFormField to add
- * fields to it, or you can supply a List of FormFields to the constructor.
- * Either way, <b>you must invoke render() before showing the FormPanel</b>.
- * </p>
- * <p>
- * Forms have an Alignment property which defaults to TOP_CENTER. This means
- * that the form will stick to the top of its container and will try to
- * horizontally center all contents. You can adjust this alignment at
- * any time, though you will have to re-render the FormPanel if you change
- * this property after the FormPanel has already been rendered.
- * </p>
+ * FormPanel wraps a collection of FormFields and manages the following functions:
+ * <ul>
+ *     <li><b>Layout management</b> - you don't need to write manual GridBagLayout code
+ *         to use a FormPanel. Just add your FormFields to the panel and the layout will
+ *         be handled automatically.
+ *     <li><b>Form validation</b> - assuming you've added FieldValidator instances to
+ *         your FormFields as needed, you don't need to write much manual validation code,
+ *         and you don't need to write any UI code to show validation results. Just
+ *         call formField.validate() and the validators will be invoked automatically.
+ *     <li><b>Optional inline help</b> - every FormField can have optional help text
+ *         which the FormPanel will render inline in the form of an information icon
+ *         next to the field, which will show tooltip help text.
+ *     <li><b>Generic FormField handling</b> - the FormField class is highly
+ *         extensible, so you can very easily provide your own FormField implementation
+ *         for custom display and editing of data.
+ * </ul>
  *
- * @author scorbo2
+ * <p>Handling oversized forms</p><br>
+ * You can easily add a FormPanel to a JScrollPane to provide for scrollbars in the
+ * case where the form is unreasonably large.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
 public final class FormPanel extends JPanel {
-
-    public enum Alignment {
-        TOP_CENTER,
-        TOP_LEFT,
-        CENTER_LEFT,
-        CENTER;
-
-        public boolean isLeftAligned() {
-            return this == TOP_LEFT || this == CENTER_LEFT;
-        }
-
-        public boolean isTopAligned() {
-            return this == TOP_LEFT || this == TOP_CENTER;
-        }
-
-        public boolean isCentered() {
-            return this == CENTER_LEFT || this == CENTER;
-        }
-    }
-
-    public static final URL helpImageUrl = FormPanel.class.getResource(
-            "/ca/corbett/swing-forms/images/formfield-help.png");
 
     public static final int LEFT_SPACER_COLUMN = 0;
     public static final int LABEL_COLUMN = 1;
@@ -63,66 +47,44 @@ public final class FormPanel extends JPanel {
     public static final int VALIDATION_COLUMN = 4;
     public static final int RIGHT_SPACER_COLUMN = 5;
 
-    private final List<FormField> formFields;
+    private final List<FormField> formFields = new ArrayList<>();
     private Alignment alignment;
-    private int standardLeftMargin = 0;
+    private int borderMargin = 0;
+    private boolean renderInProgress = false;
 
     /**
-     * Creates a new, blank FormPanel that will default to the TOP_CENTER Alignment.
+     * Creates a new, empty FormPanel with TOP_CENTER Alignment.
      */
     public FormPanel() {
-        this(new ArrayList<FormField>(), Alignment.TOP_CENTER);
+        this(Alignment.TOP_CENTER);
     }
 
     /**
-     * Creates a new, blank FormPanel with the given Alignment.
-     *
-     * @param alignment Describes how FormFields should be laid out on this FormPanel.
+     * Creates a new, empty FormPanel with the given Alignment.
      */
     public FormPanel(Alignment alignment) {
-        this(new ArrayList<FormField>(), alignment);
-    }
-
-    /**
-     * Creates a new FormPanel with the given FormFields and a default TOP_CENTER Alignment.
-     *
-     * @param formFields A list of FormFields to add to this form.
-     */
-    public FormPanel(List<FormField> formFields) {
-        this(formFields, Alignment.TOP_CENTER);
-    }
-
-    /**
-     * Creates a new FormPanel with the given FormFields and Alignment parameters.
-     *
-     * @param formFields A list of FormFields to add to this form.
-     * @param alignment  Describes how FormFields should be laid out on this FormPanel.
-     */
-    public FormPanel(List<FormField> formFields, Alignment alignment) {
-        this.formFields = new ArrayList<>();
-        this.formFields.addAll(formFields);
         this.alignment = alignment;
     }
 
     /**
-     * For left-aligned forms, you can apply a standard margin to keep the form fields a bit
-     * away from the left edge of the FormPanel. Does nothing for center-aligned forms.
-     * This must be invoked before render()!
+     * An optional pixel margin that will be applied to FormFields as necessary to keep them
+     * away from the form border. The default value is zero, meaning no extra margins will
+     * be applied. Note that any value given here is added to whatever margins are already present on
+     * each FormField. This value does not replace those values. So, you can still indent
+     * a FormField from the others by setting its left margin on a left-aligned form, for example.
      *
-     * @param margin The margin, in pixels, to apply to the left of all form fields.
+     * @param margin The margin, in pixels, to apply to FormFields as needed. Negative values are treated as 0.
      */
-    public void setStandardLeftMargin(int margin) {
-        standardLeftMargin = margin;
+    public FormPanel setBorderMargin(int margin) {
+        borderMargin = Math.max(0, margin); // Convert negative values to 0
+        return this;
     }
 
     /**
-     * Returns the left margin to apply to all form fields if the current alignment is
-     * left-aligned.
-     *
-     * @return A left margin value in pixels.
+     * Returns the optional border margin to be applied as described in setBorderMargin.
      */
-    public int getStandardLeftMargin() {
-        return standardLeftMargin;
+    public int getBorderMargin() {
+        return borderMargin;
     }
 
     /**
@@ -137,7 +99,7 @@ public final class FormPanel extends JPanel {
 
     /**
      * Finds and returns a specific FormField by its identifier, if it exists.
-     * No validation of FormField.identifier is done in this class! If more than
+     * No validation of the FormField identifier is done in this class! If more than
      * one FormField has the same identifier, this method will return whichever
      * one it finds first. If a field does not have an identifier, it will not
      * be considered by this method.
@@ -155,7 +117,7 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Removes all FormField instances from this FormPanel and re-renders it.
+     * Removes all FormFields from this FormPanel and re-renders it.
      */
     public void removeAllFormFields() {
         formFields.clear();
@@ -163,37 +125,36 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Adds the specified list of FormFields to this FormPanel.
-     * The render() method must be invoked manually after this call to see the result.
-     *
-     * @param fields The FormFields to be added to this FormPanel.
+     * Overridden here so we can also remove all FormField instances.
+     * This is effectively the same as calling removeAllFormFields() and
+     * it will trigger a re-render.
      */
-    public void addFormFields(List<FormField> fields) {
-        this.formFields.addAll(fields);
-        if (alignment.isLeftAligned() && standardLeftMargin > 0) {
-            for (FormField field : fields) {
-                field.setLeftMargin(field.getLeftMargin() + standardLeftMargin);
-            }
+    @Override
+    public void removeAll() {
+        super.removeAll();
+        if (!renderInProgress) {
+            removeAllFormFields(); // don't invoke if this call came from our own render() method, else infinite loop
         }
+    }
+
+    /**
+     * Adds the specified list of FormFields to this FormPanel.
+     */
+    public void add(List<FormField> fields) {
+        this.formFields.addAll(fields);
+        render();
     }
 
     /**
      * Adds the specified FormField to this FormPanel.
-     * The render() method must be invoked manually after this call to see the result.
-     *
-     * @param field The FormField to be added to this FormPanel.
      */
-    public void addFormField(FormField field) {
+    public void add(FormField field) {
         this.formFields.add(field);
-        if (alignment.isLeftAligned() && standardLeftMargin > 0) {
-            field.setLeftMargin(field.getLeftMargin() + standardLeftMargin);
-        }
+        render();
     }
 
     /**
      * Returns the number of FormFields contained in this panel.
-     *
-     * @return A count of FormFields contained here.
      */
     public int getFieldCount() {
         return formFields.size();
@@ -210,9 +171,9 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Reports whether this form panel is in a valid state or not.
-     *
-     * @return Whether all fields in this panel are valid.
+     * Validates each FormField by invoking all FieldValidators that are attached to it,
+     * then returns the overall result. The return will be true if all FieldValidators for
+     * all FormFields validated successfully.
      */
     public boolean isFormValid() {
         boolean isValid = true;
@@ -230,11 +191,13 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Changes the Alignment property of this FormPanel - remember to invoke render() again
-     * if this FormPanel has already been rendered!
+     * Changes the Alignment property of this FormPanel and re-renders it.
      */
-    public void setAlignment(Alignment alignment) {
+    public FormPanel setAlignment(Alignment alignment) {
         this.alignment = alignment;
+        forceRerender();
+
+        return this;
     }
 
     /**
@@ -245,76 +208,253 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Renders this form panel by rendering each form field one by one.
-     * This will clear the panel of any components from any previous render().
+     * If it is required to re-render the form panel for some reason, you can do it manually here.
+     * Generally, this should not be necessary, as a re-render will happen automatically as fields
+     * are added or removed. But, if a field has changed structurally in some way that requires
+     * a re-render, this option exists.
      */
-    public void render() {
+    public void forceRerender() {
+        render();
+
+        // swing wonkiness... changing layouts requires rejiggering the container:
+        final Component component = this;
+        SwingUtilities.invokeLater(() -> {
+            component.invalidate();
+            component.revalidate();
+            component.repaint();
+        });
+    }
+
+    /**
+     * Invoked internally as needed to remove all UI components and re-do the form layout.
+     */
+    private void render() {
+        renderInProgress = true;
         this.removeAll();
+        renderInProgress = false;
         this.setLayout(new GridBagLayout());
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.anchor = GridBagConstraints.WEST;
-        constraints.gridx = 0;
-        constraints.gridy = 0;
 
-        for (FormField field : formFields) {
-
-            // Move the field to the center if we're not left-aligned
-            if (!alignment.isLeftAligned()) {
-                JLabel spacer = new JLabel("");
-                constraints.fill = GridBagConstraints.BOTH;
-                constraints.weightx = 0.5;
-                constraints.gridx = LEFT_SPACER_COLUMN;
-                add(spacer, constraints);
-                constraints.fill = GridBagConstraints.NONE;
-                constraints.weightx = 0.0;
-            }
-
-            // Tell the FormField to render itself starting in the FORM_FIELD_START_COLUMN:
-            constraints.gridx = FORM_FIELD_START_COLUMN;
-            field.render(this, constraints);
-            constraints.gridwidth = 1;
-            constraints.fill = GridBagConstraints.NONE;
-
-            // Render the help label if the form field has help text:
-            if (!field.getHelpText().isBlank() && !field.isExtraLabelRenderedByField()) {
-                constraints.gridx = HELP_COLUMN;
-                constraints.insets = new Insets(field.getTopMargin(), field.getComponentSpacing(),
-                                                field.getBottomMargin(), field.getComponentSpacing());
-                if (helpImageUrl != null) {
-                    field.getHelpLabel().setIcon(new ImageIcon(helpImageUrl));
-                }
-                field.getHelpLabel().setToolTipText(field.getHelpText());
-                add(field.getHelpLabel(), constraints);
-            }
-
-            // Render the validation label if the form field wants it:
-            if (field.getShowValidationLabel() && !field.isExtraLabelRenderedByField()) {
-                constraints.gridx = VALIDATION_COLUMN;
-                constraints.insets = new Insets(field.getTopMargin(), field.getComponentSpacing(),
-                                                field.getBottomMargin(), field.getRightMargin());
-                add(field.getValidationLabel(), constraints);
-            }
-
-            JLabel spacer = new JLabel("");
-            constraints.gridx = RIGHT_SPACER_COLUMN;
-            constraints.weightx = 0.5;
-            constraints.fill = GridBagConstraints.BOTH;
-            add(spacer, constraints);
-            constraints.fill = GridBagConstraints.NONE;
-            constraints.weightx = 0.0;
+        if (formFields.isEmpty()) {
+            return;
         }
 
-        // Add a spacer label to take up any remaining space in the GridBagLayout:
-        constraints.gridy++;
-        constraints.gridx = 0;
+        addHeaderMargin();
+        int row = 1; // starting on row 1, after header margin row
+
+        for (int fieldIndex = 0; fieldIndex < formFields.size(); fieldIndex++, row++) {
+            FormField field = formFields.get(fieldIndex);
+            field.preRender(this);
+            Margins fieldMargins = calculateFieldMargins(fieldIndex);
+
+            addLeftMargin(row);
+            renderFieldLabel(field, row, fieldMargins);
+            renderFieldComponent(field, row, fieldMargins);
+            renderHelpLabel(field, row, fieldMargins);
+            renderValidationLabel(field, row, fieldMargins);
+            addRightMargin(row);
+        }
+
+        addFooterMargin(row);
+    }
+
+    /**
+     * Invoked internally to render the field label for the given FormField, if it has one.
+     */
+    private void renderFieldLabel(FormField field, int row, Margins margins) {
+        if (!field.hasFieldLabel()) {
+            return;
+        }
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = FORM_FIELD_START_COLUMN;
+        constraints.gridy = row;
+        constraints.anchor = field.isMultiLine() ? GridBagConstraints.FIRST_LINE_START : GridBagConstraints.WEST;
+        int extraTopMargin = field.isMultiLine() ? 4 : 0; // TODO don't hard-code this value
+        constraints.insets = new Insets(margins.getTop() + extraTopMargin,
+                                        margins.getLeft(),
+                                        margins.getBottom(),
+                                        margins.getInternalSpacing());
+        add(field.getFieldLabel(), constraints);
+    }
+
+    /**
+     * Invoked internally to render the field component for the given FormField, if it has one.
+     */
+    private void renderFieldComponent(FormField field, int row, Margins margins) {
+        if (field.getFieldComponent() == null) {
+            return;
+        }
+
+        // If a field label exists, then left margin has already been set. Otherwise, set it now.
+        int leftMargin = field.hasFieldLabel() ? margins.getInternalSpacing() : margins.getLeft();
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.insets = new Insets(margins.getTop(),
+                                        leftMargin,
+                                        margins.getBottom(),
+                                        margins.getInternalSpacing());
+        constraints.gridx = CONTROL_COLUMN;
+        constraints.gridy = row;
+        constraints.anchor = field.isMultiLine() ? GridBagConstraints.NORTHWEST : GridBagConstraints.WEST;
+
+        if (field.shouldExpand()) {
+            constraints.weightx = 4; // this feels a bit hacky but it does force the component to form width
+            constraints.fill = GridBagConstraints.BOTH;
+        }
+
+        // If there is no field label, then this control will occupy both the field
+        // label column and the control column:
+        if (!field.hasFieldLabel()) {
+            constraints.gridx = FORM_FIELD_START_COLUMN;
+            constraints.gridwidth = 2;
+        }
+        add(field.getFieldComponent(), constraints);
+    }
+
+    /**
+     * Invoked internally to render the help label for the given FormField, if it has one.
+     */
+    private void renderHelpLabel(FormField field, int row, Margins margins) {
+        if (!field.hasHelpLabel()) {
+            return;
+        }
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = HELP_COLUMN;
+        constraints.gridy = row;
+        constraints.anchor = GridBagConstraints.NORTH;
+        constraints.insets = new Insets(margins.getTop(), margins.getInternalSpacing(), margins.getBottom(),
+                                        margins.getInternalSpacing());
+        add(field.getHelpLabel(), constraints);
+    }
+
+    /**
+     * Invoked internally to render the validation label for the given FormField, if it has one.
+     */
+    private void renderValidationLabel(FormField field, int row, Margins margins) {
+        // We need to render it unconditionally because it might have a right margin that we need to honor
+        //if (!field.hasValidationLabel()) {
+        //    return;
+        //}
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = VALIDATION_COLUMN;
+        constraints.gridy = row;
+        constraints.anchor = GridBagConstraints.NORTH;
+        constraints.insets = new Insets(margins.getTop(), margins.getInternalSpacing(), margins.getBottom(),
+                                        margins.getRight());
+        add(field.getValidationLabel(), constraints);
+    }
+
+    /**
+     * Adds a header margin to properly vertically align the form.
+     */
+    private void addHeaderMargin() {
+        GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridwidth = 6;
         constraints.fill = GridBagConstraints.BOTH;
         if (alignment.isTopAligned()) {
-            constraints.weighty = 1; // Force the form to the top of the panel
+            constraints.weighty = 0.0; // addFooterMargin will force the form to the top
         }
-        constraints.weightx = 0;
-        JLabel dummy = new JLabel();
-        this.add(dummy, constraints);
+        else if (alignment.isCenteredVertically()) {
+            constraints.weighty = 0.5; // Center the form
+        }
+        else if (alignment.isBottomAligned()) {
+            constraints.weighty = 1; // Force the form to the bottom of the panel
+        }
+        this.add(new JLabel(), constraints);
+    }
+
+    /**
+     * Adds a left margin to the given grid row to align the form field horizontally on that row.
+     */
+    private void addLeftMargin(int row) {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = LEFT_SPACER_COLUMN;
+        constraints.gridy = row;
+        constraints.fill = GridBagConstraints.BOTH;
+        if (alignment.isLeftAligned()) {
+            constraints.weightx = 0.0; // addRightMargin will force the form to the left
+        }
+        else if (alignment.isCenteredHorizontally()) {
+            constraints.weightx = 0.5; // center the form
+        }
+        else if (alignment.isRightAligned()) {
+            constraints.weightx = 1.0; // Force the form to the right
+        }
+        add(new JLabel(), constraints);
+    }
+
+    /**
+     * Adds a right margin to the given grid row to align the form field horizontally on that row.
+     */
+    private void addRightMargin(int row) {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = RIGHT_SPACER_COLUMN;
+        constraints.gridy = row;
+        constraints.fill = GridBagConstraints.BOTH;
+        if (alignment.isLeftAligned()) {
+            constraints.weightx = 1.0; // Force the form to the left
+        }
+        else if (alignment.isCenteredHorizontally()) {
+            constraints.weightx = 0.5; // center the form
+        }
+        else if (alignment.isRightAligned()) {
+            constraints.weightx = 0.0; // addLeftMargin will force the form to the right
+        }
+        add(new JLabel(), constraints);
+    }
+
+    /**
+     * Adds a footer margin to properly vertically align the form.
+     */
+    private void addFooterMargin(int row) {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridwidth = 6;
+        constraints.gridy = row;
+        constraints.fill = GridBagConstraints.BOTH;
+        if (alignment.isTopAligned()) {
+            constraints.weighty = 1.0; // Force the form to the top
+        }
+        else if (alignment.isCenteredVertically()) {
+            constraints.weighty = 0.5; // Center the form
+        }
+        else if (alignment.isBottomAligned()) {
+            constraints.weighty = 0.0; // addHeaderMargin will force the form to the bottom
+        }
+        this.add(new JLabel(), constraints);
+    }
+
+    /**
+     * Applies our borderMargin to the FormField at the given fieldIndex based on its
+     * position within our form field list. The first field in the list is the topmost
+     * field, so it will receive an extra top margin, for example. All fields in the list
+     * will receive an extra left and right margin, and the last field in the list
+     * will receive an extra bottom margin. The borderMargin value is added to the
+     * FormField's existing margins. The FormField's margins are not modified as a
+     * result of this calculation. Instead, a new Margins object will be created and returned.
+     */
+    private Margins calculateFieldMargins(int fieldIndex) {
+        FormField field = formFields.get(fieldIndex);
+        Margins margins = new Margins(field.getMargins());
+
+        // If there is no border margin to add, we are done here:
+        if (borderMargin == 0) {
+            return margins;
+        }
+
+        if (fieldIndex == 0) {
+            margins.setTop(margins.getTop() + borderMargin);
+        }
+
+        margins.setLeft(margins.getLeft() + borderMargin);
+        margins.setRight(margins.getRight() + borderMargin);
+
+        if (fieldIndex == formFields.size() - 1) {
+            margins.setBottom(margins.getBottom() + borderMargin);
+        }
+
+        return margins;
     }
 
 }

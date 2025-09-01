@@ -3,7 +3,6 @@ package ca.corbett.extras.properties;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ import java.util.Objects;
  * I should have called these "Preferences".
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public abstract class AbstractProperty {
@@ -66,7 +65,6 @@ public abstract class AbstractProperty {
     protected boolean isInitiallyEditable;
     protected boolean isInitiallyVisible;
     protected final Map<String, Object> extraAttributes;
-    protected FormPanel formPanel;
 
     private final List<PropertyFormFieldChangeListener> changeListeners = new ArrayList<>();
 
@@ -442,12 +440,23 @@ public abstract class AbstractProperty {
      * <p>
      *     Descendant classes should implement generateFormFieldImpl() and not this method.
      * </p>
+     * <p>
+     *     <b>NOTE:</b> you should generally never need to invoke this method directly.
+     *     It is invoked as needed by the PropertiesManager. Of course, if you
+     *     are manually building your own FormPanel, you can use this directly. However,
+     *     note that a new FormField instance will be created each time you invoke this
+     *     method. So, any listener you add to the generated FormField, or any change you
+     *     make to it, will effectively be lost the next time you invoke this method.
+     *     Also, when your FormPanel has been validated and you wish to propagate the
+     *     FormField's value(s) back into this property, you must manually invoke
+     *     loadFromFormField(), passing in the FormField you got from generateFormField().
+     *     If you are going through PropertiesManager, all of this is done for you.
+     * </p>
      *
      * @param formPanel The containing FormPanel for the generated FormField, if known (null is fine).
      * @return A FormField representing this AbstractProperty.
      */
     public final FormField generateFormField(FormPanel formPanel) {
-        this.formPanel = formPanel;
         final FormField field = generateFormFieldImpl();
         field.setIdentifier(fullyQualifiedName);
         field.setEnabled(isInitiallyEditable);
@@ -456,11 +465,8 @@ public abstract class AbstractProperty {
         field.setAllExtraAttributes(extraAttributes);
 
         // Listen for changes on this field so we can notify our own listeners, if any:
-        field.addValueChangedAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fireFormFieldChangedEvent(field, e);
-            }
+        field.addValueChangedListener(f -> {
+            fireFormFieldChangedEvent(formPanel, f, null);
         });
 
         return field;
@@ -503,14 +509,6 @@ public abstract class AbstractProperty {
         return Objects.equals(this.fullyQualifiedName, other.fullyQualifiedName);
     }
 
-    /**
-     * This will return the most recent FormPanel for which this property was asked to generate a FormField.
-     * It may be null if generateFormField has never yet been invoked.
-     */
-    public FormPanel getFormPanel() {
-        return formPanel;
-    }
-
     public AbstractProperty addFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
         changeListeners.add(listener);
         return this;
@@ -524,7 +522,7 @@ public abstract class AbstractProperty {
         changeListeners.clear();
     }
 
-    protected void fireFormFieldChangedEvent(FormField field, ActionEvent changeEvent) {
+    protected void fireFormFieldChangedEvent(FormPanel formPanel, FormField field, ActionEvent changeEvent) {
         if (changeListeners.isEmpty()) {
             return;
         }

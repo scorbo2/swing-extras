@@ -1,7 +1,11 @@
 package ca.corbett.extras.image;
 
+import ca.corbett.extras.properties.AbstractProperty;
+import ca.corbett.extras.properties.AbstractPropertyBaseTests;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.extras.properties.PropertyFormFieldChangeListener;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.awt.Color;
 
@@ -11,12 +15,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Unit tests for LogoConfig class.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class LogoConfigTest {
+public class LogoPropertyTest extends AbstractPropertyBaseTests {
 
-    private LogoConfig generateTestObject() {
-        LogoConfig conf = new LogoConfig("test");
+    @Override
+    protected AbstractProperty createTestObject(String name, String label) {
+        return new LogoProperty(name, label);
+    }
+
+    private LogoProperty generateTestObject() {
+        LogoProperty conf = new LogoProperty("test");
         conf.setAutoSize(false);
         conf.setBgColor(Color.YELLOW);
         conf.setBorderColor(Color.WHITE);
@@ -30,7 +39,7 @@ public class LogoConfigTest {
         return conf;
     }
 
-    private void assertConfObjectsEqual(LogoConfig conf1, LogoConfig conf2) {
+    private void assertConfObjectsEqual(LogoProperty conf1, LogoProperty conf2) {
         assertEquals(conf1.isAutoSize(), conf2.isAutoSize());
         assertEquals(conf1.getBgColor(), conf2.getBgColor());
         assertEquals(conf1.getBorderColor(), conf2.getBorderColor());
@@ -47,19 +56,19 @@ public class LogoConfigTest {
 
     @Test
     public void testPropsLoadSave() {
-        LogoConfig conf1 = generateTestObject();
+        LogoProperty conf1 = generateTestObject();
         Properties props = new Properties();
-        conf1.saveToProps(props, "test.");
-        LogoConfig conf2 = new LogoConfig("blah");
-        conf2.loadFromProps(props, "test.");
+        conf1.saveToProps(props);
+        LogoProperty conf2 = new LogoProperty("test");
+        conf2.loadFromProps(props);
         assertConfObjectsEqual(conf1, conf2);
     }
 
     @Test
     public void testResetToDefaults() {
-        LogoConfig conf1 = generateTestObject();
+        LogoProperty conf1 = generateTestObject();
         conf1.resetToDefaults();
-        LogoConfig conf2 = new LogoConfig("blah");
+        LogoProperty conf2 = new LogoProperty("test");
         assertConfObjectsEqual(conf1, conf2);
     }
 
@@ -72,6 +81,22 @@ public class LogoConfigTest {
         Color result2 = new Color(Long.decode(colorStr).intValue());
         assertEquals(testColor, result1);
         assertEquals(result1, result2);
+    }
+
+    @Test
+    public void testChangeListener() throws Exception {
+        // GIVEN a property with a mocked change listener:
+        LogoProperty testProp = (LogoProperty)createTestObject("test", "test");
+        PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);
+        testProp.addFormFieldChangeListener(listener);
+
+        // WHEN we generate a form field and mess with it:
+        LogoFormField formField = (LogoFormField)testProp.generateFormField();
+        formField.setBackgroundColor(Color.BLUE);
+        formField.setImageWidth(99);
+
+        // THEN we should see our change listener get invoked:
+        Mockito.verify(listener, Mockito.times(2)).valueChanged(Mockito.any());
     }
 
 }

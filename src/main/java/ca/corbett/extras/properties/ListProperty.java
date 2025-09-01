@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * a meaningful toString() implementation for displaying in the list.
  *
  * @since swing-extras 2.3
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class ListProperty<T> extends AbstractProperty {
 
@@ -56,7 +56,7 @@ public class ListProperty<T> extends AbstractProperty {
     public List<T> getSelectedItems() {
         List<T> selected = new ArrayList<>();
         for (int i : selectedIndexes) {
-            selected.add(items.get(selectedIndexes[i]));
+            selected.add(items.get(i));
         }
         return selected;
     }

@@ -9,7 +9,8 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.LabelProperty;
-import ca.corbett.extras.properties.TextProperty;
+import ca.corbett.extras.properties.ShortTextProperty;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
@@ -39,25 +40,25 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
-        LabelField label = LabelField.createBoldHeaderLabel("Welcome to app-extensions!", 24);
+        LabelField label = LabelField.createBoldHeaderLabel("Welcome to app-extensions!", 24, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
         String txt = "<html>ExtensionManager provides a way to allow your applications to be extended<br>" +
                 "at runtime by providing extension classes in jar files that can be dynamically<br>" +
                 "interrogated and loaded. These extensions can take advantage of whatever<br>" +
                 "extension points you decide to add to your application!</html>";
-        formPanel.addFormField(LabelField.createPlainHeaderLabel(txt, 14));
+        formPanel.add(LabelField.createPlainHeaderLabel(txt, 14));
 
         txt = "<html>ExtensionManager comes with a built-in dialog that your users can use<br>" +
                 "to manage extensions at runtime, or to enable and disable them.<br>" +
                 "Try the simulated ExtensionManagerDialog below for an example:</html>";
-        formPanel.addFormField(LabelField.createPlainHeaderLabel(txt, 14));
+        formPanel.add(LabelField.createPlainHeaderLabel(txt, 14));
 
         PanelField field = new PanelField();
         JPanel panel = field.getPanel();
@@ -65,9 +66,8 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         JButton button = new JButton("Launch simulated ExtensionManagerDialog");
         button.addActionListener(e -> showExtensionDialog());
         panel.add(button);
-        formPanel.addFormField(field);
+        formPanel.add(field);
 
-        formPanel.render();
         return formPanel;
     }
 
@@ -149,8 +149,8 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
             List<AbstractProperty> props = new ArrayList<>();
             props.add(new LabelProperty("FakeExtension3.General.label1",
                                         "This extension defines some config properties"));
-            props.add(new TextProperty("FakeExtension3.General.text1", "Text field 1:", "Default value"));
-            props.add(new TextProperty("FakeExtension3.General.text2", "Text field 2:", "Hello"));
+            props.add(new ShortTextProperty("FakeExtension3.General.text1", "Text field 1:", "Default value", 20));
+            props.add(new ShortTextProperty("FakeExtension3.General.text2", "Text field 2:", "Hello", 20));
             props.add(new LabelProperty("FakeExtension3.General.label2", "You can view the defaults here."));
             return props;
         }

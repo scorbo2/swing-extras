@@ -30,9 +30,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Presents a JPanel that encapsulates an audio clip, and can visually present a graphical
@@ -41,7 +44,7 @@ import java.util.logging.Logger;
  * to allow user input for playback, recording, and editing functions. If the controls
  * are hidden, these functions are only available programmatically.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2018-01-08
  */
 public final class AudioWaveformPanel extends JPanel {
@@ -49,24 +52,114 @@ public final class AudioWaveformPanel extends JPanel {
     private final static Logger logger = Logger.getLogger(AudioWaveformPanel.class.getName());
     private MessageUtil messageUtil;
 
-    public enum ControlPanelPosition {
-        TOP_LEFT, TOP_CENTER, TOP_RIGHT,
-        SIDE_EDGES,
-        BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT,
-        HIDDEN
+    public enum ControlPosition {
+        TOP_LEFT("Top left"),
+        TOP_CENTER("Top center"),
+        TOP_RIGHT("Top right"),
+        SIDE_EDGES("Left/Right split"),
+        BOTTOM_LEFT("Bottom left"),
+        BOTTOM_CENTER("Bottom center"),
+        BOTTOM_RIGHT("Bottom right"),
+        HIDDEN("Hidden");
+
+        private final String label;
+
+        ControlPosition(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+        public static List<String> getLabels() {
+            return Arrays.stream(values())
+                         .map(Enum::toString)
+                         .collect(Collectors.toList());
+        }
+
+        public static Optional<ControlPosition> fromLabel(String label) {
+            return Arrays.stream(values())
+                         .filter(e -> e.toString().equals(label))
+                         .findFirst();
+        }
     }
 
-    public enum ControlPanelSize {
-        XSMALL, SMALL, NORMAL, LARGE, XLARGE
+    public enum ControlSize {
+        XSMALL("Xsmall"),
+        SMALL("Small"),
+        NORMAL("Normal"),
+        LARGE("Large"),
+        XLARGE("XLarge");
+
+        private final String label;
+
+        ControlSize(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+        public static List<String> getLabels() {
+            return Arrays.stream(values())
+                         .map(Enum::toString)
+                         .collect(Collectors.toList());
+        }
+
+        public static Optional<ControlSize> fromLabel(String label) {
+            return Arrays.stream(values())
+                         .filter(e -> e.toString().equals(label))
+                         .findFirst();
+        }
+    }
+
+    public enum ControlType {
+        READ_ONLY("Read-only"),
+        ALLOW_RECORDING("Allow recording"),
+        ALLOW_EDITING("Allow editing"),
+        ALLOW_ALL("Allow all");
+
+        private final String label;
+
+        ControlType(String label) {
+            this.label = label;
+        }
+
+        public boolean isAllowRecording() {
+            return this == ALLOW_RECORDING || this == ALLOW_ALL;
+        }
+
+        public boolean isAllowEditing() {
+            return this == ALLOW_EDITING || this == ALLOW_ALL;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+        public static List<String> getLabels() {
+            return Arrays.stream(values())
+                         .map(Enum::toString)
+                         .collect(Collectors.toList());
+        }
+
+        public static Optional<ControlType> fromLabel(String label) {
+            return Arrays.stream(values())
+                         .filter(e -> e.toString().equals(label))
+                         .findFirst();
+        }
     }
 
     public enum PanelState {
         IDLE, PLAYING, RECORDING
     }
 
-    private boolean allowRecording;
-    private boolean allowEditing;
-
+    private ControlType controlType;
     private int[][] audioData;
     private int[][] clipboardData;
     private PlaybackThread playbackThread;
@@ -86,8 +179,8 @@ public final class AudioWaveformPanel extends JPanel {
 
     private JPanel controlPanelMain;
     private JPanel controlPanelExtra;
-    private ControlPanelPosition controlPanelPosition;
-    private ControlPanelSize controlPanelSize;
+    private ControlPosition controlPosition;
+    private ControlSize controlSize;
 
     private RecordThread recordThread;
     private File scratchFile;
@@ -140,10 +233,9 @@ public final class AudioWaveformPanel extends JPanel {
 
         // Misc:
         panelState = PanelState.IDLE;
-        allowRecording = true;
-        allowEditing = true;
-        controlPanelPosition = ControlPanelPosition.SIDE_EDGES;
-        controlPanelSize = ControlPanelSize.NORMAL;
+        controlType = ControlType.ALLOW_ALL;
+        controlPosition = ControlPosition.SIDE_EDGES;
+        controlSize = ControlSize.NORMAL;
         playbackPosition = 0f;
         markPosition = 0f;
         selectionStart = 0f;
@@ -527,54 +619,19 @@ public final class AudioWaveformPanel extends JPanel {
      * @return Whether recording is allowed.
      */
     public boolean isRecordingAllowed() {
-        return allowRecording;
+        return controlType.isAllowRecording();
     }
 
-    /**
-     * Sets whether the "record" button is visible - if true, user can click it
-     * to record a new audio clip, which will overwrite the current one if any.
-     *
-     * @param allowed Whether recording should be allowed.
-     */
-    public void setRecordingAllowed(boolean allowed) {
-        allowRecording = allowed;
+    public void setControlType(ControlType controlType) {
+        this.controlType = controlType;
 
         // Now we need to force the control panel to regenerate itself.
         // An easy way to do this is to fake changing the control panel position.
-        setControlPanelPosition(controlPanelPosition);
+        setControlPanelPosition(controlPosition);
     }
 
-    /**
-     * Reports whether the audio editing buttons are visible. If true, user can click the
-     * cut, copy, and paste buttons to manipulate the current audio clip.
-     *
-     * @return Whether audio editing controls are shown.
-     */
-    public boolean isEditingAllowed() {
-        return allowEditing;
-    }
-
-    /**
-     * Sets whether the audio editing buttons are visible. If true, user can click the
-     * cut, copy, and paste buttons to manipulate the current audio clip.
-     *
-     * @param allowed Whether audio editing controls are shown.
-     */
-    public void setEditingAllowed(boolean allowed) {
-        allowEditing = allowed;
-
-        // Now we need to force the control panel to regenerate itself.
-        // An easy way to do this is to fake changing the control panel position.
-        setControlPanelPosition(controlPanelPosition);
-    }
-
-    /**
-     * Reports whether the control panel is visible.
-     *
-     * @return Whether the control panel is visible.
-     */
-    public boolean isControlPanelVisible() {
-        return controlPanelPosition != ControlPanelPosition.HIDDEN;
+    public ControlType getControlType() {
+        return controlType;
     }
 
     /**
@@ -582,8 +639,8 @@ public final class AudioWaveformPanel extends JPanel {
      *
      * @return The control panel position. See ControlPanelPosition enum in this class.
      */
-    public ControlPanelPosition getControlPanelPosition() {
-        return controlPanelPosition;
+    public ControlPosition getControlPanelPosition() {
+        return controlPosition;
     }
 
     /**
@@ -601,15 +658,15 @@ public final class AudioWaveformPanel extends JPanel {
      *
      * @param pos One of the ControlPanelPosition constants as described above.
      */
-    public void setControlPanelPosition(ControlPanelPosition pos) {
-        if (controlPanelPosition != ControlPanelPosition.HIDDEN) {
+    public void setControlPanelPosition(ControlPosition pos) {
+        if (controlPosition != ControlPosition.HIDDEN) {
             remove(controlPanelMain);
             remove(controlPanelExtra);
         }
 
-        controlPanelPosition = pos;
+        controlPosition = pos;
         buildControlPanels();
-        switch (controlPanelPosition) {
+        switch (controlPosition) {
             case TOP_LEFT:
             case TOP_CENTER:
             case TOP_RIGHT:
@@ -641,8 +698,8 @@ public final class AudioWaveformPanel extends JPanel {
      *
      * @return The current or last set control panel size.
      */
-    public ControlPanelSize getControlPanelSize() {
-        return controlPanelSize;
+    public ControlSize getControlPanelSize() {
+        return controlSize;
     }
 
     /**
@@ -660,10 +717,10 @@ public final class AudioWaveformPanel extends JPanel {
      *
      * @param size One of the ControlPanelSize constants listed above.
      */
-    public void setControlPanelSize(ControlPanelSize size) {
-        if (!controlPanelSize.equals(size)) {
-            controlPanelSize = size;
-            setControlPanelPosition(controlPanelPosition); // force regeneration of control panel
+    public void setControlPanelSize(ControlSize size) {
+        if (!controlSize.equals(size)) {
+            controlSize = size;
+            setControlPanelPosition(controlPosition); // force regeneration of control panel
         }
     }
 
@@ -690,7 +747,7 @@ public final class AudioWaveformPanel extends JPanel {
         setLayout(new BorderLayout());
         add(imagePanel, BorderLayout.CENTER);
         buildControlPanels();
-        setControlPanelPosition(controlPanelPosition);
+        setControlPanelPosition(controlPosition);
     }
 
     /**
@@ -709,22 +766,22 @@ public final class AudioWaveformPanel extends JPanel {
         GridBagConstraints constraints = new GridBagConstraints();
 
         // Figure out control positioning:
-        boolean isVertical = controlPanelPosition == ControlPanelPosition.SIDE_EDGES;
+        boolean isVertical = controlPosition == ControlPosition.SIDE_EDGES;
         boolean isHorizontal = !isVertical;
-        boolean biasStart = controlPanelPosition == ControlPanelPosition.TOP_LEFT
-                || controlPanelPosition == ControlPanelPosition.BOTTOM_LEFT;
-        boolean biasCenter = controlPanelPosition == ControlPanelPosition.TOP_CENTER
-                || controlPanelPosition == ControlPanelPosition.BOTTOM_CENTER
-                || controlPanelPosition == ControlPanelPosition.SIDE_EDGES;
-        boolean biasEnd = controlPanelPosition == ControlPanelPosition.TOP_RIGHT
-                || controlPanelPosition == ControlPanelPosition.BOTTOM_RIGHT;
+        boolean biasStart = controlPosition == ControlPosition.TOP_LEFT
+                || controlPosition == ControlPosition.BOTTOM_LEFT;
+        boolean biasCenter = controlPosition == ControlPosition.TOP_CENTER
+                || controlPosition == ControlPosition.BOTTOM_CENTER
+                || controlPosition == ControlPosition.SIDE_EDGES;
+        boolean biasEnd = controlPosition == ControlPosition.TOP_RIGHT
+                || controlPosition == ControlPosition.BOTTOM_RIGHT;
         int deltaX = isVertical ? 0 : 1;
         int deltaY = isHorizontal ? 0 : 1;
 
         // Figure out the sizes of our buttons:
         int btnSize = 22;
         int iconSize = 20;
-        switch (controlPanelSize) {
+        switch (controlSize) {
             case XSMALL:
                 btnSize = 16;
                 iconSize = 14;
@@ -797,7 +854,7 @@ public final class AudioWaveformPanel extends JPanel {
             }
 
         });
-        if (allowRecording) {
+        if (controlType.isAllowRecording()) {
             controlPanelMain.add(button, constraints);
         }
 
@@ -812,8 +869,8 @@ public final class AudioWaveformPanel extends JPanel {
             }
 
         });
-        if (allowEditing) {
-            if (controlPanelPosition == ControlPanelPosition.SIDE_EDGES) {
+        if (controlType.isAllowEditing()) {
+            if (controlPosition == ControlPosition.SIDE_EDGES) {
                 controlPanelExtra.add(button, constraints);
             }
             else {
@@ -832,8 +889,8 @@ public final class AudioWaveformPanel extends JPanel {
             }
 
         });
-        if (allowEditing) {
-            if (controlPanelPosition == ControlPanelPosition.SIDE_EDGES) {
+        if (controlType.isAllowEditing()) {
+            if (controlPosition == ControlPosition.SIDE_EDGES) {
                 controlPanelExtra.add(button, constraints);
             }
             else {
@@ -852,8 +909,8 @@ public final class AudioWaveformPanel extends JPanel {
             }
 
         });
-        if (allowEditing) {
-            if (controlPanelPosition == ControlPanelPosition.SIDE_EDGES) {
+        if (controlType.isAllowEditing()) {
+            if (controlPosition == ControlPosition.SIDE_EDGES) {
                 controlPanelExtra.add(button, constraints);
             }
             else {

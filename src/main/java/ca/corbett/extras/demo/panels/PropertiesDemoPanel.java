@@ -2,6 +2,7 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
+import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
 import ca.corbett.extras.properties.ColorProperty;
@@ -12,10 +13,12 @@ import ca.corbett.extras.properties.FileProperty;
 import ca.corbett.extras.properties.FontProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
+import ca.corbett.extras.properties.LongTextProperty;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
-import ca.corbett.extras.properties.TextProperty;
+import ca.corbett.extras.properties.ShortTextProperty;
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
@@ -38,7 +41,7 @@ import java.util.logging.Logger;
 /**
  * Demo panel to show off PropertiesManager and PropertiesDialog capabilities.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-15
  */
 public class PropertiesDemoPanel extends PanelBuilder {
@@ -79,28 +82,25 @@ public class PropertiesDemoPanel extends PanelBuilder {
             propsManager = new PropertiesManager(new Properties(), buildProps(), "Test properties");
         }
 
-        FormPanel formPanel = new FormPanel(FormPanel.Alignment.TOP_LEFT);
-        formPanel.setStandardLeftMargin(24);
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(24);
 
-        final LabelField label = LabelField.createBoldHeaderLabel("PropertiesManager", 20);
+        final LabelField label = LabelField.createBoldHeaderLabel("PropertiesManager", 20, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.addFormField(label);
+        formPanel.add(label);
 
-        formPanel.addFormField(LabelField.createPlainHeaderLabel(
+        formPanel.add(LabelField.createPlainHeaderLabel(
                 "<html>Almost every application exposes properties for application settings and<br>" +
                         "preferences to the user. But why rewrite the UI code for this for each<br>" +
                         "new application? What if there was a way to easily specify the properties for your<br>" +
                         "application in code, and have a PropertiesManager and a PropertiesDialog that<br>" +
                         "could just generate the UI for you? Well, there is!</html>", 14));
 
-        List<String> options = new ArrayList<>();
-        for (FormPanel.Alignment option : FormPanel.Alignment.values()) {
-            options.add(option.name());
-        }
-        final ComboField alignmentField = new ComboField("Form alignment:", options, 1, false);
-        formPanel.addFormField(alignmentField);
+        final ComboField<Alignment> alignmentField = new ComboField<>("Form alignment:",
+                                                                      List.of(Alignment.values()), 1, false);
+        formPanel.add(alignmentField);
 
         PanelField panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -115,8 +115,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
                     logger.log(Level.SEVERE, "Couldn't load properties.", ex);
                 }
                 PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(), "Test properties",
-                                                                      FormPanel.Alignment.valueOf(
-                                                                              alignmentField.getSelectedItem()), 16);
+                                                                      alignmentField.getSelectedItem(), 16);
                 dialog.setVisible(true);
                 if (dialog.wasOkayed()) {
                     propsManager.save();
@@ -124,9 +123,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
             }
         });
         panelField.getPanel().add(btn);
-        formPanel.addFormField(panelField);
+        formPanel.add(panelField);
 
-        formPanel.render();
         return formPanel;
     }
 
@@ -142,7 +140,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
         options.add("Option 1");
         options.add("Option 2 (default)");
         options.add("Option 3");
-        props.add(new ComboProperty("Intro.Overview.combo1", "ComboProperty:", options, 1, false));
+        props.add(new ComboProperty<>("Intro.Overview.combo1", "ComboProperty:", options, 1, false));
 
         props.add(new LabelProperty("Intro.Labels.someLabelProperty", "You can add labels, too!"));
         LabelProperty testLabel = new LabelProperty("Intro.Labels.someLabelProperty2",
@@ -157,9 +155,10 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new LabelProperty("Intro.Labels.scrollSummary",
                                     "Long properties forms will automatically get scrollbars (horizontal and vertical as needed) so you can scroll to view everything - even long lines like this!"));
 
-        props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorProperty.ColorType.SOLID, Color.RED));
-        props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorProperty.ColorType.GRADIENT));
-        props.add(new ColorProperty("Colors.someMultiColor", "Both:", ColorProperty.ColorType.BOTH));
+        props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorSelectionType.SOLID).setSolidColor(
+                Color.RED));
+        props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorSelectionType.GRADIENT));
+        props.add(new ColorProperty("Colors.someMultiColor", "Both:", ColorSelectionType.EITHER));
         FontProperty fontProperty = new FontProperty("Colors.fontColor", "Font with color:",
                                                      new Font(Font.SANS_SERIF, Font.PLAIN, 14), Color.CYAN,
                                                      Color.DARK_GRAY);
@@ -169,10 +168,11 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new DirectoryProperty("Files.someDirProperty", "Directory:"));
         props.add(new FileProperty("Files.someFileProperty", "File:"));
 
-        props.add(new TextProperty("Text.Single line.someTextProp1", "Text property1:", "hello"));
-        props.add(new TextProperty("Text.Single line.someTextProp2", "Text property2:", ""));
-        props.add(new TextProperty("Text.Multi line.someMultiLineTextProp", "Text entry:",
-                                   "You can support long text as well.", 40, 4));
+        props.add(new ShortTextProperty("Text.Single line.someTextProp1", "Text property1:", "hello"));
+        props.add(new ShortTextProperty("Text.Single line.someTextProp2", "Text property2:", ""));
+        props.add(LongTextProperty.ofFixedSizeMultiLine("Text.Multi line.someMultiLineTextProp", "Text entry:", 4, 40)
+                                  .setValue("You can support long text as well.\n\nPop-out editing is optional.")
+                                  .setAllowPopoutEditing(true));
 
         // This property is readable and settable by the client application but it won't show up in the user dialog:
         IntegerProperty hiddenProp = new IntegerProperty("Hidden.someHiddenProp", "hiddenProp", 77);
@@ -180,7 +180,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(hiddenProp);
 
         props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));
-        props.add(new EnumProperty<TestEnum>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
+        props.add(new EnumProperty<>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
         props.add(new LabelProperty("Enums.Enums.label2",
                                     "Alternatively, you can use the enum names instead of toString():"));
         props.add(new EnumProperty<>("Enums.Enums.enumField2", "Choose:", TestEnum.VALUE1, true));

@@ -1,5 +1,6 @@
 package ca.corbett.extras.progress;
 
+import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
@@ -53,7 +54,7 @@ import java.util.List;
  * setMajorProgressBounds() and setMinorProgressBounds() as soon as they are known, as above).
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-04-15
  */
 public final class MultiProgressDialog extends JDialog {
@@ -380,7 +381,7 @@ public final class MultiProgressDialog extends JDialog {
         List<FormField> formFields = new ArrayList<>();
 
         majorProgressLabel = new LabelField("");
-        majorProgressLabel.setMargins(12, 0, 0, 0, 2);
+        majorProgressLabel.getMargins().setAll(0).setLeft(12).setInternalSpacing(2);
         formFields.add(majorProgressLabel);
 
         majorProgressBar = new JProgressBar();
@@ -388,26 +389,26 @@ public final class MultiProgressDialog extends JDialog {
         majorProgressBar.setStringPainted(true);
         //majorProgressBar.setForeground(Color.BLUE);
         PanelField panelField = new PanelField();
-        panelField.setMargins(0, 0, 0, 0, 0);
+        panelField.getMargins().setAll(0);
         panelField.getPanel().setLayout(new BorderLayout());
         panelField.getPanel().add(majorProgressBar, BorderLayout.CENTER);
         formFields.add(panelField);
 
         minorProgressLabel = new LabelField("");
-        minorProgressLabel.setMargins(16, 0, 0, 0, 2);
+        minorProgressLabel.getMargins().setAll(0).setLeft(16).setTop(12).setInternalSpacing(2);
         formFields.add(minorProgressLabel);
 
         minorProgressBar = new JProgressBar();
         minorProgressBar.setStringPainted(true);
-        //minorProgressBar.setForeground(Color.BLUE);
+        minorProgressBar.setPreferredSize(new Dimension(450, 20));
         panelField = new PanelField();
-        panelField.setMargins(0, 0, 0, 0, 0);
+        panelField.getMargins().setAll(0);
         panelField.getPanel().setLayout(new BorderLayout());
         panelField.getPanel().add(minorProgressBar, BorderLayout.CENTER);
         formFields.add(panelField);
 
-        FormPanel formPanel = new FormPanel(formFields, FormPanel.Alignment.TOP_CENTER);
-        formPanel.render();
+        FormPanel formPanel = new FormPanel(Alignment.TOP_CENTER);
+        formPanel.add(formFields);
         add(formPanel, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();

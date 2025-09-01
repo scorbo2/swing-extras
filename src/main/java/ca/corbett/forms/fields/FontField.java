@@ -1,28 +1,29 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.forms.FontDialog;
-import ca.corbett.forms.FormPanel;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Objects;
 
 /**
- * Intended as a proper replacement for FontStyleField, which I'm not happy with.
+ * A FormField implementation that provides the ability to select a Font, with
+ * optional abilities to select font size, font color, and font background color.
  * This form field presents options for choosing a font from any of the installed
- * fonts on the system, along with font style and size properties.
- * Makes use of the new FontDialog for this purpose.
+ * fonts on the system, or by using the built-in Java Font abstraction names,
+ * like "SansSerif" or "Monospaced", which will map to some system-installed font.
+ * See also FontDialog, which is used by this FormField but which can also
+ * be used standalone if you need to select a Font.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-04-07
  */
 public final class FontField extends FormField {
@@ -82,19 +83,18 @@ public final class FontField extends FormField {
         selectedFont = (initialFont == null) ? FontDialog.INITIAL_FONT : initialFont;
         this.textColor = textColor;
         this.bgColor = bgColor;
-        fieldLabel = new JLabel(labelText);
+        fieldLabel.setText(labelText);
         button = new JButton("Change");
         button.setPreferredSize(new Dimension(95, 23));
         button.setFont(button.getFont().deriveFont(Font.PLAIN));
         wrapperPanel = new JPanel();
-        wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
+        wrapperPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         sampleLabel = new JLabel();
         sampleLabel.setOpaque(true);
         sampleLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        setSelectedFont(selectedFont);
-        fieldComponent = button;
+        updateSampleLabel();
+        fieldComponent = wrapperPanel;
         wrapperPanel.add(sampleLabel);
-        wrapperPanel.add(new JLabel(" ")); // spacer
         wrapperPanel.add(button);
     }
 
@@ -129,9 +129,14 @@ public final class FontField extends FormField {
      *
      * @param font The Font to select.
      */
-    public void setSelectedFont(Font font) {
+    public FontField setSelectedFont(Font font) {
+        if (Objects.equals(selectedFont, font)) {
+            return this; // don't accept no-op changes
+        }
         selectedFont = font;
         updateSampleLabel();
+        fireValueChangedEvent();
+        return this;
     }
 
     /**
@@ -150,12 +155,17 @@ public final class FontField extends FormField {
      *
      * @param textColor The new text color (overrides any previous selection).
      */
-    public void setTextColor(Color textColor) {
+    public FontField setTextColor(Color textColor) {
+        if (Objects.equals(this.textColor, textColor)) {
+            return this; // reject no-op changes
+        }
         if (this.textColor == null) {
-            return;
+            return this; // reject null
         }
         this.textColor = textColor;
         updateSampleLabel();
+        fireValueChangedEvent();
+        return this;
     }
 
     /**
@@ -174,45 +184,37 @@ public final class FontField extends FormField {
      *
      * @param bgColor The new background color (overrides any previous selection).
      */
-    public void setBgColor(Color bgColor) {
+    public FontField setBgColor(Color bgColor) {
+        if (Objects.equals(this.bgColor, bgColor)) {
+            return this; // reject no-op changes
+        }
         if (this.bgColor == null) {
-            return;
+            return this; // reject null
         }
         this.bgColor = bgColor;
         updateSampleLabel();
+        fireValueChangedEvent();
+        return this;
     }
 
     @Override
-    public void setVisible(boolean isVisible) {
-        super.setVisible(isVisible);
-        wrapperPanel.setVisible(isVisible);
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        button.setEnabled(enabled);
     }
 
-    /**
-     * Renders this field into the given container.
-     *
-     * @param container   The containing form panel.
-     * @param constraints The GridBagConstraints to use.
-     */
     @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
+    public void preRender(JPanel container) {
         wrapperPanel.setBackground(container.getBackground());
+
+        // Remove old action listener:
         if (actionListener != null) {
             button.removeActionListener(actionListener);
         }
-        actionListener = getActionListener(container);
-        button.addActionListener(actionListener); // UTIL-147 avoid adding it twice
 
-        constraints.fill = 0;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(wrapperPanel, constraints);
+        // Now create and add a new one - it needs the container to use as a parent for the popup:
+        actionListener = getActionListener(container);
+        button.addActionListener(actionListener);
     }
 
     /**
@@ -247,7 +249,6 @@ public final class FontField extends FormField {
                     setSelectedFont(dialog.getSelectedFont());
                     setTextColor(dialog.getSelectedTextColor());
                     setBgColor(dialog.getSelectedBgColor());
-                    fireValueChangedEvent();
                 }
             }
         };

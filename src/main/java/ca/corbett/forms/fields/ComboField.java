@@ -1,31 +1,48 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.FormPanel;
-
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import javax.swing.ListCellRenderer;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.List;
 
 /**
- * A FormField wrapping a JComboBox.
+ * A FormField wrapping a JComboBox. The field is typed to a specific class - the usual
+ * case is to use ComboField&lt;String&gt; to wrap a simple list of Strings, but you
+ * can use your own class type here as long as it has a meaningful toString().
+ * <p>
+ * <B>Getting access to the underlying JComboBox</B> - if you need access to the underlying
+ * JComboBox, for example for styling purposes, to set a different font, etc, you can
+ * use getFieldComponent() and cast the result to JComboBox with whatever type you used
+ * with this class (for example, JComboBox&lt;String&gt;)
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
-public class ComboField extends FormField {
+public class ComboField<T> extends FormField {
 
-    private final JComboBox<String> comboBox;
-    private final ItemListener itemListener = e -> {
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            fireValueChangedEvent();
-        }
-    };
+    private final JComboBox<T> comboBox;
+    private final DefaultComboBoxModel<T> comboModel;
+
+    public ComboField(String label) {
+        fieldLabel.setText(label);
+        comboModel = new DefaultComboBoxModel<>();
+        comboBox = new JComboBox<>(comboModel);
+        comboBox.setFont(getDefaultFont());
+        comboBox.setEditable(false);
+        comboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                fireValueChangedEvent();
+            }
+        });
+        fieldComponent = comboBox;
+    }
+
+    public ComboField(String label, List<T> options, int selectedIndex) {
+        this(label);
+        comboModel.addAll(options);
+        comboBox.setSelectedIndex(selectedIndex);
+    }
 
     /**
      * Creates a new ComboField with the given parameters.
@@ -35,16 +52,18 @@ public class ComboField extends FormField {
      * @param selectedIndex The index to select by default.
      * @param isEditable    Whether to allow editing of the field.
      */
-    public ComboField(String label, List<String> options, int selectedIndex, boolean isEditable) {
-        fieldLabel = new JLabel(label);
-        fieldLabel.setFont(fieldLabelFont);
-        comboBox = new JComboBox<>(options.toArray(new String[]{}));
-        comboBox.setFont(fieldLabelFont);
-        comboBox.setSelectedIndex(selectedIndex);
+    public ComboField(String label, List<T> options, int selectedIndex, boolean isEditable) {
+        this(label, options, selectedIndex);
         comboBox.setEditable(isEditable);
-        comboBox.addItemListener(itemListener);
-        fieldComponent = comboBox;
-        showValidationLabel = false;
+    }
+
+    /**
+     * Overridden here as we generally don't want to show a validation label on a combo box.
+     * Will return true only if one or more FieldValidators have been explicitly assigned.
+     */
+    @Override
+    public boolean hasValidationLabel() {
+        return !fieldValidators.isEmpty();
     }
 
     /**
@@ -53,18 +72,23 @@ public class ComboField extends FormField {
      * @param options       The options to display in the dropdown.
      * @param selectedIndex The index to select by default.
      */
-    public void setOptions(List<String> options, int selectedIndex) {
-        comboBox.setModel(new DefaultComboBoxModel<>(options.toArray(new String[]{})));
+    public ComboField<T> setOptions(List<T> options, int selectedIndex) {
+        comboModel.removeAllElements();
+        comboModel.addAll(options);
         comboBox.setSelectedIndex(selectedIndex);
+        return this;
+    }
+
+    public int getItemCount() {
+        return comboBox.getItemCount();
     }
 
     /**
-     * Returns the currently selected item as a string.
-     *
-     * @return The current item.
+     * Returns the currently selected item as an instance of T.
      */
-    public String getSelectedItem() {
-        return (String)comboBox.getSelectedItem();
+    public T getSelectedItem() {
+        //noinspection unchecked
+        return (T)comboBox.getSelectedItem();
     }
 
     /**
@@ -81,8 +105,9 @@ public class ComboField extends FormField {
      *
      * @param item The item to select.
      */
-    public void setSelectedItem(String item) {
+    public ComboField<T> setSelectedItem(T item) {
         comboBox.setSelectedItem(item);
+        return this;
     }
 
     /**
@@ -90,27 +115,27 @@ public class ComboField extends FormField {
      *
      * @param index The index to select.
      */
-    public void setSelectedIndex(int index) {
+    public ComboField<T> setSelectedIndex(int index) {
+        if (index < 0 || index >= comboBox.getItemCount()) {
+            return this;
+        }
+
         comboBox.setSelectedIndex(index);
+        return this;
     }
 
     /**
-     * Renders this field into the given container.
-     *
-     * @param container   The containing form panel.
-     * @param constraints The GridBagConstraints to use.
+     * You can optionally set a custom cell renderer if your combo items have special display requirements.
      */
-    @Override
-    public void render(JPanel container, GridBagConstraints constraints) {
-        constraints.gridy++;
-        constraints.gridx = FormPanel.LABEL_COLUMN;
-        constraints.insets = new Insets(topMargin, leftMargin, bottomMargin, componentSpacing);
-        fieldLabel.setFont(fieldLabelFont);
-        container.add(fieldLabel, constraints);
-
-        constraints.gridx = FormPanel.CONTROL_COLUMN;
-        constraints.insets = new Insets(topMargin, componentSpacing, bottomMargin, componentSpacing);
-        container.add(comboBox, constraints);
+    public ComboField<T> setCellRenderer(ListCellRenderer<T> renderer) {
+        comboBox.setRenderer(renderer);
+        return this;
     }
 
+    /**
+     * Returns the effective cell renderer.
+     */
+    public ListCellRenderer<? super T> getCellRenderer() {
+        return comboBox.getRenderer();
+    }
 }

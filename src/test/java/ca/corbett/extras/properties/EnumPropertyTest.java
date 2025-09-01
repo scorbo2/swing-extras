@@ -3,14 +3,14 @@ package ca.corbett.extras.properties;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FormField;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
-class EnumPropertyTest {
+class EnumPropertyTest extends AbstractPropertyBaseTests {
 
     enum TestEnum1 {
         VALUE1, VALUE2, VALUE3;
@@ -31,6 +31,11 @@ class EnumPropertyTest {
         public String toString() {
             return label;
         }
+    }
+
+    @Override
+    protected AbstractProperty createTestObject(String name, String label) {
+        return new EnumProperty<TestEnumWithLabels>(name, label, TestEnumWithLabels.VALUE1);
     }
 
     @Test
@@ -121,11 +126,7 @@ class EnumPropertyTest {
     @Test
     public void loadFromFormField_givenValidFormField_shouldSucceed() {
         // GIVEN a FormField of the correct type with the correct options:
-        List<String> options = new ArrayList<>();
-        for (TestEnum1 value : TestEnum1.values()) {
-            options.add(value.name());
-        }
-        ComboField comboField = new ComboField("Test", options, 2, false);
+        ComboField<TestEnum1> comboField = new ComboField<>("Test", List.of(TestEnum1.values()), 2, false);
         comboField.setIdentifier("my.field.test1");
 
         // WHEN we try to load an EnumProperty from that field:
@@ -196,5 +197,22 @@ class EnumPropertyTest {
         // THEN the field should have ignored the load request and stuck with the default value:
         assertEquals(0, enumProperty.getSelectedIndex());
         assertEquals(TestEnum1.VALUE1, enumProperty.getSelectedItem());
+    }
+
+    @Test
+    public void formFieldChangeListener_withFormFieldChanges_shouldFireChangeEvents() {
+        // GIVEN a test prop with a mocked property form field change listener on it:
+        EnumProperty<TestEnum1> testProp = new EnumProperty<>("test", "test", TestEnum1.VALUE1);
+        PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);
+        testProp.addFormFieldChangeListener(listener);
+
+        // WHEN we generate a form field and mess with it a bit:
+        //noinspection unchecked
+        ComboField<String> formField = (ComboField<String>)testProp.generateFormField();
+        formField.setSelectedIndex(1);
+        formField.setSelectedIndex(2);
+
+        // THEN we should see our change listener got invoked:
+        Mockito.verify(listener, Mockito.times(2)).valueChanged(Mockito.any());
     }
 }

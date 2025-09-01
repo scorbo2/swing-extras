@@ -1,8 +1,9 @@
 package ca.corbett.extras.image;
 
 import ca.corbett.extras.LookAndFeelManager;
-import ca.corbett.extras.config.ConfigObject;
+import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.forms.fields.FormField;
 
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
@@ -12,6 +13,12 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Represents configuration options for ImagePanel. This class is optional - if you
@@ -22,14 +29,67 @@ import java.awt.image.BufferedImage;
  * @author scorbett
  * @since 2017-11-07
  */
-public class ImagePanelConfig implements ConfigObject, ChangeListener {
+public class ImagePanelConfig extends AbstractProperty implements ChangeListener {
+
+    private static final Logger logger = Logger.getLogger(ImagePanelConfig.class.getName());
 
     public enum DisplayMode {
-        NONE, CENTER, BEST_FIT, STRETCH, CUSTOM
+        NONE("None"),
+        CENTER("Center"),
+        BEST_FIT("Best fit"),
+        STRETCH("Stretch"),
+        CUSTOM("Custom");
+
+        private final String label;
+
+        DisplayMode(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+        public static List<String> getLabels() {
+            return Arrays.stream(values())
+                         .map(Enum::toString)
+                         .collect(Collectors.toList());
+        }
+
+        public static Optional<DisplayMode> fromLabel(String label) {
+            return Arrays.stream(values())
+                         .filter(e -> e.toString().equals(label))
+                         .findFirst();
+        }
     }
 
     public enum Quality {
-        QUICK_AND_DIRTY, SLOW_AND_ACCURATE
+        QUICK_AND_DIRTY("Quick and dirty"),
+        SLOW_AND_ACCURATE("Slow and accurate");
+
+        private final String label;
+
+        Quality(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+        public static List<String> getLabels() {
+            return Arrays.stream(values())
+                         .map(Enum::toString)
+                         .collect(Collectors.toList());
+        }
+
+        public static Optional<Quality> fromLabel(String label) {
+            return Arrays.stream(values())
+                         .filter(e -> e.toString().equals(label))
+                         .findFirst();
+        }
     }
 
     private boolean autoSetBackground = true;
@@ -47,7 +107,8 @@ public class ImagePanelConfig implements ConfigObject, ChangeListener {
     /**
      * Constructor is protected to force callers to use the factory methods.
      */
-    protected ImagePanelConfig() {
+    protected ImagePanelConfig(String fullyQualifiedName) {
+        super(fullyQualifiedName, "Image properties");
         nullCursor = Toolkit.getDefaultToolkit().createCustomCursor(
                 new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null");
         LookAndFeelManager.addChangeListener(this);
@@ -59,7 +120,11 @@ public class ImagePanelConfig implements ConfigObject, ChangeListener {
      * @return A default ImagePanelConfig instance.
      */
     public static ImagePanelConfig createDefaultProperties() {
-        ImagePanelConfig props = new ImagePanelConfig();
+        return createDefaultProperties("default");
+    }
+
+    public static ImagePanelConfig createDefaultProperties(String name) {
+        ImagePanelConfig props = new ImagePanelConfig(name);
         props.resetToDefaults();
         return props;
     }
@@ -71,7 +136,11 @@ public class ImagePanelConfig implements ConfigObject, ChangeListener {
      * @return An ImagePanelConfig configured for simple non-interactive display.
      */
     public static ImagePanelConfig createSimpleReadOnlyProperties() {
-        ImagePanelConfig props = new ImagePanelConfig();
+        return createSimpleReadOnlyProperties("simple-read-only");
+    }
+
+    public static ImagePanelConfig createSimpleReadOnlyProperties(String name) {
+        ImagePanelConfig props = new ImagePanelConfig(name);
         props.resetToDefaults();
         props.setEnableMouseDragging(false);
         props.setEnableZoomOnMouseClick(false);
@@ -87,11 +156,15 @@ public class ImagePanelConfig implements ConfigObject, ChangeListener {
      * @return The new, cloned properties instance.
      */
     public static ImagePanelConfig cloneProperties(ImagePanelConfig other) {
+        return cloneProperties(other, other == null ? "unnamed" : other.getFullyQualifiedName());
+    }
+
+    public static ImagePanelConfig cloneProperties(ImagePanelConfig other, String newName) {
         if (other == null) {
-            return createDefaultProperties();
+            return createDefaultProperties(newName);
         }
 
-        ImagePanelConfig newProps = new ImagePanelConfig();
+        ImagePanelConfig newProps = new ImagePanelConfig(newName);
         newProps.bgColor = other.bgColor;
         newProps.autoSetBackground = other.autoSetBackground;
         newProps.setZoomFactorIncrement(other.getZoomFactorIncrement());
@@ -122,62 +195,6 @@ public class ImagePanelConfig implements ConfigObject, ChangeListener {
         ImageIcon icon = new ImageIcon(getClass().getResource("/swing-extras/images/cursor_magnifier.gif"));
         magnifierCursor = Toolkit.getDefaultToolkit().createCustomCursor(
                 icon.getImage(), new Point(0, 0), "magnifier");
-    }
-
-    /**
-     * Loads all settings from the given Properties object. You can use the optional "prefix"
-     * parameter to put a given label at the start of each property name. This allows you
-     * to save multiple ImagePanelConfig objects to the same Properties instance, keeping
-     * them separated by prefix. For example, if a property name is "enableOutline" and you
-     * supply a prefix of "waveform1.", the property value will be saved under the name
-     * "waveform1.enableOutline". If you specify null or an empty string for prefix, property names
-     * will be specified as-is, and will overwrite any previous value.
-     *
-     * @param props  The Properties instance from which to load.
-     * @param prefix An optional string prefix to apply to all property names, or null.
-     */
-    @Override
-    public void loadFromProps(Properties props, String prefix) {
-        String pfx = (prefix == null) ? "" : prefix;
-        resetToDefaults();
-        bgColor = props.getColor(pfx + "bgColor", bgColor);
-        autoSetBackground = props.getBoolean(pfx + "autoSetBackground", autoSetBackground);
-        zoomFactorIncrement = props.getDouble(pfx + "zoomFactorIncrement", zoomFactorIncrement);
-        displayMode = DisplayMode.valueOf(props.getString(pfx + "displayMode", displayMode.name()));
-        enableZoomOnMouseClick = props.getBoolean(pfx + "enableZoomOnMouseClick", enableZoomOnMouseClick);
-        enableZoomOnMouseWheel = props.getBoolean(pfx + "enableZoomOnMouseWheel", enableZoomOnMouseWheel);
-        enableMouseDragging = props.getBoolean(pfx + "enableMouseDragging", enableMouseDragging);
-        enableMouseCursor = props.getBoolean(pfx + "enableMouseCursor", enableMouseCursor);
-        renderingQuality = Quality.valueOf(props.getString(pfx + "renderQuality", renderingQuality.name()));
-    }
-
-    /**
-     * Saves all settings to the given Properties object. You can use the optional "prefix"
-     * parameter to put a given label at the start of each property name. This allows you
-     * to save multiple ImagePanelConfig objects to the same Properties instance, keeping
-     * them separated by prefix. For example, if a property name is "enableOutline" and you
-     * supply a prefix of "waveform1.", the property value will be saved under the name
-     * "waveform1.enableOutline". If you specify null or an empty string for prefix, property names
-     * will be specified as-is, and will overwrite any previous value.
-     *
-     * @param props  The Properties instance to which to save.
-     * @param prefix An optional string prefix to apply to all property names, or null.
-     */
-    @Override
-    public void saveToProps(Properties props, String prefix) {
-        if (prefix == null) {
-            prefix = "";
-        }
-
-        props.setColor(prefix + "bgColor", bgColor);
-        props.setBoolean(prefix + "autoSetBackground", autoSetBackground);
-        props.setDouble(prefix + "zoomFactorIncrement", zoomFactorIncrement);
-        props.setString(prefix + "displayMode", displayMode.name());
-        props.setBoolean(prefix + "enableZoomOnMouseClick", enableZoomOnMouseClick);
-        props.setBoolean(prefix + "enableZoomOnMouseWheel", enableZoomOnMouseWheel);
-        props.setBoolean(prefix + "enableMouseDragging", enableMouseDragging);
-        props.setBoolean(prefix + "enableMouseCursor", enableMouseCursor);
-        props.setString(prefix + "renderQuality", renderingQuality.name());
     }
 
     /**
@@ -398,6 +415,69 @@ public class ImagePanelConfig implements ConfigObject, ChangeListener {
      */
     public void setZoomFactorIncrement(double zoomFactorIncrement) {
         this.zoomFactorIncrement = zoomFactorIncrement;
+    }
+
+    @Override
+    public void saveToProps(Properties props) {
+        String prefix = fullyQualifiedName + ".";
+        props.setColor(prefix + "bgColor", bgColor);
+        props.setBoolean(prefix + "autoSetBackground", autoSetBackground);
+        props.setDouble(prefix + "zoomFactorIncrement", zoomFactorIncrement);
+        props.setString(prefix + "displayMode", displayMode.name());
+        props.setBoolean(prefix + "enableZoomOnMouseClick", enableZoomOnMouseClick);
+        props.setBoolean(prefix + "enableZoomOnMouseWheel", enableZoomOnMouseWheel);
+        props.setBoolean(prefix + "enableMouseDragging", enableMouseDragging);
+        props.setBoolean(prefix + "enableMouseCursor", enableMouseCursor);
+        props.setString(prefix + "renderQuality", renderingQuality.name());
+    }
+
+    @Override
+    public void loadFromProps(Properties props) {
+        String pfx = fullyQualifiedName + ".";
+        resetToDefaults();
+        bgColor = props.getColor(pfx + "bgColor", bgColor);
+        autoSetBackground = props.getBoolean(pfx + "autoSetBackground", autoSetBackground);
+        zoomFactorIncrement = props.getDouble(pfx + "zoomFactorIncrement", zoomFactorIncrement);
+        displayMode = DisplayMode.valueOf(props.getString(pfx + "displayMode", displayMode.name()));
+        enableZoomOnMouseClick = props.getBoolean(pfx + "enableZoomOnMouseClick", enableZoomOnMouseClick);
+        enableZoomOnMouseWheel = props.getBoolean(pfx + "enableZoomOnMouseWheel", enableZoomOnMouseWheel);
+        enableMouseDragging = props.getBoolean(pfx + "enableMouseDragging", enableMouseDragging);
+        enableMouseCursor = props.getBoolean(pfx + "enableMouseCursor", enableMouseCursor);
+        renderingQuality = Quality.valueOf(props.getString(pfx + "renderQuality", renderingQuality.name()));
+    }
+
+    @Override
+    protected FormField generateFormFieldImpl() {
+        ImagePanelFormField formField = new ImagePanelFormField(propertyLabel);
+        formField.setBgColor(bgColor);
+        formField.setZoomIncrement(zoomFactorIncrement);
+        formField.setDisplayMode(displayMode);
+        formField.setRenderQuality(renderingQuality);
+        formField.setEnableMouseCursor(enableMouseCursor);
+        formField.setEnableMouseDragging(enableMouseDragging);
+        formField.setEnableZoomOnMouseClick(enableZoomOnMouseClick);
+        formField.setEnableZoomOnMouseWheel(enableZoomOnMouseWheel);
+        return formField;
+    }
+
+    @Override
+    public void loadFromFormField(FormField field) {
+        if (field.getIdentifier() == null
+                || !field.getIdentifier().equals(fullyQualifiedName)
+                || !(field instanceof ImagePanelFormField)) {
+            logger.log(Level.SEVERE, "ImagePanelConfig.loadFromFormField: received the wrong field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+        ImagePanelFormField formField = (ImagePanelFormField)field;
+        bgColor = formField.getBgColor();
+        zoomFactorIncrement = formField.getZoomIncrement();
+        displayMode = formField.getDisplayMode();
+        renderingQuality = formField.getRenderQuality();
+        enableMouseCursor = formField.isEnableMouseCursor();
+        enableMouseDragging = formField.isEnableMouseDragging();
+        enableZoomOnMouseClick = formField.isEnableZoomOnMouseClick();
+        enableZoomOnMouseWheel = formField.isEnableZoomOnMouseWheel();
     }
 
     /**

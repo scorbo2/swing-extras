@@ -13,7 +13,7 @@ utilities within swing-extras:
 
 You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
-- The [javadocs](http://www.corbett.ca/swing-extras-javadocs/2.3.0) are also available.
+- The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
 
 ## How do I get it?
 
@@ -24,7 +24,7 @@ You can browse the full documentation online:
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>2.3.0</version>
+    <version>2.4.0</version>
   </dependency>
 </dependencies>
 ```
@@ -36,7 +36,7 @@ for example to generate the javadocs locally, then you can clone the repo:
 git clone https://github.com/scorbo2/swing-extras.git
 cd swing-extras
 mvn package
-java -jar target/swing-extras-2.3.0-jar-with-dependencies.jar # Runs the built-in demo app
+java -jar target/swing-extras-2.4.0-jar-with-dependencies.jar # Runs the built-in demo app
 ```
 
 ## License
@@ -45,8 +45,8 @@ swing-extras is made available under the MIT license: https://opensource.org/lic
 
 ## Revision history
 
-The swing-extras library came together slowly as part of various side projects from around 2012
-until around 2023, but was not made available on GitHub until recently. Version `1.9.0` 
+The swing-extras library has been under development since 2012 or so, 
+but was not made available on GitHub until recently. Version `1.9.0` 
 was the first publicly available version of the library.
 
 View the [full release notes and version history](src/main/resources/swing-extras/releaseNotes.txt)

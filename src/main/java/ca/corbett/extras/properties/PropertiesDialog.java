@@ -3,12 +3,16 @@ package ca.corbett.extras.properties;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -17,6 +21,8 @@ import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -35,7 +41,7 @@ import java.util.logging.Logger;
  * create the dialog yourself. This isn't as hard as it sounds... see javadocs on generateDialog()
  * for more information.</p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
  */
 public class PropertiesDialog extends JDialog {
@@ -62,7 +68,6 @@ public class PropertiesDialog extends JDialog {
         if (formPanelList.size() > 1) {
             tabPane = new JTabbedPane();
             for (FormPanel formPanel : formPanelList) {
-                formPanel.render();
                 tabPane.addTab(formPanel.getName(), buildScrollPane(formPanel));
             }
             formPanel = null;
@@ -73,7 +78,6 @@ public class PropertiesDialog extends JDialog {
         else if (formPanelList.size() == 1) {
             tabPane = null;
             formPanel = formPanelList.get(0);
-            formPanel.render();
             add(buildScrollPane(formPanel), BorderLayout.CENTER);
         }
 
@@ -90,6 +94,16 @@ public class PropertiesDialog extends JDialog {
         this.owner = owner;
         setSize(INITIAL_WIDTH, INITIAL_HEIGHT);
         setMinimumSize(new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT));
+
+        JRootPane rootPane = getRootPane();
+        KeyStroke escapeKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escapeKeyStroke, "ESCAPE");
+        rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispatchEvent(new WindowEvent(PropertiesDialog.this, WindowEvent.WINDOW_CLOSING));
+            }
+        });
     }
 
     /**

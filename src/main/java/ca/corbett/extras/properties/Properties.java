@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  * colour values, and etc, you have to worry about converting everything to and from
  * Strings. This class abstracts that for you and provides easy convenience methods.
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public class Properties {

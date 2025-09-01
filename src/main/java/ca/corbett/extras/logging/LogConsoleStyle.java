@@ -1,6 +1,5 @@
 package ca.corbett.extras.logging;
 
-import ca.corbett.extras.config.ConfigObject;
 import ca.corbett.extras.properties.Properties;
 
 import javax.swing.event.ChangeEvent;
@@ -34,10 +33,10 @@ import java.util.logging.Logger;
  * algorithm is applied as described in LogConsoleTheme.
  * </p>
  *
- * @author scorbo2
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-03-17
  */
-public final class LogConsoleStyle implements ConfigObject {
+public final class LogConsoleStyle {
 
     private static final Logger logger = Logger.getLogger(LogConsoleStyle.class.getName());
 
@@ -229,48 +228,6 @@ public final class LogConsoleStyle implements ConfigObject {
         changeListeners.remove(listener);
     }
 
-    @Override
-    public void loadFromProps(Properties props, String prefix) {
-        setDefaults();
-        String pfx = (prefix == null) ? "" : prefix;
-        String levelName = props.getString(pfx + "logLevel", "");
-        try {
-            logLevel = levelName.isEmpty() ? null : Level.parse(levelName);
-        }
-        catch (IllegalArgumentException iae) {
-            logLevel = null;
-            logger.log(Level.SEVERE, "Unknown log level name found in properties: {0}", levelName);
-        }
-        logToken = props.getString(pfx + "logToken", logToken);
-        logTokenIsCaseSensitive = props.getBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
-        fontColor = props.getColor(pfx + "fontColor", fontColor);
-        boolean hasFontBgColor = props.getBoolean(pfx + "fontBgColorIsSet", (fontBgColor != null));
-        fontBgColor = hasFontBgColor ? props.getColor(pfx + "fontBgColor", fontBgColor) : null;
-        fontFamilyName = props.getString(pfx + "fontFamilyName", fontFamilyName);
-        isBold = props.getBoolean(pfx + "isBold", isBold);
-        isItalic = props.getBoolean(pfx + "isItalic", isItalic);
-        isUnderline = props.getBoolean(pfx + "isUnderline", isUnderline);
-        fontPointSize = props.getInteger(pfx + "fontPointSize", fontPointSize);
-    }
-
-    @Override
-    public void saveToProps(Properties props, String prefix) {
-        String pfx = (prefix == null) ? "" : prefix;
-        props.setString(pfx + "logLevel", logLevel != null ? logLevel.getName() : "");
-        props.setString(pfx + "logToken", logToken);
-        props.setBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
-        props.setColor(pfx + "fontColor", fontColor);
-        props.setBoolean(pfx + "fontBgColorIsSet", (fontBgColor != null));
-        if (fontBgColor != null) {
-            props.setColor(pfx + "fontBgColor", fontBgColor);
-        }
-        props.setString(pfx + "fontFamilyName", fontFamilyName);
-        props.setBoolean(pfx + "isBold", isBold);
-        props.setBoolean(pfx + "isItalic", isItalic);
-        props.setBoolean(pfx + "isUnderline", isUnderline);
-        props.setInteger(pfx + "fontPointSize", fontPointSize);
-    }
-
     private void setDefaults() {
         logLevel = null;
         logToken = "";
@@ -291,4 +248,43 @@ public final class LogConsoleStyle implements ConfigObject {
         }
     }
 
+    public void saveToProps(Properties props, String prefix) {
+        String pfx = prefix.endsWith(".") ? prefix : prefix + ".";
+        props.setString(pfx + "logLevel", logLevel != null ? logLevel.getName() : "");
+        props.setString(pfx + "logToken", logToken);
+        props.setBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
+        props.setColor(pfx + "fontColor", fontColor);
+        props.setBoolean(pfx + "fontBgColorIsSet", (fontBgColor != null));
+        if (fontBgColor != null) {
+            props.setColor(pfx + "fontBgColor", fontBgColor);
+        }
+        props.setString(pfx + "fontFamilyName", fontFamilyName);
+        props.setBoolean(pfx + "isBold", isBold);
+        props.setBoolean(pfx + "isItalic", isItalic);
+        props.setBoolean(pfx + "isUnderline", isUnderline);
+        props.setInteger(pfx + "fontPointSize", fontPointSize);
+    }
+
+    public void loadFromProps(Properties props, String prefix) {
+        setDefaults();
+        String pfx = prefix.endsWith(".") ? prefix : prefix + ".";
+        String levelName = props.getString(pfx + "logLevel", "");
+        try {
+            logLevel = levelName.isEmpty() ? null : Level.parse(levelName);
+        }
+        catch (IllegalArgumentException iae) {
+            logLevel = null;
+            logger.log(Level.SEVERE, "Unknown log level name found in properties: {0}", levelName);
+        }
+        logToken = props.getString(pfx + "logToken", logToken);
+        logTokenIsCaseSensitive = props.getBoolean(pfx + "logTokenIsCaseSensitive", logTokenIsCaseSensitive);
+        fontColor = props.getColor(pfx + "fontColor", fontColor);
+        boolean hasFontBgColor = props.getBoolean(pfx + "fontBgColorIsSet", (fontBgColor != null));
+        fontBgColor = hasFontBgColor ? props.getColor(pfx + "fontBgColor", fontBgColor) : null;
+        fontFamilyName = props.getString(pfx + "fontFamilyName", fontFamilyName);
+        isBold = props.getBoolean(pfx + "isBold", isBold);
+        isItalic = props.getBoolean(pfx + "isItalic", isItalic);
+        isUnderline = props.getBoolean(pfx + "isUnderline", isUnderline);
+        fontPointSize = props.getInteger(pfx + "fontPointSize", fontPointSize);
+    }
 }
