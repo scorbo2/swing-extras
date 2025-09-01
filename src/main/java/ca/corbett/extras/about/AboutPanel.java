@@ -76,6 +76,7 @@ public final class AboutPanel extends JPanel {
 
         BufferedImage logoImage = getLogoImage(info);
         PanelField logoPanel = new PanelField();
+        logoPanel.setShouldExpand(true);
 
         if (info.logoDisplayMode != AboutInfo.LogoDisplayMode.STRETCH) {
             logoPanel.getPanel().setLayout(
@@ -131,8 +132,7 @@ public final class AboutPanel extends JPanel {
         String labelText = info.applicationName + " " + info.applicationVersion;
         LabelField labelField = new LabelField(labelText);
         labelField.setFont(FormField.getDefaultFont().deriveFont(Font.BOLD, 24));
-        labelField.getMargins().setAll(2);
-        labelField.getMargins().setTop(8);
+        labelField.getMargins().setLeft(12);
         formPanel.add(labelField);
 
         if (info.shortDescription != null && !info.shortDescription.isBlank()) {
@@ -140,13 +140,13 @@ public final class AboutPanel extends JPanel {
                     ? info.shortDescription.substring(0, 60) + "..."
                     : info.shortDescription;
             labelField = new LabelField("\"" + desc + "\"");
-            labelField.getMargins().setAll(2).setTop(8);
+            labelField.getMargins().setLeft(12).setBottom(2);
             formPanel.add(labelField);
         }
 
         if (info.copyright != null && !info.copyright.isBlank()) {
             labelField = new LabelField(info.copyright);
-            labelField.getMargins().setAll(2).setTop(8);
+            labelField.getMargins().setLeft(12).setBottom(2);
             formPanel.add(labelField);
         }
 
@@ -160,7 +160,7 @@ public final class AboutPanel extends JPanel {
                     logger.warning("Project URL is not well-formed.");
                 }
             }
-            labelField.getMargins().setAll(2).setTop(8);
+            labelField.getMargins().setLeft(12).setBottom(2);
             formPanel.add(labelField);
         }
 
@@ -174,17 +174,17 @@ public final class AboutPanel extends JPanel {
                     logger.warning("License URL is not well-formed.");
                 }
             }
-            labelField.getMargins().setAll(2).setTop(8);
+            labelField.getMargins().setLeft(12).setBottom(2);
             formPanel.add(labelField);
         }
 
         memoryUsageField = new LabelField(getMemoryStats());
-        memoryUsageField.getMargins().setAll(2).setTop(8);
+        memoryUsageField.getMargins().setLeft(12).setBottom(2);
         formPanel.add(memoryUsageField);
 
         for (String customField : info.getCustomFieldNames()) {
             labelField = new LabelField(customField, info.getCustomFieldValue(customField));
-            labelField.getMargins().setAll(4).setTop(8).setBottom(2);
+            labelField.getMargins().setLeft(12).setBottom(2);
             formPanel.add(labelField);
             customFields.put(customField, labelField);
         }
@@ -192,8 +192,9 @@ public final class AboutPanel extends JPanel {
         String releaseNotes = getReleaseNotesText(info);
         if (releaseNotes != null && !releaseNotes.isBlank()) {
             PanelField releaseNotesField = new PanelField();
+            releaseNotesField.setShouldExpand(true);
             releaseNotesField.getPanel().setLayout(new BorderLayout());
-            releaseNotesField.getMargins().setAll(0).setLeft(12).setInternalSpacing(4);
+            releaseNotesField.getMargins().setAll(0).setTop(12).setLeft(12).setInternalSpacing(4);
             JTextArea textArea = new JTextArea();
             textArea.setLineWrap(true);
             textArea.setWrapStyleWord(true);
