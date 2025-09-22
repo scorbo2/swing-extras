@@ -103,6 +103,7 @@ public class LongTextField extends FormField {
     public static LongTextField ofDynamicSizingMultiLine(String label, int rows) {
         LongTextField field = new LongTextField(label);
         field.getTextArea().setRows(rows);
+        field.getTextArea().setColumns(10); // not a limit! setting this eases the swing layout calcs / avoids flicker
         field.shouldExpandMultiLine = true;
         return field;
     }
