@@ -15,12 +15,16 @@ import java.util.logging.Logger;
  * colour values, and etc, you have to worry about converting everything to and from
  * Strings. This class abstracts that for you and provides easy convenience methods.
  *
+ * NOTE: All setters in this wrapper guard against null values so that we never pass a
+ * null into java.util.Properties#setProperty, which would otherwise cause a
+ * NullPointerException in the underlying Hashtable.
+ *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
 public class Properties {
 
-    private final static Logger logger = Logger.getLogger(Properties.class.getName());
+    private static final Logger logger = Logger.getLogger(Properties.class.getName());
 
     protected final java.util.Properties props;
 
@@ -40,9 +44,10 @@ public class Properties {
     public List<String> getPropertyNames() {
         List<String> list = new ArrayList<>();
         for (Object key : props.keySet()) {
-            list.add((String)key);
+            list.add((String) key);
         }
-        list.sort(String::compareTo);
+        // Use explicit lambda to avoid any method reference binding issues on some toolchains.
+        list.sort((a, b) -> a.compareTo(b));
         return list;
     }
 
@@ -57,11 +62,16 @@ public class Properties {
 
     /**
      * Sets a String name/value pair. Replaces any previous value for the given name.
+     * If value is null, we do not write into the underlying Properties to avoid NPE.
      *
      * @param name  The property name.
      * @param value The property value.
      */
     public void setString(String name, String value) {
+        if (value == null) {
+            logger.log(Level.WARNING, "Ignoring null String value for property \"{0}\"", name);
+            return;
+        }
         props.setProperty(name, value);
     }
 
@@ -78,11 +88,16 @@ public class Properties {
 
     /**
      * Sets an Integer property. Replaces any previous value for the given property name.
+     * If value is null, ignore (do not write).
      *
      * @param name  The property name.
      * @param value The property value.
      */
     public void setInteger(String name, Integer value) {
+        if (value == null) {
+            logger.log(Level.WARNING, "Ignoring null Integer value for property \"{0}\"", name);
+            return;
+        }
         props.setProperty(name, Integer.toString(value));
     }
 
@@ -99,8 +114,7 @@ public class Properties {
         Integer value = defaultValue;
         try {
             value = Integer.valueOf(props.getProperty(name, Integer.toString(defaultValue)));
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non integer value.", e);
         }
         return value;
@@ -108,12 +122,16 @@ public class Properties {
 
     /**
      * Sets a Boolean value for the given property name. Replaces any previous value for the
-     * named property.
+     * named property. If value is null, ignore.
      *
      * @param name  The property name.
      * @param value The property value.
      */
     public void setBoolean(String name, Boolean value) {
+        if (value == null) {
+            logger.log(Level.WARNING, "Ignoring null Boolean value for property \"{0}\"", name);
+            return;
+        }
         props.setProperty(name, Boolean.toString(value));
     }
 
@@ -144,11 +162,16 @@ public class Properties {
 
     /**
      * Sets a Float property. Replaces any previous value for the given property name.
+     * If value is null, ignore.
      *
      * @param name  The property name.
      * @param value The property value.
      */
     public void setFloat(String name, Float value) {
+        if (value == null) {
+            logger.log(Level.WARNING, "Ignoring null Float value for property \"{0}\"", name);
+            return;
+        }
         props.setProperty(name, Float.toString(value));
     }
 
@@ -165,8 +188,7 @@ public class Properties {
         Float value = defaultValue;
         try {
             value = Float.valueOf(props.getProperty(name, Float.toString(defaultValue)));
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-float value.", e);
         }
         return value;
@@ -174,11 +196,16 @@ public class Properties {
 
     /**
      * Sets a Double property. Replaces any previous value for the given property name.
+     * If value is null, ignore.
      *
      * @param name  The property name.
      * @param value The property value.
      */
     public void setDouble(String name, Double value) {
+        if (value == null) {
+            logger.log(Level.WARNING, "Ignoring null Double value for property \"{0}\"", name);
+            return;
+        }
         props.setProperty(name, Double.toString(value));
     }
 
@@ -195,8 +222,7 @@ public class Properties {
         Double value = defaultValue;
         try {
             value = Double.valueOf(props.getProperty(name, Double.toString(defaultValue)));
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-double value.", e);
         }
         return value;
@@ -205,11 +231,16 @@ public class Properties {
     /**
      * Sets a Color property. Replaces any previous value for the given property name.
      * Color values are written as Strings in the form "0xAARRGGBB".
+     * If value is null, ignore.
      *
      * @param name  The property name.
      * @param value The property value.
      */
     public void setColor(String name, Color value) {
+        if (value == null) {
+            logger.log(Level.WARNING, "Ignoring null Color value for property \"{0}\"", name);
+            return;
+        }
         props.setProperty(name, "0x" + Integer.toHexString(value.getRGB()));
     }
 
@@ -235,19 +266,16 @@ public class Properties {
                     if (propValue.length() == 10) {
                         value = new Color(Long.decode(propValue).intValue(), true);
                     }
-
                     // regular values: 0xRRGGBB with no alpha value (fully opaque)
                     else {
                         value = new Color(Long.decode(propValue).intValue());
                     }
-                }
-                else {
+                } else {
                     // backwards compatibility... we used to just take color.getRGB() as an int value
                     value = new Color(Integer.valueOf(propValue));
                 }
             }
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-colour value.", e);
         }
         return value;
@@ -255,6 +283,7 @@ public class Properties {
 
     /**
      * Sets a Font value, replacing any previous value with that name.
+     * If value is null, ignore.
      * Internally, Font objects are split into five properties:
      * <ul>
      *     <li>font family name</li>
@@ -269,6 +298,10 @@ public class Properties {
      * @param value The Font object to set.
      */
     public void setFont(String name, Font value) {
+        if (value == null) {
+            logger.log(Level.WARNING, "Ignoring null Font value for property \"{0}\"", name);
+            return;
+        }
         props.setProperty(name + "_familyName", value.getFamily());
         props.setProperty(name + "_faceName", value.getFontName());
         props.setProperty(name + "_isBold", Boolean.toString(value.isBold()));
@@ -299,10 +332,10 @@ public class Properties {
         // then just return null:
         if (defaultValue == null && (
                 props.getProperty(name + "_familyName", null) == null ||
-                        props.getProperty(name + "_faceName", null) == null ||
-                        props.getProperty(name + "_isBold", null) == null ||
-                        props.getProperty(name + "_isItalic", null) == null ||
-                        props.getProperty(name + "_pointSize", null) == null)) {
+                props.getProperty(name + "_faceName", null) == null ||
+                props.getProperty(name + "_isBold", null) == null ||
+                props.getProperty(name + "_isItalic", null) == null ||
+                props.getProperty(name + "_pointSize", null) == null)) {
             return null;
         }
 
@@ -321,8 +354,7 @@ public class Properties {
             }
             int pointSize = Integer.parseInt(props.getProperty(name + "_pointSize", Integer.toString(font.getSize())));
             font = new Font(faceName, fontStyle, pointSize);
-        }
-        catch (NumberFormatException nfe) {
+        } catch (NumberFormatException nfe) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-font value.", nfe);
         }
         return font;
