@@ -16,12 +16,7 @@ import java.util.List;
  */
 public abstract class AppExtension {
 
-    protected final List<AbstractProperty> configProperties;
-
-    public AppExtension() {
-        List<AbstractProperty> props = createConfigProperties();
-        configProperties = props == null ? new ArrayList<>() : props;
-    }
+    protected List<AbstractProperty> configProperties;
 
     /**
      * Should return an AppExtensionInfo object that describes this extension.

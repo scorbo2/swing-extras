@@ -249,6 +249,8 @@ public abstract class ExtensionManager<T extends AppExtension> {
         wrapper.sourceJar = null;
         wrapper.isEnabled = isEnabled;
         wrapper.extension = extension;
+        List<AbstractProperty> configProperties = extension.createConfigProperties();
+        extension.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
         loadedExtensions.put(extension.getClass().getName(), wrapper);
         logger.info("Extension loaded internally: " + extension.getInfo().name);
     }
@@ -518,6 +520,10 @@ public abstract class ExtensionManager<T extends AppExtension> {
                             Constructor<?> constructor = candidate.getDeclaredConstructor();
                             //noinspection unchecked
                             result = (T)constructor.newInstance();
+
+                            // safe to invoke now - DON'T do this in the constructor, see issue 116
+                            List<AbstractProperty> configProperties = result.createConfigProperties();
+                            result.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
                         }
                         catch (NoSuchMethodException ignored) {
                             logger.warning("Class " + candidate.getName() + " has no default constructor - ignored.");
