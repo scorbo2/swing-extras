@@ -150,8 +150,8 @@ public class Properties {
         Boolean value = defaultValue;
         String propValue = props.getProperty(name);
         if (propValue != null) {
-            propValue = propValue.trim();
-            value = (propValue.equalsIgnoreCase("true")
+            propValue = propValue.trim().toLowerCase();
+            value = (propValue.equals("true")
                     || propValue.equals("1")
                     || propValue.equals("yes")
                     || propValue.equals("on")
