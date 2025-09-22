@@ -1,6 +1,9 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.5.0 [TODO release date] - TODO description
+  TODO issue list
+
 Version 2.4.0 [2025-09-01] - swing-forms rewrite
   #108 - ExtensionManager: fix config preview bug
   #107 - Fix minor form field alignment bug
