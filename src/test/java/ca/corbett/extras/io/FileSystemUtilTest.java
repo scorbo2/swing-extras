@@ -5,7 +5,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -141,21 +145,9 @@ public class FileSystemUtilTest {
     }
 
     @Test
-    public void testFindSubdirectories_withLargeDirectoryTree_shouldBePerformant() {
+    public void testFindSubdirectories_withLargeDirectoryTree_shouldBePerformant() throws Exception {
         File rootDir = new File(testDir, "fsperftest");
-        rootDir.mkdir();
-        for (int i = 0; i < 25; i++) {
-            File subDir = new File(rootDir, "subdir" + (i + 1));
-            subDir.mkdir();
-            for (int j = 0; j < 25; j++) {
-                File subsubDir = new File(subDir, "subsubdir" + (j + 1));
-                subsubDir.mkdir();
-                for (int k = 0; k < 25; k++) {
-                    File subsubsubDir = new File(subsubDir, "subsubsubdir" + (k + 1));
-                    subsubsubDir.mkdir();
-                }
-            }
-        }
+        createNestedTestDir(rootDir, 15, 15, 15, false);
         // Before:
         // Found 16275 subdirs in 395ms
         // Found 16275 subdirs in 464ms
@@ -187,8 +179,37 @@ public class FileSystemUtilTest {
         long startTime = System.currentTimeMillis();
         List<File> list = FileSystemUtil.findSubdirectories(rootDir, true);
         long elapsedTime = System.currentTimeMillis() - startTime;
-        assertEquals(Integer.valueOf(16275), Integer.valueOf(list.size()));
-        assertTrue(elapsedTime < 500, "Find recursive executed slowly!");
+        assertEquals(Integer.valueOf(3615), Integer.valueOf(list.size()));
+        assertTrue(elapsedTime < 750, "Find recursive executed slowly!");
+        deleteDirectoryRecursively(rootDir);
+    }
+
+    @Test
+    public void testFindFiles_withLargeDirectoryTree_shouldBePerformant() throws Exception {
+        File rootDir = new File(testDir, "fsperftest");
+        createNestedTestDir(rootDir, 18, 10, 10, true);
+
+        // Round 1 results, testing on sclaptop6:
+        // Original findFiles method: Enumerated 48828 files in 196ms.
+        // findFilesOptimized: Enumerated 48828 files in 163ms.
+        // findFilesNIO2: Enumerated 48828 files in 247ms.
+        // findFilesWithVisitor: Enumerated 48828 files in 177ms.
+        // findFilesParallel: Enumerated 48828 files in 305ms.
+
+        // Round 2 results: Larger dataset!
+        // original findFiles method: Enumerated 126843 files in 475ms.
+        // findFilesOptimized: Enumerated 126843 files in 397ms.
+        // findFilesNIO2: Enumerated 126843 files in 480ms.
+        // findFilesWithVisitor: Enumerated 126843 files in 375ms.
+        // findFilesParallel: Enumerated 126843 files in 453ms.
+
+        long startTime = System.currentTimeMillis();
+        List<File> list = FileSystemUtil.findFiles(rootDir, true, List.of("txt", "blah"));
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        //System.out.println("Enumerated "+list.size()+" files in " + elapsedTime + "ms.");
+        assertEquals(Integer.valueOf(5997), Integer.valueOf(list.size()));
+        assertTrue(elapsedTime < 750, "Find files recursive executed slowly!");
+        deleteDirectoryRecursively(rootDir);
     }
 
     @Test
@@ -230,6 +251,59 @@ public class FileSystemUtilTest {
         assertEquals(lines.size(), actual.size());
         for (int i = 0; i < lines.size(); i++) {
             assertEquals(lines.get(i), actual.get(i));
+        }
+    }
+
+    private static void createNestedTestDir(File rootDir, int dirCount1, int dirCount2, int dirCount3, boolean createFiles)
+            throws IOException {
+        rootDir.mkdir();
+        for (int i = 0; i < dirCount1; i++) {
+            if (createFiles) {
+                new File(rootDir, "test1.txt").createNewFile();
+                new File(rootDir, "test2.txt").createNewFile();
+                new File(rootDir, "test3.blah").createNewFile();
+            }
+            File subDir = new File(rootDir, "subdir" + (i + 1));
+            subDir.mkdir();
+            if (createFiles) {
+                new File(subDir, "test1.txt").createNewFile();
+                new File(subDir, "test2.txt").createNewFile();
+                new File(subDir, "test3.blah").createNewFile();
+            }
+            for (int j = 0; j < dirCount2; j++) {
+                File subsubDir = new File(subDir, "subsubdir" + (j + 1));
+                subsubDir.mkdir();
+                if (createFiles) {
+                    new File(subsubDir, "test1.txt").createNewFile();
+                    new File(subsubDir, "test2.txt").createNewFile();
+                    new File(subsubDir, "test3.blah").createNewFile();
+                }
+                for (int k = 0; k < dirCount3; k++) {
+                    File subsubsubDir = new File(subsubDir, "subsubsubdir" + (k + 1));
+                    subsubsubDir.mkdir();
+                    if (createFiles) {
+                        new File(subsubsubDir, "test1.txt").createNewFile();
+                        new File(subsubsubDir, "test2.txt").createNewFile();
+                        new File(subsubsubDir, "test3.blah").createNewFile();
+                    }
+                }
+            }
+        }
+    }
+
+    private static void deleteDirectoryRecursively(File rootDir) throws IOException {
+        Path path = rootDir.toPath();
+        if (Files.exists(path)) {
+            Files.walk(path)
+                 .sorted(Comparator.reverseOrder())
+                 .forEach(p -> {
+                     try {
+                         Files.delete(p);
+                     }
+                     catch (IOException e) {
+                         throw new RuntimeException(e);
+                     }
+                 });
         }
     }
 
