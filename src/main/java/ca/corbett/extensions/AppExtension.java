@@ -2,6 +2,8 @@ package ca.corbett.extensions;
 
 import ca.corbett.extras.properties.AbstractProperty;
 
+import java.io.IOException;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import java.util.List;
 public abstract class AppExtension {
 
     protected List<AbstractProperty> configProperties;
+    protected URLClassLoader urlClassLoader = null;
 
     /**
      * Should return an AppExtensionInfo object that describes this extension.
@@ -67,4 +70,20 @@ public abstract class AppExtension {
      * @return A List of AbstractProperty instance. May be null or empty.
      */
     protected abstract List<AbstractProperty> createConfigProperties();
+
+    /**
+     * When an extension has finished loading jar resources, it can optionally invoke this method
+     * to release its class loader and release the file handle on its jar file. Failing to invoke
+     * this method means that the class loader will live for the lifetime of the application.
+     */
+    protected final void releaseClassLoader() {
+        if (urlClassLoader != null) {
+            try {
+                urlClassLoader.close();
+            }
+            catch (IOException ignored) {
+            }
+            urlClassLoader = null;
+        }
+    }
 }
