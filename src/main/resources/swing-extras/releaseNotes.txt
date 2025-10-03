@@ -2,7 +2,8 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.5.0 [TODO release date] - TODO description
-  #130 - Better extension logging on initial load
+  #130 - ExtensionManager: Better logging on initial load
+  #129 - ImageUtil: Faster scanning of image dimensions
   #127 - Performance improvements in FileSystemUtil
   #126 - Fix resource loading issue in extensions
   #121 - README updates for 2.5.0

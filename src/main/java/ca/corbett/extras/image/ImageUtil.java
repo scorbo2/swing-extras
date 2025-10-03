@@ -2,12 +2,15 @@ package ca.corbett.extras.image;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.swing.ImageIcon;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -452,6 +455,37 @@ public final class ImageUtil {
         graphics.dispose();
         return resizedImage;
     }
+
+    /**
+     * Very quickly reads the dimensions of the given image without parsing the entire image data.
+     * This is useful for displaying basic information about an image without paying the computational
+     * expense of actually loading the whole thing.
+     *
+     * @param imageFile The image file in question. Must be in an image format supported by ImageIO.
+     * @return The dimensions of the image.
+     * @throws IOException for unsupported image formats, or if the file is corrupt or missing.
+     */
+    public static Dimension getImageDimensions(File imageFile) throws IOException {
+        try (ImageInputStream stream = ImageIO.createImageInputStream(imageFile)) {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+
+            if (!readers.hasNext()) {
+                throw new IOException("No ImageReader found for the image format");
+            }
+
+            ImageReader reader = readers.next();
+            try {
+                reader.setInput(stream);
+                int width = reader.getWidth(0);  // 0 = first image
+                int height = reader.getHeight(0);
+                return new Dimension(width, height);
+            }
+            finally {
+                reader.dispose();
+            }
+        }
+    }
+
 
     /**
      * Scales an image up or down proportionally until it fits inside the square bounding area
