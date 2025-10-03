@@ -486,6 +486,34 @@ public final class ImageUtil {
         }
     }
 
+    /**
+     * Returns a human-readable description of an image's aspect ratio based on the given dimensions.
+     * The possible return values are "portrait", "square", or "landscape" based on the ratio of width
+     * versus height. A "fuzzy" percentage is applied, such that images don't need to be exactly
+     * square to be considered "square". For example, an image of 999x1000 is technically portrait,
+     * but really, it could be considered "close enough" to be called square.
+     */
+    private static String getAspectRatioDescription(Dimension imageDim) {
+        final double TOLERANCE = 0.05; // five percent is "close enough"
+        int width = imageDim.width;
+        int height = imageDim.height;
+
+        // Calculate the ratio of the smaller dimension to the larger dimension
+        double ratio = (double)Math.min(width, height) / Math.max(width, height);
+
+        // If the ratio is close enough to 1.0 (square), consider it square
+        if (ratio >= (1.0 - TOLERANCE)) {
+            return "square";
+        }
+
+        // Otherwise, determine landscape vs portrait
+        if (width > height) {
+            return "landscape";
+        }
+        else {
+            return "portrait";
+        }
+    }
 
     /**
      * Scales an image up or down proportionally until it fits inside the square bounding area
