@@ -198,9 +198,10 @@ public final class FontField extends FormField {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    public FormField setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         button.setEnabled(enabled);
+        return this;
     }
 
     @Override

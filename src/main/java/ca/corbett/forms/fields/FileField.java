@@ -181,10 +181,11 @@ public final class FileField extends FormField {
      * Overridden so we can enable/disable our choose button also.
      */
     @Override
-    public void setEnabled(boolean enabled) {
+    public FormField setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         chooseButton.setEnabled(enabled);
         textField.setEnabled(enabled);
+        return this;
     }
 
     /**

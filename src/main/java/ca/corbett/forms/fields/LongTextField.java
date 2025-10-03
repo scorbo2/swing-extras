@@ -112,9 +112,10 @@ public class LongTextField extends FormField {
      * Overridden here so we can also enable or disable our text area.
      */
     @Override
-    public void setEnabled(boolean enabled) {
+    public FormField setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         textArea.setEnabled(enabled);
+        return this;
     }
 
     /**
