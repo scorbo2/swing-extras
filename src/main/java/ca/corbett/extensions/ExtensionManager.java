@@ -252,7 +252,13 @@ public abstract class ExtensionManager<T extends AppExtension> {
         List<AbstractProperty> configProperties = extension.createConfigProperties();
         extension.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
         loadedExtensions.put(extension.getClass().getName(), wrapper);
-        logger.info("Extension loaded internally: " + extension.getInfo().name);
+        String extName = extension.getInfo().name == null || extension.getInfo().name.isBlank()
+                ? "Unnamed extension"
+                : extension.getInfo().name;
+        String extVersion = extension.getInfo().version == null || extension.getInfo().version.isBlank()
+                ? "Unknown version"
+                : "v" + extension.getInfo().version;
+        logger.info("Extension loaded internally: " + extName + " " + extVersion);
     }
 
     /**
@@ -367,7 +373,13 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 wrapper.isEnabled = true;
                 loadedExtensions.put(extension.getClass().getName(), wrapper);
                 extensionsLoaded++;
-                logger.info("Extension loaded externally: " + extension.getInfo().name);
+                String extName = extension.getInfo().name == null || extension.getInfo().name.isBlank()
+                        ? "Unnamed extension"
+                        : extension.getInfo().name;
+                String extVersion = extension.getInfo().version == null || extension.getInfo().version.isBlank()
+                        ? "(Unknown version)"
+                        : "v" + extension.getInfo().version;
+                logger.info("Extension loaded externally: " + extName + " " + extVersion);
             }
         }
         return extensionsLoaded;
