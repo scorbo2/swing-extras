@@ -398,14 +398,18 @@ public abstract class FormField {
      * FormField visible automatically and will set its icon as appropriate. Tooltip text
      * will be available in the case of a failed validation, to explain why the field is invalid.
      * </p>
+     * <p>
+     *     <b>Note:</b> If this FormField is currently disabled or currently invisible, then
+     *     validation is skipped and this method does nothing.
+     * </p>
      *
      * @return True if the field value is valid according to all our validators, false otherwise.
      */
     public boolean validate() {
         boolean isValid = true;
 
-        // If the field is not currently enabled, don't bother validating:
-        if (!isEnabled) {
+        // If the field is not currently enabled or not visible, don't bother validating:
+        if (!isEnabled || !isVisible) {
             return isValid;
         }
 
