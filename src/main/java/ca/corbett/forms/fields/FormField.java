@@ -139,8 +139,9 @@ public abstract class FormField {
         return fieldLabel;
     }
 
-    public void setFieldLabelFont(Font font) {
+    public FormField setFieldLabelFont(Font font) {
         fieldLabel.setFont(font);
+        return this;
     }
 
     /**
@@ -247,7 +248,7 @@ public abstract class FormField {
      *
      * @param visible Whether to show or hide.
      */
-    public void setVisible(boolean visible) {
+    public FormField setVisible(boolean visible) {
         isVisible = visible;
         fieldLabel.setVisible(visible);
         if (fieldComponent != null) {
@@ -255,6 +256,7 @@ public abstract class FormField {
         }
         validationLabel.setVisible(visible);
         helpLabel.setVisible(visible);
+        return this;
     }
 
     /**
@@ -269,7 +271,7 @@ public abstract class FormField {
      *
      * @param enabled whether to enable or disable the components.
      */
-    public void setEnabled(boolean enabled) {
+    public FormField setEnabled(boolean enabled) {
         isEnabled = enabled;
         fieldLabel.setEnabled(enabled);
         if (fieldComponent != null) {
@@ -277,6 +279,7 @@ public abstract class FormField {
         }
         validationLabel.setEnabled(enabled);
         helpLabel.setEnabled(enabled);
+        return this;
     }
 
     public boolean isEnabled() {
