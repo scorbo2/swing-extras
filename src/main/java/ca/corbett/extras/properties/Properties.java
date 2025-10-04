@@ -241,13 +241,13 @@ public class Properties {
             logger.log(Level.WARNING, "Ignoring null Color value for property \"{0}\"", name);
             return;
         }
-        props.setProperty(name, "0x" + Integer.toHexString(value.getRGB()));
+        props.setProperty(name, encodeColor(value));
     }
 
     /**
      * Attempts to retrieve a Color value for the named property.
      * If no such named property exists, then defaultValue is returned.
-     * Color values may be stored as Strings in the form "0XAARRGGBB", or
+     * Color values may be stored as Strings in the form "0xAARRGGBB", or
      * "0xRRGGBB" with no alpha value, or in the legacy format of
      * a simple integer representation of the rgb value (deprecated
      * but will still be read here).
@@ -261,19 +261,7 @@ public class Properties {
         try {
             String propValue = props.getProperty(name);
             if (propValue != null && !propValue.isEmpty()) {
-                if (propValue.toLowerCase().startsWith("0x")) {
-                    // alpha values: 0xAARRGGBB
-                    if (propValue.length() == 10) {
-                        value = new Color(Long.decode(propValue).intValue(), true);
-                    }
-                    // regular values: 0xRRGGBB with no alpha value (fully opaque)
-                    else {
-                        value = new Color(Long.decode(propValue).intValue());
-                    }
-                } else {
-                    // backwards compatibility... we used to just take color.getRGB() as an int value
-                    value = new Color(Integer.valueOf(propValue));
-                }
+                value = decodeColor(propValue);
             }
         } catch (NumberFormatException e) {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-colour value.", e);
@@ -358,6 +346,46 @@ public class Properties {
             logger.log(Level.SEVERE, "Property \"" + name + "\" contains a non-font value.", nfe);
         }
         return font;
+    }
+
+    /**
+     * Encodes the given Color to a String in the format 0xAARRGGBB, where
+     * AA is the alpha value from 00 to FF, RR is the red value, GG is the
+     * green value, and BB is the blue value.
+     */
+    public static String encodeColor(Color color) {
+        return "0x" + Integer.toHexString(color.getRGB());
+    }
+
+    /**
+     * Attempts to decode a Color value from the given String. The formats accepted are:
+     * <ul>
+     *     <li>"0xAARRGGBB" (alpha, red, green blue)</li>
+     *     <LI>"0xRRGGBB" (red, green, blue with implied full opacity)</LI>
+     *     <LI>an integer rgb value as received from Color.getRGB()</LI>
+     * </ul>
+     * If the input is null or empty, you'll get null. You may also get a NumberFormatException
+     * if the given string makes no sense.
+     */
+    public static Color decodeColor(String input) throws NumberFormatException {
+        if (input == null || input.isBlank()) {
+            return null;
+        }
+
+        if (input.toLowerCase().startsWith("0x")) {
+            // alpha values: 0xAARRGGBB
+            if (input.length() == 10) {
+                return new Color(Long.decode(input).intValue(), true);
+            }
+            // regular values: 0xRRGGBB with no alpha value (fully opaque)
+            else {
+                return new Color(Long.decode(input).intValue());
+            }
+        }
+        else {
+            // backwards compatibility... we used to just take color.getRGB() as an int value
+            return new Color(Integer.parseInt(input));
+        }
     }
 
     /**

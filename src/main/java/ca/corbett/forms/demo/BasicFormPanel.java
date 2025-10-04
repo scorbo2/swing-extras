@@ -15,6 +15,7 @@ import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.ShortTextField;
+import ca.corbett.forms.fields.SliderField;
 
 import javax.swing.AbstractAction;
 import javax.swing.JList;
@@ -80,6 +81,10 @@ public class BasicFormPanel extends PanelBuilder {
         formPanel.add(linkField);
 
         formPanel.add(new NumberField("Number chooser:", 0, 0, 100, 1));
+
+        formPanel.add(new SliderField("Slider field:", 0, 100, 50)
+                              .setColorStops(List.of(Color.RED, Color.YELLOW, Color.GREEN))
+                              .setLabels(List.of("Very low", "Low", "Medium", "High", "Very high"), true));
 
         ListField<String> listField1 = new ListField<>("Simple list:",
                                                        List.of("One", "Two", "Three", "Four", "Five", "Six"));

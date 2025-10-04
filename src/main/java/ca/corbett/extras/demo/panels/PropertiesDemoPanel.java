@@ -18,11 +18,13 @@ import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.extras.properties.ShortTextProperty;
+import ca.corbett.extras.properties.SliderProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
+import ca.corbett.forms.fields.SliderField;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -170,7 +172,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
 
         props.add(new ShortTextProperty("Text.Single line.someTextProp1", "Text property1:", "hello"));
         props.add(new ShortTextProperty("Text.Single line.someTextProp2", "Text property2:", ""));
-        props.add(LongTextProperty.ofFixedSizeMultiLine("Text.Multi line.someMultiLineTextProp", "Text entry:", 4, 40)
+        props.add(LongTextProperty.ofFixedSizeMultiLine("Text.Multi line.someMultiLineTextProp", "Text entry:", 4, 30)
                                   .setValue("You can support long text as well.\n\nPop-out editing is optional.")
                                   .setAllowPopoutEditing(true));
 
@@ -178,6 +180,21 @@ public class PropertiesDemoPanel extends PanelBuilder {
         IntegerProperty hiddenProp = new IntegerProperty("Hidden.someHiddenProp", "hiddenProp", 77);
         hiddenProp.setExposed(false);
         props.add(hiddenProp);
+
+        SliderField.setIsDefaultBorderEnabled(false);
+        props.add(new LabelProperty("Sliders.General.label",
+                                    "Sliders can sometimes be more useful than number spinners!"));
+        props.add(new SliderProperty("Sliders.General.slider1", "Default slider:", 0, 100, 50)
+                          .setShowValueLabel(false));
+        props.add(new SliderProperty("Sliders.General.slider2", "With value label:", 0, 100, 50));
+        props.add(new SliderProperty("Sliders.General.slider3", "With colors!:", 0, 100, 50)
+                          .setColorStops(List.of(Color.BLACK, Color.BLUE, Color.CYAN, Color.WHITE)));
+        props.add(new SliderProperty("Sliders.General.slider4", "Custom labels:", 0, 100, 50)
+                          .setColorStops(List.of(Color.BLACK, Color.BLUE, Color.CYAN, Color.WHITE))
+                          .setLabels(List.of("Black", "Blue", "Cyan", "White"), false));
+        props.add(new SliderProperty("Sliders.General.slider5", "Label + value:", 0, 100, 50)
+                          .setColorStops(List.of(Color.RED, Color.YELLOW, Color.GREEN))
+                          .setLabels(List.of("Bad", "Meh", "Okay", "Good", "Great!", "FANTASTIC!"), true));
 
         props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));
         props.add(new EnumProperty<>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
