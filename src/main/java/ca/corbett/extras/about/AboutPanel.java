@@ -178,6 +178,14 @@ public final class AboutPanel extends JPanel {
             formPanel.add(labelField);
         }
 
+        // Add a warning about snapshot builds if appropriate:
+        if (info.applicationVersion != null && info.applicationVersion.toLowerCase().contains("snapshot")) {
+            labelField = new LabelField("This is a snapshot build and is subject to change.");
+            labelField.setFont(LabelField.getDefaultFont().deriveFont(Font.BOLD));
+            labelField.getMargins().setLeft(12).setBottom(2);
+            formPanel.add(labelField);
+        }
+
         memoryUsageField = new LabelField(getMemoryStats());
         memoryUsageField.getMargins().setLeft(12).setBottom(2);
         formPanel.add(memoryUsageField);
