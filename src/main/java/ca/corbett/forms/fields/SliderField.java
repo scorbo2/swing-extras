@@ -213,7 +213,8 @@ public class SliderField extends FormField {
     }
 
     /**
-     * Custom UI delegate that handles the color interpolation painting
+     * Custom UI delegate that handles the color interpolation painting.
+     * This class brought to you by claude.ai!
      */
     private static class ColorInterpolatingSliderUI extends BasicSliderUI {
 
