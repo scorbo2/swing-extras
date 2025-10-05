@@ -101,6 +101,10 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         }
 
         @Override
+        protected void loadJarResources() {
+        }
+
+        @Override
         protected List<AbstractProperty> createConfigProperties() {
             return List.of();
         }
@@ -119,6 +123,10 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
                                                 "your application starts up.")
                     .setReleaseNotes("example")
                     .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
         }
 
         @Override
@@ -142,6 +150,10 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
                                                 "or tasktracker, etc.")
                     .setReleaseNotes("example")
                     .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
         }
 
         @Override

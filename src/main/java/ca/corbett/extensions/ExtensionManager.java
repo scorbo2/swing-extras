@@ -287,7 +287,6 @@ public abstract class ExtensionManager<T extends AppExtension> {
             }
             if (wrapper.isEnabled) {
                 wrapper.extension.onDeactivate();
-                wrapper.extension.releaseClassLoader();
             }
         }
     }
@@ -489,84 +488,86 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 Enumeration<JarEntry> e = jar.entries();
                 URL[] urls = {new URL("jar:file:" + jarFile.getAbsolutePath() + "!/")};
 
-                // Note: deliberately not using try-with-resources here as we need this URLClassLoader
-                //       to stick around long enough for extensions to load jar resources. We supply
-                //       this class loader to the extension, and the extension can close it with
-                //       the AppExtension.releaseClassLoader() method when resource loading is complete.
-                URLClassLoader urlClassLoader = URLClassLoader.newInstance(urls);
+                // Note: try-with-resources means this class loader will be released immediately
+                //       after the extension is instantiated. This is a deliberate design decision
+                //       to avoid resource leaks and open file handles. But it also means that
+                //       extensions have to be careful about loading jar resources...
+                //       see AppExtension.loadJarResources() for more info, and also see
+                //       swing-extras issues #126 and #133 for the thought process behind this.
+                try (URLClassLoader urlClassLoader = URLClassLoader.newInstance(urls)) {
 
-                T result = null;
-                while (e.hasMoreElements()) {
-                    JarEntry je = e.nextElement();
-                    if (je.isDirectory() || !je.getName().endsWith(".class")) {
-                        continue;
-                    }
-                    // -6 because of .class
-                    String className = je.getName().substring(0, je.getName().length() - 6);
-                    className = className.replace('/', '.');
+                    T result = null;
+                    while (e.hasMoreElements()) {
+                        JarEntry je = e.nextElement();
+                        if (je.isDirectory() || !je.getName().endsWith(".class")) {
+                            continue;
+                        }
+                        // -6 because of .class
+                        String className = je.getName().substring(0, je.getName().length() - 6);
+                        className = className.replace('/', '.');
 
-                    // Check to make sure we don't already have one with this class name:
-                    if (getLoadedExtension(className) != null) {
-                        logger.log(Level.INFO, "Skipping already loaded extension: {0}", className);
-                        continue;
+                        // Check to make sure we don't already have one with this class name:
+                        if (getLoadedExtension(className) != null) {
+                            logger.log(Level.INFO, "Skipping already loaded extension: {0}", className);
+                            continue;
+                        }
+
+                        // Load this class:
+                        logger.fine("ExtensionManager: loading class " + className + " from jar " + jarFile.getName());
+                        Class<?> candidate = urlClassLoader.loadClass(className);
+
+                        // What I want to do:
+                        //    if (T.isAssignableFrom(candidate))
+                        // or:
+                        //    if (candidate instanceof T)
+                        // But these are both illegal in Java because of type erasure.
+                        // T is just a compile-time convenience and it is discarded at runtime.
+                        // So, we have to force callers to pass in the class even though we're already
+                        // typed with it, sigh.
+                        if (!extensionClass.isAssignableFrom(candidate) || candidate.isInterface()) {
+                            //logger.warning("Class " + candidate.getName() + " is the wrong type.");
+                            // We actually don't care about this case - there may be many classes
+                            // in the jar file other than the extension class (support classes and such).
+                            // We don't need to log this warning for each one of them. Just ignore them.
+                            // BUT - we do need to execute the loadClass in the preceding code.
+                            // Otherwise, those support classes won't be available when the extension loads.
+                            continue;
+                        }
+
+                        try {
+                            Constructor<?> constructor = candidate.getDeclaredConstructor();
+                            //noinspection unchecked
+                            result = (T)constructor.newInstance();
+
+                            // safe to invoke now - DON'T do this in the constructor, see issue 116
+                            List<AbstractProperty> configProperties = result.createConfigProperties();
+                            result.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
+
+                            // We can also invoke this now while the class loader is still open:
+                            result.loadJarResources();
+                        }
+                        catch (NoSuchMethodException ignored) {
+                            logger.warning("Class " + candidate.getName() + " has no default constructor - ignored.");
+                            continue;
+                        }
+                        catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+                            logger.log(Level.WARNING, "Failed to instantiate " + candidate.getName(), ex);
+                            continue;
+                        }
+                        catch (IncompatibleClassChangeError ex) {
+                            logger.log(Level.WARNING,
+                                       "Ignoring extension with incompatible class version: " + candidate.getName(),
+                                       ex);
+                            continue;
+                        }
+                        logger.log(Level.FINE, "Found qualifying AppExtension class: {0} in jar: {1}",
+                                   new Object[]{candidate.getCanonicalName(),
+                                           jarFile.getAbsolutePath()});
                     }
 
-                    // Load this class:
-                    logger.fine("ExtensionManager: loading class " + className + " from jar " + jarFile.getName());
-                    Class<?> candidate = urlClassLoader.loadClass(className);
-
-                    // What I want to do:
-                    //    if (T.isAssignableFrom(candidate))
-                    // or:
-                    //    if (candidate instanceof T)
-                    // But these are both illegal in Java because of type erasure.
-                    // T is just a compile-time convenience and it is discarded at runtime.
-                    // So, we have to force callers to pass in the class even though we're already
-                    // typed with it, sigh.
-                    if (!extensionClass.isAssignableFrom(candidate) || candidate.isInterface()) {
-                        //logger.warning("Class " + candidate.getName() + " is the wrong type.");
-                        // We actually don't care about this case - there may be many classes
-                        // in the jar file other than the extension class (support classes and such).
-                        // We don't need to log this warning for each one of them. Just ignore them.
-                        // BUT - we do need to execute the loadClass in the preceding code.
-                        // Otherwise, those support classes won't be available when the extension loads.
-                        continue;
+                    if (result != null) {
+                        return result;
                     }
-
-                    try {
-                        Constructor<?> constructor = candidate.getDeclaredConstructor();
-                        //noinspection unchecked
-                        result = (T)constructor.newInstance();
-                        result.urlClassLoader = urlClassLoader;
-
-                        // safe to invoke now - DON'T do this in the constructor, see issue 116
-                        List<AbstractProperty> configProperties = result.createConfigProperties();
-                        result.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
-                    }
-                    catch (NoSuchMethodException ignored) {
-                        logger.warning("Class " + candidate.getName() + " has no default constructor - ignored.");
-                        continue;
-                    }
-                    catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
-                        logger.log(Level.WARNING, "Failed to instantiate " + candidate.getName(), ex);
-                        continue;
-                    }
-                    catch (IncompatibleClassChangeError ex) {
-                        logger.log(Level.WARNING,
-                                   "Ignoring extension with incompatible class version: " + candidate.getName(),
-                                   ex);
-                        continue;
-                    }
-                    logger.log(Level.FINE, "Found qualifying AppExtension class: {0} in jar: {1}",
-                               new Object[]{candidate.getCanonicalName(),
-                                       jarFile.getAbsolutePath()});
-                }
-
-                if (result != null) {
-                    return result;
-                }
-                else {
-                    urlClassLoader.close();
                 }
             }
         }

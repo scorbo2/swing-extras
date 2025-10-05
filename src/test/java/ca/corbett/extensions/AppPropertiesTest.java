@@ -67,6 +67,10 @@ class AppPropertiesTest {
         }
 
         @Override
+        protected void loadJarResources() {
+        }
+
+        @Override
         protected List<AbstractProperty> createConfigProperties() {
             return List.of();
         }
@@ -95,6 +99,10 @@ class AppPropertiesTest {
                     .setLongDescription("Just a test of AppExtension2")
                     .setReleaseNotes("v1.1 - initial release")
                     .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
         }
 
         @Override

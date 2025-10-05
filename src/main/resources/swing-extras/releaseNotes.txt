@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.5.0 [TODO release date] - TODO description
   #135 - CustomizableDesktopPane: add solid color bg option
   #134 - ComboField should expose its underlying model
+  #133 - ExtensionManager: change extension resource loading
   #130 - ExtensionManager: Better logging on initial load
   #129 - ImageUtil: Faster scanning of image dimensions
   #128 - AboutPanel should warn about snapshot builds

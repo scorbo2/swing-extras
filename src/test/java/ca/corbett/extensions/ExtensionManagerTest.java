@@ -302,6 +302,10 @@ public class ExtensionManagerTest {
         }
 
         @Override
+        protected void loadJarResources() {
+        }
+
+        @Override
         protected List<AbstractProperty> createConfigProperties() {
             return null;
         }
@@ -330,6 +334,10 @@ public class ExtensionManagerTest {
                     .setLongDescription("Just a test of AppExtension2")
                     .setReleaseNotes("v1.1 - initial release")
                     .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
         }
 
         @Override
@@ -363,6 +371,10 @@ public class ExtensionManagerTest {
                     .setLongDescription("Just a test of AppExtension2 with duplicate config property")
                     .setReleaseNotes("v1.1 - initial release")
                     .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
         }
 
         @Override
