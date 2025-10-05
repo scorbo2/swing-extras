@@ -216,4 +216,43 @@ public abstract class AbstractPropertyBaseTests {
         actual.clearExtraAttribute(ATTR_NAME);
         assertNull(actual.getExtraAttribute(ATTR_NAME));
     }
+
+    @Test
+    public void addFormFieldGenerationListener_withValidListener_shouldModify() {
+        final int customMargin = 99;
+
+        // GIVEN a custom FormFieldGeneration listener that sets a custom margin:
+        actual.addFormFieldGenerationListener((p, f) -> f.getMargins().setLeft(customMargin));
+
+        // WHEN we generate a FormField from this property:
+        FormField formField = actual.generateFormField();
+
+        // THEN we should see our custom margin:
+        assertEquals(customMargin, formField.getMargins().getLeft());
+    }
+
+    @Test
+    public void addFormFieldGenerationListener_withMultipleListeners_lastOneShouldWin() {
+        // GIVEN a pair of FormFieldGenerationListeners that have conflicting instructions:
+        actual.addFormFieldGenerationListener((p, f) -> f.getMargins().setLeft(88));
+        actual.addFormFieldGenerationListener((p, f) -> f.getMargins().setLeft(99));
+
+        // WHEN we generate a FormField from this property:
+        FormField formField = actual.generateFormField();
+
+        // THEN we should see that the last one added wins:
+        assertEquals(99, formField.getMargins().getLeft());
+    }
+
+    @Test
+    public void addFormFieldGenerationListener_withIdentifierChange_shouldIgnore() {
+        // GIVEN a FormFieldGenerationListener that tries to change the FormField's identifier (not allowed!):
+        actual.addFormFieldGenerationListener((p, f) -> f.setIdentifier("invalid!"));
+
+        // WHEN we generate a FormField from this property:
+        FormField formField = actual.generateFormField();
+
+        // THEN we should see that our change was utterly ignored:
+        assertEquals(actual.fullyQualifiedName, formField.getIdentifier());
+    }
 }
