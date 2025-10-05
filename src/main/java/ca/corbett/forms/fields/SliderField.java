@@ -142,6 +142,14 @@ public class SliderField extends FormField {
         return true;
     }
 
+    @Override
+    public FormField setEnabled(boolean isEnabled) {
+        super.setEnabled(isEnabled);
+        slider.setEnabled(isEnabled);
+        valueLabel.setEnabled(isEnabled);
+        return this;
+    }
+
     public SliderField setValue(int value) {
         slider.setValue(value);
         return this;

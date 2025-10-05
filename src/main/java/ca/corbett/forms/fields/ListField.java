@@ -100,6 +100,13 @@ public class ListField<T> extends FormField {
         return this;
     }
 
+    @Override
+    public FormField setEnabled(boolean isEnabled) {
+        super.setEnabled(isEnabled);
+        list.setEnabled(isEnabled);
+        return this;
+    }
+
     public int getVisibleRowCount() {
         return list.getVisibleRowCount();
     }

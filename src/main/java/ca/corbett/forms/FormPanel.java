@@ -138,6 +138,20 @@ public final class FormPanel extends JPanel {
     }
 
     /**
+     * Overridden here so we can enable/disable all FormField instances when
+     * we receive a setEnabled request.
+     *
+     * @param enabled true if this component should be enabled, false otherwise
+     */
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        for (FormField field : formFields) {
+            field.setEnabled(enabled);
+        }
+    }
+
+    /**
      * Adds the specified list of FormFields to this FormPanel.
      */
     public void add(List<FormField> fields) {
