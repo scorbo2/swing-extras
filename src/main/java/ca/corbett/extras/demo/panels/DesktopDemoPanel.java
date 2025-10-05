@@ -29,17 +29,17 @@ import java.util.List;
 
 public class DesktopDemoPanel extends PanelBuilder {
 
-    private Gradient gradient;
-    private CustomizableDesktopPane desktopPane;
+    private static final Gradient INITIAL_GRADIENT = new Gradient(GradientType.STAR, Color.BLACK, Color.BLUE);
+    private final CustomizableDesktopPane desktopPane;
 
     public DesktopDemoPanel() {
-        gradient = new Gradient(GradientType.STAR, Color.BLACK, Color.BLUE);
-
         LogoProperty logoProperty = new LogoProperty("demo");
         logoProperty.setLogoHeight(80);
         BufferedImage logoImage = LogoGenerator.generateImage("Logo", logoProperty);
-        desktopPane = new CustomizableDesktopPane(logoImage, CustomizableDesktopPane.LogoPlacement.BOTTOM_RIGHT, 0.5f,
-                                                  gradient);
+        desktopPane = new CustomizableDesktopPane(logoImage,
+                                                  CustomizableDesktopPane.LogoPlacement.BOTTOM_RIGHT,
+                                                  0.5f,
+                                                  INITIAL_GRADIENT);
     }
 
     @Override
@@ -62,18 +62,17 @@ public class DesktopDemoPanel extends PanelBuilder {
         labelField.getMargins().setTop(14).setBottom(18);
         formPanel.add(labelField);
 
-        final ColorField bgColorField = new ColorField("Background:", ColorSelectionType.EITHER).setGradient(gradient)
-                                                                                                .setColor(Color.BLACK);
+        final ColorField bgColorField = new ColorField("Background:", ColorSelectionType.EITHER)
+                .setColor(Color.BLACK)
+                .setGradient(INITIAL_GRADIENT);
         bgColorField.addValueChangedListener(field -> {
             Object val = bgColorField.getSelectedValue();
             if (val instanceof Color) {
-                //TODO wtf is this trying to do gradient.setColor1((Color)val);
-                //TODO and this gradient.setColor2((Color)val);
+                desktopPane.setBgSolidColor((Color)val);
             }
             else {
-                gradient = (Gradient)val;
+                desktopPane.setGradientConfig((Gradient)val);
             }
-            desktopPane.setGradientConfig(gradient);
         });
         formPanel.add(bgColorField);
 
