@@ -12,6 +12,7 @@ Version 2.5.0 [TODO release date] - TODO description
   #128 - AboutPanel should warn about snapshot builds
   #127 - Performance improvements in FileSystemUtil
   #126 - Fix resource loading issue in extensions
+  #123 - DirTree: fix node comparison bug
   #122 - FormPanel.setEnabled() now works as it should
   #121 - README updates for 2.5.0
   #120 - FormField: setters should be fluent-style
