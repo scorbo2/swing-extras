@@ -5,8 +5,8 @@ import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.FileMustBeCreatableValidator;
 import ca.corbett.forms.validators.FileMustBeReadableValidator;
 import ca.corbett.forms.validators.FileMustBeSpecifiedValidator;
-import ca.corbett.forms.validators.FileMustBeWritableValidator;
 import ca.corbett.forms.validators.FileMustExistValidator;
+import ca.corbett.forms.validators.FileMustNotBeDirectoryValidator;
 import ca.corbett.forms.validators.FileMustNotExistValidator;
 
 import javax.swing.BoxLayout;
@@ -43,17 +43,21 @@ public final class FileField extends FormField {
      */
     public enum SelectionType {
         /**
-         * Browse for a single directory, which must exist and be readable and writable. *
+         * Browse for a single directory, which must exist and be readable and writable.
          */
         ExistingDirectory,
         /**
-         * Browse for a single file, which must exist and be readable and writable. *
+         * Browse for a single file, which must exist and be readable and writable.
          */
         ExistingFile,
         /**
-         * Browse for a single file which must NOT already exist (eg, for a save dialog). *
+         * Browse for a single file which must NOT already exist (eg, for a save dialog).
          */
-        NonExistingFile
+        NonExistingFile,
+        /**
+         * Browse for any file, whether it exists or not.
+         */
+        AnyFile
     }
 
     private final List<FieldValidator<? extends FormField>> userAddedValidators = new ArrayList<>();
@@ -137,7 +141,9 @@ public final class FileField extends FormField {
     public FileField setSelectionType(SelectionType selectionType, boolean allowBlankValues) {
         this.selectionType = selectionType;
         this.isAllowBlank = allowBlankValues;
-        if (selectionType == SelectionType.NonExistingFile || selectionType == SelectionType.ExistingFile) {
+        if (selectionType == SelectionType.NonExistingFile
+                || selectionType == SelectionType.ExistingFile
+                || selectionType == SelectionType.AnyFile) {
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         }
         else {
@@ -314,7 +320,9 @@ public final class FileField extends FormField {
         if (selectionType == SelectionType.ExistingFile || selectionType == SelectionType.ExistingDirectory) {
             fieldValidators.add(new FileMustExistValidator());
             fieldValidators.add(new FileMustBeReadableValidator());
-            fieldValidators.add(new FileMustBeWritableValidator());
+        }
+        else if (selectionType == SelectionType.AnyFile) {
+            fieldValidators.add(new FileMustNotBeDirectoryValidator());
         }
         else {
             fieldValidators.add(new FileMustNotExistValidator());

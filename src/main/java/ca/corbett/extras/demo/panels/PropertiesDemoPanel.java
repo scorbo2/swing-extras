@@ -167,8 +167,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
         fontProperty.setAllowSizeSelection(false);
         props.add(fontProperty);
 
-        props.add(new DirectoryProperty("Files.someDirProperty", "Directory:"));
-        props.add(new FileProperty("Files.someFileProperty", "File:"));
+        props.add(new DirectoryProperty("Files.someDirProperty", "Directory:", true));
+        props.add(new FileProperty("Files.someFileProperty", "File:", true));
 
         props.add(new ShortTextProperty("Text.Single line.someTextProp1", "Text property1:", "hello"));
         props.add(new ShortTextProperty("Text.Single line.someTextProp2", "Text property2:", ""));

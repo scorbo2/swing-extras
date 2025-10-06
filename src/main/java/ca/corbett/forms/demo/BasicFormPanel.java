@@ -66,7 +66,7 @@ public class BasicFormPanel extends PanelBuilder {
         labelField.getMargins().setTop(24).setBottom(18);
         formPanel.add(labelField);
 
-        formPanel.add(new FileField("File chooser:", null, 15, FileField.SelectionType.ExistingFile));
+        formPanel.add(new FileField("File chooser:", null, 15, FileField.SelectionType.AnyFile));
         formPanel.add(
                 new FileField("Directory chooser:", null, 15, FileField.SelectionType.ExistingDirectory));
 
