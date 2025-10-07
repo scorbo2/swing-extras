@@ -1,6 +1,7 @@
 package ca.corbett.forms;
 
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * Can be used to specify margins around an inside of a FormField.
@@ -16,6 +17,8 @@ import java.util.Objects;
  * the validation label.
  */
 public class Margins {
+
+    private static final Logger log = Logger.getLogger(Margins.class.getName());
 
     public static final int DEFAULT_MARGIN = 4;
 
@@ -43,11 +46,11 @@ public class Margins {
      * Creates a new Margins instance with the given properties (all values in pixels).
      */
     public Margins(int left, int top, int right, int bottom, int internalSpacing) {
-        this.left = left;
-        this.top = top;
-        this.right = right;
-        this.bottom = bottom;
-        this.internalSpacing = internalSpacing;
+        this.left = validateInput(left);
+        this.top = validateInput(top);
+        this.right = validateInput(right);
+        this.bottom = validateInput(bottom);
+        this.internalSpacing = validateInput(internalSpacing);
     }
 
     /**
@@ -65,11 +68,11 @@ public class Margins {
      */
     public void copy(Margins other) {
         if (other != null) {
-            this.left = other.left;
-            this.top = other.top;
-            this.right = other.right;
-            this.bottom = other.bottom;
-            this.internalSpacing = other.internalSpacing;
+            this.left = validateInput(other.left);
+            this.top = validateInput(other.top);
+            this.right = validateInput(other.right);
+            this.bottom = validateInput(other.bottom);
+            this.internalSpacing = validateInput(other.internalSpacing);
         }
     }
 
@@ -77,11 +80,11 @@ public class Margins {
      * Set all values to the given pixel value.
      */
     public Margins setAll(int value) {
-        left = value;
-        top = value;
-        right = value;
-        bottom = value;
-        internalSpacing = value;
+        left = validateInput(value);
+        top = validateInput(value);
+        right = validateInput(value);
+        bottom = validateInput(value);
+        internalSpacing = validateInput(value);
         return this;
     }
 
@@ -90,7 +93,7 @@ public class Margins {
     }
 
     public Margins setLeft(int left) {
-        this.left = left;
+        this.left = validateInput(left);
         return this;
     }
 
@@ -99,7 +102,7 @@ public class Margins {
     }
 
     public Margins setTop(int top) {
-        this.top = top;
+        this.top = validateInput(top);
         return this;
     }
 
@@ -108,7 +111,7 @@ public class Margins {
     }
 
     public Margins setRight(int right) {
-        this.right = right;
+        this.right = validateInput(right);
         return this;
     }
 
@@ -117,7 +120,7 @@ public class Margins {
     }
 
     public Margins setBottom(int bottom) {
-        this.bottom = bottom;
+        this.bottom = validateInput(bottom);
         return this;
     }
 
@@ -126,8 +129,16 @@ public class Margins {
     }
 
     public Margins setInternalSpacing(int internalSpacing) {
-        this.internalSpacing = internalSpacing;
+        this.internalSpacing = validateInput(internalSpacing);
         return this;
+    }
+
+    private int validateInput(int input) {
+        if (input < 0) {
+            log.warning("Margins: ignoring negative margin: " + input);
+            return 0;
+        }
+        return input;
     }
 
     @Override
