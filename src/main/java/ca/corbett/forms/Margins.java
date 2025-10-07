@@ -15,6 +15,9 @@ import java.util.logging.Logger;
  * that is, between the field label and the field component, between the
  * field component and the help label, and between the help label and
  * the validation label.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since swing-extras 2.4
  */
 public class Margins {
 
