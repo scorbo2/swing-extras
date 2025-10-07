@@ -102,7 +102,7 @@ class FormPanelTest {
         for (Alignment alignment : List.of(Alignment.CENTER_LEFT, Alignment.TOP_LEFT, Alignment.BOTTOM_LEFT)) {
             FormPanel formPanel = new FormPanel(alignment);
             formPanel.setBorderMargin(MARGIN);
-            assertEquals(MARGIN, formPanel.getBorderMargin());
+            assertEquals(MARGIN, formPanel.getBorderMargin().getLeft());
             PanelField field = new PanelField();
             field.setMargins(new Margins(MARGIN));
             formPanel.add(field);
@@ -118,7 +118,7 @@ class FormPanelTest {
         for (Alignment alignment : List.of(Alignment.CENTER_RIGHT, Alignment.TOP_RIGHT, Alignment.BOTTOM_RIGHT)) {
             FormPanel formPanel = new FormPanel(alignment);
             formPanel.setBorderMargin(MARGIN);
-            assertEquals(MARGIN, formPanel.getBorderMargin());
+            assertEquals(MARGIN, formPanel.getBorderMargin().getRight());
             PanelField field = new PanelField();
             field.setMargins(new Margins(MARGIN));
             formPanel.add(field);
@@ -134,7 +134,7 @@ class FormPanelTest {
         for (Alignment alignment : List.of(Alignment.TOP_CENTER, Alignment.TOP_RIGHT, Alignment.TOP_LEFT)) {
             FormPanel formPanel = new FormPanel(alignment);
             formPanel.setBorderMargin(MARGIN);
-            assertEquals(MARGIN, formPanel.getBorderMargin());
+            assertEquals(MARGIN, formPanel.getBorderMargin().getTop());
             PanelField field = new PanelField();
             field.setMargins(new Margins(MARGIN));
             formPanel.add(field);
@@ -152,7 +152,7 @@ class FormPanelTest {
         for (Alignment alignment : List.of(Alignment.BOTTOM_LEFT, Alignment.BOTTOM_RIGHT, Alignment.BOTTOM_CENTER)) {
             FormPanel formPanel = new FormPanel(alignment);
             formPanel.setBorderMargin(MARGIN);
-            assertEquals(MARGIN, formPanel.getBorderMargin());
+            assertEquals(MARGIN, formPanel.getBorderMargin().getBottom());
             PanelField field = new PanelField();
             field.setMargins(new Margins(MARGIN));
             formPanel.add(field);
@@ -169,7 +169,8 @@ class FormPanelTest {
         final int MARGIN = 11;
         FormPanel formPanel = new FormPanel(Alignment.CENTER);
         formPanel.setBorderMargin(MARGIN); // should be ignored for CENTER alignment
-        assertEquals(MARGIN, formPanel.getBorderMargin());
+        assertEquals(MARGIN, formPanel.getBorderMargin().getLeft());
+        assertEquals(MARGIN, formPanel.getBorderMargin().getTop());
         PanelField field = new PanelField();
         field.setMargins(new Margins(MARGIN));
         formPanel.add(field);
