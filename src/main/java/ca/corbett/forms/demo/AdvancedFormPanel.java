@@ -4,7 +4,6 @@ import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
-import ca.corbett.forms.Margins;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.CollapsiblePanelField;
 import ca.corbett.forms.fields.ComboField;
@@ -51,16 +50,14 @@ public class AdvancedFormPanel extends PanelBuilder {
                                                                      new BorderLayout());
         panelField.setShouldExpandHorizontally(true);
         FormPanel miniFormPanel = new FormPanel(Alignment.TOP_LEFT);
-        miniFormPanel.add(new CheckBoxField("Example field 1", true)
-                                  .setMargins(new Margins(24,4,4,4,4)));
-        miniFormPanel.add(new CheckBoxField("Example field 2", true)
-                                  .setMargins(new Margins(24,4,4,4,4)));
+        miniFormPanel.getBorderMargin().setLeft(24);
+        miniFormPanel.add(new CheckBoxField("Example field 1", true));
+        miniFormPanel.add(new CheckBoxField("Example field 2", true));
         miniFormPanel.add(new ComboField<String>("Select:",
                                                  List.of("These fields belong together",
                                                          "You can collapse this panel!",
                                                          "That hides these grouped fields."),
-                                                 0)
-                                  .setMargins(new Margins(24,4,4,4,4)));
+                                                 0));
         panelField.getPanel().add(miniFormPanel, BorderLayout.CENTER);
         formPanel.add(panelField);
 
