@@ -17,6 +17,7 @@ import ca.corbett.extras.demo.panels.ProgressDemoPanel;
 import ca.corbett.extras.demo.panels.PropertiesDemoPanel;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.extras.properties.PropertiesDialog;
+import ca.corbett.forms.demo.AdvancedFormPanel;
 import ca.corbett.forms.demo.BasicFormPanel;
 import ca.corbett.forms.demo.CustomFormFieldPanel;
 import ca.corbett.forms.demo.FormActionsPanel;
@@ -110,6 +111,7 @@ public class DemoApp extends JFrame {
         addDemoPanel(new PropertiesDemoPanel());
         addDemoPanel(new FormsOverviewPanel());
         addDemoPanel(new BasicFormPanel());
+        addDemoPanel(new AdvancedFormPanel());
         addDemoPanel(new FormsValidationPanel());
         addDemoPanel(new FormActionsPanel());
         addDemoPanel(new FormsRendererPanel());

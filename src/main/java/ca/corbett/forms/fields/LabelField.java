@@ -139,7 +139,7 @@ public final class LabelField extends FormField {
     }
 
     /**
-     * A static convenience factory method to create a "normal" header label with sensible
+     * A static convenience factory method to create a "plain" header label with sensible
      * defaults for a form label. The default values are 12 point plain text
      * with top and bottom margin values read from our current margin properties.
      * <p>
@@ -156,7 +156,15 @@ public final class LabelField extends FormField {
     }
 
     /**
-     * A static convenience factory method to create a "normal" header label the
+     * A static convenience factory method to create a "plain" header label with default
+     * font and with the given extra top and bottom margins.
+     */
+    public static LabelField createPlainHeaderLabel(String text, int extraTopMargin, int extraBottomMargin) {
+        return createHeaderLabel(text, getDefaultFont(), extraTopMargin, extraBottomMargin);
+    }
+
+    /**
+     * A static convenience factory method to create a "plain" header label with the
      * given font size and with top and bottom margin values read from our current
      * margin properties.
      * <p>
@@ -171,6 +179,17 @@ public final class LabelField extends FormField {
     public static LabelField createPlainHeaderLabel(String text, int fontSize) {
         return createHeaderLabel(text, getDefaultFont().deriveFont((float)fontSize), extraTopMarginNormal,
                                  extraBottomMarginNormal);
+    }
+
+    /**
+     * A static convenience factory method to create a "plain" header label with the
+     * given font size and extra margins for top and bottom.
+     */
+    public static LabelField createPlainHeaderLabel(String text, int fontSize, int extraTopMargin, int extraBottomMargin) {
+        return createHeaderLabel(text,
+                                 getDefaultFont().deriveFont((float)fontSize),
+                                 extraTopMargin,
+                                 extraBottomMargin);
     }
 
     /**

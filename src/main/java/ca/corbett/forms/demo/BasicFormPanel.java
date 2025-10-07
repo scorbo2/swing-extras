@@ -11,14 +11,11 @@ import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.ShortTextField;
-import ca.corbett.forms.fields.SliderField;
 
 import javax.swing.AbstractAction;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -36,7 +33,7 @@ import java.util.List;
 public class BasicFormPanel extends PanelBuilder {
     @Override
     public String getTitle() {
-        return "Forms: The basics";
+        return "Forms: basic fields";
     }
 
     @Override
@@ -44,7 +41,7 @@ public class BasicFormPanel extends PanelBuilder {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(24);
 
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("Looking for basic Swing components? No problem!",
+        LabelField headerLabel = LabelField.createBoldHeaderLabel("Looking for basic form components? No problem!",
                                                                   20, 0, 8);
         headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
@@ -81,23 +78,6 @@ public class BasicFormPanel extends PanelBuilder {
         formPanel.add(linkField);
 
         formPanel.add(new NumberField("Number chooser:", 0, 0, 100, 1));
-
-        formPanel.add(new SliderField("Slider field:", 0, 100, 50)
-                              .setColorStops(List.of(Color.RED, Color.YELLOW, Color.GREEN))
-                              .setLabels(List.of("Very low", "Low", "Medium", "High", "Very high"), true));
-
-        ListField<String> listField1 = new ListField<>("Simple list:",
-                                                       List.of("One", "Two", "Three", "Four", "Five", "Six"));
-        listField1.setFixedCellWidth(80);
-        listField1.setVisibleRowCount(3);
-        formPanel.add(listField1);
-
-        ListField<String> listField2 = new ListField<>("Wide list:",
-                                                       List.of("One", "Two", "Three", "Four", "Five", "Six"));
-        listField2.setLayoutOrientation(JList.VERTICAL_WRAP);
-        listField2.setFixedCellWidth(80);
-        listField2.setVisibleRowCount(3);
-        formPanel.add(listField2);
 
         return formPanel;
     }

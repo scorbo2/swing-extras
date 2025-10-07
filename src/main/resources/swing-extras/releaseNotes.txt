@@ -21,7 +21,8 @@ Version 2.5.0 [TODO release date] - TODO description
   #115 - Fix NullPointerException in Properties
   #114 - FormField: pass on validate if field is invisible
   #113 - FileProperty/DirectoryProperty wired up incorrectly
-  #109 - swing-forms: add JSlider support with color options
+  #111 - New FormField: CollapsiblePanelField
+  #109 - New FormField: SliderField
 
 Version 2.4.0 [2025-09-01] - swing-forms rewrite
   #108 - ExtensionManager: fix config preview bug
