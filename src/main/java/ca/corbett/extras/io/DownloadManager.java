@@ -37,7 +37,7 @@ public class DownloadManager {
     /**
      * Downloads a file from the given URL and saves it to the specified path
      *
-     * @param url The URL to download from
+     * @param url The URL to download from (supported protocols: http, https, file)
      * @param destinationFile Where to save the file
      * @param listener An optional DownloadListener to receive progress/failure/completion notifications.
      */

@@ -11,6 +11,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +82,15 @@ public class DownloadThread implements Runnable {
     public void run() {
         if (httpClient == null || url == null || destinationFile == null) {
             fireDownloadFailed("Internal error: DownloadThread given null input, cannot proceed.");
+            isRunning = false;
+            isKilled = false;
+            return;
+        }
+        if (!"file".equals(url.getProtocol()) && !"http".equals(url.getProtocol()) && !"https".equals(
+                url.getProtocol())) {
+            fireDownloadFailed("Unsupported file download protocol: " + url.getProtocol());
+            isRunning = false;
+            isKilled = false;
             return;
         }
 
@@ -88,6 +99,20 @@ public class DownloadThread implements Runnable {
         fireDownloadBegins();
 
         try {
+            // If we were given a file url, just do a local file copy and we're done:
+            if ("file".equals(url.getProtocol())) {
+                File sourceFile = new File(url.toURI());
+                log.info("DownloadThread: copying local file "
+                                 + sourceFile.getAbsolutePath()
+                                 + " to "
+                                 + destinationFile.getAbsolutePath());
+                Files.copy(Paths.get(url.toURI()), destinationFile.toPath());
+                isRunning = false;
+                fireDownloadComplete();
+                return;
+            }
+
+            // Otherwise, we'll download it:
             HttpRequest request = HttpRequest.newBuilder()
                                              .uri(url.toURI())
                                              .timeout(Duration.ofSeconds(DownloadManager.DOWNLOAD_TIMEOUT_SECONDS))
@@ -128,6 +153,7 @@ public class DownloadThread implements Runnable {
                         }
                     }
 
+                    isRunning = false;
                     fireDownloadComplete();
                 }
                 finally {

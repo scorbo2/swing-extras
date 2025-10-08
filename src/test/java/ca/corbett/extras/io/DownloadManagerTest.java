@@ -107,4 +107,91 @@ class DownloadManagerTest {
         Mockito.verify(mockListener, Mockito.never())
                .downloadProgress(Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.anyLong());
     }
+
+    @Test
+    public void downloadFile_withValidLocalFileURL_shouldCopy() throws Exception {
+        // GIVEN a download request for a local file that exists:
+        DownloadListener mockListener = Mockito.mock(DownloadListener.class);
+        File sourceFile = File.createTempFile("swing-extras", ".txt");
+        File destFile = File.createTempFile("swing-extras", ".txt");
+        destFile.delete();
+
+        // WHEN we try to download the file:
+        manager.downloadFile(sourceFile.toURI().toURL(), destFile, mockListener);
+
+        // (cheesy! give it some time to copy)
+        Thread.sleep(250);
+
+        // THEN we should see that the file got copied:
+        assertTrue(destFile.exists());
+
+        // AND our mock listener should have been notified:
+        Mockito.verify(mockListener, Mockito.times(1)).downloadBegins(Mockito.any(), Mockito.any());
+        Mockito.verify(mockListener, Mockito.times(1))
+               .downloadComplete(Mockito.any(), Mockito.any(), Mockito.any());
+
+        // We should never receive a progress update for a local file copy:
+        Mockito.verify(mockListener, Mockito.never())
+               .downloadProgress(Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.anyLong());
+
+        // Cleanup:
+        sourceFile.delete();
+        destFile.delete();
+    }
+
+    @Test
+    public void downloadFile_withInvalidLocalFileURL_shouldCopy() throws Exception {
+        // GIVEN a download request for a local file that exists:
+        DownloadListener mockListener = Mockito.mock(DownloadListener.class);
+        File sourceFile = File.createTempFile("swing-extras", ".txt");
+        sourceFile.delete(); // source file doesn't exist!
+        File destFile = File.createTempFile("swing-extras", ".txt");
+        destFile.delete();
+
+        // WHEN we try to download the file:
+        manager.downloadFile(sourceFile.toURI().toURL(), destFile, mockListener);
+
+        // (cheesy! give it some time to copy)
+        Thread.sleep(250);
+
+        // THEN we should see that the copy failed:
+        assertFalse(destFile.exists());
+
+        // AND our mock listener should have been notified:
+        Mockito.verify(mockListener, Mockito.times(1)).downloadBegins(Mockito.any(), Mockito.any());
+        Mockito.verify(mockListener, Mockito.times(1))
+               .downloadFailed(Mockito.any(), Mockito.any(), Mockito.any());
+
+        // We should never receive a progress update for a local file copy:
+        Mockito.verify(mockListener, Mockito.never())
+               .downloadProgress(Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.anyLong());
+    }
+
+    @Test
+    public void downloadFile_withInvalidURL_shouldFailImmediately() throws Exception {
+        // GIVEN a download request in an unsupported format:
+        String urlString = "ftp://example.com/blah/blah/doesnotexist.jpg";
+        DownloadListener mockListener = Mockito.mock(DownloadListener.class);
+        File destFile = File.createTempFile("swing-extras", ".txt");
+        destFile.delete();
+
+        // WHEN we try to download it:
+        manager.downloadFile(new URL(urlString), destFile, mockListener);
+
+        // (cheesy! give it some time to fail)
+        Thread.sleep(250);
+
+        // THEN we should see that the copy failed:
+        assertFalse(destFile.exists());
+
+        // AND our mock listener should NOT have been notified of the start (this is a fast failure case):
+        Mockito.verify(mockListener, Mockito.never()).downloadBegins(Mockito.any(), Mockito.any());
+
+        // BUT we should still get notification of the failure:
+        Mockito.verify(mockListener, Mockito.times(1)).downloadFailed(Mockito.any(), Mockito.any(), Mockito.any());
+
+        // We should never receive a progress update for a local file copy:
+        Mockito.verify(mockListener, Mockito.never())
+               .downloadProgress(Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.anyLong());
+    }
 }
