@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.5.0 [TODO release date] - TODO description
+  #139 - Add FileSystemUtil.getPrintableSize()
   #138 - Add bounds checking to Margins class
   #137 - Improved FormPanel.setBorderMargin() method
   #136 - AbstractProperty: add hook for form field generation

@@ -254,6 +254,16 @@ public class FileSystemUtilTest {
         }
     }
 
+    @Test
+    public void getPrintableSize_withVariousSizes_shouldReportNicely() {
+        assertEquals("0 bytes", FileSystemUtil.getPrintableSize(0));
+        assertEquals("1.0 KB", FileSystemUtil.getPrintableSize(1024));
+        assertEquals("1.5 KB", FileSystemUtil.getPrintableSize(1536));
+        assertEquals("1.5 MB", FileSystemUtil.getPrintableSize(1024 * 1024 + 499999));
+        assertEquals("1.0 GB", FileSystemUtil.getPrintableSize(1024 * 1024 * 1024));
+        assertEquals("8192.0 PB", FileSystemUtil.getPrintableSize(Long.MAX_VALUE));
+    }
+
     private static void createNestedTestDir(File rootDir, int dirCount1, int dirCount2, int dirCount3, boolean createFiles)
             throws IOException {
         rootDir.mkdir();
@@ -306,5 +316,4 @@ public class FileSystemUtilTest {
                  });
         }
     }
-
 }
