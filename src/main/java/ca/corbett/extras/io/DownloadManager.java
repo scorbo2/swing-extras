@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Can manage file downloads via http and report on their progress, completion status, or error status.
+ * Manages file downloads via http and reports on their progress, completion status, or error status.
  * You could of course just manually instantiate DownloadThread instances and fire them off, but this
  * manager class creates and owns a single, reusable, thread-safe HttpClient that makes launching
- * multiple download requests much cleaner.
+ * multiple download requests much cleaner. It also keeps track of downloads in progress so that
+ * we can offer methods like isDownloadInProgress() and stopAllDownloads().
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.5
@@ -57,8 +58,9 @@ public class DownloadManager {
      * will stop immediately. Any download currently in progress will report a download failure.
      */
     public void stopAllDownloads() {
+        log.info("DownloadManager: stopping all downloads in progress...");
+
         // Make a copy of the list as its contents may change as we iterate over it:
-        log.info("DownloadManager: stopAllDownloads() invoked.");
         List<DownloadThread> inProgress = new ArrayList<>(downloadsInProgress);
         for (DownloadThread thread : inProgress) {
             thread.kill();
@@ -67,7 +69,8 @@ public class DownloadManager {
 
     /**
      * Creates and returns a DownloadThread suitable for executing the given download.
-     * You can use the downloadFile() wrapper method to automatically start the thread.
+     * You can use the downloadFile() wrapper method instead, to both create and
+     * automatically start the thread.
      */
     public DownloadThread createDownloadThread(URL url, File destinationFile, DownloadListener listener) {
         DownloadThread thread = new DownloadThread(httpClient, url, destinationFile);

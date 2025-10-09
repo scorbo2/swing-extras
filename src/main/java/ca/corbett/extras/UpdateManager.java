@@ -101,6 +101,27 @@ package ca.corbett.extras;
  *     The alternative would be to host the sha-1 hash somewhere safe (say, GitHub) and use that
  *     as a reference when downloading jars.
  * </p>
+ * <p>
+ *     <b>UPDATE</b>
+ *     after thinking about it, I created <a href="https://github.com/scorbo2/swing-extras/issues/141">Issue 141</a>
+ *     and we now have a SignatureUtil class that can generate a signature on a file and later verify that
+ *     signature using a key pair. The impact to the above design approach is as follows (and this is still a
+ *     bit rough):
+ * </p>
+ * <ul>
+ *     <li>don't bother with sha1 hashes, it's not good enough.
+ *     <li>Every extension will be expected to provide a signature file as part of its download (either a
+ *         separate side-by-side file, or embedded into the jar file itself)
+ *     <li>There must be a public key file hosted on the same server that supplied the extension jar
+ *     <li>This public key will be used to verify the signature on the downloaded jar.
+ *     <li>If any of the above fails (no signature file provided, no public key provided, signature doesn't match),
+ *         a HUGE FLAMING WARNING is presented to the user that we can't verify the downloaded jar.
+ *         Maybe have a "proceed anyway" for those who are brave.
+ * </ul>
+ * <p>
+ *     This still doesn't feel super high security, but it's better than just relying on sha-1 hashes and the
+ *     honor system.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
