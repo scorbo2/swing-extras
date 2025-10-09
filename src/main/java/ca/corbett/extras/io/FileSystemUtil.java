@@ -495,7 +495,7 @@ public final class FileSystemUtil {
      * @throws IOException If something goes wrong.
      */
     public static void writeLinesToFile(List<String> lines, File out) throws IOException {
-        writeLineToFile(lines, out, StandardCharsets.UTF_8.name());
+        writeLinesToFile(lines, out, StandardCharsets.UTF_8.name());
     }
 
     /**
@@ -507,7 +507,7 @@ public final class FileSystemUtil {
      * @param charset The Charset to use.
      * @throws IOException If something goes wrong.
      */
-    public static void writeLineToFile(List<String> lines, File out, String charset) throws IOException {
+    public static void writeLinesToFile(List<String> lines, File out, String charset) throws IOException {
         Files.write(out.toPath(), lines, Charset.forName(charset));
     }
 
