@@ -155,6 +155,9 @@ public class SignatureUtil {
         return signature.verify(signatureBytes);
     }
 
+    /**
+     * Verify a file signature using the given public key and the signature data from the given signature file.
+     */
     public static boolean verifyFile(File file, File signatureFile, PublicKey publicKey)
             throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         if (signatureFile == null || !signatureFile.exists() || !signatureFile.canRead()) {
