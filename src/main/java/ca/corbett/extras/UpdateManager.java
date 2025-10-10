@@ -1,5 +1,14 @@
 package ca.corbett.extras;
 
+import ca.corbett.extras.io.FileSystemUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * WORK IN PROGRESS
  * <p>
@@ -126,4 +135,36 @@ package ca.corbett.extras;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class UpdateManager {
+
+    protected final Gson gson;
+    protected final File sourceFile;
+    protected final Source source;
+
+    public UpdateManager(File sourceFile) throws IOException {
+        this.gson = new GsonBuilder().setPrettyPrinting().create();
+        this.sourceFile = sourceFile;
+        this.source = gson.fromJson(FileSystemUtil.readFileToString(sourceFile), Source.class);
+    }
+
+    public Source getSource() {
+        return source;
+    }
+    
+    public static class Source {
+        private final String name;
+        private final List<String> urls;
+
+        public Source(String name, List<String> urls) {
+            this.name = name;
+            this.urls = new ArrayList<>(urls);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<String> getUrls() {
+            return new ArrayList<>(urls);
+        }
+    }
 }
