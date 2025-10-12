@@ -5,6 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -68,5 +69,49 @@ class UpdateManagerTest {
         }
         catch (JsonSyntaxException ignored) {
         }
+    }
+
+    @Test
+    public void addUpdateSource_withSave_shouldUpdateAndSave() throws Exception {
+        // GIVEN an initially empty sources json:
+        String json = """
+                {
+                  "applicationName": "Test",
+                  "updateSources": [
+                  ]
+                }
+                """;
+        File sourcesFile = File.createTempFile("UpdateManagerTest", "json");
+        sourcesFile.deleteOnExit();
+        FileSystemUtil.writeStringToFile(json, sourcesFile);
+        UpdateManager manager = new UpdateManager(sourcesFile);
+
+        // WHEN we add an update source:
+        URL versionManifest = new URL("http://www.test.example/manifest.json");
+        URL publicKey = new URL("http://www.test.example/public.key");
+        manager.addUpdateSource(new UpdateSource(versionManifest, publicKey)); // implicit save()
+
+        // THEN we should see the json was saved correctly:
+//        final String expected = """
+//                {
+//                  "applicationName": "Test",
+//                  "updateSources": [
+//                    {
+//                      "versionManifestUrl": "http://www.test.example/manifest.json",
+//                      "publicKeyUrl": "http://www.test.example/public.key"
+//                    }
+//                  ]
+//                }""";
+//        assertEquals(expected, FileSystemUtil.readFileToString(sourcesFile));
+
+        // Probably safer to assert on Java objects instead of raw generated json...
+        // whitespace, formatting changes, and even the order of keys are all flexible, after all
+        UpdateManager manager2 = new UpdateManager(sourcesFile);
+        assertEquals("Test", manager2.getApplicationName());
+        assertEquals(1, manager.getUpdateSources().size());
+        assertEquals("http://www.test.example/manifest.json",
+                     manager.getUpdateSources().get(0).getVersionManifestUrl().toString());
+        assertEquals("http://www.test.example/public.key",
+                     manager.getUpdateSources().get(0).getPublicKeyUrl().toString());
     }
 }
