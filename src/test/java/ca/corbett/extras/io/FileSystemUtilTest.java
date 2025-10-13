@@ -2,6 +2,7 @@ package ca.corbett.extras.io;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -13,7 +14,11 @@ import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Unit tests for FileSystemUtil.
@@ -262,6 +267,56 @@ public class FileSystemUtilTest {
         assertEquals("1.5 MB", FileSystemUtil.getPrintableSize(1024 * 1024 + 499999));
         assertEquals("1.0 GB", FileSystemUtil.getPrintableSize(1024 * 1024 * 1024));
         assertEquals("8192.0 PB", FileSystemUtil.getPrintableSize(Long.MAX_VALUE));
+    }
+
+    /**
+     * This one only works on my machine, and I don't want to check in a jar file as a test resource
+     * just for this purpose. So, this test is disabled by default.
+     */
+    @Disabled
+    @Test
+    public void extractTextFileFromJar_withValidJar_shouldExtract() throws Exception {
+        // GIVEN a valid jar file with some text-based files in it:
+        File jarFile = new File("/home/scorbett/Software/sc-releases/extensions/ImageViewer/2.2/ext-iv-ice-2.2.0.jar");
+
+        // WHEN we try to extract some text files:
+        String value1 = FileSystemUtil.extractTextFileFromJar("extInfo.json", jarFile);
+        String value2 = FileSystemUtil.extractTextFileFromJar("META-INF/MANIFEST.MF", jarFile);
+        String value3 = FileSystemUtil.extractTextFileFromJar("does/not/exist", jarFile);
+
+        // THEN we should see expected results:
+        assertNotNull(value1);
+        assertFalse(value1.isEmpty());
+        assertNotNull(value2);
+        assertFalse(value2.isEmpty());
+        assertNull(value3);
+    }
+
+    @Test
+    public void extractTextFileFromJar_withInvalidJar_shouldFail() {
+        try {
+            FileSystemUtil.extractTextFileFromJar("hello.txt", null);
+            fail("Expected exception but didn't get one!");
+        }
+        catch (Exception ignored) {
+        }
+
+        try {
+            FileSystemUtil.extractTextFileFromJar("hello.txt", new File("/this/file/no/exist"));
+            fail("Expected exception but didn't get one!");
+        }
+        catch (Exception ignored) {
+        }
+
+        try {
+            File f = File.createTempFile("FileSystemUtilText", ".jar");
+            f.deleteOnExit();
+            FileSystemUtil.writeStringToFile("This file is not a jar file", f);
+            FileSystemUtil.extractTextFileFromJar("hello.txt", f);
+            fail("Expected exception but didn't get one!");
+        }
+        catch (Exception ignored) {
+        }
     }
 
     private static void createNestedTestDir(File rootDir, int dirCount1, int dirCount2, int dirCount3, boolean createFiles)
