@@ -89,7 +89,7 @@ class UpdateManagerTest {
         // WHEN we add an update source:
         URL versionManifest = new URL("http://www.test.example/manifest.json");
         URL publicKey = new URL("http://www.test.example/public.key");
-        manager.addUpdateSource(new UpdateSource(versionManifest, publicKey)); // implicit save()
+        manager.addUpdateSource(new UpdateSources.UpdateSource(versionManifest, publicKey)); // implicit save()
 
         // THEN we should see the json was saved correctly:
 //        final String expected = """

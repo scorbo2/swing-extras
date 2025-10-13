@@ -1,6 +1,7 @@
 package ca.corbett.updates;
 
 import ca.corbett.extensions.AppExtensionInfo;
+import ca.corbett.extras.io.FileSystemUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -8,10 +9,10 @@ import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ApplicationTest {
+class VersionManifestTest {
 
     @Test
-    public void newApplication_withValidData_shouldGenerateJson() throws Exception {
+    public void newVersionManifest_withValidData_shouldGenerateJson() throws Exception {
         AppExtensionInfo extInfo = new AppExtensionInfo.Builder("Test extension")
                 .setVersion("1.0.0")
                 .setAuthor("me")
@@ -20,19 +21,19 @@ class ApplicationTest {
                 .setTargetAppName("Test")
                 .setTargetAppVersion("1.0")
                 .build();
-        ExtensionVersion extVersion = new ExtensionVersion();
+        VersionManifest.ExtensionVersion extVersion = new VersionManifest.ExtensionVersion();
         extVersion.setDownloadUrl(new URL("http://www.test.example/someJar.jar"));
         extVersion.setExtInfo(extInfo);
 
-        Extension extension = new Extension();
+        VersionManifest.Extension extension = new VersionManifest.Extension();
         extension.setName("Test extension");
         extension.addVersion(extVersion);
 
-        ApplicationVersion appVersion = new ApplicationVersion();
+        VersionManifest.ApplicationVersion appVersion = new VersionManifest.ApplicationVersion();
         appVersion.setVersion("1.0");
         appVersion.addExtension(extension);
 
-        Application app = new Application();
+        VersionManifest app = new VersionManifest();
         app.setApplicationName("Test");
         app.addApplicationVersion(appVersion);
 
@@ -43,7 +44,7 @@ class ApplicationTest {
         assertTrue(f.length() > 0);
 
         // For visual verification:
-        //System.out.println(FileSystemUtil.readFileToString(f));
+        System.out.println(FileSystemUtil.readFileToString(f));
     }
 
 }

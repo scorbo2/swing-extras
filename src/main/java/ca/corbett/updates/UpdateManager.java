@@ -11,67 +11,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * WORK IN PROGRESS
+ * Applications built with swing-extras have a way of detecting if they are out of date, or if any of their
+ * currently-installed extensions are out of date. Further, applications have a way to discover new
+ * extensions, download them, and install them. This UpdateManager class helps manage this feature.
  * <p>
- *     <b>The general idea</b> - Applications should have a way of detecting if they are out of date. That
- *     means hitting some remote url on a trusted host to compare the running application version to whatever
- *     is listed as the latest available version. Additionally, applications should have a way of detecting
- *     that any installed extensions are out of date, OR if there are additional extensions available that
- *     are not currently installed.
- * </p>
- * <p><b>Step 1 - defining the update configuration json</b> - complete. See UpdateConfiguration class.</p>
- * <p><b>Step 2 - Defining the versions.json file</b></p>
- * <p>
- *     The versions.json contains the latest available version so that applications can quickly see
- * if they are out of date. Additionally, a list of all versions of the application that have downloadable
- * extensions could be provided. Each version would have a list of extensions, and each extension would
- * have a list of versions (along with an indicator of which version is the latest version). Each extension
- * version entry would look roughly like this:
- * <ul>
- *     <li>The extension name
- *     <li>Maybe extension short description? Should we just import the extInfo.json here?
- *     <li>A url for downloading the actual extension jar
- *     <li>A sha-1 hash of the extension jar (for verifying successful download)
- * </ul>
- * <p><b>Very rough example</b></p>
- * <pre>
- * {
- *   "applicationName": "ImageViewer",
- *   "latestVersion": "2.3",
- *   "versions": [
- *     {
- *       "version": "2.3",
- *       "extensions": [
- *         {
- *           "name": "ICE",
- *           "latestVersion": "2.3.1",
- *           "versions": [
- *             {
- *               "version": "2.3.0",
- *               "url": "http://www.corbett.ca/apps/ext-iv-ice-2.3.0.jar"
- *             },
- *             {
- *               "version": "2.3.1",
- *               "url": "http://www.corbett.ca/apps/ext-iv-ice-2.3.1.jar"
- *             }
- *           ]
- *         }
- *       ]
- *     }
- *   ]
- * }
- * </pre>
- * <p>
- *     In this example, we can see a single version of ImageViewer is listed, with one extension that has
- *     two available versions. Applications that request and parse this file can quickly learn that the
- *     latest version of ImageViewer is 2.3, and the latest version of the ICE extension is 2.3.1 - an
- *     application that has an older version of ICE could report that to the user, and if the user opts
- *     to upgrade, the application could download and install the 2.3.1 jar, replacing the older 2.3.0 jar,
- *     then signal for an application restart, and boom, updated.
+ *     <b>How do I use this?</b> - Start by creating a VersionManifest for your application and all
+ *     of its extensions. There is an application to help you do this! See
+ *     <a href="https://github.com/scorbo2/ext-package">ExtPackager</a> on GitHub. Once your VersionManifest
+ *     is ready, you can upload it to your web server. Then, you create an UpdateSources json which
+ *     points to your VersionManifest, and you then bundle this UpdateSources with your application.
+ *     Then, after your application is released, you can update the published VersionManifest on your
+ *     web host whenever you have a new extension, or a new version of an existing extension. Your application
+ *     can dynamically discover the new extension or version, and offer the ability to download and
+ *     install it!
  * </p>
  * <p>
- *     This same general approach could work for new extension discovery - if ICE isn't installed, the application
- *     can learn that it exists, and present its information to the user for possible download and installation.
+ *     <b>Digital signing</b> - you can optionally digitally sign your extension jars so that your application
+ *     can verify that they come from a known good source. The ExtPackager application can walk you through
+ *     the process of generating a key pair, signing your extensions with the private key, and uploading
+ *     the public key to your web host. This is all entirely optional - if you are hosting on a trusted
+ *     internal server (like on a local network), you can skip this step entirely. If a signature and a public
+ *     key are provided, this class will automatically verify the digital signature after each download.
+ * </p>
+ * <p>
+ *     <b>How do I set all this up?</b> - There's a helper application called
+ *     <a href="https://github.com/scorbo2/ext-package">ExtPackager</a> that can walk you through the process
+ *     of setting up your UpdateSources json and your VersionManifest, and can also help you with things like
+ *     digitally signing your extension jars, providing screenshots for each version, and uploading to your
+ *     web host via FTP. You don't have to write this json by hand!
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -81,29 +48,29 @@ public class UpdateManager {
 
     protected final Gson gson;
     protected final File sourceFile;
-    protected final UpdateConfiguration updateConfiguration;
+    protected final UpdateSources updateSources;
 
     public UpdateManager(File sourceFile) throws JsonSyntaxException, IOException {
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         this.sourceFile = sourceFile;
-        this.updateConfiguration = gson.fromJson(FileSystemUtil.readFileToString(sourceFile),
-                                                 UpdateConfiguration.class);
+        this.updateSources = gson.fromJson(FileSystemUtil.readFileToString(sourceFile),
+                                           UpdateSources.class);
     }
 
     public String getApplicationName() {
-        return updateConfiguration.getApplicationName();
+        return updateSources.getApplicationName();
     }
 
-    public List<UpdateSource> getUpdateSources() {
-        return new ArrayList<>(updateConfiguration.getUpdateSources());
+    public List<UpdateSources.UpdateSource> getUpdateSources() {
+        return new ArrayList<>(updateSources.getUpdateSources());
     }
 
-    public void addUpdateSource(UpdateSource source) throws IOException {
-        updateConfiguration.addUpdateSource(source);
+    public void addUpdateSource(UpdateSources.UpdateSource source) throws IOException {
+        updateSources.addUpdateSource(source);
         save();
     }
 
     public void save() throws IOException {
-        FileSystemUtil.writeStringToFile(gson.toJson(updateConfiguration), sourceFile);
+        FileSystemUtil.writeStringToFile(gson.toJson(updateSources), sourceFile);
     }
 }
