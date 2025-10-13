@@ -17,7 +17,8 @@ import java.util.Objects;
  */
 public class ExtensionVersion {
     private AppExtensionInfo extInfo;
-    private URL downloadURL;
+    private URL downloadUrl;
+    private URL signatureUrl;
     private final List<URL> screenshots = new ArrayList<>();
 
     public AppExtensionInfo getExtInfo() {
@@ -28,12 +29,20 @@ public class ExtensionVersion {
         this.extInfo = extInfo;
     }
 
-    public URL getDownloadURL() {
-        return downloadURL;
+    public URL getDownloadUrl() {
+        return downloadUrl;
     }
 
-    public void setDownloadURL(URL downloadURL) {
-        this.downloadURL = downloadURL;
+    public void setDownloadUrl(URL downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+
+    public URL getSignatureUrl() {
+        return signatureUrl;
+    }
+
+    public void setSignatureUrl(URL signatureUrl) {
+        this.signatureUrl = signatureUrl;
     }
 
     public List<URL> getScreenshots() {
@@ -56,12 +65,13 @@ public class ExtensionVersion {
     public boolean equals(Object object) {
         if (!(object instanceof ExtensionVersion that)) { return false; }
         return Objects.equals(extInfo, that.extInfo)
-                && Objects.equals(downloadURL, that.downloadURL)
+                && Objects.equals(downloadUrl, that.downloadUrl)
+                && Objects.equals(signatureUrl, that.signatureUrl)
                 && Objects.equals(screenshots, that.screenshots);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(extInfo, downloadURL, screenshots);
+        return Objects.hash(extInfo, downloadUrl, signatureUrl, screenshots);
     }
 }

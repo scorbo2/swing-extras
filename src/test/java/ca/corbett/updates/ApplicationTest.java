@@ -21,7 +21,7 @@ class ApplicationTest {
                 .setTargetAppVersion("1.0")
                 .build();
         ExtensionVersion extVersion = new ExtensionVersion();
-        extVersion.setDownloadURL(new URL("http://www.test.example/someJar.jar"));
+        extVersion.setDownloadUrl(new URL("http://www.test.example/someJar.jar"));
         extVersion.setExtInfo(extInfo);
 
         Extension extension = new Extension();
