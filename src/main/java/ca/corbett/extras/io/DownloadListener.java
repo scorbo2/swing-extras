@@ -1,6 +1,5 @@
 package ca.corbett.extras.io;
 
-import java.io.File;
 import java.net.URL;
 
 /**
@@ -18,5 +17,10 @@ public interface DownloadListener {
 
     void downloadFailed(DownloadThread thread, URL url, String errorMsg);
 
-    void downloadComplete(DownloadThread thread, URL url, File localFile);
+    /**
+     * Fired when the download successfully completes. The "result" parameter will either be
+     * a java.util.File instance if you requested a file download, or a String if you requested
+     * the remote contents as a String.
+     */
+    void downloadComplete(DownloadThread thread, URL url, Object result);
 }

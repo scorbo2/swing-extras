@@ -13,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,7 +107,7 @@ public class DownloadThread implements Runnable {
                                  + sourceFile.getAbsolutePath()
                                  + " to "
                                  + destinationFile.getAbsolutePath());
-                Files.copy(Paths.get(url.toURI()), destinationFile.toPath());
+                Files.copy(Paths.get(url.toURI()), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 isRunning = false;
                 fireDownloadComplete();
                 return;
