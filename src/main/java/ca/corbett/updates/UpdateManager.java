@@ -53,12 +53,22 @@ public class UpdateManager {
     public UpdateManager(File sourceFile) throws JsonSyntaxException, IOException {
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         this.sourceFile = sourceFile;
-        this.updateSources = gson.fromJson(FileSystemUtil.readFileToString(sourceFile),
-                                           UpdateSources.class);
+        this.updateSources = gson.fromJson(FileSystemUtil.readFileToString(sourceFile), UpdateSources.class);
     }
 
     public String getApplicationName() {
         return updateSources.getApplicationName();
+    }
+
+    /**
+     * Requests the VersionManifest for the given UpdateSource (use getUpdateSources to enumerate the
+     * available UpdateSources in this UpdateManager).
+     */
+    public void retrieveVersionManifest(UpdateSources.UpdateSource updateSource) {
+        // TODO we can't block here and return a VersionManifest
+        // TODO fire up a thread... do we need to send updates on progress?
+        //      It should at most be a few KB of json data...
+        //      Still... we have to update the caller via a callback/listener of some kind
     }
 
     public List<UpdateSources.UpdateSource> getUpdateSources() {
