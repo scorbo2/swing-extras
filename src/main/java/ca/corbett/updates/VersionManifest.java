@@ -91,7 +91,7 @@ public class VersionManifest {
 
     }
 
-    public static VersionManifest fromJson(String json) throws IOException, JsonSyntaxException {
+    public static VersionManifest fromJson(String json) throws JsonSyntaxException {
         return gson.fromJson(json, VersionManifest.class);
     }
 
