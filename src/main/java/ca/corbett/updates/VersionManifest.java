@@ -9,6 +9,9 @@ import com.google.gson.JsonSyntaxException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +26,7 @@ import java.util.Objects;
  * <p><b>Example manifest</b></p>
  * <pre>
  * {
+ *   "manifestGenerated": "2025-10-16T00:53:33.946196621Z",
  *   "applicationName": "ExampleApplication",
  *   "applicationVersions": [
  *     {
@@ -70,6 +74,7 @@ import java.util.Objects;
  */
 public class VersionManifest {
 
+    private String manifestGenerated;
     private String applicationName;
     private final List<ApplicationVersion> applicationVersions = new ArrayList<>();
     private static final Gson gson;
@@ -82,7 +87,12 @@ public class VersionManifest {
      * Temp code? Authoring should move to ext-package repo
      */
     public static VersionManifest fromJson(File sourceFile) throws IOException, JsonSyntaxException {
-        return gson.fromJson(FileSystemUtil.readFileToString(sourceFile), VersionManifest.class);
+        return fromJson(FileSystemUtil.readFileToString(sourceFile));
+
+    }
+
+    public static VersionManifest fromJson(String json) throws IOException, JsonSyntaxException {
+        return gson.fromJson(json, VersionManifest.class);
     }
 
     /**
@@ -90,6 +100,25 @@ public class VersionManifest {
      */
     public void save(File destFile) throws IOException {
         FileSystemUtil.writeStringToFile(gson.toJson(this), destFile);
+    }
+
+    public Instant getManifestGenerated() {
+        return Instant.parse(manifestGenerated);
+    }
+
+    public void setManifestGenerated(String timestampString) {
+        manifestGenerated = timestampString;
+    }
+
+    public void setManifestGenerated(Instant instant) {
+        manifestGenerated = instant.toString();
+    }
+
+    /**
+     * Get the manifestGenerated timestamp in some local time zone, for example: ZoneId.of("America/Edmonton").
+     */
+    public LocalDateTime getManifestGeneratedAsLocalTime(ZoneId zoneId) {
+        return LocalDateTime.ofInstant(getManifestGenerated(), zoneId);
     }
 
     public String getApplicationName() {

@@ -1,12 +1,14 @@
 package ca.corbett.updates;
 
 import ca.corbett.extensions.AppExtensionInfo;
-import ca.corbett.extras.io.FileSystemUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.URL;
+import java.time.Instant;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VersionManifestTest {
@@ -34,6 +36,7 @@ class VersionManifestTest {
         appVersion.addExtension(extension);
 
         VersionManifest app = new VersionManifest();
+        app.setManifestGenerated(Instant.now());
         app.setApplicationName("Test");
         app.addApplicationVersion(appVersion);
 
@@ -44,7 +47,13 @@ class VersionManifestTest {
         assertTrue(f.length() > 0);
 
         // For visual verification:
-        System.out.println(FileSystemUtil.readFileToString(f));
+        //System.out.println(FileSystemUtil.readFileToString(f));
+
+        // Now load it back:
+        VersionManifest loaded = VersionManifest.fromJson(f);
+        assertNotNull(loaded);
+        assertEquals(app.getApplicationName(), loaded.getApplicationName());
+        assertEquals(app.getManifestGenerated(), loaded.getManifestGenerated());
     }
 
 }
