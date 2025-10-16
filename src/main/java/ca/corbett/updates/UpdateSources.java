@@ -14,6 +14,7 @@ import java.util.List;
  *         "applicationName": "MyAmazingApplication",
  *         "updateSources": [
  *             {
+ *                 "name": "Web server at www.test.example",
  *                 "versionManifestUrl": "http://www.test.example/versions.json",
  *                 "publicKeyUrl": "http://www.test.example/public.key"
  *             }
@@ -79,6 +80,7 @@ public class UpdateSources {
      * @since swing-extras 2.5
      */
     public static class UpdateSource {
+        private final String name;
         private final URL versionManifestUrl;
         private final URL publicKeyUrl;
 
@@ -87,7 +89,8 @@ public class UpdateSources {
          * Without a public key, digital signature verification will not be possible for
          * extension jars downloaded from this remote source.
          */
-        public UpdateSource(URL versionManifestUrl) {
+        public UpdateSource(String name, URL versionManifestUrl) {
+            this.name = name;
             this.versionManifestUrl = versionManifestUrl;
             this.publicKeyUrl = null;
         }
@@ -96,9 +99,14 @@ public class UpdateSources {
          * Creates an UpdateSource with the specified versionManifestUrl and the specified
          * public key.
          */
-        public UpdateSource(URL versionManifestUrl, URL publicKeyUrl) {
+        public UpdateSource(String name, URL versionManifestUrl, URL publicKeyUrl) {
+            this.name = name;
             this.versionManifestUrl = versionManifestUrl;
             this.publicKeyUrl = publicKeyUrl;
+        }
+
+        public String getName() {
+            return name;
         }
 
         public URL getVersionManifestUrl() {

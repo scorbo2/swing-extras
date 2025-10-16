@@ -21,6 +21,7 @@ class UpdateManagerTest {
                   "applicationName": "Test",
                   "updateSources": [
                     {
+                      "name": "Test source",
                       "versionManifestUrl": "http://www.test.example/blah.json",
                       "publicKeyUrl": "http://www.test.example/public.key"
                     }
@@ -38,6 +39,7 @@ class UpdateManagerTest {
         assertNotNull(manager);
         assertEquals("Test", manager.getApplicationName());
         assertEquals(1, manager.getUpdateSources().size());
+        assertEquals("Test source", manager.getUpdateSources().get(0).getName());
         assertEquals("http://www.test.example/blah.json",
                      manager.getUpdateSources().get(0).getVersionManifestUrl().toString());
         assertEquals("http://www.test.example/public.key",
@@ -89,7 +91,7 @@ class UpdateManagerTest {
         // WHEN we add an update source:
         URL versionManifest = new URL("http://www.test.example/manifest.json");
         URL publicKey = new URL("http://www.test.example/public.key");
-        manager.addUpdateSource(new UpdateSources.UpdateSource(versionManifest, publicKey)); // implicit save()
+        manager.addUpdateSource(new UpdateSources.UpdateSource("Test source", versionManifest, publicKey));
 
         // THEN we should see the json was saved correctly:
 //        final String expected = """
@@ -109,6 +111,7 @@ class UpdateManagerTest {
         UpdateManager manager2 = new UpdateManager(sourcesFile);
         assertEquals("Test", manager2.getApplicationName());
         assertEquals(1, manager.getUpdateSources().size());
+        assertEquals("Test source", manager.getUpdateSources().get(0).getName());
         assertEquals("http://www.test.example/manifest.json",
                      manager.getUpdateSources().get(0).getVersionManifestUrl().toString());
         assertEquals("http://www.test.example/public.key",
