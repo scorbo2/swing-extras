@@ -82,8 +82,9 @@ public class UpdateSources {
      * Represents a single remote update source, for use with the UpdateConfiguration class.
      * There are two key pieces of information associated with a remote update source:
      * <ul>
-     *     <li><b>versionManifestUrl</b> The URL of a VersionManifest json file.
-     *     <li><b>publicKeyUrl</b> (optional) - the remote host can publish a public key to use for
+     *     <li><b>name</b>: Some human-readable name for this data source.
+     *     <li><b>versionManifestUrl</b>: The URL of a VersionManifest json file.
+     *     <li><b>publicKeyUrl</b> (optional): - the remote host can publish a public key to use for
      *     digital signature verification of downloaded extension jars. See SignatureUtil class
      *     for more details on signing and verifying files. This field is optional but highly
      *     recommended. Without it, jars will be downloaded and installed with no verification.
