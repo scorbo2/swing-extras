@@ -187,6 +187,17 @@ public class VersionManifest {
         public void clearExtensions() {
             this.extensions.clear();
         }
+
+        @Override
+        public boolean equals(Object object) {
+            if (!(object instanceof ApplicationVersion that)) { return false; }
+            return Objects.equals(version, that.version) && Objects.equals(extensions, that.extensions);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(version, extensions);
+        }
     }
 
     /**

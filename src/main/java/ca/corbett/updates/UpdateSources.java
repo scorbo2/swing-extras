@@ -3,6 +3,7 @@ package ca.corbett.updates;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Your application can package a json file which represents one or more "update sources" - that is,
@@ -65,6 +66,18 @@ public class UpdateSources {
         updateSources.add(updateSource);
     }
 
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof UpdateSources that)) { return false; }
+        return Objects.equals(applicationName, that.applicationName)
+                && Objects.equals(updateSources, that.updateSources);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(applicationName, updateSources);
+    }
+
     /**
      * Represents a single remote update source, for use with the UpdateConfiguration class.
      * There are two key pieces of information associated with a remote update source:
@@ -115,6 +128,19 @@ public class UpdateSources {
 
         public URL getPublicKeyUrl() {
             return publicKeyUrl;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (!(object instanceof UpdateSource that)) { return false; }
+            return Objects.equals(name, that.name)
+                    && Objects.equals(versionManifestUrl, that.versionManifestUrl)
+                    && Objects.equals(publicKeyUrl, that.publicKeyUrl);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, versionManifestUrl, publicKeyUrl);
         }
     }
 }
