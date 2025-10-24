@@ -34,17 +34,16 @@ import java.util.Objects;
  *       "extensions": [
  *         {
  *           "name": "MyFirstExtension",
- *           "extInfo:" { ... },
  *           "versions": [
  *             {
- *               "version": "1.0.0",
+ *               "extInfo:" { ... },
  *               "downloadUrl": "http://www.myhost.example/MyFirstExtension-1.0.0.jar",
  *               "signatureUrl": "http://www.myhost.example/MyFirstExtension-1.0.0.sig",
  *               "screenshots": []
  *             },
  *             {
- *               "version": "1.0.1",
- *               "url": "http://www.myhost.example/MyFirstExtension-1.0.1.jar",
+ *               "extInfo:" { ... },
+ *               "downloadUrl": "http://www.myhost.example/MyFirstExtension-1.0.1.jar",
  *               "signatureUrl": "http://www.myhost.example/MyFirstExtension-1.0.1.sig",
  *               "screenshots": []
  *             }
