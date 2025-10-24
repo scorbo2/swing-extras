@@ -33,7 +33,7 @@ public class AppExtensionInfo {
 
     protected final String name;
     protected final String version;
-    protected final String extensionUrl;
+    protected final String projectUrl; // GitHub page or whatever
     protected final String targetAppName;
     protected final String targetAppVersion;
     protected final String author;
@@ -45,7 +45,7 @@ public class AppExtensionInfo {
 
     protected AppExtensionInfo(Builder builder) {
         this.name = builder.name;
-        this.extensionUrl = builder.extensionUrl;
+        this.projectUrl = builder.extensionUrl;
         this.author = builder.author;
         this.authorUrl = builder.authorUrl;
         this.version = builder.version;
@@ -129,8 +129,8 @@ public class AppExtensionInfo {
         return authorUrl;
     }
 
-    public String getExtensionUrl() {
-        return extensionUrl;
+    public String getProjectUrl() {
+        return projectUrl;
     }
 
     public String getVersion() {
@@ -175,7 +175,7 @@ public class AppExtensionInfo {
         if (!(object instanceof AppExtensionInfo that)) { return false; }
         return Objects.equals(name, that.name)
                 && Objects.equals(version, that.version)
-                && Objects.equals(extensionUrl, that.extensionUrl)
+                && Objects.equals(projectUrl, that.projectUrl)
                 && Objects.equals(targetAppName, that.targetAppName)
                 && Objects.equals(targetAppVersion, that.targetAppVersion)
                 && Objects.equals(author, that.author)
@@ -188,7 +188,7 @@ public class AppExtensionInfo {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, version, extensionUrl, targetAppName, targetAppVersion, author, authorUrl,
+        return Objects.hash(name, version, projectUrl, targetAppName, targetAppVersion, author, authorUrl,
                             releaseNotes, shortDescription, longDescription, customFields);
     }
 
