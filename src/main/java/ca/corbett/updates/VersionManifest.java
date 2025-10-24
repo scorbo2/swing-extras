@@ -62,7 +62,7 @@ import java.util.Objects;
  * </p>
  * <p>
  *     <b>How do I set all this up?</b> - There's a helper application called
- *     <a href="https://github.com/scorbo2/ext-package">ExtPackager</a> that can walk you through the process
+ *     <a href="https://github.com/scorbo2/ext-packager">ExtPackager</a> that can walk you through the process
  *     of setting up your UpdateSources json and your VersionManifest, and can also help you with things like
  *     digitally signing your extension jars, providing screenshots for each version, and uploading to your
  *     web host via FTP. You don't have to write this json by hand!
@@ -83,7 +83,7 @@ public class VersionManifest {
     }
 
     /**
-     * Temp code? Authoring should move to ext-package repo
+     * Temp code? Authoring should move to ext-packager repo
      */
     public static VersionManifest fromJson(File sourceFile) throws IOException, JsonSyntaxException {
         return fromJson(FileSystemUtil.readFileToString(sourceFile));
@@ -95,7 +95,7 @@ public class VersionManifest {
     }
 
     /**
-     * Temp code? Authoring should move to ext-package repo
+     * Temp code? Authoring should move to ext-packager repo
      */
     public void save(File destFile) throws IOException {
         FileSystemUtil.writeStringToFile(gson.toJson(this), destFile);

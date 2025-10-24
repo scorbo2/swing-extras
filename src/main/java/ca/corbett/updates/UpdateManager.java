@@ -17,7 +17,7 @@ import java.util.List;
  * <p>
  *     <b>How do I use this?</b> - Start by creating a VersionManifest for your application and all
  *     of its extensions. There is an application to help you do this! See
- *     <a href="https://github.com/scorbo2/ext-package">ExtPackager</a> on GitHub. Once your VersionManifest
+ *     <a href="https://github.com/scorbo2/ext-packager">ExtPackager</a> on GitHub. Once your VersionManifest
  *     is ready, you can upload it to your web server. Then, you create an UpdateSources json which
  *     points to your VersionManifest, and you then bundle this UpdateSources with your application.
  *     Then, after your application is released, you can update the published VersionManifest on your
@@ -35,7 +35,7 @@ import java.util.List;
  * </p>
  * <p>
  *     <b>How do I set all this up?</b> - There's a helper application called
- *     <a href="https://github.com/scorbo2/ext-package">ExtPackager</a> that can walk you through the process
+ *     <a href="https://github.com/scorbo2/ext-packager">ExtPackager</a> that can walk you through the process
  *     of setting up your UpdateSources json and your VersionManifest, and can also help you with things like
  *     digitally signing your extension jars, providing screenshots for each version, and uploading to your
  *     web host via FTP. You don't have to write this json by hand!
