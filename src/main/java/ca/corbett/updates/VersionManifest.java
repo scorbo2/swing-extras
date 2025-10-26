@@ -128,6 +128,10 @@ public class VersionManifest {
         this.applicationName = applicationName;
     }
 
+    public List<ApplicationVersion> getApplicationVersions() {
+        return new ArrayList<>(applicationVersions);
+    }
+
     public void addApplicationVersion(ApplicationVersion version) {
         this.applicationVersions.add(version);
     }
