@@ -10,11 +10,22 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * A scrollable panel that can show a list of images, each represented by a thumbnail
@@ -34,6 +45,8 @@ import java.util.List;
  */
 public class ImageListPanel extends JPanel {
 
+    private static final Logger log = Logger.getLogger(ImageListPanel.class.getName());
+
     public static final int DEFAULT_THUMB_SIZE = 100;
     public static final int MINIMUM_THUMB_SIZE = 25;
     public static final int MAXIMUM_THUMB_SIZE = 500;
@@ -42,7 +55,8 @@ public class ImageListPanel extends JPanel {
     private int thumbSize;
 
     private int startX;
-    private JScrollPane scrollPane;
+    private boolean isReadOnly;
+    private int maxListSize;
 
     /**
      * Creates a new, empty ImageListPanel.
@@ -51,6 +65,64 @@ public class ImageListPanel extends JPanel {
         this.ownerFrame = ownerFrame;
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         thumbSize = DEFAULT_THUMB_SIZE;
+        isReadOnly = false;
+        maxListSize = Integer.MAX_VALUE;
+        enableDragAndDrop();
+    }
+
+    /**
+     * Determines whether image addition and removal operations are permitted,
+     * and also whether drag and drop from the file system is allowed.
+     */
+    public void setReadOnly(boolean readOnly) {
+        if (isReadOnly == readOnly) {
+            return; // already set.
+        }
+
+        isReadOnly = readOnly;
+        if (isReadOnly) {
+            setDropTarget(null);
+        }
+        else {
+            enableDragAndDrop();
+        }
+    }
+
+    /**
+     * Returns whether this panel allows image addition and removal operations,
+     * and also whether drag and drop from the file system is allowed.
+     */
+    public boolean isReadOnly() {
+        return isReadOnly;
+    }
+
+    /**
+     * Returns the configured maximum image count that this panel will allow.
+     * Addition attempts beyond this count are discarded.
+     */
+    public int getMaxListSize() {
+        return maxListSize;
+    }
+
+    /**
+     * Puts a limit on the number of images that this panel will allow.
+     * By default, this is Integer.MAX_VALUE.
+     * <p>
+     * <b>WARNING:</b> Passing a value that is less than the number
+     * of images currently held in this panel will cause all images
+     * at indexes higher than this count to be dropped.
+     * </p>
+     */
+    public void setMaxListSize(int max) {
+        if (max < 1) {
+            max = 1; // reject stupid values
+        }
+        maxListSize = max;
+
+        // Nuke any images beyond our new max:
+        while (getImageCount() > maxListSize) {
+            removeImage(maxListSize);
+        }
     }
 
     /**
@@ -98,6 +170,11 @@ public class ImageListPanel extends JPanel {
             return;
         }
 
+        // Don't allow our list size to be exceeded:
+        if (getImageCount() >= maxListSize) {
+            return;
+        }
+
         // Scale the image to our thumbnail size if needed:
         BufferedImage thumbnail = image;
         if (image.getWidth() > thumbSize || image.getHeight() > thumbSize) {
@@ -115,8 +192,6 @@ public class ImageListPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 startX = e.getXOnScreen();
-                // Find the parent JScrollPane
-                scrollPane = findParentScrollPane(imagePanel);
             }
 
             @Override
@@ -212,5 +287,72 @@ public class ImageListPanel extends JPanel {
             parent = parent.getParent();
         }
         return null;
+    }
+
+    /**
+     * Enables drag-and-drop of image files from the filesystem onto this panel.
+     */
+    public void enableDragAndDrop() {
+        DropTarget dropTarget = new DropTarget(this, new DropTargetAdapter() {
+            @Override
+            public void dragOver(DropTargetDragEvent dtde) {
+                if (isImageFileDrag(dtde)) {
+                    dtde.acceptDrag(DnDConstants.ACTION_COPY);
+                }
+                else {
+                    dtde.rejectDrag();
+                }
+            }
+
+            @Override
+            public void drop(DropTargetDropEvent dtde) {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY);
+
+                Transferable transferable = dtde.getTransferable();
+                if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        List<File> files = (List<File>)transferable.getTransferData(DataFlavor.javaFileListFlavor);
+
+                        for (File file : files) {
+                            if (isImageFile(file)) {
+                                try {
+                                    BufferedImage image = ImageUtil.loadImage(file);
+                                    if (image != null) {
+                                        addImage(image);
+                                    }
+                                }
+                                catch (IOException ioe) {
+                                    log.warning("ImageListField: ignoring non-image: " + file.getAbsolutePath());
+                                }
+                            }
+                        }
+
+                        revalidate();
+                        repaint();
+                        dtde.dropComplete(true);
+                    }
+                    catch (UnsupportedFlavorException | IOException e) {
+                        log.warning("ImageListField: drag-and-drop supports images only.");
+                    }
+                }
+                else {
+                    dtde.dropComplete(false);
+                }
+            }
+
+            private boolean isImageFileDrag(DropTargetDragEvent dtde) {
+                return dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor);// We'll validate actual files on drop
+            }
+
+            private boolean isImageFile(File file) {
+                String name = file.getName().toLowerCase();
+                return name.endsWith(".jpg") || name.endsWith(".jpeg") ||
+                        name.endsWith(".png") || name.endsWith(".gif") ||
+                        name.endsWith(".bmp");
+            }
+        });
+
+        setDropTarget(dropTarget);
     }
 }

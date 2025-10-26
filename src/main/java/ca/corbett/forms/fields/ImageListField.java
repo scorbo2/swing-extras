@@ -1,22 +1,10 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.image.ImageListPanel;
-import ca.corbett.extras.image.ImageUtil;
 
 import javax.swing.JScrollPane;
 import java.awt.Dimension;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetAdapter;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -72,13 +60,13 @@ public class ImageListField extends FormField {
         imageListPanel = new ImageListPanel(null);
         imageListPanel.setThumbnailSize(thumbDimension);
         JScrollPane scrollPane = new JScrollPane(imageListPanel);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(12);
         int panelWidth = thumbDimension * initialSize;
         scrollPane.setPreferredSize(new Dimension(panelWidth, thumbDimension + 20)); // + scrollbar
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         fieldComponent = scrollPane;
         shouldExpand = false; // arbitrary default
-        enableDragAndDrop();
     }
 
     /**
@@ -97,6 +85,36 @@ public class ImageListField extends FormField {
     public ImageListField setShouldExpand(boolean expand) {
         shouldExpand = expand;
         return this;
+    }
+
+    @Override
+    public FormField setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        imageListPanel.setReadOnly(!enabled);
+        return this;
+    }
+
+    /**
+     * Optionally restrict how many images this field will allow.
+     * By default, this is Integer.MAX_VALUE.
+     * The value must be at least 1 (otherwise what is the point).
+     * <p>
+     * <b>Warning:</b> If you pass a value that is less than the number
+     * of images currently held in this field, the images at indexes above the
+     * new max limit will be dropped.
+     * </p>
+     */
+    public ImageListField setMaxImageCount(int maxCount) {
+        imageListPanel.setMaxListSize(maxCount);
+        return this;
+    }
+
+    /**
+     * Returns the maximum number of images allowed in this field,
+     * or Integer.MAX_VALUE if there is no limit.
+     */
+    public int getMaxImageCount() {
+        return imageListPanel.getMaxListSize();
     }
 
     public void addImage(BufferedImage image) {
@@ -123,72 +141,5 @@ public class ImageListField extends FormField {
     @Override
     public boolean shouldExpand() {
         return shouldExpand;
-    }
-
-    /**
-     * Enables drag-and-drop of image files from the filesystem onto this panel.
-     */
-    public void enableDragAndDrop() {
-        DropTarget dropTarget = new DropTarget(imageListPanel, new DropTargetAdapter() {
-            @Override
-            public void dragOver(DropTargetDragEvent dtde) {
-                if (isImageFileDrag(dtde)) {
-                    dtde.acceptDrag(DnDConstants.ACTION_COPY);
-                }
-                else {
-                    dtde.rejectDrag();
-                }
-            }
-
-            @Override
-            public void drop(DropTargetDropEvent dtde) {
-                dtde.acceptDrop(DnDConstants.ACTION_COPY);
-
-                Transferable transferable = dtde.getTransferable();
-                if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-                    try {
-                        @SuppressWarnings("unchecked")
-                        List<File> files = (List<File>)transferable.getTransferData(DataFlavor.javaFileListFlavor);
-
-                        for (File file : files) {
-                            if (isImageFile(file)) {
-                                try {
-                                    BufferedImage image = ImageUtil.loadImage(file);
-                                    if (image != null) {
-                                        addImage(image);
-                                    }
-                                }
-                                catch (IOException ioe) {
-                                    log.warning("ImageListField: ignoring non-image: " + file.getAbsolutePath());
-                                }
-                            }
-                        }
-
-                        imageListPanel.revalidate();
-                        imageListPanel.repaint();
-                        dtde.dropComplete(true);
-                    }
-                    catch (UnsupportedFlavorException | IOException e) {
-                        log.warning("ImageListField: drag-and-drop supports images only.");
-                    }
-                }
-                else {
-                    dtde.dropComplete(false);
-                }
-            }
-
-            private boolean isImageFileDrag(DropTargetDragEvent dtde) {
-                return dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor);// We'll validate actual files on drop
-            }
-
-            private boolean isImageFile(File file) {
-                String name = file.getName().toLowerCase();
-                return name.endsWith(".jpg") || name.endsWith(".jpeg") ||
-                        name.endsWith(".png") || name.endsWith(".gif") ||
-                        name.endsWith(".bmp");
-            }
-        });
-
-        imageListPanel.setDropTarget(dropTarget);
     }
 }
