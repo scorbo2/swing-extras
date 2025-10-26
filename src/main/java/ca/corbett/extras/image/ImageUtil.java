@@ -10,6 +10,7 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.swing.ImageIcon;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -521,12 +522,40 @@ public final class ImageUtil {
      * For example, a landscape image will be scaled so that its with matches maxDimension.
      * A portrait image will be scaled so that its height matches maxDimension.
      * A square image will be scaled until both width and height equals maxDimension.
+     * <p>
+     *     <b>Note:</b> this method will return an image that is not square, if the input
+     *     image is not square. You can use scaleImageToFitSquareBounds(BufferedImage,int,boolean) to
+     *     force the resulting image to be square.
+     * </p>
      *
      * @param image        The image to scale.
      * @param maxDimension The desired largest dimension of the scaled image.
      * @return The scaled image.
      */
     public static BufferedImage scaleImageToFitSquareBounds(BufferedImage image, int maxDimension) {
+        return scaleImageToFitSquareBounds(image, maxDimension, false);
+    }
+
+    /**
+     * Scales an image up or down proportionally until it fits inside the square bounding area
+     * specified by maxDimension. The image is scaled based on its largest dimension.
+     * For example, a landscape image will be scaled so that its with matches maxDimension.
+     * A portrait image will be scaled so that its height matches maxDimension.
+     * A square image will be scaled until both width and height equals maxDimension.
+     * <p>
+     * <b>Note:</b> If the makeSquare parameter is true, the resulting image will be expanded
+     * as needed (with transparency) so that the returned image is centered within a
+     * perfectly square image. If your image is portrait, for example, there will be horizontal
+     * transparent padding added to the left and right such that the returned image's width
+     * and height are equal, but without distorting the image itself.
+     * </p>
+     *
+     * @param image        The image to scale.
+     * @param maxDimension The desired largest dimension of the scaled image.
+     * @param makeSquare   If true, will apply transparent padding if needed so the returned image is square.
+     * @return The scaled image.
+     */
+    public static BufferedImage scaleImageToFitSquareBounds(BufferedImage image, int maxDimension, boolean makeSquare) {
         int originalWidth = image.getWidth();
         int originalHeight = image.getHeight();
 
@@ -553,6 +582,25 @@ public final class ImageUtil {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.drawImage(image, 0, 0, newWidth, newHeight, null);
         g.dispose();
+
+        // If returning a square image, center the scaled image within a transparent square:
+        if (makeSquare) {
+            BufferedImage squareImage = new BufferedImage(maxDimension, maxDimension, BufferedImage.TYPE_INT_ARGB);
+            g = squareImage.createGraphics();
+            g.setColor(new Color(0, 0, 0, 0));
+            g.fillRect(0, 0, maxDimension, maxDimension);
+            if (newWidth == newHeight) {
+                g.drawImage(scaledImage, 0, 0, null);
+            }
+            else if (newWidth > newHeight) {
+                g.drawImage(scaledImage, 0, (maxDimension - newHeight) / 2, null);
+            }
+            else {
+                g.drawImage(scaledImage, (maxDimension - newWidth) / 2, 0, null);
+            }
+            g.dispose();
+            scaledImage = squareImage;
+        }
 
         return scaledImage;
     }
