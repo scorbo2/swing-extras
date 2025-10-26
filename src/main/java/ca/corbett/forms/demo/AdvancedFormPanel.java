@@ -2,11 +2,13 @@ package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.CollapsiblePanelField;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.ImageListField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.SliderField;
@@ -17,9 +19,14 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AdvancedFormPanel extends PanelBuilder {
+    private static final Logger log = Logger.getLogger(AdvancedFormPanel.class.getName());
+
     @Override
     public String getTitle() {
         return "Forms: advanced fields";
@@ -82,6 +89,33 @@ public class AdvancedFormPanel extends PanelBuilder {
         listField2.setVisibleRowCount(3);
         formPanel.add(listField2);
 
+        ImageListField imageListField = new ImageListField("Image list:", 5, 75);
+        try {
+            imageListField.addImage(
+                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/media-playback-start.png")));
+            imageListField.addImage(
+                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/media-playback-pause.png")));
+            imageListField.addImage(
+                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/media-playback-stop.png")));
+            imageListField.addImage(
+                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/media-record.png")));
+            imageListField.addImage(
+                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/icon-copy.png")));
+            imageListField.addImage(
+                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/icon-cut.png")));
+            imageListField.addImage(
+                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/icon-paste.png")));
+            imageListField.addImage(
+                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/swing-extras-icon.jpg")));
+        }
+        catch (IOException | IllegalArgumentException ioe) {
+            log.log(Level.SEVERE, "Problem loading image resources: " + ioe.getMessage(), ioe);
+        }
+        imageListField.setHelpText("<html><b>USAGE:</b><br>Try double-clicking the images in the image list!"
+                                           + "<br>Click and drag left/right to scroll the list!"
+                                           + "<br>You can drag and drop images from your file system onto the list!</html>");
+        imageListField.setShouldExpand(true);
+        formPanel.add(imageListField);
 
         return formPanel;
     }
