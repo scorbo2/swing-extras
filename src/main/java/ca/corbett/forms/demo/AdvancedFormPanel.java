@@ -89,7 +89,7 @@ public class AdvancedFormPanel extends PanelBuilder {
         listField2.setVisibleRowCount(3);
         formPanel.add(listField2);
 
-        ImageListField imageListField = new ImageListField("Image list:", 5, 55);
+        ImageListField imageListField = new ImageListField("Image list:", 5, 75);
         try {
             imageListField.addImage(
                     ImageUtil.loadImage(getClass().getResource("/swing-extras/images/media-playback-start.png")));
@@ -111,14 +111,11 @@ public class AdvancedFormPanel extends PanelBuilder {
         catch (IOException | IllegalArgumentException ioe) {
             log.log(Level.SEVERE, "Problem loading image resources: " + ioe.getMessage(), ioe);
         }
-        //imageListField.setShouldExpand(true);
+        imageListField.setHelpText("<html><b>USAGE:</b><br>Try double-clicking the images in the image list!"
+                                           + "<br>Click and drag left/right to scroll the list!"
+                                           + "<br>You can drag and drop images from your file system onto the list!</html>");
+        imageListField.setShouldExpand(true);
         formPanel.add(imageListField);
-
-        LabelField labelField = new LabelField("Hint:", "Try double-clicking the images in the image list!");
-        formPanel.add(labelField);
-
-        labelField = new LabelField("Hint:", "Click and drag left/right to scroll the list!");
-        formPanel.add(labelField);
 
         return formPanel;
     }

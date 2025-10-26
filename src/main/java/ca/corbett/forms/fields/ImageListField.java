@@ -1,10 +1,23 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.image.ImageListPanel;
+import ca.corbett.extras.image.ImageUtil;
 
 import javax.swing.JScrollPane;
 import java.awt.Dimension;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * A FormField implementation that allows the user to select one or more images, and display
@@ -15,6 +28,8 @@ import java.awt.image.BufferedImage;
  * @since swing-extras 2.5
  */
 public class ImageListField extends FormField {
+
+    private static final Logger log = Logger.getLogger(ImageListField.class.getName());
 
     private final ImageListPanel imageListPanel;
     private boolean shouldExpand;
@@ -63,6 +78,7 @@ public class ImageListField extends FormField {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         fieldComponent = scrollPane;
         shouldExpand = false; // arbitrary default
+        enableDragAndDrop();
     }
 
     /**
@@ -109,4 +125,70 @@ public class ImageListField extends FormField {
         return shouldExpand;
     }
 
+    /**
+     * Enables drag-and-drop of image files from the filesystem onto this panel.
+     */
+    public void enableDragAndDrop() {
+        DropTarget dropTarget = new DropTarget(imageListPanel, new DropTargetAdapter() {
+            @Override
+            public void dragOver(DropTargetDragEvent dtde) {
+                if (isImageFileDrag(dtde)) {
+                    dtde.acceptDrag(DnDConstants.ACTION_COPY);
+                }
+                else {
+                    dtde.rejectDrag();
+                }
+            }
+
+            @Override
+            public void drop(DropTargetDropEvent dtde) {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY);
+
+                Transferable transferable = dtde.getTransferable();
+                if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        List<File> files = (List<File>)transferable.getTransferData(DataFlavor.javaFileListFlavor);
+
+                        for (File file : files) {
+                            if (isImageFile(file)) {
+                                try {
+                                    BufferedImage image = ImageUtil.loadImage(file);
+                                    if (image != null) {
+                                        addImage(image);
+                                    }
+                                }
+                                catch (IOException ioe) {
+                                    log.warning("ImageListField: ignoring non-image: " + file.getAbsolutePath());
+                                }
+                            }
+                        }
+
+                        imageListPanel.revalidate();
+                        imageListPanel.repaint();
+                        dtde.dropComplete(true);
+                    }
+                    catch (UnsupportedFlavorException | IOException e) {
+                        log.warning("ImageListField: drag-and-drop supports images only.");
+                    }
+                }
+                else {
+                    dtde.dropComplete(false);
+                }
+            }
+
+            private boolean isImageFileDrag(DropTargetDragEvent dtde) {
+                return dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor);// We'll validate actual files on drop
+            }
+
+            private boolean isImageFile(File file) {
+                String name = file.getName().toLowerCase();
+                return name.endsWith(".jpg") || name.endsWith(".jpeg") ||
+                        name.endsWith(".png") || name.endsWith(".gif") ||
+                        name.endsWith(".bmp");
+            }
+        });
+
+        imageListPanel.setDropTarget(dropTarget);
+    }
 }
