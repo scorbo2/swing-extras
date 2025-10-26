@@ -1,9 +1,12 @@
 package ca.corbett.extras.image;
 
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import java.awt.BorderLayout;
@@ -18,8 +21,11 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -82,9 +88,15 @@ public class ImageListPanel extends JPanel {
         isReadOnly = readOnly;
         if (isReadOnly) {
             setDropTarget(null);
+            for (int i = 0; i < getImageCount(); i++) {
+                ((ImagePanel)getComponent(i)).setPopupMenu(null);
+            }
         }
         else {
             enableDragAndDrop();
+            for (int i = 0; i < getImageCount(); i++) {
+                ((ImagePanel)getComponent(i)).setPopupMenu(buildPopupMenu((ImagePanel)getComponent(i)));
+            }
         }
     }
 
@@ -184,44 +196,16 @@ public class ImageListPanel extends JPanel {
         // Create an ImagePanel to represent this image:
         ImagePanel imagePanel = new ImagePanel(thumbnail, ImagePanelConfig.createSimpleReadOnlyProperties());
         imagePanel.setMinimumSize(new Dimension(thumbSize, thumbSize));
-        imagePanel.setPreferredSize(new Dimension(thumbSize, thumbSize)); // TODO add some height for image label
+        imagePanel.setPreferredSize(new Dimension(thumbSize, thumbSize));
         imagePanel.setExtraAttribute("originalImage", image);
-
-        // Add our double-click handler to show the image in a preview window:
-        imagePanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                startX = e.getXOnScreen();
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    showImage((BufferedImage)imagePanel.getExtraAttribute("originalImage"));
-                }
-            }
-        });
-        imagePanel.addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                JScrollPane scrollPane = findParentScrollPane(imagePanel);
-                if (scrollPane != null) {
-                    int deltaX = startX - e.getXOnScreen();
-                    JViewport viewport = scrollPane.getViewport();
-                    Point viewPosition = viewport.getViewPosition();
-                    viewPosition.translate(deltaX, 0);
-
-                    // Clamp to valid range
-                    viewPosition.x = Math.max(0, viewPosition.x);
-                    viewPosition.x = Math.min(imagePanel.getParent().getWidth() - viewport.getWidth(), viewPosition.x);
-
-                    viewport.setViewPosition(viewPosition);
-                    startX = e.getXOnScreen();
-                }
-            }
-        });
+        imagePanel.setExtraAttribute("listIndex", getImageCount());
+        imagePanel.setPopupMenu(buildPopupMenu(imagePanel));
+        imagePanel.addMouseListener(buildMouseListener(imagePanel));
+        imagePanel.addMouseMotionListener(buildMouseMotionListener(imagePanel));
 
         add(imagePanel);
+        revalidate();
+        repaint();
     }
 
     /**
@@ -259,6 +243,14 @@ public class ImageListPanel extends JPanel {
         }
 
         remove(index);
+        revalidate();
+        repaint();
+
+        // Fix all indexes since we now have a gap otherwise:
+        for (int i = 0; i < getImageCount(); i++) {
+            ImagePanel imagePanel = (ImagePanel)this.getComponent(i);
+            imagePanel.setExtraAttribute("listIndex", i);
+        }
     }
 
     /**
@@ -354,5 +346,71 @@ public class ImageListPanel extends JPanel {
         });
 
         setDropTarget(dropTarget);
+    }
+
+    /**
+     * Builds a popup menu for the given ImagePanel.
+     * The popup menu will allow removing the image from the list, assuming
+     * we are not in read-only mode.
+     */
+    private JPopupMenu buildPopupMenu(ImagePanel imagePanel) {
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem item = new JMenuItem(new AbstractAction("Remove from list") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object indexToRemove = imagePanel.getExtraAttribute("listIndex");
+                if (indexToRemove instanceof Integer) {
+                    removeImage((Integer)indexToRemove);
+                }
+            }
+        });
+        menu.add(item);
+        return menu;
+    }
+
+    /**
+     * Builds a MouseListener for the given ImagePanel, to handle things like
+     * drag and drop for scrolling the list, or double-clicking to view the image.
+     */
+    private MouseListener buildMouseListener(ImagePanel imagePanel) {
+        return new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                startX = e.getXOnScreen();
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    showImage((BufferedImage)imagePanel.getExtraAttribute("originalImage"));
+                }
+            }
+        };
+    }
+
+    /**
+     * Builds a MouseMotionListener for the given ImagePanel.
+     * We use this for handling mouse dragging to scroll the list horizontally.
+     */
+    private MouseMotionListener buildMouseMotionListener(ImagePanel imagePanel) {
+        return new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                JScrollPane scrollPane = findParentScrollPane(imagePanel);
+                if (scrollPane != null) {
+                    int deltaX = startX - e.getXOnScreen();
+                    JViewport viewport = scrollPane.getViewport();
+                    Point viewPosition = viewport.getViewPosition();
+                    viewPosition.translate(deltaX, 0);
+
+                    // Clamp to valid range
+                    viewPosition.x = Math.max(0, viewPosition.x);
+                    viewPosition.x = Math.min(imagePanel.getParent().getWidth() - viewport.getWidth(), viewPosition.x);
+
+                    viewport.setViewPosition(viewPosition);
+                    startX = e.getXOnScreen();
+                }
+            }
+        };
     }
 }
