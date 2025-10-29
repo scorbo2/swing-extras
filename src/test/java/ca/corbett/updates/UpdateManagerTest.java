@@ -9,6 +9,7 @@ import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class UpdateManagerTest {
@@ -122,15 +123,36 @@ class UpdateManagerTest {
     }
 
     @Test
-    public void resolveUri_withValidData_shouldResolve() throws Exception {
+    public void resolveUrl_withValidData_shouldResolve() throws Exception {
         // GIVEN valid input:
         URL baseUrl = new URL("http://www.test.example");
         String path = "example.json";
 
         // WHEN we try to create a proper URL out of it:
-        URL actual = UpdateSources.UpdateSource.resolveUrl(baseUrl, path);
+        URL actual = UpdateManager.resolveUrl(baseUrl, path);
 
         // THEN we should see a good URL:
         assertEquals("http://www.test.example/example.json", actual.toString());
+    }
+
+    @Test
+    public void resolveUrl_withBadData_shouldNotResolve() throws Exception {
+        // bad data should crap out:
+        assertNull(UpdateManager.resolveUrl(null, null));
+        final String url = "http://test.example";
+        assertEquals(url, UpdateManager.resolveUrl(new URL(url), null).toString());
+    }
+
+    @Test
+    public void unresolveUrl_withValidData_shouldUnresolve() throws Exception {
+        // GIVEN valid input:
+        URL baseUrl = new URL("http://www.test.example/a");
+        String path = "b/c.txt";
+
+        // WHEN we resolve and then unresolve it:
+        String actual = UpdateManager.unresolveUrl(baseUrl, UpdateManager.resolveUrl(baseUrl, path));
+
+        // THEN we should see it unresolved correctly:
+        assertEquals(path, actual);
     }
 }

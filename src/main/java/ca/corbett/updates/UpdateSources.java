@@ -1,8 +1,5 @@
 package ca.corbett.updates;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -132,11 +129,11 @@ public class UpdateSources {
         }
 
         public URL getVersionManifestUrl() {
-            return resolveUrl(baseUrl, versionManifest);
+            return UpdateManager.resolveUrl(baseUrl, versionManifest);
         }
 
         public URL getPublicKeyUrl() {
-            return resolveUrl(baseUrl, publicKey);
+            return UpdateManager.resolveUrl(baseUrl, publicKey);
         }
 
         @Override
@@ -151,34 +148,6 @@ public class UpdateSources {
         @Override
         public int hashCode() {
             return Objects.hash(name, baseUrl, versionManifest, publicKey);
-        }
-
-        /**
-         * Given a hopefully sane base URL and some string path component, make an honest
-         * attempt to put them together into one URL. Examples:
-         * <ul>
-         *     <li>resolveUrl(http://test.example, "hello"); // returns http://test.example/hello
-         *     <li>resolveUrl(http://test.example/a/, "b/c.txt); // returns http://test/example/a/b/c.txt
-         * </ul>
-         */
-        public static URL resolveUrl(URL base, String path) {
-            if (base == null) {
-                return null;
-            }
-            if (path == null || path.isBlank()) {
-                return base;
-            }
-            try {
-                String baseStr = base.toString();
-                // Ensure base ends with / for proper resolution
-                if (!baseStr.endsWith("/")) {
-                    baseStr += "/";
-                }
-                return new URI(baseStr).resolve(path).toURL();
-            }
-            catch (URISyntaxException | MalformedURLException ignored) {
-                return null;
-            }
         }
     }
 }

@@ -7,6 +7,10 @@ import com.google.gson.JsonSyntaxException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,5 +86,65 @@ public class UpdateManager {
 
     public void save() throws IOException {
         FileSystemUtil.writeStringToFile(gson.toJson(updateSources), sourceFile);
+    }
+
+    /**
+     * Given a hopefully sane base URL and some string path component, make an honest
+     * attempt to put them together into one URL. Examples:
+     * <ul>
+     *     <li>resolveUrl(http://test.example, "hello"); // returns http://test.example/hello
+     *     <li>resolveUrl(http://test.example/a/, "b/c.txt"); // returns http://test/example/a/b/c.txt
+     * </ul>
+     */
+    public static URL resolveUrl(URL base, String path) {
+        if (base == null) {
+            return null;
+        }
+        if (path == null || path.isBlank()) {
+            return base;
+        }
+        try {
+            String baseStr = base.toString();
+            // Ensure base ends with / for proper resolution
+            if (!baseStr.endsWith("/")) {
+                baseStr += "/";
+            }
+            return new URI(baseStr).resolve(path).toURL();
+        }
+        catch (URISyntaxException | MalformedURLException ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * Provides the reverse of the resolveUrl method - that is, given a full URL and the base URl that
+     * it was created from, will return the path and file that was appended to the base URL. Examples:
+     * <ul>
+     *     <li>unresolveUrl(http://test.example, http://test.example/hello); // returns "hello"
+     *     <li>unresolveUrl(http://test.example/a/, http://test.example/a/b/c.txt); // returns "b/c.txt"
+     * </ul>
+     * <p>
+     * Will return null if the fullUrl was not derived from the given base, or if either input is null.
+     * </p>
+     */
+    public static String unresolveUrl(URL base, URL fullUrl) {
+        if (base == null || fullUrl == null) {
+            return null;
+        }
+
+        String baseStr = base.toString();
+        String fullStr = fullUrl.toString();
+
+        // Ensure base ends with / for consistent comparison
+        if (!baseStr.endsWith("/")) {
+            baseStr += "/";
+        }
+
+        if (!fullStr.startsWith(baseStr)) {
+            // fullUrl is not derived from baseUrl
+            return null;
+        }
+
+        return fullStr.substring(baseStr.length());
     }
 }
