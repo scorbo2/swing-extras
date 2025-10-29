@@ -3,6 +3,8 @@ package ca.corbett.forms.fields;
 import ca.corbett.extras.image.ImageListPanel;
 
 import javax.swing.JScrollPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.util.logging.Logger;
@@ -15,7 +17,7 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.5
  */
-public class ImageListField extends FormField {
+public class ImageListField extends FormField implements ChangeListener {
 
     private static final Logger log = Logger.getLogger(ImageListField.class.getName());
 
@@ -48,7 +50,7 @@ public class ImageListField extends FormField {
     /**
      * Creates a new ImageListField with a starting width large enough to show
      * the given count of images, and with the given square thumbnail pixel dimensions.
-     * You can also optionall use setShouldExpand(true) to allow this panel to
+     * You can also optionally use setShouldExpand(true) to allow this panel to
      * consume as much horizontal space as the containing FormPanel allows.
      *
      * @param label The text for the field label
@@ -59,6 +61,7 @@ public class ImageListField extends FormField {
         fieldLabel.setText(label);
         imageListPanel = new ImageListPanel(null);
         imageListPanel.setThumbnailSize(thumbDimension);
+        imageListPanel.addChangeListener(this);
         JScrollPane scrollPane = new JScrollPane(imageListPanel);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(12);
         int panelWidth = thumbDimension * initialSize;
@@ -80,13 +83,17 @@ public class ImageListField extends FormField {
 
     /**
      * Optionally make this FormField expand to fill the entire width of the parent
-     * FormPanel. Defaults to false.
+     * FormPanel. This overrides the "initialSize" that was given to the constructor. Defaults to false.
      */
     public ImageListField setShouldExpand(boolean expand) {
         shouldExpand = expand;
         return this;
     }
 
+    /**
+     * Enables or disables the underlying ImageListPanel. When disabled, features like drag
+     * and drop to add images, or right click to remove images, are switched off.
+     */
     @Override
     public FormField setEnabled(boolean enabled) {
         super.setEnabled(enabled);
@@ -117,20 +124,44 @@ public class ImageListField extends FormField {
         return imageListPanel.getMaxListSize();
     }
 
-    public void addImage(BufferedImage image) {
+    /**
+     * Programmatically adds an image to this image field, assuming the number of images
+     * currently contained is less than the configured image limit.
+     */
+    public ImageListField addImage(BufferedImage image) {
         imageListPanel.addImage(image);
+        return this;
     }
 
+    /**
+     * Returns the count of images currently contained in this field.
+     */
     public int getImageCount() {
         return imageListPanel.getImageCount();
     }
 
-    public void removeImageAt(int index) {
+    /**
+     * Removes the image at the specified index. Does nothing if the specified
+     * index is out of range.
+     */
+    public ImageListField removeImageAt(int index) {
         imageListPanel.removeImage(index);
+        return this;
     }
 
-    public void clear() {
+    /**
+     * Removes all images from this field.
+     */
+    public ImageListField clear() {
         imageListPanel.clear();
+        return this;
+    }
+
+    /**
+     * Provides direct access to the underlying ImageListPanel, if needed.
+     */
+    public ImageListPanel getImageListPanel() {
+        return imageListPanel;
     }
 
     @Override
@@ -141,5 +172,14 @@ public class ImageListField extends FormField {
     @Override
     public boolean shouldExpand() {
         return shouldExpand;
+    }
+
+    /**
+     * We receive ChangeEvents from our underlying ImageListPanel as images are added or removed.
+     * We can use that to send value changed events to our own listeners.
+     */
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        fireValueChangedEvent();
     }
 }
