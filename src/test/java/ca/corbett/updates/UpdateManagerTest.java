@@ -144,6 +144,19 @@ class UpdateManagerTest {
     }
 
     @Test
+    public void resolveUrl_withWindowsPath_shouldResolve() throws Exception {
+        // GIVEN a path generated on a machine running windows:
+        final String url = "http://www.test.example";
+        final String path = "a\\b\\c.txt";
+
+        // WHEN we resolve it:
+        URL actual = UpdateManager.resolveUrl(new URL(url), path);
+
+        // THEN there should be no surprises:
+        assertEquals("http://www.test.example/a/b/c.txt", actual.toString());
+    }
+
+    @Test
     public void unresolveUrl_withValidData_shouldUnresolve() throws Exception {
         // GIVEN valid input:
         URL baseUrl = new URL("http://www.test.example/a");

@@ -104,6 +104,9 @@ public class UpdateManager {
             return base;
         }
         try {
+            // Windows wonkiness! Ensure input path is correct:
+            path = path.replaceAll("\\\\", "/");
+
             String baseStr = base.toString();
             // Ensure base ends with / for proper resolution
             if (!baseStr.endsWith("/")) {
