@@ -22,8 +22,9 @@ class UpdateManagerTest {
                   "updateSources": [
                     {
                       "name": "Test source",
-                      "versionManifestUrl": "http://www.test.example/blah.json",
-                      "publicKeyUrl": "http://www.test.example/public.key"
+                      "baseUrl": "http://www.test.example",
+                      "versionManifest": "blah.json",
+                      "publicKey": "public.key"
                     }
                   ]
                 }
@@ -54,8 +55,9 @@ class UpdateManagerTest {
                   "applicationName": "Test",
                   "updateSources": [
                     {
-                      "versionManifestUrl": "This is not a url!",
-                      "publicKeyUrl": "And neither is this."
+                      "baseUrl": "This is not a url!",
+                      "versionManifest": "This is not a url!",
+                      "publicKey": "And neither is this."
                     }
                   ]
                 }
@@ -89,9 +91,10 @@ class UpdateManagerTest {
         UpdateManager manager = new UpdateManager(sourcesFile);
 
         // WHEN we add an update source:
-        URL versionManifest = new URL("http://www.test.example/manifest.json");
-        URL publicKey = new URL("http://www.test.example/public.key");
-        manager.addUpdateSource(new UpdateSources.UpdateSource("Test source", versionManifest, publicKey));
+        URL baseUrl = new URL("http://www.test.example");
+        String versionManifest = "manifest.json";
+        String publicKey = "public.key";
+        manager.addUpdateSource(new UpdateSources.UpdateSource("Test source", baseUrl, versionManifest, publicKey));
 
         // THEN we should see the json was saved correctly:
 //        final String expected = """
@@ -116,5 +119,18 @@ class UpdateManagerTest {
                      manager.getUpdateSources().get(0).getVersionManifestUrl().toString());
         assertEquals("http://www.test.example/public.key",
                      manager.getUpdateSources().get(0).getPublicKeyUrl().toString());
+    }
+
+    @Test
+    public void resolveUri_withValidData_shouldResolve() throws Exception {
+        // GIVEN valid input:
+        URL baseUrl = new URL("http://www.test.example");
+        String path = "example.json";
+
+        // WHEN we try to create a proper URL out of it:
+        URL actual = UpdateSources.UpdateSource.resolveUrl(baseUrl, path);
+
+        // THEN we should see a good URL:
+        assertEquals("http://www.test.example/example.json", actual.toString());
     }
 }
