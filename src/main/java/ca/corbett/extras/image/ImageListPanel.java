@@ -61,7 +61,7 @@ public class ImageListPanel extends JPanel {
 
     private final List<ChangeListener> changeListeners = new ArrayList<>();
 
-    private final JFrame ownerFrame;
+    private JFrame ownerFrame;
     private int thumbSize;
 
     private int startX;
@@ -279,6 +279,20 @@ public class ImageListPanel extends JPanel {
         }
 
         fireChangeEvent();
+    }
+
+    /**
+     * Returns the owner JFrame that will be used as a parent for the popup preview window (null is acceptable).
+     */
+    public JFrame getOwnerFrame() {
+        return ownerFrame;
+    }
+
+    /**
+     * Sets the owner JFrame that will be used as a parent for the popup preview window (null is acceptable).
+     */
+    public void setOwnerFrame(JFrame ownerFrame) {
+        this.ownerFrame = ownerFrame;
     }
 
     /**
