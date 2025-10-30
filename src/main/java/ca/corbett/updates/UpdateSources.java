@@ -85,12 +85,18 @@ public class UpdateSources {
      * <ul>
      *     <li><b>name</b>: Some human-readable name for this data source.
      *     <li><b>baseUrl</b>: The base url for this UpdateSource. All paths are relative to this url.
-     *     <li><b>versionManifest</b>: The path to the VersionManifest json file.
+     *     <li><b>versionManifest</b>: The relative path to the VersionManifest json file.
      *     <li><b>publicKey</b> (optional): - the remote host can publish a public key to use for
      *     digital signature verification of downloaded extension jars. See SignatureUtil class
      *     for more details on signing and verifying files. This field is optional but highly
      *     recommended. Without it, jars will be downloaded and installed with no verification.
+     *     This field represents the relative path to the public key.
      * </ul>
+     * <p>
+     *     This class has convenience methods that allow you to retrieve the versionManifest and the
+     *     publicKey either as fully-qualified URLs (built using the value in baseUrl), or as
+     *     relative paths (relative to the baseUrl).
+     * </p>
      *
      * @author <a href="https://github.com/scorbo2">scorbo2</a>
      * @since swing-extras 2.5
@@ -128,8 +134,16 @@ public class UpdateSources {
             return baseUrl;
         }
 
+        public String getVersionManifestRelativePath() {
+            return versionManifest;
+        }
+
         public URL getVersionManifestUrl() {
             return UpdateManager.resolveUrl(baseUrl, versionManifest);
+        }
+
+        public String getPublicKeyRelativePath() {
+            return publicKey;
         }
 
         public URL getPublicKeyUrl() {
