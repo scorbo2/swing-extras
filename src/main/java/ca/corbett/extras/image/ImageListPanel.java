@@ -228,8 +228,6 @@ public class ImageListPanel extends JPanel {
         imagePanel.addMouseMotionListener(buildMouseMotionListener(imagePanel));
 
         add(imagePanel);
-        revalidate();
-        repaint();
         fireChangeEvent();
     }
 
@@ -269,8 +267,6 @@ public class ImageListPanel extends JPanel {
         }
 
         remove(index);
-        revalidate();
-        repaint();
 
         // Fix all indexes since we now have a gap otherwise:
         for (int i = 0; i < getImageCount(); i++) {
@@ -325,6 +321,8 @@ public class ImageListPanel extends JPanel {
         if (isAdjusting) {
             return; // ignore if a series of rapid events are happening
         }
+        revalidate();  // force a redisplay
+        repaint();     // unfortunate swing necessity
         List<ChangeListener> copy = new ArrayList<>(changeListeners); // avoid concurrent modifications
         ChangeEvent event = new ChangeEvent(this);
         for (ChangeListener listener : copy) {
