@@ -4,7 +4,6 @@ import ca.corbett.extensions.AppExtensionInfo;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.net.URL;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,7 +23,9 @@ class VersionManifestTest {
                 .setTargetAppVersion("1.0")
                 .build();
         VersionManifest.ExtensionVersion extVersion = new VersionManifest.ExtensionVersion();
-        extVersion.setDownloadUrl(new URL("http://www.test.example/someJar.jar"));
+        extVersion.setDownloadPath("someJar.jar");
+        extVersion.setSignaturePath("someJar.sig");
+        extVersion.addScreenshot("someJar-screenshot1.jpg");
         extVersion.setExtInfo(extInfo);
 
         VersionManifest.Extension extension = new VersionManifest.Extension();
@@ -54,6 +55,16 @@ class VersionManifestTest {
         assertNotNull(loaded);
         assertEquals(app.getApplicationName(), loaded.getApplicationName());
         assertEquals(app.getManifestGenerated(), loaded.getManifestGenerated());
+        assertEquals(app.getApplicationVersions().get(0).getExtensions().get(0).getVersions().get(0).getDownloadPath(),
+                     loaded.getApplicationVersions().get(0).getExtensions().get(0).getVersions().get(0)
+                           .getDownloadPath());
+        assertEquals(app.getApplicationVersions().get(0).getExtensions().get(0).getVersions().get(0).getSignaturePath(),
+                     loaded.getApplicationVersions().get(0).getExtensions().get(0).getVersions().get(0)
+                           .getSignaturePath());
+        assertEquals(
+                app.getApplicationVersions().get(0).getExtensions().get(0).getVersions().get(0).getScreenshots().get(0),
+                loaded.getApplicationVersions().get(0).getExtensions().get(0).getVersions().get(0)
+                      .getScreenshots().get(0));
     }
 
 }

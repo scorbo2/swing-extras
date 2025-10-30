@@ -8,7 +8,6 @@ import com.google.gson.JsonSyntaxException;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,15 +36,19 @@ import java.util.Objects;
  *           "versions": [
  *             {
  *               "extInfo:" { ... },
- *               "downloadUrl": "http://www.myhost.example/MyFirstExtension-1.0.0.jar",
- *               "signatureUrl": "http://www.myhost.example/MyFirstExtension-1.0.0.sig",
- *               "screenshots": []
+ *               "downloadPath": "MyFirstExtension-1.0.0.jar",
+ *               "signaturePath": "MyFirstExtension-1.0.0.sig",
+ *               "screenshots": [
+ *                 "MyFirstExtension-1.0.0-screenshot1.jpg"
+ *               ]
  *             },
  *             {
  *               "extInfo:" { ... },
- *               "downloadUrl": "http://www.myhost.example/MyFirstExtension-1.0.1.jar",
- *               "signatureUrl": "http://www.myhost.example/MyFirstExtension-1.0.1.sig",
- *               "screenshots": []
+ *               "downloadPath": "MyFirstExtension-1.0.1.jar",
+ *               "signaturePath": "MyFirstExtension-1.0.1.sig",
+ *               "screenshots": [
+ *                 "MyFirstExtension-1.0.1-screenshot1.jpg"
+ *               ]
  *             }
  *           ]
  *         }
@@ -58,7 +61,7 @@ import java.util.Objects;
  *     The above example shows a simple application VersionManifest with a single application version,
  * which has a single extension called MyFirstExtension. This extension has two versions available,
  * 1.0.0 and 1.0.1 - both of these versions have been digitally signed (we can tell this because they
- * both provide a signatureUrl to be used for verification of the jar).
+ * both provide a signaturePath to be used for verification of the jar).
  * </p>
  * <p>
  *     <b>How do I set all this up?</b> - There's a helper application called
@@ -251,17 +254,17 @@ public class VersionManifest {
     }
 
     /**
-     * Represents a single version of a single extension. At this level, we can specify an actual
-     * download url for the jar file, and an optional signature file, if the jar file was digitally signed.
-     * We can also supply an optional list of screenshots for this extension.
+     * Represents a single version of a single extension. At this level, we can specify a
+     * path for downloading the jar file, the optional signature file, and any screenshots.
+     * All paths are relative to the baseUrl defined in the applicable UpdateSource!
      *
      * @author <a href="https://github.com/scorbo2">scorbo2</a>
      */
     public static class ExtensionVersion {
         private AppExtensionInfo extInfo;
-        private URL downloadUrl;
-        private URL signatureUrl;
-        private final List<URL> screenshots = new ArrayList<>();
+        private String downloadPath;
+        private String signaturePath;
+        private final List<String> screenshots = new ArrayList<>();
 
         public AppExtensionInfo getExtInfo() {
             return extInfo;
@@ -271,32 +274,28 @@ public class VersionManifest {
             this.extInfo = extInfo;
         }
 
-        public URL getDownloadUrl() {
-            return downloadUrl;
+        public String getDownloadPath() {
+            return downloadPath;
         }
 
-        public void setDownloadUrl(URL downloadUrl) {
-            this.downloadUrl = downloadUrl;
+        public void setDownloadPath(String downloadPath) {
+            this.downloadPath = downloadPath;
         }
 
-        public URL getSignatureUrl() {
-            return signatureUrl;
+        public String getSignaturePath() {
+            return signaturePath;
         }
 
-        public void setSignatureUrl(URL signatureUrl) {
-            this.signatureUrl = signatureUrl;
+        public void setSignaturePath(String signaturePath) {
+            this.signaturePath = signaturePath;
         }
 
-        public List<URL> getScreenshots() {
+        public List<String> getScreenshots() {
             return new ArrayList<>(screenshots);
         }
 
-        public void addScreenshot(URL screenshotUrl) {
-            this.screenshots.add(screenshotUrl);
-        }
-
-        public void removeScreenshot(URL screenshotUrl) {
-            this.screenshots.remove(screenshotUrl);
+        public void addScreenshot(String screenshotPath) {
+            this.screenshots.add(screenshotPath);
         }
 
         public void clearScreenshots() {
@@ -307,14 +306,14 @@ public class VersionManifest {
         public boolean equals(Object object) {
             if (!(object instanceof ExtensionVersion that)) { return false; }
             return Objects.equals(extInfo, that.extInfo)
-                    && Objects.equals(downloadUrl, that.downloadUrl)
-                    && Objects.equals(signatureUrl, that.signatureUrl)
+                    && Objects.equals(downloadPath, that.downloadPath)
+                    && Objects.equals(signaturePath, that.signaturePath)
                     && Objects.equals(screenshots, that.screenshots);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(extInfo, downloadUrl, signatureUrl, screenshots);
+            return Objects.hash(extInfo, downloadPath, signaturePath, screenshots);
         }
     }
 }
