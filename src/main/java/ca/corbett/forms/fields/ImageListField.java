@@ -140,6 +140,10 @@ public class ImageListField extends FormField implements ChangeListener {
         return imageListPanel.getImageCount();
     }
 
+    public BufferedImage getImageAt(int index) {
+        return imageListPanel.getImageAt(index);
+    }
+
     /**
      * Removes the image at the specified index. Does nothing if the specified
      * index is out of range.
