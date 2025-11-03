@@ -1,5 +1,9 @@
 package ca.corbett.updates;
 
+import ca.corbett.extras.crypt.SignatureUtil;
+import ca.corbett.extras.io.DownloadAdapter;
+import ca.corbett.extras.io.DownloadManager;
+import ca.corbett.extras.io.DownloadThread;
 import ca.corbett.extras.io.FileSystemUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -11,6 +15,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,11 +60,14 @@ public class UpdateManager {
     protected final Gson gson;
     protected final File sourceFile;
     protected final UpdateSources updateSources;
+    protected final List<UpdateManagerListener> listeners = new ArrayList<>();
+    protected final DownloadManager downloadManager;
 
     public UpdateManager(File sourceFile) throws JsonSyntaxException, IOException {
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         this.sourceFile = sourceFile;
         this.updateSources = gson.fromJson(FileSystemUtil.readFileToString(sourceFile), UpdateSources.class);
+        this.downloadManager = new DownloadManager();
     }
 
     public String getApplicationName() {
@@ -66,26 +76,69 @@ public class UpdateManager {
 
     /**
      * Requests the VersionManifest for the given UpdateSource (use getUpdateSources to enumerate the
-     * available UpdateSources in this UpdateManager).
+     * available UpdateSources in this UpdateManager). Make sure you have added yourself as a
+     * listener via addUpdateManagerListener() before invoking this request.
      */
     public void retrieveVersionManifest(UpdateSources.UpdateSource updateSource) {
-        // TODO we can't block here and return a VersionManifest
-        // TODO fire up a thread... do we need to send updates on progress?
-        //      It should at most be a few KB of json data...
-        //      Still... we have to update the caller via a callback/listener of some kind
+        downloadManager.downloadFile(updateSource.getVersionManifestUrl(), new VersionManifestDownloadListener());
     }
 
+    /**
+     * Requests the public key for the given UpdateSource (use getUpdateSources to enumerate the
+     * available UpdateSources in this UpdateManager). Make sure you have added yourself as a
+     * listener via addUpdateManagerListener() before invoking this request.
+     * <p>
+     * <b>NOTE:</b> Not all update sources will define a public key, as jar signing is optional.
+     * So, the result may be null!
+     * </p>
+     */
+    public void retrievePublicKey(UpdateSources.UpdateSource updateSource) {
+        if (!updateSource.hasPublicKey()) {
+            firePublicKeyDownloaded(null, null);
+        }
+        downloadManager.downloadFile(updateSource.getVersionManifestUrl(), new PublicKeyDownloadListener());
+    }
+
+    /**
+     * Returns the UpdateSources that are available in this UpdateManager.
+     */
     public List<UpdateSources.UpdateSource> getUpdateSources() {
         return new ArrayList<>(updateSources.getUpdateSources());
     }
 
-    public void addUpdateSource(UpdateSources.UpdateSource source) throws IOException {
-        updateSources.addUpdateSource(source);
-        save();
+    /**
+     * Register to receive notifications from this UpdateManager as various remote resources are downloaded.
+     */
+    public void addUpdateManagerListener(UpdateManagerListener listener) {
+        listeners.add(listener);
     }
 
-    public void save() throws IOException {
-        FileSystemUtil.writeStringToFile(gson.toJson(updateSources), sourceFile);
+    /**
+     * Stop listening to this UpdateManager for notifications.
+     */
+    public void removeUpdateManagerListener(UpdateManagerListener listener) {
+        listeners.remove(listener);
+    }
+
+    protected void fireVersionManifestDownloaded(URL sourceUrl, VersionManifest manifest) {
+        List<UpdateManagerListener> copy = new ArrayList<>(listeners);
+        for (UpdateManagerListener listener : copy) {
+            listener.versionManifestDownloaded(this, sourceUrl, manifest);
+        }
+    }
+
+    protected void firePublicKeyDownloaded(URL sourceUrl, PublicKey publicKey) {
+        List<UpdateManagerListener> copy = new ArrayList<>(listeners);
+        for (UpdateManagerListener listener : copy) {
+            listener.publicKeyDownloaded(this, sourceUrl, publicKey);
+        }
+    }
+
+    protected void fireDownloadFailed(URL requestedUrl, String errorMessage) {
+        List<UpdateManagerListener> copy = new ArrayList<>(listeners);
+        for (UpdateManagerListener listener : copy) {
+            listener.downloadFailed(this, requestedUrl, errorMessage);
+        }
     }
 
     /**
@@ -149,5 +202,58 @@ public class UpdateManager {
         }
 
         return fullStr.substring(baseStr.length());
+    }
+
+    /**
+     * Listens to our DownloadManager for a VersionManifest file to be downloaded, then
+     * parses it and hands it to our own listeners.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    private class VersionManifestDownloadListener extends DownloadAdapter {
+
+        @Override
+        public void downloadFailed(DownloadThread thread, URL url, String errorMsg) {
+            fireDownloadFailed(url, "Unable to retrieve version manifest: " + errorMsg);
+        }
+
+        @Override
+        public void downloadComplete(DownloadThread thread, URL url, File result) {
+            if (result == null || !result.exists() || !result.isFile() || result.length() == 0) {
+                downloadFailed(thread, url, "Locally downloaded file is empty.");
+                return;
+            }
+
+            try {
+                VersionManifest manifest = VersionManifest.fromFile(result);
+                fireVersionManifestDownloaded(url, manifest);
+            }
+            catch (IOException ioe) {
+                downloadFailed(thread, url, "Problem parsing manifest: " + ioe.getMessage());
+            }
+        }
+    }
+
+    private class PublicKeyDownloadListener extends DownloadAdapter {
+        @Override
+        public void downloadFailed(DownloadThread thread, URL url, String errorMsg) {
+            fireDownloadFailed(url, "Unable to retrieve public key: " + errorMsg);
+        }
+
+        @Override
+        public void downloadComplete(DownloadThread thread, URL url, File result) {
+            if (result == null || !result.exists() || !result.isFile() || result.length() == 0) {
+                downloadFailed(thread, url, "Locally downloaded file is empty.");
+                return;
+            }
+
+            try {
+                PublicKey publicKey = SignatureUtil.loadPublicKey(result);
+                firePublicKeyDownloaded(url, publicKey);
+            }
+            catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+                downloadFailed(thread, url, "Problem parsing public key: " + e.getMessage());
+            }
+        }
     }
 }

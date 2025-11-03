@@ -95,7 +95,8 @@ class UpdateManagerTest {
         URL baseUrl = new URL("http://www.test.example");
         String versionManifest = "manifest.json";
         String publicKey = "public.key";
-        manager.addUpdateSource(new UpdateSources.UpdateSource("Test source", baseUrl, versionManifest, publicKey));
+        manager.updateSources.addUpdateSource(
+                new UpdateSources.UpdateSource("Test source", baseUrl, versionManifest, publicKey));
 
         // THEN we should see the json was saved correctly:
 //        final String expected = """

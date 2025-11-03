@@ -194,28 +194,4 @@ class DownloadManagerTest {
         Mockito.verify(mockListener, Mockito.never())
                .downloadProgress(Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.anyLong());
     }
-
-    @Test
-    public void downloadFileAsString_withValidFile_shouldReturnStringValue() throws Exception {
-        // GIVEN a downloadAsString request for a local file that exists and has text content:
-        DownloadListener mockListener = Mockito.mock(DownloadListener.class);
-        File sourceFile = File.createTempFile("swing-extras", ".txt");
-        FileSystemUtil.writeStringToFile("This is a test string.", sourceFile);
-        sourceFile.deleteOnExit();
-
-        // WHEN we try to download the file as a String:
-        manager.downloadFileAsString(sourceFile.toURI().toURL(), mockListener);
-
-        // (cheesy! give it some time to copy)
-        Thread.sleep(250);
-
-        // THEN our mock listener should have been notified:
-        Mockito.verify(mockListener, Mockito.times(1)).downloadBegins(Mockito.any(), Mockito.any());
-        Mockito.verify(mockListener, Mockito.times(1))
-               .downloadComplete(Mockito.any(), Mockito.any(), Mockito.eq("This is a test string."));
-
-        // We should never receive a progress update for a local file copy:
-        Mockito.verify(mockListener, Mockito.never())
-               .downloadProgress(Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.anyLong());
-    }
 }

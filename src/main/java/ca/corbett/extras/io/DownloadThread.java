@@ -101,7 +101,7 @@ public class DownloadThread implements Runnable {
 
         try {
             // If we were given a file url, just do a local file copy and we're done:
-            if ("file".equals(url.getProtocol())) {
+            if ("file".equalsIgnoreCase(url.getProtocol())) {
                 File sourceFile = new File(url.toURI());
                 log.info("DownloadThread: copying local file "
                                  + sourceFile.getAbsolutePath()

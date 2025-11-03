@@ -142,6 +142,10 @@ public class UpdateSources {
             return UpdateManager.resolveUrl(baseUrl, versionManifest);
         }
 
+        public boolean hasPublicKey() {
+            return publicKey != null && !publicKey.isBlank();
+        }
+
         public String getPublicKeyRelativePath() {
             return publicKey;
         }

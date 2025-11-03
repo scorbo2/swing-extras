@@ -51,7 +51,7 @@ class VersionManifestTest {
         //System.out.println(FileSystemUtil.readFileToString(f));
 
         // Now load it back:
-        VersionManifest loaded = VersionManifest.fromJson(f);
+        VersionManifest loaded = VersionManifest.fromFile(f);
         assertNotNull(loaded);
         assertEquals(app.getApplicationName(), loaded.getApplicationName());
         assertEquals(app.getManifestGenerated(), loaded.getManifestGenerated());

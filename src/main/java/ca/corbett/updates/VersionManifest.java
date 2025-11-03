@@ -85,10 +85,7 @@ public class VersionManifest {
         gson = new GsonBuilder().setPrettyPrinting().create();
     }
 
-    /**
-     * Temp code? Authoring should move to ext-packager repo
-     */
-    public static VersionManifest fromJson(File sourceFile) throws IOException, JsonSyntaxException {
+    public static VersionManifest fromFile(File sourceFile) throws IOException, JsonSyntaxException {
         return fromJson(FileSystemUtil.readFileToString(sourceFile));
 
     }

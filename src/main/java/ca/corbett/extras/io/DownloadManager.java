@@ -7,7 +7,6 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -38,75 +37,31 @@ public class DownloadManager {
     }
 
     /**
-     * Downloads a file from the given URL and saves it to the specified path
+     * Downloads a file from the given URL and saves it in the system temp directory.
+     */
+    public void downloadFile(URL url, DownloadListener listener) {
+        downloadFile(url, null, listener);
+    }
+
+    /**
+     * Downloads a file from the given URL and saves it to the specified path.
      *
      * @param url The URL to download from (supported protocols: http, https, file)
      * @param destinationFile Where to save the file
      * @param listener An optional DownloadListener to receive progress/failure/completion notifications.
      */
     public void downloadFile(URL url, File destinationFile, DownloadListener listener) {
+        if (destinationFile == null) {
+            try {
+                destinationFile = File.createTempFile("download", "." + getFileExtension(url.toString()));
+                destinationFile.deleteOnExit();
+            }
+            catch (IOException ioe) {
+                listener.downloadFailed(null, url, "Unable to create temp file: " + ioe.getMessage());
+                return;
+            }
+        }
         new Thread(createDownloadThread(url, destinationFile, listener)).start();
-    }
-
-    /**
-     * Convenience method to download a file from the given URL and return its contents as a String.
-     * Note: It is assumed that the file being requested meets the following conditions:
-     * <ul>
-     *     <li>It's small enough to fit into memory</li>
-     *     <li>The given URL only contains printable text characters (text, json, xml, markdown, etc)</li>
-     * </ul>
-     * <p>
-     * This code makes no attempt to validate these assumptions! Use with care.
-     * </p>
-     *
-     * @param url      The URL to download from (supported protocols: http, https, file)
-     * @param listener An optional DownloadListener to receive progress/failure/completion notifications.
-     */
-    public void downloadFileAsString(URL url, final DownloadListener listener) throws IOException {
-        final File tempFile = File.createTempFile("DownloadManager", ".txt");
-        DownloadThread thread = createDownloadThread(url, tempFile, new DownloadListener() {
-            @Override
-            public void downloadBegins(DownloadThread thread, URL url) {
-                if (listener != null) {
-                    listener.downloadBegins(thread, url);
-                }
-            }
-
-            @Override
-            public void downloadProgress(DownloadThread thread, URL url, long bytesDownloaded, long totalBytesIfKnown) {
-                if (listener != null) {
-                    listener.downloadProgress(thread, url, bytesDownloaded, totalBytesIfKnown);
-                }
-            }
-
-            @Override
-            public void downloadFailed(DownloadThread thread, URL url, String errorMsg) {
-                if (listener != null) {
-                    listener.downloadFailed(thread, url, errorMsg);
-                }
-            }
-
-            @Override
-            public void downloadComplete(DownloadThread thread, URL url, Object result) {
-                try {
-                    File outputFile = (File)result;
-                    String resultAsString = FileSystemUtil.readFileToString(outputFile);
-                    if (!outputFile.delete()) {
-                        outputFile.deleteOnExit();
-                    }
-                    if (listener != null) {
-                        listener.downloadComplete(thread, url, resultAsString);
-                    }
-                }
-                catch (IOException ioe) {
-                    downloadFailed(thread, url, "Can't parse downloaded file: " + ioe.getMessage());
-                    log.log(Level.SEVERE,
-                            "Error downloading file as string: " + url.toString() + " error: " + ioe.getMessage(),
-                            ioe);
-                }
-            }
-        });
-        new Thread(thread).start();
     }
 
     /**
@@ -150,6 +105,13 @@ public class DownloadManager {
         // But if we had a custom executor, here is where we would shut it down.
     }
 
+    public static String getFileExtension(String filename) {
+        if (filename == null || filename.isBlank() || !filename.contains(".")) {
+            return "";
+        }
+        return filename.substring(filename.lastIndexOf("."));
+    }
+
     private class DownloadTracker implements DownloadListener {
 
         @Override
@@ -168,7 +130,7 @@ public class DownloadManager {
         }
 
         @Override
-        public void downloadComplete(DownloadThread thread, URL url, Object result) {
+        public void downloadComplete(DownloadThread thread, URL url, File result) {
             downloadsInProgress.remove(thread);
         }
     }
