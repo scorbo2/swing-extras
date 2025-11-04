@@ -1,7 +1,6 @@
 package ca.corbett.extras.io;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -47,21 +46,14 @@ public class DownloadManager {
      * Downloads a file from the given URL and saves it to the specified path.
      *
      * @param url The URL to download from (supported protocols: http, https, file)
-     * @param destinationFile Where to save the file
+     * @param targetDir Where to save the file
      * @param listener An optional DownloadListener to receive progress/failure/completion notifications.
      */
-    public void downloadFile(URL url, File destinationFile, DownloadListener listener) {
-        if (destinationFile == null) {
-            try {
-                destinationFile = File.createTempFile("download", "." + getFileExtension(url.toString()));
-                destinationFile.deleteOnExit();
-            }
-            catch (IOException ioe) {
-                listener.downloadFailed(null, url, "Unable to create temp file: " + ioe.getMessage());
-                return;
-            }
+    public void downloadFile(URL url, File targetDir, DownloadListener listener) {
+        if (targetDir == null) {
+            targetDir = new File(System.getProperty("java.io.tmpdir"));
         }
-        new Thread(createDownloadThread(url, destinationFile, listener)).start();
+        new Thread(createDownloadThread(url, targetDir, listener)).start();
     }
 
     /**
@@ -90,8 +82,8 @@ public class DownloadManager {
      * You can use the downloadFile() wrapper method instead, to both create and
      * automatically start the thread.
      */
-    public DownloadThread createDownloadThread(URL url, File destinationFile, DownloadListener listener) {
-        DownloadThread thread = new DownloadThread(httpClient, url, destinationFile);
+    public DownloadThread createDownloadThread(URL url, File targetDir, DownloadListener listener) {
+        DownloadThread thread = new DownloadThread(httpClient, url, targetDir);
         thread.addDownloadListener(new DownloadTracker());
         thread.addDownloadListener(listener);
         return thread;
@@ -105,11 +97,41 @@ public class DownloadManager {
         // But if we had a custom executor, here is where we would shut it down.
     }
 
+    /**
+     * If the given String represents a filename with an extension, this will return the
+     * final dot character and the extension. Otherwise, an empty string is returned.
+     * Examples:
+     * <ul>
+     *     <li>getFileExtension("hello.txt"); // returns ".txt"
+     *     <li>getFileExtension("hello.txt.jpg"); // returns ".jpg"
+     *     <li>getFileExtension("That. Does not make sense"); // returns ". Does not make sense"
+     *     <li>getFileExtension("hello"); // returns ""
+     * </ul>
+     *
+     * @param filename
+     * @return
+     */
     public static String getFileExtension(String filename) {
         if (filename == null || filename.isBlank() || !filename.contains(".")) {
             return "";
         }
         return filename.substring(filename.lastIndexOf("."));
+    }
+
+    /**
+     * Looks for the last / character in the given path string and returns everything after it.
+     * This can be used for URLs or for linux-style filesystem paths. Examples:
+     * <ul>
+     *     <li>getFilenameComponent("/path/to/file.txt"); // returns "file.txt"
+     *     <li>getFilenameComponent("no slash character"); // returns ""
+     *     <li>getFilenameComponent("/slash/at/end/"); // return ""
+     * </ul>
+     */
+    public static String getFilenameComponent(String path) {
+        if (path == null || path.isBlank() || !path.contains("/") || path.endsWith("/")) {
+            return "";
+        }
+        return path.substring(path.lastIndexOf("/") + 1);
     }
 
     private class DownloadTracker implements DownloadListener {

@@ -39,7 +39,7 @@ import java.util.Objects;
  *               "downloadPath": "MyFirstExtension-1.0.0.jar",
  *               "signaturePath": "MyFirstExtension-1.0.0.sig",
  *               "screenshots": [
- *                 "MyFirstExtension-1.0.0-screenshot1.jpg"
+ *                 "MyFirstExtension-1.0.0_screenshot1.jpg"
  *               ]
  *             },
  *             {
@@ -47,7 +47,8 @@ import java.util.Objects;
  *               "downloadPath": "MyFirstExtension-1.0.1.jar",
  *               "signaturePath": "MyFirstExtension-1.0.1.sig",
  *               "screenshots": [
- *                 "MyFirstExtension-1.0.1-screenshot1.jpg"
+ *                 "MyFirstExtension-1.0.1_screenshot1.jpg",
+ *                 "MyFirstExtension-1.0.1_screenshot2.png"
  *               ]
  *             }
  *           ]
@@ -62,6 +63,15 @@ import java.util.Objects;
  * which has a single extension called MyFirstExtension. This extension has two versions available,
  * 1.0.0 and 1.0.1 - both of these versions have been digitally signed (we can tell this because they
  * both provide a signaturePath to be used for verification of the jar).
+ * </p>
+ * <p>
+ *     Notice that all paths in the version manifest are relative! But relative to what?
+ *     A VersionManifest can only properly be interpreted through an UpdateSource, which contains
+ *     a baseUrl - all paths are relative to this baseUrl. The reason for this is that one application
+ *     may have many UpdateSources, but we don't want to have to generate a VersionManifest for
+ *     each one, when the contents would be identical except for file locations. So, we generate
+ *     the VersionManifest just once, and an application can understand it in conjunction with the
+ *     baseUrl from any corresponding UpdateSource.
  * </p>
  * <p>
  *     <b>How do I set all this up?</b> - There's a helper application called

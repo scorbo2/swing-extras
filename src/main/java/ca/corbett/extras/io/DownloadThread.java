@@ -36,15 +36,28 @@ public class DownloadThread implements Runnable {
 
     private final HttpClient httpClient;
     private final URL url;
-    private final File destinationFile;
+    private final File targetDir;
     private final List<DownloadListener> listeners = new ArrayList<>();
     private volatile boolean isKilled;
     private boolean isRunning;
 
-    public DownloadThread(HttpClient httpClient, URL url, File destinationFile) {
+    /**
+     * Creates a DownloadThread for retrieving the contents of the given URL.
+     * The resulting file will be saved in the system temp dir and provided via callback.
+     */
+    public DownloadThread(HttpClient httpClient, URL url) {
+        this(httpClient, url, null);
+    }
+
+    /**
+     * Creates a DownloadThread specifically for retrieving the contents of the given URL and
+     * saving it to the given target directory. The file name is preserved from whatever is
+     * at the end of the given URL. If targetDir is null, the system temp dir is used.
+     */
+    public DownloadThread(HttpClient httpClient, URL url, File targetDir) {
         this.httpClient = httpClient;
         this.url = url;
-        this.destinationFile = destinationFile;
+        this.targetDir = targetDir == null ? new File(System.getProperty("java.io.tmpdir")) : targetDir;
     }
 
     public void addDownloadListener(DownloadListener listener) {
@@ -81,14 +94,15 @@ public class DownloadThread implements Runnable {
 
     @Override
     public void run() {
-        if (httpClient == null || url == null || destinationFile == null) {
+        if (httpClient == null || url == null) {
             fireDownloadFailed("Internal error: DownloadThread given null input, cannot proceed.");
             isRunning = false;
             isKilled = false;
             return;
         }
-        if (!"file".equals(url.getProtocol()) && !"http".equals(url.getProtocol()) && !"https".equals(
-                url.getProtocol())) {
+        if (!"file".equalsIgnoreCase(url.getProtocol())
+                && !"http".equalsIgnoreCase(url.getProtocol())
+                && !"https".equalsIgnoreCase(url.getProtocol())) {
             fireDownloadFailed("Unsupported file download protocol: " + url.getProtocol());
             isRunning = false;
             isKilled = false;
@@ -97,6 +111,7 @@ public class DownloadThread implements Runnable {
 
         isRunning = true;
         isKilled = false;
+        File targetFile = new File(targetDir, DownloadManager.getFilenameComponent(url.toString()));
         fireDownloadBegins();
 
         try {
@@ -106,10 +121,10 @@ public class DownloadThread implements Runnable {
                 log.info("DownloadThread: copying local file "
                                  + sourceFile.getAbsolutePath()
                                  + " to "
-                                 + destinationFile.getAbsolutePath());
-                Files.copy(Paths.get(url.toURI()), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                 + targetDir.getAbsolutePath());
+                Files.copy(Paths.get(url.toURI()), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 isRunning = false;
-                fireDownloadComplete();
+                fireDownloadComplete(targetFile);
                 return;
             }
 
@@ -130,7 +145,7 @@ public class DownloadThread implements Runnable {
                                              .orElse(-1L);
 
                 try (InputStream in = response.body();
-                     FileOutputStream out = new FileOutputStream(destinationFile)) {
+                     FileOutputStream out = new FileOutputStream(targetFile)) {
 
                     byte[] buffer = new byte[BUFFER_SIZE];
                     long downloaded = 0;
@@ -155,7 +170,7 @@ public class DownloadThread implements Runnable {
                     }
 
                     isRunning = false;
-                    fireDownloadComplete();
+                    fireDownloadComplete(targetFile);
                 }
                 finally {
                     isRunning = false;
@@ -192,7 +207,7 @@ public class DownloadThread implements Runnable {
             fireDownloadFailed("Download interrupted: " + url);
 
         } catch (SecurityException e) {
-            fireDownloadFailed("Security error (file permissions?): " + destinationFile.getAbsolutePath() +
+            fireDownloadFailed("Security error (file permissions?): " + targetFile.getAbsolutePath() +
                                        " - " + e.getMessage(), e);
 
         } catch (Exception e) {
@@ -237,13 +252,13 @@ public class DownloadThread implements Runnable {
         }
     }
 
-    private void fireDownloadComplete() {
+    private void fireDownloadComplete(File targetFile) {
         log.info("DownloadThread: downloaded "
                          + url.toString()
                          + " to local file "
-                         + destinationFile.getAbsolutePath());
+                         + targetFile.getAbsolutePath());
         for (DownloadListener listener : listeners) {
-            listener.downloadComplete(this, url, destinationFile);
+            listener.downloadComplete(this, url, targetFile);
         }
     }
 }

@@ -1,11 +1,16 @@
 package ca.corbett.updates;
 
+import ca.corbett.extras.crypt.SignatureUtil;
 import ca.corbett.extras.io.FileSystemUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -168,5 +173,110 @@ class UpdateManagerTest {
 
         // THEN we should see it unresolved correctly:
         assertEquals(path, actual);
+    }
+
+    @Test
+    public void retrieveRemoteFiles_withValidFiles_shouldRetrieve() throws Exception {
+        // GIVEN an UpdateManager with a fake listener on it and a remote data source:
+        UpdateManagerListener fakeListener = Mockito.mock(UpdateManagerListener.class);
+        File remoteDir = buildRemoteDataSource();
+        UpdateManager manager = new UpdateManager(remoteDir);
+        manager.addUpdateManagerListener(fakeListener);
+
+        // WHEN we use the UpdateSource to retrieve a few files:
+        UpdateSources.UpdateSource source = manager.getUpdateSources().get(0);
+        manager.retrieveVersionManifest(source);
+        manager.retrievePublicKey(source);
+        manager.retrieveSignatureFile(
+                UpdateManager.resolveUrl(source.getBaseUrl(), "extensions/1.0/extension1.0.sig"));
+
+        // Give it a second to do the retrievals
+        Thread.sleep(750);
+
+        // THEN we should see our fake listener got hit with the file results:
+        Mockito.verify(fakeListener, Mockito.times(1))
+               .signatureFileDownloaded(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(fakeListener, Mockito.times(1)).publicKeyDownloaded(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(fakeListener, Mockito.times(1))
+               .versionManifestDownloaded(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(fakeListener, Mockito.never()).downloadFailed(Mockito.any(), Mockito.any(), Mockito.any());
+    }
+
+    /**
+     * Builds up a fake version manifest with a sample extension in the system temp dir
+     * and returns the directory where it lives. We can pretend it's a remote update source.
+     */
+    private File buildRemoteDataSource() throws Exception {
+        File remoteDir = Files.createTempDirectory("UpdateManagerTest").toFile();
+        VersionManifest.ExtensionVersion extVersion = buildTestExtensionVersion(remoteDir, "1.0");
+        VersionManifest.Extension extension = new VersionManifest.Extension();
+        extension.addVersion(extVersion);
+
+        VersionManifest.ApplicationVersion appVersion = buildTestApplicationVersion("1.0");
+        appVersion.addExtension(extension);
+
+        VersionManifest manifest = buildTestVersionManifest(remoteDir, "Test application");
+        manifest.addApplicationVersion(appVersion);
+
+        UpdateSources updateSources = buildTestUpdateSources(remoteDir, "Test application");
+        File updateSourcesFile = new File(remoteDir, "updateSources.json");
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        FileSystemUtil.writeStringToFile(gson.toJson(updateSources), updateSourcesFile);
+        return updateSourcesFile;
+    }
+
+    /**
+     * Builds a simple fake extension with the given version and creates fake jar and signature files for it.
+     */
+    private VersionManifest.ExtensionVersion buildTestExtensionVersion(File remoteDir, String version)
+            throws Exception {
+        // Build the directory where it will live, okay if it already exists:
+        File extensionDir = new File(remoteDir, "extensions/" + version);
+        extensionDir.mkdirs();
+
+        File jarFile = new File(extensionDir, "extension" + version + ".jar");
+        FileSystemUtil.writeStringToFile("extension jar file", jarFile);
+        File sigFile = new File(extensionDir, "extension" + version + ".sig");
+        FileSystemUtil.writeStringToFile("extension signature", sigFile);
+        VersionManifest.ExtensionVersion extVersion = new VersionManifest.ExtensionVersion();
+        extVersion.setDownloadPath(jarFile.getName());
+        extVersion.setSignaturePath(sigFile.getName());
+        return extVersion;
+    }
+
+    /**
+     * Builds a fake application version with the given version string.
+     */
+    private VersionManifest.ApplicationVersion buildTestApplicationVersion(String version) {
+        VersionManifest.ApplicationVersion appVersion = new VersionManifest.ApplicationVersion();
+        appVersion.setVersion(version);
+        return appVersion;
+    }
+
+    /**
+     * Builds a fake version manifest with the given application name and some built-in defaults for
+     * manifest and public key locations.
+     */
+    private VersionManifest buildTestVersionManifest(File remoteDir, String applicationName) throws Exception {
+        VersionManifest manifest = new VersionManifest();
+        manifest.setApplicationName(applicationName);
+        manifest.save(new File(remoteDir, "version_manifest.json"));
+        File publicKeyFile = new File(remoteDir, "public.key");
+        SignatureUtil.savePublicKey(SignatureUtil.generateKeyPair().getPublic(), publicKeyFile);
+        return manifest;
+    }
+
+    /**
+     * Builds a fake UpdateSources with the given application name and built-in defaults for
+     * manifest and public key locations.
+     */
+    private UpdateSources buildTestUpdateSources(File remoteDir, String applicationName) throws Exception {
+        UpdateSources.UpdateSource source = new UpdateSources.UpdateSource(applicationName,
+                                                                           remoteDir.toURI().toURL(),
+                                                                           "version_manifest.json",
+                                                                           "public.key");
+        UpdateSources updateSources = new UpdateSources(applicationName);
+        updateSources.addUpdateSource(source);
+        return updateSources;
     }
 }

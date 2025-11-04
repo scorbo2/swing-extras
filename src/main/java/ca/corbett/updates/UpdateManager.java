@@ -1,6 +1,7 @@
 package ca.corbett.updates;
 
 import ca.corbett.extras.crypt.SignatureUtil;
+import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.DownloadAdapter;
 import ca.corbett.extras.io.DownloadManager;
 import ca.corbett.extras.io.DownloadThread;
@@ -9,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -42,7 +44,8 @@ import java.util.List;
  *     the process of generating a key pair, signing your extensions with the private key, and uploading
  *     the public key to your web host. This is all entirely optional - if you are hosting on a trusted
  *     internal server (like on a local network), you can skip this step entirely. If a signature and a public
- *     key are provided, this class will automatically verify the digital signature after each download.
+ *     key are provided, this class will provide you with the signature file for each jar, and the public
+ *     key that you can use for signature verification.
  * </p>
  * <p>
  *     <b>How do I set all this up?</b> - There's a helper application called
@@ -63,6 +66,12 @@ public class UpdateManager {
     protected final List<UpdateManagerListener> listeners = new ArrayList<>();
     protected final DownloadManager downloadManager;
 
+    /**
+     * Creates a new UpdateManager using the given update sources json file. If the file fails to parse,
+     * an exception is thrown. Otherwise, you can begin making retrieval requests with the new
+     * UpdateManager instance. Be sure to register yourself as an UpdateManagerListener before you
+     * invoke any of the retrieve methods!
+     */
     public UpdateManager(File sourceFile) throws JsonSyntaxException, IOException {
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         this.sourceFile = sourceFile;
@@ -70,8 +79,36 @@ public class UpdateManager {
         this.downloadManager = new DownloadManager();
     }
 
+    /**
+     * Returns the application name as defined in the update sources json that was used to instantiate
+     * this UpdateManager.
+     */
     public String getApplicationName() {
         return updateSources.getApplicationName();
+    }
+
+    /**
+     * Returns the UpdateSources that are available in this UpdateManager. Each one can either specify
+     * a remote, web-based source, or a local filesystem-based source. The type of source is transparent
+     * to the caller, but you must specify the update source to be queried when you invoke any
+     * retrieval method.
+     */
+    public List<UpdateSources.UpdateSource> getUpdateSources() {
+        return new ArrayList<>(updateSources.getUpdateSources());
+    }
+
+    /**
+     * Register to receive notifications from this UpdateManager as various remote resources are downloaded.
+     */
+    public void addUpdateManagerListener(UpdateManagerListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Stop listening to this UpdateManager for notifications.
+     */
+    public void removeUpdateManagerListener(UpdateManagerListener listener) {
+        listeners.remove(listener);
     }
 
     /**
@@ -96,28 +133,57 @@ public class UpdateManager {
         if (!updateSource.hasPublicKey()) {
             firePublicKeyDownloaded(null, null);
         }
-        downloadManager.downloadFile(updateSource.getVersionManifestUrl(), new PublicKeyDownloadListener());
+        downloadManager.downloadFile(updateSource.getPublicKeyUrl(), new PublicKeyDownloadListener());
     }
 
     /**
-     * Returns the UpdateSources that are available in this UpdateManager.
+     * Requests the given extension jar from the given UpdateSource (use getUpdateSources to enumerate
+     * the available UpdateSources in this UpdateManager). Make sure you have added yourself as a
+     * listener via addUpdateManagerListener() before invoking this request.
+     * <p>
+     *     <b>NOTE:</b> Retrieving the signature file for the jar is a separate request. Note that
+     *     jar signing is optional, so the signature file may or may not exist.
+     * </p>
      */
-    public List<UpdateSources.UpdateSource> getUpdateSources() {
-        return new ArrayList<>(updateSources.getUpdateSources());
+    public void retrieveExtensionJar(UpdateSources.UpdateSource updateSource, VersionManifest.ExtensionVersion extVersion) {
+        URL url = resolveUrl(updateSource.getBaseUrl(), extVersion.getDownloadPath());
+        downloadManager.downloadFile(url, new DownloadAdapter() {
+            @Override
+            public void downloadFailed(DownloadThread thread, URL url, String errorMsg) {
+                fireDownloadFailed(url, errorMsg);
+            }
+
+            @Override
+            public void downloadComplete(DownloadThread thread, URL url, File file) {
+                fireJarFileDownloaded(url, file);
+            }
+        });
     }
 
     /**
-     * Register to receive notifications from this UpdateManager as various remote resources are downloaded.
+     * Requests the given signature file. Make sure you have added yourself as a
+     * listener via addUpdateManagerListener() before invoking this request.
      */
-    public void addUpdateManagerListener(UpdateManagerListener listener) {
-        listeners.add(listener);
+    public void retrieveSignatureFile(URL signatureUrl) {
+        downloadManager.downloadFile(signatureUrl, new DownloadAdapter() {
+            @Override
+            public void downloadFailed(DownloadThread thread, URL url, String errorMsg) {
+                fireDownloadFailed(url, errorMsg);
+            }
+
+            @Override
+            public void downloadComplete(DownloadThread thread, URL url, File file) {
+                fireSignatureFileDownloaded(url, file);
+            }
+        });
     }
 
     /**
-     * Stop listening to this UpdateManager for notifications.
+     * Requests the given screenshot. Make sure you have added yourself as a listener
+     * via addUpdateManagerListener() before invoking this request.
      */
-    public void removeUpdateManagerListener(UpdateManagerListener listener) {
-        listeners.remove(listener);
+    public void retrieveScreenshot(URL screenshotUrl) {
+        downloadManager.downloadFile(screenshotUrl, new ScreenshotDownloadListener());
     }
 
     protected void fireVersionManifestDownloaded(URL sourceUrl, VersionManifest manifest) {
@@ -131,6 +197,27 @@ public class UpdateManager {
         List<UpdateManagerListener> copy = new ArrayList<>(listeners);
         for (UpdateManagerListener listener : copy) {
             listener.publicKeyDownloaded(this, sourceUrl, publicKey);
+        }
+    }
+
+    protected void fireJarFileDownloaded(URL sourceUrl, File jarFile) {
+        List<UpdateManagerListener> copy = new ArrayList<>(listeners);
+        for (UpdateManagerListener listener : copy) {
+            listener.jarFileDownloaded(this, sourceUrl, jarFile);
+        }
+    }
+
+    protected void fireSignatureFileDownloaded(URL sourceUrl, File signatureFile) {
+        List<UpdateManagerListener> copy = new ArrayList<>(listeners);
+        for (UpdateManagerListener listener : copy) {
+            listener.signatureFileDownloaded(this, sourceUrl, signatureFile);
+        }
+    }
+
+    protected void fireScreenshotFileDownloaded(URL sourceUrl, BufferedImage screenshot) {
+        List<UpdateManagerListener> copy = new ArrayList<>(listeners);
+        for (UpdateManagerListener listener : copy) {
+            listener.screenshotDownloaded(this, sourceUrl, screenshot);
         }
     }
 
@@ -206,11 +293,15 @@ public class UpdateManager {
 
     /**
      * Listens to our DownloadManager for a VersionManifest file to be downloaded, then
-     * parses it and hands it to our own listeners.
+     * parses it and hands it to our own listeners. Basically, we're translating between
+     * DownloadListener callbacks and our own UpdateManager callbacks, to make them more
+     * friendly to users of this class. It allows us to enhance the results of the callback.
+     * For example, instead of just returning the raw version manifest file that was downloaded,
+     * we can parse that file and return the actual VersionManifest object to our listeners.
      *
      * @author <a href="https://github.com/scorbo2">scorbo2</a>
      */
-    private class VersionManifestDownloadListener extends DownloadAdapter {
+    protected class VersionManifestDownloadListener extends DownloadAdapter {
 
         @Override
         public void downloadFailed(DownloadThread thread, URL url, String errorMsg) {
@@ -234,7 +325,17 @@ public class UpdateManager {
         }
     }
 
-    private class PublicKeyDownloadListener extends DownloadAdapter {
+    /**
+     * Listens to our DownloadManager for a PublicKey to be downloaded, then
+     * parses it and hands it to our own listeners. Basically, we're translating between
+     * DownloadListener callbacks and our own UpdateManager callbacks, to make them more
+     * friendly to users of this class. It allows us to enhance the results of the callback.
+     * For example, instead of just returning the raw public key file that was downloaded,
+     * we can parse that file and return the actual PublicKey object to our listeners.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    protected class PublicKeyDownloadListener extends DownloadAdapter {
         @Override
         public void downloadFailed(DownloadThread thread, URL url, String errorMsg) {
             fireDownloadFailed(url, "Unable to retrieve public key: " + errorMsg);
@@ -255,5 +356,38 @@ public class UpdateManager {
                 downloadFailed(thread, url, "Problem parsing public key: " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Listens to our DownloadManager for a screenshot to be downloaded, then
+     * parses it and hands it to our own listeners. Basically, we're translating between
+     * DownloadListener callbacks and our own UpdateManager callbacks, to make them more
+     * friendly to users of this class. It allows us to enhance the results of the callback.
+     * For example, instead of just returning the raw screenshot image file that was downloaded,
+     * we can parse that file and return the actual BufferedImage object to our listeners.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    protected class ScreenshotDownloadListener extends DownloadAdapter {
+        @Override
+        public void downloadFailed(DownloadThread thread, URL url, String errorMsg) {
+            fireDownloadFailed(url, "Unable to retrieve screenshot: " + errorMsg);
+        }
+
+        @Override
+        public void downloadComplete(DownloadThread thread, URL url, File result) {
+            if (result == null || !result.exists() || !result.isFile() || result.length() == 0) {
+                downloadFailed(thread, url, "Locally downloaded file is empty.");
+                return;
+            }
+
+            try {
+                fireScreenshotFileDownloaded(url, ImageUtil.loadImage(result));
+            }
+            catch (IOException e) {
+                downloadFailed(thread, url, "Problem loading screenshot: " + e.getMessage());
+            }
+        }
+
     }
 }
