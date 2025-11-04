@@ -9,6 +9,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -57,12 +59,15 @@ public class ImageListPanel extends JPanel {
     public static final int MINIMUM_THUMB_SIZE = 25;
     public static final int MAXIMUM_THUMB_SIZE = 500;
 
-    private final JFrame ownerFrame;
+    private final List<ChangeListener> changeListeners = new ArrayList<>();
+
+    private JFrame ownerFrame;
     private int thumbSize;
 
     private int startX;
     private boolean isReadOnly;
     private int maxListSize;
+    private boolean isAdjusting = false;
 
     /**
      * Creates a new, empty ImageListPanel.
@@ -131,9 +136,21 @@ public class ImageListPanel extends JPanel {
         }
         maxListSize = max;
 
-        // Nuke any images beyond our new max:
-        while (getImageCount() > maxListSize) {
-            removeImage(maxListSize);
+        // Stop broadcasting change events while we adjust (otherwise we might send out a flurry of them):
+        isAdjusting = true;
+        boolean imagesWereRemoved = false;
+        try {
+            // Nuke any images beyond our new max:
+            while (getImageCount() > maxListSize) {
+                removeImage(maxListSize);
+                imagesWereRemoved = true;
+            }
+        }
+        finally {
+            isAdjusting = false;
+            if (imagesWereRemoved) {
+                fireChangeEvent(); // Just send one change event at the end even if 100 images were removed
+            }
         }
     }
 
@@ -159,17 +176,24 @@ public class ImageListPanel extends JPanel {
             return;
         }
 
-        // Re-do our layout by removing all old image panels and creating new ones at the right size:
-        List<BufferedImage> images = new ArrayList<>(getComponentCount());
-        for (int i = 0; i < getComponentCount(); i++) {
-            images.add(getImageAt(i));
+        // Don't fire change events while we do this... this operation is not counted as a change:
+        isAdjusting = true;
+        try {
+            // Re-do our layout by removing all old image panels and creating new ones at the right size:
+            List<BufferedImage> images = new ArrayList<>(getComponentCount());
+            for (int i = 0; i < getComponentCount(); i++) {
+                images.add(getImageAt(i));
+            }
+            removeAll();
+            for (BufferedImage image : images) {
+                addImage(image);
+            }
         }
-        removeAll();
-        for (BufferedImage image : images) {
-            addImage(image);
+        finally {
+            revalidate();
+            repaint();
+            isAdjusting = false;
         }
-        revalidate();
-        repaint();
     }
 
     /**
@@ -204,8 +228,7 @@ public class ImageListPanel extends JPanel {
         imagePanel.addMouseMotionListener(buildMouseMotionListener(imagePanel));
 
         add(imagePanel);
-        revalidate();
-        repaint();
+        fireChangeEvent();
     }
 
     /**
@@ -220,6 +243,7 @@ public class ImageListPanel extends JPanel {
      */
     public void clear() {
         removeAll();
+        fireChangeEvent();
     }
 
     /**
@@ -243,14 +267,28 @@ public class ImageListPanel extends JPanel {
         }
 
         remove(index);
-        revalidate();
-        repaint();
 
         // Fix all indexes since we now have a gap otherwise:
         for (int i = 0; i < getImageCount(); i++) {
             ImagePanel imagePanel = (ImagePanel)this.getComponent(i);
             imagePanel.setExtraAttribute("listIndex", i);
         }
+
+        fireChangeEvent();
+    }
+
+    /**
+     * Returns the owner JFrame that will be used as a parent for the popup preview window (null is acceptable).
+     */
+    public JFrame getOwnerFrame() {
+        return ownerFrame;
+    }
+
+    /**
+     * Sets the owner JFrame that will be used as a parent for the popup preview window (null is acceptable).
+     */
+    public void setOwnerFrame(JFrame ownerFrame) {
+        this.ownerFrame = ownerFrame;
     }
 
     /**
@@ -265,6 +303,31 @@ public class ImageListPanel extends JPanel {
         dialog.setLayout(new BorderLayout());
         dialog.add(new ImagePanel(image, ImagePanelConfig.createSimpleReadOnlyProperties()), BorderLayout.CENTER);
         dialog.setVisible(true);
+    }
+
+    /**
+     * Callers can subscribe to receive ChangeEvents when images are added or removed
+     * to or from this panel.
+     */
+    public void addChangeListener(ChangeListener listener) {
+        changeListeners.add(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeListeners.remove(listener);
+    }
+
+    private void fireChangeEvent() {
+        if (isAdjusting) {
+            return; // ignore if a series of rapid events are happening
+        }
+        revalidate();  // force a redisplay
+        repaint();     // unfortunate swing necessity
+        List<ChangeListener> copy = new ArrayList<>(changeListeners); // avoid concurrent modifications
+        ChangeEvent event = new ChangeEvent(this);
+        for (ChangeListener listener : copy) {
+            listener.stateChanged(event);
+        }
     }
 
     /**

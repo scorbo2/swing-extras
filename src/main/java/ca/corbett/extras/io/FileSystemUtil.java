@@ -10,9 +10,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Provides a way to scan, organize, and search through a given file system, looking for
@@ -523,5 +526,47 @@ public final class FileSystemUtil {
 
         double value = size / Math.pow(1024, unitIndex + 1);
         return String.format("%.1f %s", value, units[unitIndex]);
+    }
+
+    public static String extractTextFileFromJar(String targetFilename, File jarFile) throws Exception {
+        return extractTextFileFromJar(targetFilename, jarFile, StandardCharsets.UTF_8);
+    }
+
+    public static String extractTextFileFromJar(String targetFilename, File jarFile, Charset charset) throws Exception {
+        if (jarFile == null || !jarFile.exists() || !jarFile.isFile() || !jarFile.canRead()) {
+            throw new Exception("Input jar file does not exist or can't be read!");
+        }
+
+        try (JarFile jar = new JarFile(jarFile)) {
+            Enumeration<JarEntry> e = jar.entries();
+            while (e.hasMoreElements()) {
+                JarEntry je = e.nextElement();
+                if (je.isDirectory()) {
+                    continue; // skip directories
+                }
+                if (!je.getName().equals(targetFilename) && !je.getName().endsWith("/" + targetFilename)) {
+                    continue; // Name doesn't match
+                }
+
+                try (InputStream is = jar.getInputStream(je)) {
+                    byte[] bytes = is.readAllBytes();
+
+                    // Check first N bytes for binary indicators
+                    int sampleSize = Math.min(512, bytes.length);
+                    for (int i = 0; i < sampleSize; i++) {
+                        byte b = bytes[i];
+                        // Allow printable ASCII, common whitespace, and UTF-8 continuation bytes
+                        if (b < 32 && b != '\n' && b != '\r' && b != '\t') {
+                            throw new Exception("File to extract appears to be binary data.");
+                        }
+                    }
+
+                    return new String(bytes, charset);
+                }
+            }
+        }
+
+        // If we get here, we didn't find anything:
+        return null;
     }
 }

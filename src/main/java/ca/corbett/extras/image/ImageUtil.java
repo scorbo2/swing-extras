@@ -494,7 +494,7 @@ public final class ImageUtil {
      * square to be considered "square". For example, an image of 999x1000 is technically portrait,
      * but really, it could be considered "close enough" to be called square.
      */
-    private static String getAspectRatioDescription(Dimension imageDim) {
+    public static String getAspectRatioDescription(Dimension imageDim) {
         final double TOLERANCE = 0.05; // five percent is "close enough"
         int width = imageDim.width;
         int height = imageDim.height;
