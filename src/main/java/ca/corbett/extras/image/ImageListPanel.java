@@ -297,7 +297,7 @@ public class ImageListPanel extends JPanel {
      */
     private void showImage(BufferedImage image) {
         image.flush();
-        JDialog dialog = new JDialog(ownerWindow, "Image preview", Dialog.ModalityType.APPLICATION_MODAL);
+        JDialog dialog = new JDialog(ownerWindow, "Image preview", Dialog.ModalityType.MODELESS);
         dialog.setSize(new Dimension(600, 400));
         dialog.setLocationRelativeTo(ownerWindow);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
