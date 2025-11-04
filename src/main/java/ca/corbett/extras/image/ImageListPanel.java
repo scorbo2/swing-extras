@@ -3,7 +3,6 @@ package ca.corbett.extras.image;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -13,8 +12,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -61,7 +62,7 @@ public class ImageListPanel extends JPanel {
 
     private final List<ChangeListener> changeListeners = new ArrayList<>();
 
-    private JFrame ownerFrame;
+    private Window ownerWindow;
     private int thumbSize;
 
     private int startX;
@@ -72,8 +73,8 @@ public class ImageListPanel extends JPanel {
     /**
      * Creates a new, empty ImageListPanel.
      */
-    public ImageListPanel(JFrame ownerFrame) {
-        this.ownerFrame = ownerFrame;
+    public ImageListPanel(Window ownerWindow) {
+        this.ownerWindow = ownerWindow;
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         thumbSize = DEFAULT_THUMB_SIZE;
         isReadOnly = false;
@@ -278,17 +279,17 @@ public class ImageListPanel extends JPanel {
     }
 
     /**
-     * Returns the owner JFrame that will be used as a parent for the popup preview window (null is acceptable).
+     * Returns the owner Window that will be used as a parent for the popup preview window (null is acceptable).
      */
-    public JFrame getOwnerFrame() {
-        return ownerFrame;
+    public Window getOwnerWindow() {
+        return ownerWindow;
     }
 
     /**
-     * Sets the owner JFrame that will be used as a parent for the popup preview window (null is acceptable).
+     * Sets the owner Window that will be used as a parent for the popup preview window (null is acceptable).
      */
-    public void setOwnerFrame(JFrame ownerFrame) {
-        this.ownerFrame = ownerFrame;
+    public void setOwnerWindow(Window ownerWindow) {
+        this.ownerWindow = ownerWindow;
     }
 
     /**
@@ -296,9 +297,9 @@ public class ImageListPanel extends JPanel {
      */
     private void showImage(BufferedImage image) {
         image.flush();
-        JDialog dialog = new JDialog(ownerFrame, "Image preview", false);
+        JDialog dialog = new JDialog(ownerWindow, "Image preview", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setSize(new Dimension(600, 400));
-        dialog.setLocationRelativeTo(ownerFrame);
+        dialog.setLocationRelativeTo(ownerWindow);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setLayout(new BorderLayout());
         dialog.add(new ImagePanel(image, ImagePanelConfig.createSimpleReadOnlyProperties()), BorderLayout.CENTER);
