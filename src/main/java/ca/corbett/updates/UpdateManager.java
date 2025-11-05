@@ -60,10 +60,19 @@ import java.util.List;
  */
 public class UpdateManager {
 
+    /**
+     * The process exit code that signals to our launcher script that we want to
+     * restart the application (like after a new extension is installed).
+     * Don't change this value without also updating the launcher script!
+     * If they're not in sync, the application will exit and then not restart.
+     */
+    public static final int APPLICATION_RESTART = 100;
+
     protected final Gson gson;
     protected final File sourceFile;
     protected final UpdateSources updateSources;
     protected final List<UpdateManagerListener> listeners = new ArrayList<>();
+    protected final List<ShutdownHook> shutdownHooks = new ArrayList<>();
     protected final DownloadManager downloadManager;
 
     /**
@@ -184,6 +193,38 @@ public class UpdateManager {
      */
     public void retrieveScreenshot(URL screenshotUrl) {
         downloadManager.downloadFile(screenshotUrl, new ScreenshotDownloadListener());
+    }
+
+    /**
+     * Register to receive notification before the application is restarted to pick up
+     * changes caused by extensions being installed or uninstalled.
+     */
+    public void registerShutdownHook(ShutdownHook hook) {
+        shutdownHooks.add(hook);
+    }
+
+    /**
+     * You can unregister a previously registered shutdown hook.
+     */
+    public void unregisterShutdownHook(ShutdownHook hook) {
+        shutdownHooks.remove(hook);
+    }
+
+    /**
+     * This is invoked as needed by ExtensionManager when extensions have been installed
+     * or uninstalled, and the application needs to restart to pick up the changes.
+     * If you have cleanup that needs to be done before a restart (closing open
+     * db connections, saving unsaved changes, etc), you should use registerShutdownHook
+     * so that your cleanup code can be executed before a restart!
+     */
+    public void restartApplication() {
+        // Run all registered shutdown hooks:
+        for (ShutdownHook hook : new ArrayList<>(shutdownHooks)) {
+            hook.applicationWillRestart();
+        }
+
+        // Do it:
+        System.exit(APPLICATION_RESTART);
     }
 
     protected void fireVersionManifestDownloaded(URL sourceUrl, VersionManifest manifest) {
