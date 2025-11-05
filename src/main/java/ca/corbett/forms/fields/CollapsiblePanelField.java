@@ -10,6 +10,8 @@ import javax.swing.JPanel;
 import javax.swing.border.Border;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.LayoutManager;
 
@@ -29,13 +31,13 @@ public class CollapsiblePanelField extends FormField {
     public enum ButtonPosition { Left, Right; }
 
     private final JPanel expandPanel;
-    private final boolean isInitiallyExpanded;
     private final JPanel headerPanel;
     private final JPanel buttonWrapperPanel;
     private final JButton expandCollapseButton;
     private boolean isExpanded;
     private boolean shouldExpandHorizontally;
     private ButtonPosition buttonPosition;
+    private boolean isEnabledStatusPropagated;
 
     /**
      * Creates a new PanelField with an empty wrapped JPanel.
@@ -55,7 +57,8 @@ public class CollapsiblePanelField extends FormField {
         expandPanel = new JPanel();
         expandPanel.setLayout(layoutManager);
         shouldExpandHorizontally = false; // arbitrary default
-        this.isInitiallyExpanded = isExpanded = isInitiallyExpanded;
+        isExpanded = isInitiallyExpanded;
+        isEnabledStatusPropagated = false; // arbitrary default
 
         JPanel wrapperPanel = new JPanel(new BorderLayout());
 
@@ -179,6 +182,64 @@ public class CollapsiblePanelField extends FormField {
         return this;
     }
 
+    /**
+     * Determines what happens when setEnabled is invoked. By default, Swing containers
+     * do not propagate the new enabled status to the components that they contain. But this
+     * might be unexpected compared to the behaviour of other FormField implementations.
+     * So, set this to true if you want to the setEnabled method in this FormField to propagate
+     * downwards recursively to all contained components. The default value is false.
+     * <p>
+     * If the "all or nothing" options don't suit your particular use case, (that is,
+     * if you want setEnabled to apply to <i>some</i> of the contained components here,
+     * but not all of them), then you should create a derived class, override the
+     * setEnabled method, and implement your custom logic.
+     * </p>
+     */
+    public CollapsiblePanelField setEnabledStatusIsPropagated(boolean isPropagated) {
+        isEnabledStatusPropagated = isPropagated;
+        return this;
+    }
+
+    /**
+     * See setEnabledStatusIsPropagated for a description of this option.
+     *
+     * @return true if setEnabled should act on all contained components in this panel (default false).
+     */
+    public boolean isEnabledStatusPropagated() {
+        return isEnabledStatusPropagated;
+    }
+
+    /**
+     * Overridden here so we can optionally propagate the new enabled status to all
+     * contained components, depending on isEnabledStatusPropagated. See
+     * setEnabledStatusIsPropagated for a description of this option.
+     */
+    @Override
+    public FormField setEnabled(boolean isEnabled) {
+        super.setEnabled(isEnabled);
+
+        if (isEnabledStatusPropagated) {
+            setEnabledRecursive(expandPanel, isEnabled);
+        }
+
+        return this;
+    }
+
+    /**
+     * Recurses through the list of contained components, passing on the given isEnabled
+     * status to each of them (and their own contained children, if any of our contained
+     * components are containers themselves).
+     */
+    protected void setEnabledRecursive(Container container, boolean isEnabled) {
+        for (Component c : container.getComponents()) {
+            c.setEnabled(isEnabled);
+
+            // Not just the children, but the grandchildren, great-grandchildren, etc:
+            if (c instanceof Container) {
+                setEnabledRecursive((Container)c, isEnabled);
+            }
+        }
+    }
 
     @Override
     public boolean isMultiLine() {
