@@ -604,4 +604,15 @@ public final class ImageUtil {
 
         return scaledImage;
     }
+
+    /**
+     * Very quick and cheesy way of determining if a file is of a supported image type.
+     */
+    public static boolean isImageFile(File f) {
+        if (f == null || !f.isFile()) { return false; }
+        String name = f.getName().toLowerCase();
+        return name.endsWith(".jpg") || name.endsWith(".jpeg") ||
+                name.endsWith(".png") || name.endsWith(".gif") ||
+                name.endsWith(".bmp");
+    }
 }

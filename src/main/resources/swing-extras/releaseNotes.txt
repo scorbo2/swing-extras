@@ -10,6 +10,7 @@ Version 2.5.0 [TODO release date] - TODO description
   #152 - New FormField: ImageListField
   #151 - UpdateManager: better unit tests
   #150 - UpdateManager: handle downloads asynchronously
+  #146 - More customization options in FileField
   #145 - Add FileSystemUtil.extractTextFileFromJar()
   #144 - UpdateManager: Support dynamic application restart
   #142 - PanelField/CollapsiblePanelField: handle setEnabled()

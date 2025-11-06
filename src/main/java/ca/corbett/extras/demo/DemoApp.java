@@ -76,6 +76,7 @@ public class DemoApp extends JFrame {
     public static DemoApp getInstance() {
         if (instance == null) {
             instance = new DemoApp();
+            instance.populateDemoPanels();
         }
         return instance;
     }
@@ -98,7 +99,22 @@ public class DemoApp extends JFrame {
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(195);
         add(splitPane, BorderLayout.CENTER);
+    }
 
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    audioDemoPanel.generateWaveform(); // has to be done after frame is packed and shown.
+                }
+            });
+        }
+    }
+
+    private void populateDemoPanels() {
         addDemoPanel(new IntroPanel());
         addDemoPanel(audioDemoPanel);
         addDemoPanel(new DesktopDemoPanel());
@@ -121,19 +137,6 @@ public class DemoApp extends JFrame {
         addDemoPanel(new LogConsolePanel());
         addDemoPanel(new AboutDemoPanel());
         cardList.setSelectedIndex(0);
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        if (visible) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    audioDemoPanel.generateWaveform(); // has to be done after frame is packed and shown.
-                }
-            });
-        }
     }
 
     private void addDemoPanel(PanelBuilder panel) {

@@ -1,6 +1,9 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.CoalescingDocumentListener;
+import ca.corbett.extras.image.ImagePanel;
+import ca.corbett.extras.image.ImagePanelConfig;
+import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.FileMustBeCreatableValidator;
 import ca.corbett.forms.validators.FileMustBeReadableValidator;
@@ -9,17 +12,25 @@ import ca.corbett.forms.validators.FileMustExistValidator;
 import ca.corbett.forms.validators.FileMustNotBeDirectoryValidator;
 import ca.corbett.forms.validators.FileMustNotExistValidator;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,11 +54,11 @@ public final class FileField extends FormField {
      */
     public enum SelectionType {
         /**
-         * Browse for a single directory, which must exist and be readable and writable.
+         * Browse for a single directory, which must exist and be readable.
          */
         ExistingDirectory,
         /**
-         * Browse for a single file, which must exist and be readable and writable.
+         * Browse for a single file, which must exist and be readable.
          */
         ExistingFile,
         /**
@@ -163,11 +174,77 @@ public final class FileField extends FormField {
     }
 
     /**
-     * Returns whether or not blank values are permitted in this field. If true,
+     * If true (the default value), hidden files will not be displayed in the file chooser.
+     */
+    public FileField setFileHidingEnabled(boolean enabled) {
+        fileChooser.setFileHidingEnabled(enabled);
+        return this;
+    }
+
+    /**
+     * Reports whether hidden files are kept out of the file chooser. The default value
+     * is true, meaning hidden files are NOT shown in the file chooser.
+     */
+    public boolean isFileHidingEnabled() {
+        return fileChooser.isFileHidingEnabled();
+    }
+
+    /**
+     * Sets an optional "accessory" component which can be used to show custom file
+     * previews. The default value is null. Any JComponent may be given here, but your
+     * JComponent needs to implement PropertyChangeListener and respond to the
+     * SELECTED_FILE_CHANGED_PROPERTY message. See the ImagePreviewAccessory class
+     * for an example implementation.
+     * <p><b>Note:</b> if your component does not implement PropertyChangeListener,
+     * it won't be wired up properly, and it won't be able to preview anything.</p>
+     */
+    public FileField setAccessory(JComponent component) {
+        // If we're replacing an old one, remove it as a listener:
+        JComponent oldAccessory = fileChooser.getAccessory();
+        if (oldAccessory instanceof PropertyChangeListener) {
+            fileChooser.removePropertyChangeListener((PropertyChangeListener)oldAccessory);
+        }
+
+        // Accept the new value and wire it up for property change events:
+        fileChooser.setAccessory(component);
+        if (component instanceof PropertyChangeListener) {
+            fileChooser.addPropertyChangeListener((PropertyChangeListener)component);
+        }
+
+        return this;
+    }
+
+    /**
+     * Returns the accessory component associated with the file chooser, if one is set.
+     * The default value is null.
+     */
+    public JComponent getAccessory() {
+        return fileChooser.getAccessory();
+    }
+
+    /**
+     * If true (the default value), the file chooser will automatically get an "All files" file
+     * filter in the file type dropdown, that allows selection of all files and directories.
+     * If you disable this, you should use addChoosableFileFilter and/or setFileFilter to
+     * set your own item(s) in the dropdown list of filters.
+     */
+    public FileField setAcceptAllFileFilterUsed(boolean enable) {
+        fileChooser.setAcceptAllFileFilterUsed(enable);
+        return this;
+    }
+
+    /**
+     * Indicates whether the default "All files" filter is present in the list of choosable
+     * file filters. The default value is true.
+     */
+    public boolean isAcceptAllFileFilterUsed() {
+        return fileChooser.isAcceptAllFileFilterUsed();
+    }
+
+    /**
+     * Returns whether blank values are permitted in this field. If true,
      * and no value is specified in the text field, then getFile() will return null.
      * If false, then the field will throw a validation error if no value is specified.
-     *
-     * @return Whether or not this field considers a blank value to be valid.
      */
     public boolean isAllowBlankValues() {
         return isAllowBlank;
@@ -228,7 +305,41 @@ public final class FileField extends FormField {
     }
 
     /**
-     * Sets a FileFilter to use with the JFileChooser.
+     * Adds a FileFilter to the list of user-selectable filters on the dialog.
+     * You can use setFileFilter to specify which of the filters should be selected
+     * by default. Note that by default, the file chooser will also add a
+     * "All files" filter to the list, and that one will be selected by default
+     * unless you invoke setFileFilter. You can disable the "All files" filter
+     * via setAcceptAllFileFilterUsed, but if you do that, you should invoke
+     * setFileFilter to set the default (otherwise it'll just be the first in the list).
+     */
+    public FileField addChoosableFileFilter(FileFilter filter) {
+        fileChooser.addChoosableFileFilter(filter);
+        return this;
+    }
+
+    /**
+     * Removes the given FileFilter from the list of choosable filters that were
+     * provided via addChoosableFileFilter.
+     */
+    public FileField removeChoosableFileFilter(FileFilter filter) {
+        fileChooser.removeChoosableFileFilter(filter);
+        return this;
+    }
+
+    /**
+     * Resets the list of choosable file filters back to the starting state.
+     */
+    public FileField resetChoosableFileFilters() {
+        fileChooser.resetChoosableFileFilters();
+        return this;
+    }
+
+    /**
+     * Sets which of the choosable file filters added via addChoosableFileFilter should be
+     * selected by default when the dialog comes up. If the filter that you supply here
+     * isn't already in the list, it will be added to this list. This method can therefore
+     * be a bit of a shortcut if you only have one filter for your dialog.
      *
      * @param filter An optional FileFilter to apply.
      */
@@ -237,6 +348,11 @@ public final class FileField extends FormField {
         return this;
     }
 
+    /**
+     * Returns the currently selected FileFilter in the dialog. This can either be the
+     * built-in All files filter (if isAcceptAllFileFilterUsed is true), or one
+     * of the filters supplied to addChoosableFileFilter.
+     */
     public FileFilter getFileFilter() {
         return fileChooser.getFileFilter();
     }
@@ -336,5 +452,50 @@ public final class FileField extends FormField {
 
         // now add the user-added validators back
         fieldValidators.addAll(userAddedValidators);
+    }
+
+    /**
+     * An example accessory component that can be supplied to the setAccessory method.
+     * This component will show a small image preview right in the file chooser if the selected
+     * file is an image file.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     * @since swing-extras 2.5
+     */
+    public static class ImagePreviewAccessory extends JPanel implements PropertyChangeListener {
+        private final ImagePanel imagePanel;
+
+        public ImagePreviewAccessory() {
+            setPreferredSize(new Dimension(200, 200));
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createEmptyBorder(5, 5, 5, 5),
+                    BorderFactory.createLineBorder(Color.GRAY)));
+            imagePanel = new ImagePanel(ImagePanelConfig.createSimpleReadOnlyProperties());
+            setLayout(new BorderLayout());
+            add(imagePanel, BorderLayout.CENTER);
+        }
+
+        /**
+         * When the selected file changes, try to parse and load it as an image, and show it
+         * in our preview panel. If an image can't be loaded, blank out the preview.
+         */
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            String prop = evt.getPropertyName();
+            if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(prop)) {
+                BufferedImage image = null;
+                File file = (File)evt.getNewValue();
+                if (ImageUtil.isImageFile(file)) {
+                    try {
+                        image = ImageUtil.loadImage(file);
+                    }
+                    catch (IOException ignored) {
+                        // not an image
+                    }
+                }
+                imagePanel.setImage(image);
+                repaint();
+            }
+        }
     }
 }

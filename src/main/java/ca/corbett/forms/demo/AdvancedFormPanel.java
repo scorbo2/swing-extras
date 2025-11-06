@@ -1,6 +1,7 @@
 package ca.corbett.forms.demo;
 
 import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.forms.Alignment;
@@ -115,6 +116,7 @@ public class AdvancedFormPanel extends PanelBuilder {
                                            + "<br>Click and drag left/right to scroll the list!"
                                            + "<br>You can drag and drop images from your file system onto the list!</html>");
         imageListField.setShouldExpand(true);
+        imageListField.getImageListPanel().setOwnerWindow(DemoApp.getInstance());
         formPanel.add(imageListField);
 
         return formPanel;

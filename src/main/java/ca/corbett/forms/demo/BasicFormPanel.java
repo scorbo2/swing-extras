@@ -4,23 +4,27 @@ import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FileField;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.ShortTextField;
+import ca.corbett.forms.fields.ValueChangedListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.filechooser.FileFilter;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +35,9 @@ import java.util.List;
  * @since 2029-11-25
  */
 public class BasicFormPanel extends PanelBuilder {
+
+    private FormPanel formPanel;
+
     @Override
     public String getTitle() {
         return "Forms: basic fields";
@@ -38,7 +45,7 @@ public class BasicFormPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(24);
 
         LabelField headerLabel = LabelField.createBoldHeaderLabel("Looking for basic form components? No problem!",
@@ -48,25 +55,20 @@ public class BasicFormPanel extends PanelBuilder {
                 e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
         formPanel.add(headerLabel);
 
-        formPanel.add(new ShortTextField("Single-line text:", 15));
-        LongTextField textField = LongTextField.ofFixedSizeMultiLine("Multi-line text:", 4, 18);
+        formPanel.add(LabelField.createBoldHeaderLabel("Text input"));
+
+        formPanel.add(new ShortTextField("Single-line text:", 15).setText("Hello."));
+        formPanel.add(LongTextField.ofFixedSizeMultiLine("Multi-line text:", 3, 21)
+                                   .setText("Text fields are great for long text entry."));
+        LongTextField textField = LongTextField.ofFixedSizeMultiLine("With pop-out edit:", 3, 21);
         textField.setAllowPopoutEditing(true);
-        textField.getMargins().setBottom(12);
+        textField.setText("You can hit the \"Pop out\" button to edit this text in a resizable popup window.");
         formPanel.add(textField);
+
+        formPanel.add(LabelField.createBoldHeaderLabel("General input components"));
         formPanel.add(new CheckBoxField("Checkboxes", true));
         formPanel.add(buildComboField());
         formPanel.add(new ColorField("Color chooser:", ColorSelectionType.SOLID).setColor(Color.BLUE));
-
-        LabelField labelField = LabelField.createPlainHeaderLabel(
-                "Header fields help to organize the form.");
-        labelField.setFont(new Font("SansSerif", Font.BOLD, 18));
-        labelField.getMargins().setTop(24).setBottom(18);
-        formPanel.add(labelField);
-
-        formPanel.add(new FileField("File chooser:", null, 15, FileField.SelectionType.AnyFile));
-        formPanel.add(
-                new FileField("Directory chooser:", null, 15, FileField.SelectionType.ExistingDirectory));
-
         LabelField linkField = new LabelField("Hyperlink:", "Yes, you can add hyperlinks to your forms!");
         linkField.getMargins().setTop(10).setBottom(10);
         linkField.setHyperlink(new AbstractAction() {
@@ -76,10 +78,43 @@ public class BasicFormPanel extends PanelBuilder {
             }
         });
         formPanel.add(linkField);
-
         formPanel.add(new NumberField("Number chooser:", 0, 0, 100, 1));
 
+        formPanel.add(LabelField.createBoldHeaderLabel("File and directory choosers"));
+        CheckBoxField showHiddenField = new CheckBoxField("Show hidden files", false);
+        showHiddenField.addValueChangedListener(new ValueChangedListener() {
+            @Override
+            public void formFieldValueChanged(FormField field) {
+                boolean isChecked = ((CheckBoxField)field).isChecked();
+                formPanel.getFormFields()
+                         .stream()
+                         .filter(f -> f instanceof FileField)
+                         .forEach(f -> ((FileField)f).setFileHidingEnabled(!isChecked));
+            }
+        });
+        formPanel.add(showHiddenField);
+        formPanel.add(new FileField("File chooser:", null, 15, FileField.SelectionType.AnyFile));
+        FileField fileField = new FileField("With image preview:", null, 15, FileField.SelectionType.AnyFile);
+        fileField.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || ImageUtil.isImageFile(f);
+            }
+
+            @Override
+            public String getDescription() {
+                return "Image files (png, jpg, bmp, gif)";
+            }
+        });
+        fileField.setAccessory(new FileField.ImagePreviewAccessory());
+        formPanel.add(fileField);
+        formPanel.add(new FileField("Dir chooser:", null, 15, FileField.SelectionType.ExistingDirectory));
+
         return formPanel;
+    }
+
+    private void showHiddenFilesCheckboxClicked() {
+
     }
 
     private ComboField<String> buildComboField() {
