@@ -49,10 +49,12 @@ import java.util.Objects;
 public class UpdateSources {
     private final String applicationName;
     private final List<UpdateSource> updateSources;
+    private boolean isAllowSnapshots;
 
     public UpdateSources(String applicationName) {
         this.applicationName = applicationName;
         this.updateSources = new ArrayList<>();
+        this.isAllowSnapshots = false; // Must be explicitly enabled by user
     }
 
     public String getApplicationName() {
@@ -67,16 +69,25 @@ public class UpdateSources {
         updateSources.add(updateSource);
     }
 
+    public boolean isAllowSnapshots() {
+        return isAllowSnapshots;
+    }
+
+    public void setAllowSnapshots(boolean allowSnapshots) {
+        this.isAllowSnapshots = allowSnapshots;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof UpdateSources that)) { return false; }
         return Objects.equals(applicationName, that.applicationName)
-                && Objects.equals(updateSources, that.updateSources);
+                && Objects.equals(updateSources, that.updateSources)
+                && Objects.equals(isAllowSnapshots, that.isAllowSnapshots);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(applicationName, updateSources);
+        return Objects.hash(applicationName, updateSources, isAllowSnapshots);
     }
 
     /**

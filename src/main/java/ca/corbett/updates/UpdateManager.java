@@ -107,6 +107,24 @@ public class UpdateManager {
     }
 
     /**
+     * Reports whether SNAPSHOT versions should be shown to the user and allowed for
+     * download and installation. The default value is false, unless explicitly enabled
+     * in the UpdateSources json or via setAllowSnapshots() in this class.
+     */
+    public boolean isAllowSnapshots() {
+        return updateSources.isAllowSnapshots();
+    }
+
+    /**
+     * Decides whether SNAPSHOT versions should be shown to the user and allowed for
+     * download and installation. The default value is false, unless explicitly enabled
+     * in the UpdateSources json or via setAllowSnapshots() in this class.
+     */
+    public void setAllowSnapshots(boolean allow) {
+        updateSources.setAllowSnapshots(allow);
+    }
+
+    /**
      * Register to receive notifications from this UpdateManager as various remote resources are downloaded.
      */
     public void addUpdateManagerListener(UpdateManagerListener listener) {
