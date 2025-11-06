@@ -24,6 +24,7 @@ import ca.corbett.forms.fields.ShortTextField;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -183,12 +184,16 @@ public class ProgressDemoPanel extends PanelBuilder {
         worker.addProgressListener(new SimpleProgressAdapter() {
             @Override
             public void progressCanceled() {
-                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was canceled.");
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was canceled.");
+                });
             }
 
             @Override
             public void progressComplete() {
-                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was completed.");
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was completed.");
+                });
             }
         });
 
@@ -208,12 +213,16 @@ public class ProgressDemoPanel extends PanelBuilder {
         worker.addProgressListener(new MultiProgressAdapter() {
             @Override
             public void progressCanceled() {
-                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was canceled.");
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was canceled.");
+                });
             }
 
             @Override
             public void progressComplete() {
-                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was completed.");
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was completed.");
+                });
             }
         });
 
@@ -339,6 +348,4 @@ public class ProgressDemoPanel extends PanelBuilder {
 
         }
     }
-
-    ;
 }

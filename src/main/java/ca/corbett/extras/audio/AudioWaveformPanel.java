@@ -11,6 +11,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -247,15 +248,19 @@ public final class AudioWaveformPanel extends JPanel {
 
             @Override
             public void stopped(PlaybackThread.StopReason stopReason) {
-                setPlaybackPosition(0);
-                panelState = PanelState.IDLE;
-                fireStateChangedEvent();
-                fireAudioStoppedEvent(stopReason);
+                SwingUtilities.invokeLater(() -> {
+                    setPlaybackPosition(0);
+                    panelState = PanelState.IDLE;
+                    fireStateChangedEvent();
+                    fireAudioStoppedEvent(stopReason);
+                });
             }
 
             @Override
             public boolean updateProgress(long curMillis, long totalMillis) {
-                setPlaybackPosition((float)curMillis / (float)totalMillis);
+                SwingUtilities.invokeLater(() -> {
+                    setPlaybackPosition((float)curMillis / (float)totalMillis);
+                });
                 return true;
             }
 
@@ -469,15 +474,17 @@ public final class AudioWaveformPanel extends JPanel {
             recordThread = new RecordThread(scratchFile, new RecordingListener() {
                 @Override
                 public void complete() {
-                    panelState = PanelState.IDLE;
-                    fireStateChangedEvent();
-                    try {
-                        setAudioClip(scratchFile);
-                        fireRecordingCompleteEvent();
-                    }
-                    catch (IOException | UnsupportedAudioFileException e) {
-                        logger.log(Level.SEVERE, "Recording complete, but with error: " + e.getMessage(), e);
-                    }
+                    SwingUtilities.invokeLater(() -> {
+                        panelState = PanelState.IDLE;
+                        fireStateChangedEvent();
+                        try {
+                            setAudioClip(scratchFile);
+                            fireRecordingCompleteEvent();
+                        }
+                        catch (IOException | UnsupportedAudioFileException e) {
+                            logger.log(Level.SEVERE, "Recording complete, but with error: " + e.getMessage(), e);
+                        }
+                    });
                 }
 
             });

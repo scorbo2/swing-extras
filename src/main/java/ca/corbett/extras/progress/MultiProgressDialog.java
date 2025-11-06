@@ -12,6 +12,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -140,45 +141,55 @@ public final class MultiProgressDialog extends JDialog {
             @Override
             public void progressBegins(int totalMajorSteps) {
                 this.totalMajorSteps = totalMajorSteps;
-                progressDialog.setMajorProgressBounds(0, totalMajorSteps);
-                progressDialog.setVisible(true);
+                SwingUtilities.invokeLater(() -> {
+                    progressDialog.setMajorProgressBounds(0, totalMajorSteps);
+                    progressDialog.setVisible(true);
+                });
             }
 
             @Override
             public boolean majorProgressUpdate(int majorStep, int totalMinorSteps, String message) {
                 this.totalMinorSteps = totalMinorSteps;
-                progressDialog.setMinorProgressBounds(0, totalMinorSteps);
-                progressDialog.setMajorProgress(majorStep + 1,
-                                                message + " (" + (majorStep + 1) + " of " + totalMajorSteps + ")");
-                progressDialog.setMinorProgress(0, "");
+                SwingUtilities.invokeLater(() -> {
+                    progressDialog.setMinorProgressBounds(0, totalMinorSteps);
+                    progressDialog.setMajorProgress(majorStep + 1,
+                                                    message + " (" + (majorStep + 1) + " of " + totalMajorSteps + ")");
+                    progressDialog.setMinorProgress(0, "");
+                });
                 return !isCanceled;
             }
 
             @Override
             public boolean minorProgressUpdate(int majorStep, int minorStep, String message) {
-                progressDialog.setMinorProgress(minorStep + 1,
-                                                message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
+                SwingUtilities.invokeLater(() -> {
+                    progressDialog.setMinorProgress(minorStep + 1,
+                                                    message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
+                });
                 return !isCanceled;
             }
 
             @Override
             public void progressComplete() {
-                if (disposeWhenComplete) {
-                    progressDialog.dispose();
-                }
-                else {
-                    progressDialog.setVisible(false);
-                }
+                SwingUtilities.invokeLater(() -> {
+                    if (disposeWhenComplete) {
+                        progressDialog.dispose();
+                    }
+                    else {
+                        progressDialog.setVisible(false);
+                    }
+                });
             }
 
             @Override
             public void progressCanceled() {
-                if (disposeWhenComplete) {
-                    progressDialog.dispose();
-                }
-                else {
-                    progressDialog.setVisible(false);
-                }
+                SwingUtilities.invokeLater(() -> {
+                    if (disposeWhenComplete) {
+                        progressDialog.dispose();
+                    }
+                    else {
+                        progressDialog.setVisible(false);
+                    }
+                });
             }
 
         };
@@ -212,36 +223,44 @@ public final class MultiProgressDialog extends JDialog {
             @Override
             public void progressBegins(int totalSteps) {
                 this.totalSteps = totalSteps;
-                progressDialog.setMajorProgressBounds(0, totalSteps);
-                progressDialog.setVisible(true);
+                SwingUtilities.invokeLater(() -> {
+                    progressDialog.setMajorProgressBounds(0, totalSteps);
+                    progressDialog.setVisible(true);
+                });
             }
 
             @Override
             public boolean progressUpdate(int currentStep, String message) {
-                progressDialog.setMajorProgress(currentStep + 1,
-                                                message + " (" + (currentStep + 1) + " of " + totalSteps + ")");
-                progressDialog.setMinorProgress(0, "");
+                SwingUtilities.invokeLater(() -> {
+                    progressDialog.setMajorProgress(currentStep + 1,
+                                                    message + " (" + (currentStep + 1) + " of " + totalSteps + ")");
+                    progressDialog.setMinorProgress(0, "");
+                });
                 return !isCanceled;
             }
 
             @Override
             public void progressComplete() {
-                if (disposeWhenComplete) {
-                    progressDialog.dispose();
-                }
-                else {
-                    progressDialog.setVisible(false);
-                }
+                SwingUtilities.invokeLater(() -> {
+                    if (disposeWhenComplete) {
+                        progressDialog.dispose();
+                    }
+                    else {
+                        progressDialog.setVisible(false);
+                    }
+                });
             }
 
             @Override
             public void progressCanceled() {
-                if (disposeWhenComplete) {
-                    progressDialog.dispose();
-                }
-                else {
-                    progressDialog.setVisible(false);
-                }
+                SwingUtilities.invokeLater(() -> {
+                    if (disposeWhenComplete) {
+                        progressDialog.dispose();
+                    }
+                    else {
+                        progressDialog.setVisible(false);
+                    }
+                });
             }
 
         };

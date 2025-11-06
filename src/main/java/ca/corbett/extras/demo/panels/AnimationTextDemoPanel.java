@@ -13,6 +13,7 @@ import ca.corbett.forms.fields.PanelField;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -118,7 +119,7 @@ public class AnimationTextDemoPanel extends PanelBuilder {
 
             while (isRunning) {
                 textRenderer.updateTextAnimation();
-                imagePanel.setImage(textRenderer.getBuffer());
+                SwingUtilities.invokeLater(() -> imagePanel.setImage(textRenderer.getBuffer()));
                 try {
                     Thread.sleep(100);
                 }

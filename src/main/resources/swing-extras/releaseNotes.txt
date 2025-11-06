@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.5.0 [TODO release date] - TODO description
+  #164 - general: callback listeners were not thread safe
   #160 - Add a way to compare version strings reliably
   #159 - ImageListPanel: fix minor bug with owner window
   #156 - VersionManifest: use relative paths not URLs

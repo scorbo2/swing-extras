@@ -9,6 +9,7 @@ import javax.swing.AbstractAction;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JProgressBar;
 import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -137,23 +138,23 @@ public final class SplashProgressWindow extends JWindow {
         final SimpleProgressListener listener = new SimpleProgressAdapter() {
             @Override
             public void progressBegins(int stepCount) {
-                thisWindow.initializeProgressBar(stepCount);
+                SwingUtilities.invokeLater(() -> thisWindow.initializeProgressBar(stepCount));
             }
 
             @Override
             public boolean progressUpdate(int currentStep, String message) {
-                thisWindow.setProgress(currentStep + 1);
+                SwingUtilities.invokeLater(() -> thisWindow.setProgress(currentStep + 1));
                 return true;
             }
 
             @Override
             public void progressComplete() {
-                thisWindow.dispose();
+                SwingUtilities.invokeLater(() -> thisWindow.dispose());
             }
 
             @Override
             public void progressCanceled() {
-                thisWindow.dispose();
+                SwingUtilities.invokeLater(() -> thisWindow.dispose());
             }
 
         };
