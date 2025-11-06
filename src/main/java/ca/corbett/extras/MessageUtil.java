@@ -162,7 +162,7 @@ public final class MessageUtil {
      * @param message The warning message to show.
      */
     public void warning(String title, String message) {
-        JOptionPane.showMessageDialog(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(parent, message, title, JOptionPane.WARNING_MESSAGE);
 
         if (logger != null) {
             logger.warning(message);
