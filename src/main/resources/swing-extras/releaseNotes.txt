@@ -6,6 +6,7 @@ Version 2.5.0 [TODO release date] - TODO description
   #161 - MessageUtil: fix warning icon
   #160 - Add a way to compare version strings reliably
   #159 - ImageListPanel: fix minor bug with owner window
+  #157 - ImageListPanel: animated GIF support
   #156 - VersionManifest: use relative paths not URLs
   #155 - General: smarten up listener handling
   #154 - UpdateSource: force manifest and public key to same host

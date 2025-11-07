@@ -2,6 +2,7 @@ package ca.corbett.extras.image;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -181,13 +182,21 @@ public class ImageListPanel extends JPanel {
         isAdjusting = true;
         try {
             // Re-do our layout by removing all old image panels and creating new ones at the right size:
-            List<BufferedImage> images = new ArrayList<>(getComponentCount());
+            List<Object> images = new ArrayList<>(getComponentCount());
+            List<BufferedImage> thumbnails = new ArrayList<>(getComponentCount());
             for (int i = 0; i < getComponentCount(); i++) {
                 images.add(getImageAt(i));
+                thumbnails.add(getThumbnailAt(i));
             }
             removeAll();
-            for (BufferedImage image : images) {
-                addImage(image);
+            for (int i = 0; i < images.size(); i++) {
+                Object image = images.get(i);
+                if (image instanceof BufferedImage) {
+                    addImage((BufferedImage)image);
+                }
+                else if (image instanceof ImageIcon) {
+                    addImage(thumbnails.get(i), (ImageIcon)image);
+                }
             }
         }
         finally {
@@ -202,13 +211,37 @@ public class ImageListPanel extends JPanel {
      * that they are added! Re-ordering the list dynamically is not yet possible.
      */
     public void addImage(BufferedImage image) {
-        // Ignore garbage input:
-        if (image == null) {
+        // Ignore nulls, and keep the list size within bounds:
+        if (image == null || getImageCount() >= maxListSize) {
             return;
         }
 
-        // Don't allow our list size to be exceeded:
-        if (getImageCount() >= maxListSize) {
+        addImageInternal(image, null);
+    }
+
+    /**
+     * Adds a new animated gif to the list. The list displays images in the order that they are added!
+     * Re-ordering the list dynamically is not yet possible.
+     */
+    public void addImage(BufferedImage thumbnail, ImageIcon imageIcon) {
+        // Ignore nulls, and keep the list size within bounds:
+        if (imageIcon == null || getImageCount() >= maxListSize) {
+            return;
+        }
+
+        addImageInternal(thumbnail, imageIcon);
+    }
+
+    /**
+     * Invoked internally to add EITHER a BufferedImage or an ImageIcon, depending on image type.
+     * This is a bit hacky, but we have to distinguish between static images (jpg, png, bmp)
+     * versus animated GIFs, which for Java reasons have to be held in an ImageIcon.
+     * This complexity is hidden from the caller. You can just invoke one of the
+     * public addImage() overloads to add whatever you have, and the right thing will happen.
+     */
+    private void addImageInternal(BufferedImage image, ImageIcon imageIcon) {
+        // Keep the list size within bounds:
+        if (image == null || getImageCount() >= maxListSize) {
             return;
         }
 
@@ -220,9 +253,18 @@ public class ImageListPanel extends JPanel {
 
         // Create an ImagePanel to represent this image:
         ImagePanel imagePanel = new ImagePanel(thumbnail, ImagePanelConfig.createSimpleReadOnlyProperties());
+
+        // Note... we COULD show animated gifs in the panel, but the cpu usage starts to get crazy
+        // if you have more than a few showing at once. Safer approach is shown above,
+        // where we show a static preview thumbnail image in the panel, then show the animation
+        // when the user double-clicks to launch the preview window
+//        ImagePanel imagePanel = imageIcon == null
+//                ? new ImagePanel(thumbnail, ImagePanelConfig.createSimpleReadOnlyProperties())
+//                : new ImagePanel(imageIcon, ImagePanelConfig.createSimpleReadOnlyProperties());
+        
         imagePanel.setMinimumSize(new Dimension(thumbSize, thumbSize));
         imagePanel.setPreferredSize(new Dimension(thumbSize, thumbSize));
-        imagePanel.setExtraAttribute("originalImage", image);
+        imagePanel.setExtraAttribute("originalImage", imageIcon != null ? imageIcon : image);
         imagePanel.setExtraAttribute("listIndex", getImageCount());
         imagePanel.setPopupMenu(buildPopupMenu(imagePanel));
         imagePanel.addMouseListener(buildMouseListener(imagePanel));
@@ -249,14 +291,30 @@ public class ImageListPanel extends JPanel {
 
     /**
      * Returns the image at the given index, or null if the given index is invalid.
+     * The return will be EITHER a BufferedImage for static image formats like jpeg or png,
+     * OR an ImageIcon if the image was an animated GIF. Caller has to check.
      */
-    public BufferedImage getImageAt(int index) {
+    public Object getImageAt(int index) {
         if (index < 0 || index >= getComponentCount()) {
             return null;
         }
 
         ImagePanel imagePanel = (ImagePanel)getComponent(index);
-        return (BufferedImage)imagePanel.getExtraAttribute("originalImage");
+        return imagePanel.getExtraAttribute("originalImage");
+    }
+
+    /**
+     * Returns the scaled thumbnail at the given index, or null if the given index is invalid.
+     * If the image at the given index is an animated GIF, this will give you the scaled
+     * static thumbnail which was based on the first frame of the animation.
+     */
+    public BufferedImage getThumbnailAt(int index) {
+        if (index < 0 || index >= getComponentCount()) {
+            return null;
+        }
+
+        ImagePanel imagePanel = (ImagePanel)getComponent(index);
+        return imagePanel.getImage();
     }
 
     /**
@@ -296,7 +354,19 @@ public class ImageListPanel extends JPanel {
      * Launches a popup window to show the image at full size.
      */
     private void showImage(BufferedImage image) {
-        image.flush();
+        JDialog dialog = new JDialog(ownerWindow, "Image preview", Dialog.ModalityType.MODELESS);
+        dialog.setSize(new Dimension(600, 400));
+        dialog.setLocationRelativeTo(ownerWindow);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setLayout(new BorderLayout());
+        dialog.add(new ImagePanel(image, ImagePanelConfig.createSimpleReadOnlyProperties()), BorderLayout.CENTER);
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Launches a popup window to show the image at full size.
+     */
+    private void showImage(ImageIcon image) {
         JDialog dialog = new JDialog(ownerWindow, "Image preview", Dialog.ModalityType.MODELESS);
         dialog.setSize(new Dimension(600, 400));
         dialog.setLocationRelativeTo(ownerWindow);
@@ -374,7 +444,10 @@ public class ImageListPanel extends JPanel {
                             if (isImageFile(file)) {
                                 try {
                                     BufferedImage image = ImageUtil.loadImage(file);
-                                    if (image != null) {
+                                    if (isGif(file)) {
+                                        addImage(image, ImageUtil.loadImageIcon(file));
+                                    }
+                                    else {
                                         addImage(image);
                                     }
                                 }
@@ -399,6 +472,13 @@ public class ImageListPanel extends JPanel {
 
             private boolean isImageFileDrag(DropTargetDragEvent dtde) {
                 return dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor);// We'll validate actual files on drop
+            }
+
+            /**
+             * Always remember, it's pronounced "gif", not "gif".
+             */
+            private boolean isGif(File file) {
+                return file.getName().toLowerCase().endsWith(".gif");
             }
 
             private boolean isImageFile(File file) {
@@ -446,7 +526,13 @@ public class ImageListPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    showImage((BufferedImage)imagePanel.getExtraAttribute("originalImage"));
+                    Object originalImage = imagePanel.getExtraAttribute("originalImage");
+                    if (originalImage instanceof BufferedImage) {
+                        showImage((BufferedImage)originalImage);
+                    }
+                    else if (originalImage instanceof ImageIcon) {
+                        showImage((ImageIcon)originalImage);
+                    }
                 }
             }
         };

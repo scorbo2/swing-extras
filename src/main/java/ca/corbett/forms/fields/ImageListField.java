@@ -2,6 +2,7 @@ package ca.corbett.forms.fields;
 
 import ca.corbett.extras.image.ImageListPanel;
 
+import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -134,13 +135,29 @@ public class ImageListField extends FormField implements ChangeListener {
     }
 
     /**
+     * Programmatically adds an animated GIF image to this field, assuming the number
+     * of images currently contained is less than the configured image limit.
+     * Caller must supply a static image which will be scaled to use as the thumbnail.
+     * A good choice is usually the first frame of the animation. This image will
+     * be scaled as needed to fit the thumbnail panel.
+     */
+    public ImageListField addImage(BufferedImage thumbnail, ImageIcon imageIcon) {
+        imageListPanel.addImage(thumbnail, imageIcon);
+        return this;
+    }
+
+    /**
      * Returns the count of images currently contained in this field.
      */
     public int getImageCount() {
         return imageListPanel.getImageCount();
     }
 
-    public BufferedImage getImageAt(int index) {
+    /**
+     * Returns EITHER a BufferedImage for static image types like jpeg or png,
+     * OR an ImageIcon if the image at the given index is an animated GIF.
+     */
+    public Object getImageAt(int index) {
         return imageListPanel.getImageAt(index);
     }
 
