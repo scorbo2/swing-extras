@@ -1,12 +1,12 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.CoalescingDocumentListener;
+import ca.corbett.extras.PopupTextDialog;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.NonBlankFieldValidator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -21,8 +21,6 @@ import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -225,15 +223,11 @@ public class LongTextField extends FormField {
                                                   JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                PopoutEditor editor;
-                if (owningWindow instanceof Frame) {
-                    editor = new PopoutEditor((Frame)owningWindow, fieldLabel.getText(), textArea.getText(),
-                                              isEnabled());
-                }
-                else {
-                    editor = new PopoutEditor((Dialog)owningWindow, fieldLabel.getText(), textArea.getText(),
-                                              isEnabled());
-                }
+                PopupTextDialog editor = new PopupTextDialog(owningWindow,
+                                                             fieldLabel.getText(),
+                                                             textArea.getText(),
+                                                             true);
+                editor.setReadOnly(!isEnabled());
                 editor.setVisible(true);
                 if (editor.wasOkayed()) {
                     textArea.setText(editor.getText());
@@ -268,88 +262,5 @@ public class LongTextField extends FormField {
         for (FieldValidator<? extends FormField> validator : foundList) {
             fieldValidators.remove(validator);
         }
-    }
-
-    private static class PopoutEditor extends JDialog {
-
-        public static int lastWidth = 400; // arbitrary default
-        public static int lastHeight = 300; // arbitrary default
-        private JTextArea textArea;
-        private boolean wasOkayed;
-
-        public PopoutEditor(Dialog owner, String label, String text, boolean isEnabled) {
-            super(owner, label);
-            setModal(true);
-            setSize(lastWidth, lastHeight);
-            setLocationRelativeTo(owner);
-            setResizable(true);
-            initComponents(text, isEnabled);
-        }
-
-        public PopoutEditor(Frame owner, String label, String text, boolean isEnabled) {
-            super(owner, label, true);
-            setSize(new Dimension(lastWidth, lastHeight));
-            setLocationRelativeTo(owner);
-            setResizable(true);
-            initComponents(text, isEnabled);
-        }
-
-        public boolean wasOkayed() {
-            return wasOkayed;
-        }
-
-        public String getText() {
-            return textArea.getText();
-        }
-
-        private void initComponents(String text, boolean isEnabled) {
-            setLayout(new BorderLayout());
-            add(buildTextArea(text), BorderLayout.CENTER);
-            add(buildButtonPanel(), BorderLayout.SOUTH);
-            textArea.setEditable(isEnabled);
-
-            // Add ComponentListener to track resize events
-            addComponentListener(new ComponentAdapter() {
-                @Override
-                public void componentResized(ComponentEvent e) {
-                    // Update static variables with current size
-                    Dimension currentSize = getSize();
-                    lastWidth = currentSize.width;
-                    lastHeight = currentSize.height;
-                }
-            });
-        }
-
-        private JScrollPane buildTextArea(String text) {
-            textArea = new JTextArea(text);
-            textArea.setLineWrap(true);
-            textArea.setWrapStyleWord(true);
-            textArea.setFont(getDefaultFont());
-            JScrollPane scrollPane = new JScrollPane(textArea);
-            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            return scrollPane;
-        }
-
-        private JPanel buildButtonPanel() {
-            JPanel panel = new JPanel();
-            panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-            JButton button = new JButton("OK");
-            button.setPreferredSize(new Dimension(90, 23));
-            button.addActionListener(e -> {
-                wasOkayed = true;
-                dispose();
-            });
-            panel.add(button);
-            button = new JButton("Cancel");
-            button.setPreferredSize(new Dimension(90, 23));
-            button.addActionListener(e -> {
-                wasOkayed = false;
-                dispose();
-            });
-            panel.add(button);
-            return panel;
-        }
-
     }
 }
