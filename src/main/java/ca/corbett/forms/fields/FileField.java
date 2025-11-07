@@ -362,10 +362,14 @@ public final class FileField extends FormField {
         fieldComponent.setBackground(container.getBackground());
 
         // Remove any previous action listener added by us:
+        List<ActionListener> toRemove = new ArrayList<>();
         for (ActionListener listener : chooseButton.getActionListeners()) {
             if (listener instanceof ButtonActionListener) {
-                chooseButton.removeActionListener(listener);
+                toRemove.add(listener);
             }
+        }
+        for (ActionListener listener : toRemove) {
+            chooseButton.removeActionListener(listener);
         }
 
         // Add a new one - the action listener needs the parent container to show the chooser dialog:

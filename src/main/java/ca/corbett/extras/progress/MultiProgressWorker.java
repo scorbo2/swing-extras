@@ -27,14 +27,14 @@ public abstract class MultiProgressWorker implements Runnable {
     }
 
     protected void fireProgressBegins(int totalMajorSteps) {
-        for (MultiProgressListener listener : listeners) {
+        for (MultiProgressListener listener : new ArrayList<>(listeners)) {
             listener.progressBegins(totalMajorSteps);
         }
     }
 
     protected boolean fireMajorProgressUpdate(int majorStep, int totalMinorSteps, String message) {
         boolean shouldContinue = true;
-        for (MultiProgressListener listener : listeners) {
+        for (MultiProgressListener listener : new ArrayList<>(listeners)) {
             shouldContinue = shouldContinue && listener.majorProgressUpdate(majorStep, totalMinorSteps, message);
         }
         return shouldContinue;
@@ -42,7 +42,7 @@ public abstract class MultiProgressWorker implements Runnable {
 
     public boolean fireMinorProgressUpdate(int majorStep, int minorStep, String message) {
         boolean shouldContinue = true;
-        for (MultiProgressListener listener : listeners) {
+        for (MultiProgressListener listener : new ArrayList<>(listeners)) {
             shouldContinue = shouldContinue && listener.minorProgressUpdate(majorStep, minorStep, message);
         }
         return shouldContinue;
@@ -50,7 +50,7 @@ public abstract class MultiProgressWorker implements Runnable {
 
     public boolean fireProgressError(String errorSource, String errorDetails) {
         boolean shouldContinue = true;
-        for (MultiProgressListener listener : listeners) {
+        for (MultiProgressListener listener : new ArrayList<>(listeners)) {
             shouldContinue = shouldContinue && listener.progressError(errorSource, errorDetails);
         }
         return shouldContinue;
@@ -58,13 +58,13 @@ public abstract class MultiProgressWorker implements Runnable {
     }
 
     public void fireProgressComplete() {
-        for (MultiProgressListener listener : listeners) {
+        for (MultiProgressListener listener : new ArrayList<>(listeners)) {
             listener.progressComplete();
         }
     }
 
     public void fireProgressCanceled() {
-        for (MultiProgressListener listener : listeners) {
+        for (MultiProgressListener listener : new ArrayList<>(listeners)) {
             listener.progressCanceled();
         }
     }

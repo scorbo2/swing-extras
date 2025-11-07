@@ -464,13 +464,13 @@ public final class LogConsole extends JFrame implements ChangeListener {
     }
 
     private void fireThemeChangedEvent(String newTheme) {
-        for (LogConsoleListener listener : listeners) {
+        for (LogConsoleListener listener : new ArrayList<>(listeners)) {
             listener.logConsoleThemeChanged(newTheme);
         }
     }
 
     private void fireFontSizeChangedEvent(int newFontSize) {
-        for (LogConsoleListener listener : listeners) {
+        for (LogConsoleListener listener : new ArrayList<>(listeners)) {
             listener.logConsoleFontSizeChanged(newFontSize);
         }
     }

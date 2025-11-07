@@ -29,14 +29,14 @@ public abstract class SimpleProgressWorker implements Runnable {
     }
 
     protected void fireProgressBegins(int totalMajorSteps) {
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             listener.progressBegins(totalMajorSteps);
         }
     }
 
     protected boolean fireProgressUpdate(int currentStep, String message) {
         boolean shouldContinue = true;
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             shouldContinue = shouldContinue && listener.progressUpdate(currentStep, message);
         }
         return shouldContinue;
@@ -44,7 +44,7 @@ public abstract class SimpleProgressWorker implements Runnable {
 
     protected boolean fireProgressError(String errorSource, String errorDetails) {
         boolean shouldContinue = true;
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             shouldContinue = shouldContinue && listener.progressError(errorSource, errorDetails);
         }
         return shouldContinue;
@@ -52,13 +52,13 @@ public abstract class SimpleProgressWorker implements Runnable {
     }
 
     protected void fireProgressComplete() {
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             listener.progressComplete();
         }
     }
 
     public void fireProgressCanceled() {
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             listener.progressCanceled();
         }
     }

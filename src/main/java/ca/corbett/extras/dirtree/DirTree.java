@@ -412,7 +412,7 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
      * specific subdirectory.
      */
     private void fireLockEvent() {
-        for (DirTreeListener listener : listeners) {
+        for (DirTreeListener listener : new ArrayList<>(listeners)) {
             listener.treeLocked(this, rootNode.getDir());
         }
     }
@@ -421,7 +421,7 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
      * Used internally to notify listeners that this tree has been unlocked.
      */
     private void fireUnlockEvent() {
-        for (DirTreeListener listener : listeners) {
+        for (DirTreeListener listener : new ArrayList<>(listeners)) {
             listener.treeUnlocked(this);
         }
     }
@@ -432,7 +432,7 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
      * @param node The newly selected node.
      */
     private void fireSelectionChangedEvent(DirTreeNode node) {
-        for (DirTreeListener listener : listeners) {
+        for (DirTreeListener listener : new ArrayList<>(listeners)) {
             listener.selectionChanged(this, node.getDir());
         }
     }

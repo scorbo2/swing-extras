@@ -1104,7 +1104,7 @@ public final class AudioWaveformPanel extends JPanel {
      * Notifies all listeners that an audio clip has been loaded into this panel.
      */
     private void fireAudioLoadedEvent() {
-        for (AudioPanelListener listener : panelListeners) {
+        for (AudioPanelListener listener : new ArrayList<>(panelListeners)) {
             listener.audioLoaded(this);
         }
     }
@@ -1113,7 +1113,7 @@ public final class AudioWaveformPanel extends JPanel {
      * Notifies all listeners that our state has changed.
      */
     private void fireStateChangedEvent() {
-        for (AudioPanelListener listener : panelListeners) {
+        for (AudioPanelListener listener : new ArrayList<>(panelListeners)) {
             listener.stateChanged(this, panelState);
         }
     }
@@ -1123,7 +1123,7 @@ public final class AudioWaveformPanel extends JPanel {
      * and is available for playback or saving.
      */
     private void fireRecordingCompleteEvent() {
-        for (AudioPanelListener listener : panelListeners) {
+        for (AudioPanelListener listener : new ArrayList<>(panelListeners)) {
             listener.recordingComplete(this);
         }
     }
@@ -1136,7 +1136,7 @@ public final class AudioWaveformPanel extends JPanel {
      * @param stopReason Why did the audio stop?
      */
     private void fireAudioStoppedEvent(PlaybackThread.StopReason stopReason) {
-        for (AudioPanelListener listener : panelListeners) {
+        for (AudioPanelListener listener : new ArrayList<>(panelListeners)) {
             listener.audioStopped(stopReason);
         }
     }

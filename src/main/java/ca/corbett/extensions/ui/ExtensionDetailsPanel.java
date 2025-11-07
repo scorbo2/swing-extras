@@ -189,7 +189,7 @@ public class ExtensionDetailsPanel extends JPanel {
         if (className == null) {
             return;
         }
-        for (ExtensionDetailsPanelListener listener : listeners) {
+        for (ExtensionDetailsPanelListener listener : new ArrayList<>(listeners)) {
             if (enabledCheckBox.isSelected()) {
                 listener.extensionEnabled(this, className);
             }

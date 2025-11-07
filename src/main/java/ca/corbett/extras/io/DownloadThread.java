@@ -219,7 +219,7 @@ public class DownloadThread implements Runnable {
 
     private void fireDownloadBegins() {
         log.info("DownloadThread: beginning download: " + url.toString());
-        for (DownloadListener listener : listeners) {
+        for (DownloadListener listener : new ArrayList<>(listeners)) {
             listener.downloadBegins(this, url);
         }
     }
@@ -229,7 +229,7 @@ public class DownloadThread implements Runnable {
                          + bytesDownloaded
                          + " bytes of "
                          + ((totalBytesIfKnown == -1) ? "(unknown)" : totalBytesIfKnown));
-        for (DownloadListener listener : listeners) {
+        for (DownloadListener listener : new ArrayList<>(listeners)) {
             listener.downloadProgress(this, url, bytesDownloaded, totalBytesIfKnown);
         }
     }
@@ -247,7 +247,7 @@ public class DownloadThread implements Runnable {
         else {
             log.log(Level.SEVERE, "DownloadThread: download failed with message: " + errorMsg);
         }
-        for (DownloadListener listener : listeners) {
+        for (DownloadListener listener : new ArrayList<>(listeners)) {
             listener.downloadFailed(this, url, errorMsg);
         }
     }
@@ -257,7 +257,7 @@ public class DownloadThread implements Runnable {
                          + url.toString()
                          + " to local file "
                          + targetFile.getAbsolutePath());
-        for (DownloadListener listener : listeners) {
+        for (DownloadListener listener : new ArrayList<>(listeners)) {
             listener.downloadComplete(this, url, targetFile);
         }
     }

@@ -469,7 +469,7 @@ public abstract class FormField {
      * value in your field has changed.
      */
     protected void fireValueChangedEvent() {
-        for (ValueChangedListener listener : valueChangedListeners) {
+        for (ValueChangedListener listener : new ArrayList<>(valueChangedListeners)) {
             listener.formFieldValueChanged(this);
         }
     }

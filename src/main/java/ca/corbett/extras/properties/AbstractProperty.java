@@ -542,7 +542,7 @@ public abstract class AbstractProperty {
 
         PropertyFormFieldValueChangedEvent evt = new PropertyFormFieldValueChangedEvent(this, changeEvent, formPanel,
                                                                                         field);
-        for (PropertyFormFieldChangeListener listener : formFieldChangeListeners) {
+        for (PropertyFormFieldChangeListener listener : new ArrayList<>(formFieldChangeListeners)) {
             listener.valueChanged(evt);
         }
     }
@@ -566,7 +566,7 @@ public abstract class AbstractProperty {
     }
 
     protected void fireFormFieldGeneratedEvent(FormField formField) {
-        for (FormFieldGenerationListener listener : formFieldGenerationListeners) {
+        for (FormFieldGenerationListener listener : new ArrayList<>(formFieldGenerationListeners)) {
             listener.formFieldGenerated(this, formField);
         }
     }
