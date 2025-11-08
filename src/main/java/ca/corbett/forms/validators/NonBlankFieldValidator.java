@@ -2,6 +2,7 @@ package ca.corbett.forms.validators;
 
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LongTextField;
+import ca.corbett.forms.fields.PasswordField;
 import ca.corbett.forms.fields.ShortTextField;
 
 /**
@@ -19,14 +20,23 @@ public class NonBlankFieldValidator implements FieldValidator<FormField> {
     public ValidationResult validate(FormField fieldToValidate) {
         // Make sure it's a field type that we recognize:
         if (!(fieldToValidate instanceof ShortTextField) &&
+                !(fieldToValidate instanceof PasswordField) &&
                 !(fieldToValidate instanceof LongTextField)) {
             return ValidationResult.valid();
         }
 
-        String currentStr = (fieldToValidate instanceof ShortTextField)
-                ? ((ShortTextField)fieldToValidate).getText()
-                : ((LongTextField)fieldToValidate).getText();
-        if (currentStr.trim().isEmpty()) {
+        String currentValue;
+        if (fieldToValidate instanceof ShortTextField) {
+            currentValue = ((ShortTextField)fieldToValidate).getText();
+        }
+        else if (fieldToValidate instanceof PasswordField) {
+            currentValue = ((PasswordField)fieldToValidate).getPassword();
+        }
+        else {
+            currentValue = ((LongTextField)fieldToValidate).getText();
+        }
+
+        if (currentValue.trim().isEmpty()) {
             return ValidationResult.invalid(MESSAGE);
         }
 

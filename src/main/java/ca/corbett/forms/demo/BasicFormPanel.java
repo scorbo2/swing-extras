@@ -15,6 +15,7 @@ import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
+import ca.corbett.forms.fields.PasswordField;
 import ca.corbett.forms.fields.ShortTextField;
 import ca.corbett.forms.fields.ValueChangedListener;
 
@@ -57,7 +58,8 @@ public class BasicFormPanel extends PanelBuilder {
 
         formPanel.add(LabelField.createBoldHeaderLabel("Text input"));
 
-        formPanel.add(new ShortTextField("Single-line text:", 15).setText("Hello."));
+        formPanel.add(new ShortTextField("Single-line text:", 16).setText("Hello."));
+        formPanel.add(new PasswordField("Password entry:", 12).setPassword("password"));
         formPanel.add(LongTextField.ofFixedSizeMultiLine("Multi-line text:", 3, 21)
                                    .setText("Text fields are great for long text entry."));
         LongTextField textField = LongTextField.ofFixedSizeMultiLine("With pop-out edit:", 3, 21);

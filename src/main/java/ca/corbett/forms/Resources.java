@@ -30,6 +30,11 @@ public final class Resources {
     private static final String BLANK = PREFIX + "/images/formfield-blank.png";
     private static final String PLUS = PREFIX + "/images/icon-plus.png";
     private static final String MINUS = PREFIX + "/images/icon-minus.png";
+    private static final String LOCKED = PREFIX + "/images/formfield-locked.png";
+    private static final String UNLOCKED = PREFIX + "/images/formfield-unlocked.png";
+    private static final String COPY = PREFIX + "/images/formfield-copy.png";
+    private static final String HIDDEN = PREFIX + "/images/formfield-hidden.png";
+    private static final String REVEALED = PREFIX + "/images/formfield-revealed.png";
 
     private final ImageIcon validIcon;
     private final ImageIcon invalidIcon;
@@ -37,6 +42,11 @@ public final class Resources {
     private final ImageIcon blankIcon;
     private final ImageIcon plusIcon;
     private final ImageIcon minusIcon;
+    private final ImageIcon lockedIcon;
+    private final ImageIcon unlockedIcon;
+    private final ImageIcon copyIcon;
+    private final ImageIcon hiddenIcon;
+    private final ImageIcon revealedIcon;
 
     private Resources() {
         ClassLoader classLoader = Resources.class.getClassLoader();
@@ -46,6 +56,11 @@ public final class Resources {
         blankIcon = loadIcon(HELP, classLoader.getResource(BLANK), new Color(0, 0, 0, 0));
         plusIcon = loadIcon(PLUS, classLoader.getResource(PLUS), Color.GRAY, 20);
         minusIcon = loadIcon(MINUS, classLoader.getResource(MINUS), Color.GRAY, 20);
+        lockedIcon = loadIcon(LOCKED, classLoader.getResource(LOCKED), Color.RED, 22);
+        unlockedIcon = loadIcon(UNLOCKED, classLoader.getResource(UNLOCKED), Color.GREEN, 22);
+        copyIcon = loadIcon(COPY, classLoader.getResource(COPY), Color.BLUE, 22);
+        hiddenIcon = loadIcon(HIDDEN, classLoader.getResource(HIDDEN), Color.DARK_GRAY, 22);
+        revealedIcon = loadIcon(REVEALED, classLoader.getResource(REVEALED), Color.LIGHT_GRAY, 22);
     }
 
     private ImageIcon loadIcon(String path, URL url, Color defaultColor) {
@@ -123,6 +138,41 @@ public final class Resources {
      */
     public static ImageIcon getMinusIcon() {
         return getInstance().minusIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent a lock.
+     */
+    public static ImageIcon getLockedIcon() {
+        return getInstance().lockedIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent an open lock.
+     */
+    public static ImageIcon getUnlockedIcon() {
+        return getInstance().unlockedIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent a copy operation.
+     */
+    public static ImageIcon getCopyIcon() {
+        return getInstance().copyIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent something that is hidden.
+     */
+    public static ImageIcon getHiddenIcon() {
+        return getInstance().hiddenIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent something that is revealed.
+     */
+    public static ImageIcon getRevealedIcon() {
+        return getInstance().revealedIcon;
     }
 
     /**
