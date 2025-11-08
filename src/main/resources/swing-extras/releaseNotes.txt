@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.5.0 [TODO release date] - TODO description
+  #165 - Demo app: code cleanup and documentation pass
   #164 - General: callback listeners were not thread safe
   #163 - New FormField: PasswordField
   #161 - MessageUtil: fix warning icon

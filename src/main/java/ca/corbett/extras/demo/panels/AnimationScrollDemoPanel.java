@@ -1,11 +1,9 @@
 package ca.corbett.extras.demo.panels;
 
-import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.image.animation.ImageScroller;
-import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
@@ -13,6 +11,7 @@ import ca.corbett.forms.fields.PanelField;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -22,21 +21,29 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A demo panel to show off the ImageScroller class.
+ * <p>
+ * I'm hesitant to include this in the swing-extras demo app, as this really
+ * has nothing to do with Swing... and also because the ImageScroller class
+ * was more intended for fullscreen animations, and not for use in a
+ * Swing container. But, it's kind of neat, so here we go.
+ * </p>
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ */
 public class AnimationScrollDemoPanel extends PanelBuilder {
-    private FormPanel formPanel;
     private final BufferedImage canvas;
     private final BufferedImage scrollImage;
     private AnimationThread worker;
     private static final int IMG_WIDTH = 360;
     private static final int IMG_HEIGHT = 120;
-    private ComboField speedField;
-    private ComboField bounceTypeField;
-    private ComboField bounceMarginField;
+    private ComboField<String> speedField;
+    private ComboField<String> bounceTypeField;
+    private ComboField<String> bounceMarginField;
     private ImagePanel imagePanel;
 
     public AnimationScrollDemoPanel() {
-        formPanel = new FormPanel(Alignment.TOP_LEFT);
-        formPanel.setBorderMargin(24);
         canvas = new BufferedImage(IMG_WIDTH, IMG_HEIGHT, BufferedImage.TYPE_INT_RGB);
         BufferedImage img;
         try {
@@ -55,63 +62,56 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("ImageScroller demo", 20, 0, 8);
-        headerLabel.getMargins().setBottom(24);
-        headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(headerLabel);
+        FormPanel formPanel = buildFormPanel("ImageScroller demo");
 
+        // A ComboField for selecting animation speed:
         List<String> options = new ArrayList<>(List.of("Very slow", "Slow", "Medium", "Fast", "Very fast"));
         speedField = new ComboField<>("Scroll speed:", options, 1, false);
-        speedField.addValueChangedListener(field -> {
-            updateSpeed();
-        });
+        speedField.addValueChangedListener(field -> updateSpeed());
         formPanel.add(speedField);
 
+        // A ComboField for selecting the "bounce" type (linear is boring, the other options are more slow-then-reverse)
         options = List.of("None", "Linear", "Quadratic", "Cubic");
         bounceTypeField = new ComboField<>("Bounce type:", options, 1, false);
-        bounceTypeField.addValueChangedListener(field -> {
-            updateBounceType();
-        });
+        bounceTypeField.addValueChangedListener(field -> updateBounceType());
         formPanel.add(bounceTypeField);
 
+        // A ComboField for selecting "bounce margin" (percentage of the image to use as the deceleration zone):
         options = List.of("Small", "Medium", "Large");
         bounceMarginField = new ComboField<>("Bounce margin:", options, 1, false);
-        bounceMarginField.addValueChangedListener(field -> {
-            updateBounceMargin();
-        });
+        bounceMarginField.addValueChangedListener(field -> updateBounceMargin());
         formPanel.add(bounceMarginField);
 
-        PanelField panelField = new PanelField();
-        JPanel panel = panelField.getPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+        // We can use PanelField to wrap the ImagePanel that we'll use for displaying the animation:
+        PanelField panelField = new PanelField(new FlowLayout(FlowLayout.LEFT));
         imagePanel = new ImagePanel(ImagePanelConfig.createSimpleReadOnlyProperties());
         imagePanel.setPreferredSize(new Dimension(IMG_WIDTH, IMG_HEIGHT));
         imagePanel.setImage(canvas);
-        panel.add(imagePanel);
+        panelField.getPanel().add(imagePanel);
         formPanel.add(panelField);
 
-        panelField = new PanelField();
-        panel = panelField.getPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+        // And a separate PanelField can be used to house the start/stop buttons:
+        panelField = new PanelField(new FlowLayout(FlowLayout.LEFT));
         JButton button = new JButton("Scroll!");
         button.addActionListener(e -> go());
-        panel.add(button);
+        panelField.getPanel().add(button);
 
         button = new JButton("Stop");
         button.addActionListener(e -> stop());
-        panel.add(button);
+        panelField.getPanel().add(button);
         formPanel.add(panelField);
 
+        // We can add a cheesy disclaimer and some informational text:
         formPanel.add(new LabelField("ImageScroller is better suited for fullscreen applications!"));
         formPanel.add(new LabelField("It can scroll an oversized image with configurable 'bounce' parameters."));
 
         return formPanel;
     }
 
+    /**
+     * Invoked internally to stop the current animation (if in progress) and start a new one
+     * using current parameters.
+     */
     private void go() {
         if (worker != null) {
             worker.stop();
@@ -123,20 +123,28 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         new Thread(worker).start();
     }
 
+    /**
+     * Invoked internally to update the animation speed selection.
+     */
     private void updateSpeed() {
         if (worker != null) {
-            ImageScroller.ScrollSpeed speed = ImageScroller.ScrollSpeed.MEDIUM;
-            switch (speedField.getSelectedIndex()) {
-                case 0: speed = ImageScroller.ScrollSpeed.VERY_SLOW; break;
-                case 1: speed = ImageScroller.ScrollSpeed.SLOW; break;
-                case 2: speed = ImageScroller.ScrollSpeed.MEDIUM; break;
-                case 3: speed = ImageScroller.ScrollSpeed.FAST; break;
-                case 4: speed = ImageScroller.ScrollSpeed.VERY_FAST; break;
-            }
+            ImageScroller.ScrollSpeed speed = switch (speedField.getSelectedIndex()) {
+                case 0 -> ImageScroller.ScrollSpeed.VERY_SLOW;
+                case 1 -> ImageScroller.ScrollSpeed.SLOW;
+                case 3 -> ImageScroller.ScrollSpeed.FAST;
+                case 4 -> ImageScroller.ScrollSpeed.VERY_FAST;
+                default -> ImageScroller.ScrollSpeed.MEDIUM; // safe default
+            };
             worker.getImageScroller().setScrollSpeed(speed);
         }
     }
 
+    /**
+     * Invoked internally to update the bounce type that we will use.
+     * This affects whether the image will slow as it approaches a scroll limit, then reverse,
+     * then accelerate as it moves away from the scroll limit. You can turn this off for
+     * a simple full-speed bounce where there is no deceleration or acceleration.
+     */
     private void updateBounceType() {
         if (worker != null) {
             int selectedIndex = bounceTypeField.getSelectedIndex();
@@ -160,6 +168,10 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         }
     }
 
+    /**
+     * Invoked internally to set the bounce margin. This is the percentage of the image that will
+     * be used for deceleration and acceleration for certain bounce types.
+     */
     private void updateBounceMargin() {
         if (worker != null) {
             switch (bounceMarginField.getSelectedIndex()) {
@@ -178,8 +190,11 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         }
     }
 
+    /**
+     * Invoked by the user via the "stop" button. Will kill the current worker thread, if any.
+     */
     private void stop() {
-        if (worker != null) {
+        if (worker != null && worker.isRunning()) {
             worker.stop();
         }
     }
@@ -190,7 +205,6 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
         private final int width;
         private final int height;
         private final BufferedImage canvas;
-        private final BufferedImage scrollImage;
         private final ImageScroller imageScroller;
         private final ImagePanel imagePanel;
 
@@ -198,7 +212,6 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
             this.width = w;
             this.height = h;
             this.canvas = canvas;
-            this.scrollImage = scrollImage;
             imageScroller = new ImageScroller(scrollImage, w, h);
             this.imagePanel = imagePanel;
         }
@@ -220,17 +233,29 @@ public class AnimationScrollDemoPanel extends PanelBuilder {
             isRunning = true;
 
             while (isRunning) {
+                // Render the next frame of the animation:
                 Graphics2D g = canvas.createGraphics();
                 imageScroller.renderFrame(g);
                 g.dispose();
-                imagePanel.setImage(canvas);
+
+                // Marshal the UI update to the Swing Event Dispatch Thread - important!
+                //   Don't update Swing UI components from a worker thread directly!
+                SwingUtilities.invokeLater(() -> imagePanel.setImage(canvas));
+
                 try {
-                    Thread.sleep(33);
+                    // We'll aim for 20 frames per second of animation.
+                    // Any faster will strain the cpu because we're not in a fullscreen
+                    // application, but rather working within a Swing app with all
+                    // of its repaint overhead. This is not really what the ImageScroller
+                    // was intended for, but it'll do for this little demo.
+                    Thread.sleep(50);
                 }
                 catch (InterruptedException ignored) {
                 }
             }
 
+            // When the animation loop ends (user has clicked "stop"), let's blank
+            // out the animation display:
             Graphics2D g = canvas.createGraphics();
             g.setColor(Color.BLACK);
             g.fillRect(0,0,width,height);

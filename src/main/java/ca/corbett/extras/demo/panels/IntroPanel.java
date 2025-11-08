@@ -4,13 +4,11 @@ import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.properties.LookAndFeelProperty;
-import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 
 import javax.swing.JPanel;
-import java.awt.Color;
 import java.awt.Font;
 import java.net.URI;
 import java.util.logging.Logger;
@@ -33,15 +31,9 @@ public class IntroPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel introPanel = new FormPanel(Alignment.TOP_LEFT);
-        introPanel.setBorderMargin(24);
+        FormPanel introPanel = buildFormPanel("Welcome to swing-extras!");
 
-        LabelField label = LabelField.createBoldHeaderLabel("Welcome to swing-extras!", 24, 0, 8);
-        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        introPanel.add(label);
-
+        // Multi-line labels are quite easy to generate by wrapping the text in html tags:
         String txt = "<html>This is a library of components for Java Swing application. This collection has<br>" +
                 "been in development since around 2012, but was not publicly available until 2025.<br>" +
                 "This documentation guide covers the possibilities that swing-extras offers that allow<br>" +
@@ -64,62 +56,62 @@ public class IntroPanel extends PanelBuilder {
         labelField.getMargins().setTop(12);
         introPanel.add(labelField);
 
+        // We can use custom left margins to indent sub-fields like these.
+        // We can also reduce the bottom margin to 0 to push the fields together vertically.
         labelField = new LabelField("Source code:", Version.PROJECT_URL);
-        Font labelFont = new Font(Font.SANS_SERIF, Font.PLAIN, 14);
+        Font labelFont = LabelField.getDefaultLabelFont().deriveFont(14f); // make it a bit bigger
         labelField.getFieldLabel().setFont(labelFont);
         labelField.setFont(labelFont);
-        labelField.getMargins().setLeft(48);
-        labelField.getMargins().setBottom(0);
-        if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(Version.PROJECT_URL)) {
-            try {
-                labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(Version.PROJECT_URL)));
-            }
-            catch (IllegalArgumentException e) {
-                logger.warning("Project URL is not well-formed.");
-            }
-        }
+        labelField.getMargins().setLeft(48).setBottom(0); // indent and also group together vertically
+        addHyperlinkIfUrlIsValid(labelField, Version.PROJECT_URL);
         introPanel.add(labelField);
 
         final String docUrl = "http://www.corbett.ca/swing-extras-book/";
         labelField = new LabelField("Documentation:", docUrl);
         labelField.getFieldLabel().setFont(labelFont);
         labelField.setFont(labelFont);
-        labelField.getMargins().setLeft(48);
-        labelField.getMargins().setBottom(0);
-        if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(docUrl)) {
-            try {
-                labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(docUrl)));
-            }
-            catch (IllegalArgumentException e) {
-                logger.warning("Documentation URL is not well-formed.");
-            }
-        }
+        labelField.getMargins().setLeft(48).setBottom(0); // indent and also group together vertically
+        addHyperlinkIfUrlIsValid(labelField, docUrl);
         introPanel.add(labelField);
 
         final String javadocUrl = "http://www.corbett.ca/swing-extras-javadoc/";
         labelField = new LabelField("Javadocs:", javadocUrl);
         labelField.getFieldLabel().setFont(labelFont);
         labelField.setFont(labelFont);
-        labelField.getMargins().setLeft(48);
-        if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(javadocUrl)) {
-            try {
-                labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(javadocUrl)));
-            }
-            catch (IllegalArgumentException e) {
-                logger.warning("Javadocs URL is not well-formed.");
-            }
-        }
+        labelField.getMargins().setLeft(48); // indent
+        addHyperlinkIfUrlIsValid(labelField, javadocUrl);
         introPanel.add(labelField);
 
-        LookAndFeelProperty lafProperty = new LookAndFeelProperty("blah", "Change demo app look and feel:");
+        // We can use LookAndFeelProperty to generate a FormField for us that we can use
+        // to change the Look and Feel for the demo app. Wiring up this field is quite easy:
+        LookAndFeelProperty lafProperty = new LookAndFeelProperty("", "Change demo app look and feel:");
         //noinspection unchecked
         final ComboField<String> lafCombo = (ComboField<String>)lafProperty.generateFormField();
         lafCombo.addValueChangedListener(field -> {
+            // Use selected value in the FormField to switch to the corresponding Look and Feel:
             LookAndFeelManager.switchLaf(lafProperty.getLafClass(lafCombo.getSelectedIndex()));
         });
         lafCombo.getMargins().setTop(38);
         introPanel.add(lafCombo);
 
         return introPanel;
+    }
+
+    /**
+     * Invoked internally to set a hyperlink in the given LabelField, if the
+     * given String URL is well-formed, and if browsing is supported in the current JRE.
+     */
+    private void addHyperlinkIfUrlIsValid(LabelField labelField, String url) {
+        if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(url)) {
+            try {
+                labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(url)));
+            }
+            catch (IllegalArgumentException e) {
+                logger.warning("Unable to hyperlink: URL is not well-formed: " + url);
+            }
+        }
+        else {
+            logger.warning("Unable to set label hyperlink - the current JRE does not support browsing.");
+        }
     }
 }

@@ -14,6 +14,7 @@ import ca.corbett.extras.properties.FontProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.extras.properties.LongTextProperty;
+import ca.corbett.extras.properties.PasswordProperty;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
@@ -21,7 +22,9 @@ import ca.corbett.extras.properties.ShortTextProperty;
 import ca.corbett.extras.properties.SliderProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.SliderField;
@@ -42,6 +45,15 @@ import java.util.logging.Logger;
 
 /**
  * Demo panel to show off PropertiesManager and PropertiesDialog capabilities.
+ * This is very hard to demo, because it's HIGHLY configurable and will vary greatly
+ * from application to application. Your application can define a list of AbstractProperty
+ * instances and hand them to a PropertiesDialog to automatically create a UI for
+ * those properties. You don't have to write any UI code at all to support this!
+ * <p>
+ *     To get an idea of the kinds of things you can do with PropertiesManager and PropertiesDialog,
+ *     read through the buildProps() method in this class. It shows off some advanced
+ *     capabilities for specifying dynamic properties for your application!
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-15
@@ -50,7 +62,11 @@ public class PropertiesDemoPanel extends PanelBuilder {
     private static final Logger logger = Logger.getLogger(PropertiesDemoPanel.class.getName());
 
     private PropertiesManager propsManager;
+    private ComboField<Alignment> alignmentField;
 
+    /**
+     * An example enum to show off EnumProperty.
+     */
     public enum TestEnum {
         VALUE1("This is value 1"),
         VALUE2("This is value 2"),
@@ -77,6 +93,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
     public JPanel build() {
         try {
             File propsFile = File.createTempFile("temp", ".props");
+            propsFile.deleteOnExit();
             propsManager = new PropertiesManager(propsFile, buildProps(), "Test properties");
         }
         catch (IOException ioe) {
@@ -84,15 +101,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
             propsManager = new PropertiesManager(new Properties(), buildProps(), "Test properties");
         }
 
-        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
-        formPanel.setBorderMargin(24);
-
-        final LabelField label = LabelField.createBoldHeaderLabel("PropertiesManager", 20, 0, 8);
-        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(label);
-
+        FormPanel formPanel = buildFormPanel("PropertiesManager");
         formPanel.add(LabelField.createPlainHeaderLabel(
                 "<html>Almost every application exposes properties for application settings and<br>" +
                         "preferences to the user. But why rewrite the UI code for this for each<br>" +
@@ -100,90 +109,161 @@ public class PropertiesDemoPanel extends PanelBuilder {
                         "application in code, and have a PropertiesManager and a PropertiesDialog that<br>" +
                         "could just generate the UI for you? Well, there is!</html>", 14));
 
-        final ComboField<Alignment> alignmentField = new ComboField<>("Form alignment:",
-                                                                      List.of(Alignment.values()), 1, false);
+        alignmentField = new ComboField<>("Form alignment:", List.of(Alignment.values()), 1, false);
         formPanel.add(alignmentField);
 
+        // We can use PanelField to wrap a button for launching the dialog:
         PanelField panelField = new PanelField();
         panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         JButton btn = new JButton("Show dialog");
-        btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    propsManager.load();
-                }
-                catch (Exception ex) {
-                    logger.log(Level.SEVERE, "Couldn't load properties.", ex);
-                }
-                PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(), "Test properties",
-                                                                      alignmentField.getSelectedItem(), 16);
-                dialog.setVisible(true);
-                if (dialog.wasOkayed()) {
-                    propsManager.save();
-                }
-            }
-        });
+        btn.addActionListener(new LaunchDialogAction());
         panelField.getPanel().add(btn);
         formPanel.add(panelField);
 
         return formPanel;
     }
 
+    /**
+     * Invoked internally to build a huge list of AbstractProperty instances for demo purposes.
+     * This shows off the capabilities that are available to applications that use this code!
+     */
     private List<AbstractProperty> buildProps() {
         List<AbstractProperty> props = new ArrayList<>();
 
-        props.add(
-                new LabelProperty("Intro.Overview.label1", "All of the props on this dialog were generated in code."));
-        props.add(new LabelProperty("Intro.Overview.label2", "No UI code was required to generate this dialog!"));
+        // We can start with some simple LabelProperty instances.
+        // These are handy for showing static text for informational purposes.
+        // You can use html tags with br line breaks if you need a multi-line label, like this one:
+        props.add(new LabelProperty("Intro.Overview.label1",
+                                    "<html>All of the props on this dialog were generated in code."
+                                            + "<br>No UI code was required to generate this dialog!</html>"));
 
-        props.add(new BooleanProperty("Intro.Overview.checkbox1", "Property types correspond to form field types"));
-        List<String> options = new ArrayList<>();
-        options.add("Option 1");
-        options.add("Option 2 (default)");
-        options.add("Option 3");
-        props.add(new ComboProperty<>("Intro.Overview.combo1", "ComboProperty:", options, 1, false));
+        // BooleanProperty instances will equate to checkboxes on the generated form:
+        props.add(new LabelProperty("Intro.Property types.label1",
+                                    "There are many different property types to choose from."));
+        props.add(new BooleanProperty("Intro.Property types.checkbox1",
+                                      "Checkboxes"));
+        props.add(new IntegerProperty("Intro.Property types.numberField1",
+                                      "Number fields:", 10));
+        props.add(new ComboProperty<>("Intro.Property types.combo1",
+                                      "Comboboxes:",
+                                      List.of("Option 1", "Option 2 (default)", "Option 3"),
+                                      1,
+                                      false));
 
-        props.add(new LabelProperty("Intro.Labels.someLabelProperty", "You can add labels, too!"));
+        // Show some label capabilities:
+        props.add(new LabelProperty("Intro.Labels.someLabelProperty",
+                                    "Labels can be used to show static text."));
         LabelProperty testLabel = new LabelProperty("Intro.Labels.someLabelProperty2",
                                                     "You can set label font properties");
         testLabel.setFont(new Font("Monospaced", Font.ITALIC, 14));
         testLabel.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
         props.add(testLabel);
-        props.add(new LabelProperty("Intro.Labels.label3", "You can also add hidden properties."));
+
+        // Now add some dummy labels to force a scroll bar to appear:
         for (int i = 0; i < 10; i++) {
             props.add(new LabelProperty("Intro.Labels.scroll" + i, "Scroll down!"));
         }
-        props.add(new LabelProperty("Intro.Labels.scrollSummary",
-                                    "Long properties forms will automatically get scrollbars (horizontal and vertical as needed) so you can scroll to view everything - even long lines like this!"));
 
-        props.add(new ColorProperty("Colors.someSolidColor", "Solid color:", ColorSelectionType.SOLID).setSolidColor(
-                Color.RED));
-        props.add(new ColorProperty("Colors.someGradient", "Gradient:", ColorSelectionType.GRADIENT));
-        props.add(new ColorProperty("Colors.someMultiColor", "Both:", ColorSelectionType.EITHER));
-        FontProperty fontProperty = new FontProperty("Colors.fontColor", "Font with color:",
-                                                     new Font(Font.SANS_SERIF, Font.PLAIN, 14), Color.CYAN,
+        // And we can show a very long label with no line breaks to show horizontal scrolling as well:
+        props.add(new LabelProperty("Intro.Labels.scrollSummary",
+                                    "Long properties forms will automatically get scrollbars "
+                                            + "(horizontal and vertical as needed) so you can scroll "
+                                            + "to view everything - even long lines like this!"));
+
+        // That's the end of the first tab!
+        // But wait, how do we move to the next tab?
+        // Notice that every property has a dotted name, like "Intro.Labels.scrollSummary"
+        // The first component in that name is the name of the tab!
+        // You can create new tabs at will by giving your properties a corresponding name!
+        // For example, let's create a tab called "Colors" and put some ColorProperty instances on it:
+        props.add(new ColorProperty("Colors.someSolidColor",
+                                    "Solid color:",
+                                    ColorSelectionType.SOLID)
+                          .setSolidColor(Color.RED));
+        props.add(new ColorProperty("Colors.someGradient",
+                                    "Gradient:",
+                                    ColorSelectionType.GRADIENT));
+        props.add(new ColorProperty("Colors.someMultiColor",
+                                    "Both:",
+                                    ColorSelectionType.EITHER));
+
+        // We'll put a FontProperty on this Colors tab also, because you can play with font colors:
+        FontProperty fontProperty = new FontProperty("Colors.fontColor",
+                                                     "Font with color:",
+                                                     new Font(Font.SANS_SERIF, Font.PLAIN, 14),
+                                                     Color.CYAN,
                                                      Color.DARK_GRAY);
         fontProperty.setAllowSizeSelection(false);
         props.add(fontProperty);
 
-        props.add(new DirectoryProperty("Files.someDirProperty", "Directory:", true));
-        props.add(new FileProperty("Files.someFileProperty", "File:", true));
+        // Now let's move on to the Files tab and show off file and directory choosers:
+        props.add(new LabelProperty("Files.Overview.label1",
+                                    "File and directory properties are easy to work with!"));
 
+        // I want this checkbox to be able to affect the file choosers on this properties tab. But how?
+        BooleanProperty showHidden = new BooleanProperty("Files.Examples.showHidden",
+                                                         "Show hidden files",
+                                                         false);
+
+        // We can add a change listener to its generated FormField, even though it's not generated yet, that's how!
+        showHidden.addFormFieldChangeListener(event -> {
+            boolean isChecked = ((CheckBoxField)event.formField()).isChecked();
+
+            // And in here we can look up other FormFields by id!
+            List<String> ids = List.of("someDirProperty", "someFileProperty", "withImagePreview");
+            for (String id : ids) {
+                FileField field = (FileField)event.formPanel().getFormField("Files.Examples." + id);
+                if (field != null) {
+                    field.setFileHidingEnabled(!isChecked);
+                }
+            }
+        });
+        props.add(showHidden);
+
+        // Now we can create properties for our file and directory choosers:
+        props.add(new DirectoryProperty("Files.Examples.someDirProperty", "Directory:", true));
+        props.add(new FileProperty("Files.Examples.someFileProperty", "File:", true));
+
+        // For this file chooser, I want to include an image preview panel on the dialog. But how?
+        FileProperty withImagePreview = new FileProperty("Files.Examples.withImagePreview",
+                                                         "With image preview:",
+                                                         true);
+
+        // We can add a FormFieldGeneration listener, which lets us tweak the FormField when it gets created later!
+        withImagePreview.addFormFieldGenerationListener((property, formField) -> {
+            // FileField comes with a built-in image preview accessory that we can use:
+            ((FileField)formField).setAccessory(new FileField.ImagePreviewAccessory());
+        });
+        props.add(withImagePreview);
+
+        // Now let's look at text properties:
         props.add(new ShortTextProperty("Text.Single line.someTextProp1", "Text property1:", "hello"));
         props.add(new ShortTextProperty("Text.Single line.someTextProp2", "Text property2:", ""));
-        props.add(LongTextProperty.ofFixedSizeMultiLine("Text.Multi line.someMultiLineTextProp", "Text entry:", 4, 30)
+        props.add(new PasswordProperty("Text.Single line.password", "Password entry:")
+                          .setPassword("password"));
+        props.add(LongTextProperty.ofFixedSizeMultiLine("Text.Multi line.someMultiLineTextProp",
+                                                        "Text entry:",
+                                                        4,
+                                                        30)
                                   .setValue("You can support long text as well.\n\nPop-out editing is optional.")
                                   .setAllowPopoutEditing(true));
 
-        // This property is readable and settable by the client application but it won't show up in the user dialog:
-        IntegerProperty hiddenProp = new IntegerProperty("Hidden.someHiddenProp", "hiddenProp", 77);
-        hiddenProp.setExposed(false);
-        props.add(hiddenProp);
+        // By the way, you can add "hidden" properties by setting setExposed(false) on them.
+        // Why would you do this? Your application may want to store and read configurable properties
+        // without exposing them to the user. For example, application state such as window size and position.
 
+        // This property is readable and settable by the client application, but it won't show up in the user dialog:
+        props.add(new IntegerProperty("Hidden.someHiddenProp",
+                                      "hiddenProp",
+                                      77)
+                          .setExposed(false));
+
+        // Now let's show off sliders!
+        // The SliderField in swing-forms is extremely customizable, much more so than a standard JSlider:
         SliderField.setIsDefaultBorderEnabled(false);
         props.add(new LabelProperty("Sliders.General.label",
-                                    "Sliders can sometimes be more useful than number spinners!"));
+                                    "<html>Sliders can sometimes be more useful than number spinners!"
+                                            + "<br>And with custom labels on them, they can even replace comboboxes.</html>"));
         props.add(new SliderProperty("Sliders.General.slider1", "Default slider:", 0, 100, 50)
                           .setShowValueLabel(false));
         props.add(new SliderProperty("Sliders.General.slider2", "With value label:", 0, 100, 50));
@@ -196,22 +276,45 @@ public class PropertiesDemoPanel extends PanelBuilder {
                           .setColorStops(List.of(Color.RED, Color.YELLOW, Color.GREEN))
                           .setLabels(List.of("Bad", "Meh", "Okay", "Good", "Great!", "FANTASTIC!"), true));
 
+        // And finally, we can show off EnumProperty, which is a handy way of generating combo boxes from enums:
         props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));
         props.add(new EnumProperty<>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
         props.add(new LabelProperty("Enums.Enums.label2",
                                     "Alternatively, you can use the enum names instead of toString():"));
         props.add(new EnumProperty<>("Enums.Enums.enumField2", "Choose:", TestEnum.VALUE1, true));
-
-        String explanation = "<html>Either way, your code deals natively with instances of your enum<br>" +
-                "and the combobox is generated for you! And either way,<br>" +
-                "the value saved to the properties file will be the enum name,<br>" +
-                " in case the toString() changes over time or is localized to<br>" +
-                " a different language.</html>";
-        LabelProperty label = new LabelProperty("Enums.Enums.label3", explanation);
-        label.setFont(new Font(Font.DIALOG, Font.PLAIN, 12));
-        label.setExtraMargins(8, 0);
-        props.add(label);
+        props.add(new LabelProperty("Enums.Enums.label3",
+                                    "<html>Either way, your code deals natively with instances of your enum<br>" +
+                                            "and the combobox is generated for you! And either way,<br>" +
+                                            "the value saved to the properties file will be the enum name,<br>" +
+                                            " in case the toString() changes over time or is localized to<br>" +
+                                            " a different language.</html>")
+                          .setFont(new Font(Font.DIALOG, Font.PLAIN, 12))
+                          .setExtraMargins(8, 0));
 
         return props;
+    }
+
+    /**
+     * A simple ActionListener for launching the properties dialog with our properties list.
+     */
+    private class LaunchDialogAction implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                propsManager.load();
+            }
+            catch (Exception ex) {
+                logger.log(Level.SEVERE, "Couldn't load properties.", ex);
+            }
+            PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(),
+                                                                  "Test properties",
+                                                                  alignmentField.getSelectedItem(),
+                                                                  16);
+            dialog.setVisible(true);
+            if (dialog.wasOkayed()) {
+                propsManager.save();
+            }
+        }
     }
 }

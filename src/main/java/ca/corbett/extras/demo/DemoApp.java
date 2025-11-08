@@ -34,8 +34,6 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Desktop;
@@ -70,6 +68,7 @@ public class DemoApp extends JFrame {
     private JPanel demoPanel;
 
     static {
+        // The current JRE may or may not give us access to this:
         desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
     }
 
@@ -105,15 +104,14 @@ public class DemoApp extends JFrame {
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         if (visible) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    audioDemoPanel.generateWaveform(); // has to be done after frame is packed and shown.
-                }
-            });
+            // Generating the waveform can only be done after the containing frame is packed and shown:
+            SwingUtilities.invokeLater(() -> audioDemoPanel.generateWaveform());
         }
     }
 
+    /**
+     * Creates all of our demo panels and adds them to the menu on the left side.
+     */
     private void populateDemoPanels() {
         addDemoPanel(new IntroPanel());
         addDemoPanel(audioDemoPanel);
@@ -139,7 +137,11 @@ public class DemoApp extends JFrame {
         cardList.setSelectedIndex(0);
     }
 
+    /**
+     * Invoked internally to add the given demo panel to our menu.
+     */
     private void addDemoPanel(PanelBuilder panel) {
+        // Keep the text from being directly against the window border:
         cardListModel.addElement("  " + panel.getTitle());
         demoPanel.add(PropertiesDialog.buildScrollPane(panel.build()), panel.getTitle());
     }
@@ -154,20 +156,21 @@ public class DemoApp extends JFrame {
         JPanel listPanel = new JPanel();
         listPanel.setLayout(new BorderLayout());
 
+        // We'll use a simple JList to show the available options:
         cardListModel = new DefaultListModel<>();
         cardList = new JList<>(cardListModel);
         cardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         cardList.setFont(cardList.getFont().deriveFont(Font.PLAIN, 16f));
         listPanel.add(PropertiesDialog.buildScrollPane(cardList), BorderLayout.CENTER);
 
-        cardList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting() || cardList.getSelectedValue() == null) {
-                    return;
-                }
-                ((CardLayout)demoPanel.getLayout()).show(demoPanel, cardList.getSelectedValue().trim());
+        // When an option is selected, we'll show its demo panel in the main content area:
+        cardList.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting() || cardList.getSelectedValue() == null) {
+                return;
             }
+
+            // Flip to the given card:
+            ((CardLayout)demoPanel.getLayout()).show(demoPanel, cardList.getSelectedValue().trim());
         });
 
         return listPanel;
@@ -185,6 +188,10 @@ public class DemoApp extends JFrame {
         return demoPanel;
     }
 
+    /**
+     * If the current JRE supports browsing, this action will open the given URI
+     * in the user's default browser.
+     */
     public static class BrowseAction extends AbstractAction {
         private final URI uri;
 
@@ -205,12 +212,17 @@ public class DemoApp extends JFrame {
         }
     }
 
-    ;
-
+    /**
+     * Reports whether the current JRE supports browsing (needed to open hyperlinks).
+     */
     public static boolean isBrowsingSupported() {
         return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);
     }
 
+    /**
+     * Does a very quick check on the given String to see if it looks like a URL.
+     * This doesn't guarantee that it will parse as one! This is just a very quick check.
+     */
     public static boolean isUrl(String url) {
         return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }

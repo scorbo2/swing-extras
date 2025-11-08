@@ -196,9 +196,7 @@ public final class SplashProgressWindow extends JWindow {
                 if (action != null) {
                     action.actionPerformed(new ActionEvent(thisWindow, 0, "Complete"));
                 }
-
             }
-
         });
     }
 

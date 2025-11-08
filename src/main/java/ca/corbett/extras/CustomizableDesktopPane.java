@@ -38,7 +38,7 @@ public class CustomizableDesktopPane extends JDesktopPane {
 
         private final String label;
 
-        private LogoPlacement(String label) {
+        LogoPlacement(String label) {
             this.label = label;
         }
 
@@ -55,7 +55,6 @@ public class CustomizableDesktopPane extends JDesktopPane {
             }
             return null;
         }
-
     }
 
     private static final Logger logger = Logger.getLogger(CustomizableDesktopPane.class.getName());
