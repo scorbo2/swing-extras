@@ -26,6 +26,11 @@ import java.awt.event.KeyEvent;
  * A dialog that can be used to view or edit text in a resizable window.
  * Originally used by LongTextField as the "pop-out" editor, but useful
  * enough to be reusable elsewhere.
+ * <p>
+ *     This dialog allows resize, and will remember the last size that it
+ *     was set to, as long as the application is running. This size is
+ *     not persisted, so it is lost when the application exits.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.5
@@ -62,6 +67,17 @@ public class PopupTextDialog extends JDialog {
         });
     }
 
+    /**
+     * Allow direct access to the JTextArea for custom manipulation.
+     * For example, you want a certain font size, color, face, or background color.
+     */
+    public JTextArea getTextArea() {
+        return textArea;
+    }
+
+    /**
+     * Returns true if the user clicked the OK button, false if the dialog closed any other way.
+     */
     public boolean wasOkayed() {
         return wasOkayed;
     }
@@ -70,10 +86,20 @@ public class PopupTextDialog extends JDialog {
         return textArea.getText();
     }
 
+    /**
+     * Replaces the current text contents with the specified contents.
+     */
+    public void setText(String newText) {
+        textArea.setText(newText);
+    }
+
     public boolean isReadOnly() {
         return !textArea.isEditable();
     }
 
+    /**
+     * Allows or disallows editing in the text field.
+     */
     public void setReadOnly(boolean isReadOnly) {
         textArea.setEditable(!isReadOnly);
     }
@@ -82,8 +108,38 @@ public class PopupTextDialog extends JDialog {
         return copyButton.isVisible();
     }
 
+    /**
+     * Shows or hides the "copy to clipbard" button.
+     */
     public void setClipboardEnabled(boolean isEnabled) {
         copyButton.setVisible(isEnabled);
+    }
+
+    /**
+     * Copies the current text contents to the clipboard.
+     */
+    public void copyToClipboard() {
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(textArea.getText()), null);
+    }
+
+    /**
+     * This is invoked internally when the window is resized, so the dialog can remember the new size
+     * for the next time it's launched. But, it's public, so this is also a sneaky way of setting
+     * the size of the dialog before creating a new instance of it.
+     * <p>
+     * <b>Wait, why not just invoke setSize() after I instantiate the dialog?</b> - a good question.
+     * The constructor of this class not only invokes setSize(), but it also invokes setLocationRelativeTo()
+     * immediately afterwards. This not only sets the size of the dialog before showing it, but also ensures
+     * that the dialog will pop up nicely centered over the owning window. If you instantiate an instance
+     * of this dialog and THEN invoke setSize() on it, the dialog will no longer be nicely centered.
+     * To fix this, you either have to invoke setLocationRelativeTo() yourself after setSize(), or just
+     * invoke this setSavedDimensions() method BEFORE you instantiate. Both solutions work, but this
+     * one saves you a line of code.
+     * </p>
+     */
+    public static void setSavedDimensions(int width, int height) {
+        lastWidth = Math.max(width, MIN_WIDTH);
+        lastHeight = Math.max(height, MIN_HEIGHT);
     }
 
     protected void buttonHandler(boolean isOk) {
@@ -102,32 +158,38 @@ public class PopupTextDialog extends JDialog {
             public void componentResized(ComponentEvent e) {
                 // Update static variables with current size
                 Dimension currentSize = getSize();
-                lastWidth = Math.max(currentSize.width, MIN_WIDTH);
-                lastHeight = Math.max(currentSize.height, MIN_HEIGHT);
+                setSavedDimensions(Math.max(currentSize.width, MIN_WIDTH), Math.max(currentSize.height, MIN_HEIGHT));
             }
         });
     }
 
+    /**
+     * Creates a plain jane JTextArea with word wrap enabled. You can extend this class and override this
+     * method if you want something fancier. Or, if you just want to customize the text area a little,
+     * you can use getTextArea in this class and tweak it as you need to (custom font or whatever).
+     */
     protected JScrollPane buildTextArea(String text) {
         textArea = new JTextArea(text);
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         textArea.setFont(LabelField.getDefaultFont());
         JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         return scrollPane;
     }
 
+    /**
+     * Invoked internally to create the button panel at the bottom with the
+     * "copy to clipboard", cancel, and OK buttons.
+     */
     protected JPanel buildButtonPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         copyButton = new JButton("Copy");
         copyButton.setPreferredSize(new Dimension(90, 23));
-        copyButton.addActionListener(e -> {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(textArea.getText()), null);
-        });
+        copyButton.addActionListener(e -> copyToClipboard());
         leftPanel.add(copyButton);
 
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));

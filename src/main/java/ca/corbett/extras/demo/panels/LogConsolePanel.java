@@ -1,10 +1,8 @@
 package ca.corbett.extras.demo.panels;
 
-import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.extras.logging.LogConsoleStyle;
 import ca.corbett.extras.logging.LogConsoleTheme;
-import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
@@ -17,18 +15,20 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
 
+/**
+ * A demo panel to show off the LogConsole and the LogConsoleStyle/LogConsoleTheme
+ * customizations that you can do to it.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ */
 public class LogConsolePanel extends PanelBuilder {
 
     private FormPanel formPanel;
     private ShortTextField tokenField;
     private FontField tokenFontField;
-
-    public LogConsolePanel() {
-    }
 
     @Override
     public String getTitle() {
@@ -37,85 +37,71 @@ public class LogConsolePanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        formPanel = new FormPanel(Alignment.TOP_LEFT);
-        formPanel.setBorderMargin(24);
+        formPanel = buildFormPanel("LogConsole");
 
-        final LabelField label = LabelField.createBoldHeaderLabel("LogConsole", 24, 0, 8);
-        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(label);
-
-        LabelField labelField = LabelField.createPlainHeaderLabel(
+        // Start with an introductory label:
+        formPanel.add(LabelField.createPlainHeaderLabel(
                 "<html>We can create a custom live-updated view of a log file with<br>" +
                         "configurable styles that can decide how to render the<br>" +
                         "log output based on string tokens within the log message.<br><br>" +
-                        "This can make it visually easy to see what's going on!", 14);
-        formPanel.add(labelField);
+                        "This can make it visually easy to see what's going on!</html>", 14));
 
-        PanelField panelField = new PanelField();
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
-        panelField.getMargins().setLeft(32);
-        JButton button = generateButton("Show LogConsole");
-        button.addActionListener(e -> LogConsole.getInstance().setVisible(true));
-        panelField.getPanel().add(button);
-        formPanel.add(panelField);
+        // We can use PanelField to wrap a launcher button to show the LogConsole:
+        JButton button = generateButton("Show LogConsole",
+                                        e -> LogConsole.getInstance().setVisible(true));
+        formPanel.add(generatePanelField(button));
 
-        labelField = LabelField.createPlainHeaderLabel("Regular log messages will use whatever log theme is selected.",
-                                                       14);
+        // Another informational label:
+        LabelField labelField = LabelField.createPlainHeaderLabel(
+                "Regular log messages will use whatever log theme is selected.",
+                14);
         labelField.getMargins().setTop(24);
         formPanel.add(labelField);
 
-        panelField = new PanelField();
-        panelField.getMargins().setLeft(32).setTop(0).setBottom(0);
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
-        button = generateButton("Generate INFO message");
-        button.addActionListener(e -> logMessage("This is a regular info log message.", Level.INFO));
-        panelField.getPanel().add(button);
+        // And then our action buttons for logging sample messages:
+        button = generateButton("Generate INFO message",
+                                e -> logMessage("This is a regular INFO log message.", Level.INFO));
+        PanelField panelField = generatePanelField(button);
+        panelField.getMargins().setTop(0).setBottom(0);
         formPanel.add(panelField);
 
-        panelField = new PanelField();
-        panelField.getMargins().setLeft(32).setTop(0).setBottom(0);
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
-        button = generateButton("Generate WARNING message");
-        button.addActionListener(e -> logMessage("This is a regular warning log message.", Level.WARNING));
-        panelField.getPanel().add(button);
+        button = generateButton("Generate WARNING message",
+                                e -> logMessage("This is a WARNING log message.", Level.WARNING));
+        panelField = generatePanelField(button);
+        panelField.getMargins().setTop(0).setBottom(0);
         formPanel.add(panelField);
 
-        panelField = new PanelField();
-        panelField.getMargins().setLeft(32).setTop(0);
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
-        button = generateButton("Generate SEVERE message");
-        button.addActionListener(e -> logMessage("This is a regular SEVERE log message.", Level.SEVERE));
-        panelField.getPanel().add(button);
+        button = generateButton("Generate SEVERE message",
+                                e -> logMessage("This is a SEVERE log message.", Level.SEVERE));
+        panelField = generatePanelField(button);
+        panelField.getMargins().setTop(0).setBottom(0);
         formPanel.add(panelField);
 
         labelField = LabelField.createPlainHeaderLabel("We can create a custom swing-extras log theme!", 14);
         labelField.getMargins().setTop(24);
         formPanel.add(labelField);
 
+        // We can also show how to customize log styling:
         tokenField = new ShortTextField("Messages containing:", 20).setAllowBlank(false);
         tokenField.setText("My custom message");
         formPanel.add(tokenField);
 
-        tokenFontField = new FontField("Will look like this:", new Font(Font.MONOSPACED, Font.BOLD, 12), Color.WHITE,
+        // Use a FontField to allow customization of colors, font face, and style:
+        tokenFontField = new FontField("Will look like this:",
+                                       new Font(Font.MONOSPACED, Font.BOLD, 12),
+                                       Color.WHITE,
                                        Color.BLACK);
-        //TODO this was kind of a nice feature... shame to lose it: tokenFontField.setShowValidationLabel(false);
         tokenFontField.setShowSizeField(false);
         formPanel.add(tokenFontField);
 
-        panelField = new PanelField();
-        panelField.getMargins().setLeft(32).setTop(0);
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
-        button = generateButton("Try it!");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                initializeLogConsole();
-                logMessage(tokenField.getText(), Level.INFO);
-            }
-        });
-        panelField.getPanel().add(button);
+        button = generateButton("Try it!",
+                                e -> {
+                                    // Force a re-initialization with current style settings:
+                                    initializeLogConsole();
+                                    logMessage(tokenField.getText(), Level.INFO);
+                                });
+        panelField = generatePanelField(button);
+        panelField.getMargins().setTop(0);
         formPanel.add(panelField);
 
         initializeLogConsole();
@@ -123,13 +109,31 @@ public class LogConsolePanel extends PanelBuilder {
         return formPanel;
     }
 
-    private JButton generateButton(String caption) {
+    /**
+     * Invoked internally to create a JButton with consistent font/sizing, and with the given ActionListener.
+     */
+    private JButton generateButton(String caption, ActionListener listener) {
         JButton button = new JButton(caption);
         button.setPreferredSize(new Dimension(220, 26));
         button.setFont(button.getFont().deriveFont(Font.PLAIN));
+        button.addActionListener(listener);
         return button;
     }
 
+    /**
+     * Invoked internally to generate a PanelField wrapper for the given JButton.
+     */
+    private PanelField generatePanelField(JButton buttonToWrap) {
+        PanelField panelField = new PanelField(new FlowLayout(FlowLayout.LEFT));
+        panelField.getMargins().setLeft(32);
+        panelField.getPanel().add(buttonToWrap);
+        return panelField;
+    }
+
+    /**
+     * Take the current style settings in our UI and create a LogConsoleTheme and
+     * LogConsoleStyle out of them.
+     */
     private void initializeLogConsole() {
         LogConsoleTheme theme = LogConsoleTheme.createMatrixStyledTheme();
 
@@ -146,6 +150,9 @@ public class LogConsolePanel extends PanelBuilder {
         LogConsole.getInstance().registerTheme("swing-extras custom", theme);
     }
 
+    /**
+     * Invoked internally to log a test message with the given log level.
+     */
     private void logMessage(String msg, Level level) {
         if (!formPanel.isFormValid()) {
             return;

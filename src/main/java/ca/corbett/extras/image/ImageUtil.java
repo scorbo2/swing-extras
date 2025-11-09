@@ -10,6 +10,7 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.swing.ImageIcon;
+import javax.swing.filechooser.FileFilter;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -614,5 +615,21 @@ public final class ImageUtil {
         return name.endsWith(".jpg") || name.endsWith(".jpeg") ||
                 name.endsWith(".png") || name.endsWith(".gif") ||
                 name.endsWith(".bmp");
+    }
+
+    /**
+     * A FileFilter implementation that can be used with file choosers to limit the
+     * selection to acceptable image files.
+     */
+    public static class ImageFileFilter extends FileFilter {
+        @Override
+        public boolean accept(File f) {
+            return f.isDirectory() || isImageFile(f);
+        }
+
+        @Override
+        public String getDescription() {
+            return "Image files (png, jpg, bmp, gif)";
+        }
     }
 }

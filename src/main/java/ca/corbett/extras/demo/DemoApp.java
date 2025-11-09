@@ -25,6 +25,7 @@ import ca.corbett.forms.demo.FormHelpPanel;
 import ca.corbett.forms.demo.FormsOverviewPanel;
 import ca.corbett.forms.demo.FormsRendererPanel;
 import ca.corbett.forms.demo.FormsValidationPanel;
+import ca.corbett.forms.demo.ListFieldPanel;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
@@ -126,6 +127,7 @@ public class DemoApp extends JFrame {
         addDemoPanel(new FormsOverviewPanel());
         addDemoPanel(new BasicFormPanel());
         addDemoPanel(new AdvancedFormPanel());
+        addDemoPanel(new ListFieldPanel());
         addDemoPanel(new FormsValidationPanel());
         addDemoPanel(new FormActionsPanel());
         addDemoPanel(new FormsRendererPanel());

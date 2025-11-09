@@ -1,32 +1,31 @@
 package ca.corbett.forms.demo;
 
-import ca.corbett.extras.LookAndFeelManager;
-import ca.corbett.extras.demo.DemoApp;
+import ca.corbett.extras.demo.SnippetAction;
 import ca.corbett.extras.demo.panels.PanelBuilder;
+import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.gradient.Gradient;
+import ca.corbett.extras.gradient.GradientType;
 import ca.corbett.extras.image.ImageUtil;
-import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
-import ca.corbett.forms.fields.CollapsiblePanelField;
-import ca.corbett.forms.fields.ComboField;
-import ca.corbett.forms.fields.ImageListField;
+import ca.corbett.forms.fields.ColorField;
+import ca.corbett.forms.fields.FileField;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.SliderField;
+import ca.corbett.forms.fields.ValueChangedListener;
 
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+/**
+ * A demo panel for showing off some "advanced", or less-commonly-used, FormField implementations.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ */
 public class AdvancedFormPanel extends PanelBuilder {
-    private static final Logger log = Logger.getLogger(AdvancedFormPanel.class.getName());
+    private FormPanel formPanel;
 
     @Override
     public String getTitle() {
@@ -35,90 +34,148 @@ public class AdvancedFormPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
-        formPanel.setBorderMargin(24);
+        formPanel = buildFormPanel("Advanced form fields");
 
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("And now for some more advanced examples...",
-                                                                  20, 0, 8);
-        headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(headerLabel);
+        // Show some file and directory choosers with various options:
+        formPanel.add(LabelField.createBoldHeaderLabel("File and directory choosers"));
+        formPanel.add(new CheckBoxField("Show hidden files", false)
+                              .addValueChangedListener(new HiddenFileChangeListener()));
+        formPanel.add(new FileField("File chooser:", null, 15, FileField.SelectionType.AnyFile));
+        formPanel.add(new FileField("With image preview:", null, 15, FileField.SelectionType.AnyFile)
+                              .setFileFilter(new ImageUtil.ImageFileFilter()) // limit to image files
+                              .setAccessory(new FileField.ImagePreviewAccessory())); // include image preview
+        formPanel.add(new FileField("Dir chooser:", null, 15, FileField.SelectionType.ExistingDirectory));
+        formPanel.add(createSnippetLabel(new FileFieldSnippetAction()));
 
-        formPanel.add(LabelField.createBoldHeaderLabel("Sliders are sometimes more interesting than number spinners!", 14));
+        // Sliders are pretty neat, especially with customizations offered by swing-forms:
+        formPanel.add(LabelField.createBoldHeaderLabel("Sliders"));
+        formPanel.add(new LabelField(
+                "<html>Sliders are sometimes more visually interesting than number spinners.<br>"
+                        + "And with custom labels, they can even replace comboboxes for simple selections!</html>"));
         formPanel.add(new SliderField("Standard slider:", 0, 100, 50).setShowValueLabel(false));
         formPanel.add(new SliderField("With value label:", 0, 100, 50).setShowValueLabel(true));
-        formPanel.add(new SliderField("Custom colors!:", 0, 100, 50)
+        formPanel.add(new SliderField("Custom colors:", 0, 100, 50)
+                              .setColorStops(List.of(Color.BLACK, Color.BLUE, Color.CYAN, Color.WHITE)));
+        formPanel.add(new SliderField("Custom labels:", 0, 100, 50)
                               .setColorStops(List.of(Color.RED, Color.YELLOW, Color.GREEN))
-                              .setLabels(List.of("Very low", "Low", "Medium", "High", "Very high"), true));
+                              .setLabels(List.of("Very low", "Low", "Medium", "High", "Very high"), false));
+        formPanel.add(createSnippetLabel(new SliderSnippetAction()));
 
-        formPanel.add(LabelField.createBoldHeaderLabel("Panel fields", 14, 16, 8));
-        CollapsiblePanelField panelField = new CollapsiblePanelField("Panel fields are great for grouping components together!",
-                                                                     true,
-                                                                     new BorderLayout());
-        panelField.setShouldExpandHorizontally(true);
-        FormPanel miniFormPanel = new FormPanel(Alignment.TOP_LEFT);
-        miniFormPanel.getBorderMargin().setLeft(24);
-        miniFormPanel.add(new CheckBoxField("Example field 1", true));
-        miniFormPanel.add(new CheckBoxField("Example field 2", true));
-        miniFormPanel.add(new ComboField<String>("Select:",
-                                                 List.of("These fields belong together",
-                                                         "You can collapse this panel!",
-                                                         "That hides these grouped fields."),
-                                                 0));
-        panelField.getPanel().add(miniFormPanel, BorderLayout.CENTER);
-        formPanel.add(panelField);
-
-        panelField = new CollapsiblePanelField("Panels can be collapsed by default!",
-                                                                                false,
-                                                                                new FlowLayout(FlowLayout.LEFT));
-        panelField.setShouldExpandHorizontally(true);
-        panelField.getPanel().add(new JLabel("    Told you so!"));
-        formPanel.add(panelField);
-
-        formPanel.add(LabelField.createBoldHeaderLabel("List fields are supported too!", 14, 24, 8));
-        ListField<String> listField1 = new ListField<>("Simple list:",
-                                                       List.of("One", "Two", "Three", "Four", "Five", "Six"));
-        listField1.setFixedCellWidth(80);
-        listField1.setVisibleRowCount(4);
-        formPanel.add(listField1);
-
-        ListField<String> listField2 = new ListField<>("Wide list:",
-                                                       List.of("One", "Two", "Three", "Four", "Five", "Six"));
-        listField2.setLayoutOrientation(JList.VERTICAL_WRAP);
-        listField2.setFixedCellWidth(80);
-        listField2.setVisibleRowCount(3);
-        formPanel.add(listField2);
-
-        ImageListField imageListField = new ImageListField("Image list:", 5, 75);
-        try {
-            imageListField.addImage(
-                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/media-playback-start.png")));
-            imageListField.addImage(
-                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/media-playback-pause.png")));
-            imageListField.addImage(
-                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/media-playback-stop.png")));
-            imageListField.addImage(
-                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/media-record.png")));
-            imageListField.addImage(
-                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/icon-copy.png")));
-            imageListField.addImage(
-                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/icon-cut.png")));
-            imageListField.addImage(
-                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/icon-paste.png")));
-            imageListField.addImage(
-                    ImageUtil.loadImage(getClass().getResource("/swing-extras/images/swing-extras-icon.jpg")));
-        }
-        catch (IOException | IllegalArgumentException ioe) {
-            log.log(Level.SEVERE, "Problem loading image resources: " + ioe.getMessage(), ioe);
-        }
-        imageListField.setHelpText("<html><b>USAGE:</b><br>Try double-clicking the images in the image list!"
-                                           + "<br>Click and drag left/right to scroll the list!"
-                                           + "<br>You can drag and drop images from your file system onto the list!</html>");
-        imageListField.setShouldExpand(true);
-        imageListField.getImageListPanel().setOwnerWindow(DemoApp.getInstance());
-        formPanel.add(imageListField);
+        // Color and color gradient choosers are also available:
+        formPanel.add(LabelField.createBoldHeaderLabel("Color choosers"));
+        formPanel.add(new LabelField(
+                "<html>Both solid colors and color gradients are supported.<br>" +
+                        "Color gradients can be used with ImageTextUtil and DesktopPane.</html>"));
+        formPanel.add(new ColorField("Solid color:", ColorSelectionType.SOLID).setColor(Color.BLUE));
+        formPanel.add(new ColorField("Gradients:", ColorSelectionType.GRADIENT).setGradient(buildDefaultGradient()));
+        formPanel.add(new ColorField("Either:", ColorSelectionType.EITHER).setColor(Color.RED));
+        formPanel.add(createSnippetLabel(new ColorFieldSnippetAction(), 0));
 
         return formPanel;
+    }
+
+    /**
+     * Invoked internally to build some gradient for initial display purposes:
+     */
+    private Gradient buildDefaultGradient() {
+        return new Gradient(GradientType.DIAGONAL2, Color.GREEN, Color.BLACK);
+    }
+
+    /**
+     * A simple ValueChangeListener that we can attach to our "show hidden files" checkbox
+     * to update all FileFields on the form to behave accordingly when launched.
+     */
+    private class HiddenFileChangeListener implements ValueChangedListener {
+        @Override
+        public void formFieldValueChanged(FormField field) {
+            // Get the checked state of the checkbox that caused this event:
+            boolean isChecked = ((CheckBoxField)field).isChecked();
+
+            // Now stream through all fields on our form panel looking for FileFields:
+            formPanel.getFormFields()
+                     .stream()
+                     .filter(f -> f instanceof FileField)
+                     .forEach(f -> ((FileField)f).setFileHidingEnabled(!isChecked));
+        }
+    }
+
+    /**
+     * Shows a snippet for how to create FileFields.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    private static class FileFieldSnippetAction extends SnippetAction {
+        @Override
+        protected String getSnippet() {
+            return """
+                    // Start with a blank FormPanel:
+                    FormPanel formPanel = new FormPanel();
+                    
+                    // Add a simple FileField for selecting any file:
+                    formPanel.add(new FileField("File chooser:", null, 15, FileField.SelectionType.AnyFile));
+                    
+                    // Let's limit the selection to image files and add an image preview:
+                    formPanel.add(new FileField("With image preview:", null, 15, FileField.SelectionType.AnyFile)
+                                          .setFileFilter(new ImageUtil.ImageFileFilter()) // limit to image files
+                                          .setAccessory(new FileField.ImagePreviewAccessory())); // include image preview
+                    
+                    // We can also limit the selection to directories instead of files:
+                    formPanel.add(new FileField("Dir chooser:", null, 15, FileField.SelectionType.ExistingDirectory));
+                    """;
+        }
+    }
+
+    /**
+     * Shows a code snippet for creating SliderFields.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    private static class SliderSnippetAction extends SnippetAction {
+        @Override
+        protected String getSnippet() {
+            return """
+                    // Start with a blank FormPanel:
+                    FormPanel formPanel = new FormPanel();
+                    
+                    // Create a boring standard SliderField with no value label:
+                    formPanel.add(new SliderField("Standard slider:", 0, 100, 50).setShowValueLabel(false));
+                    
+                    // Create a boring standard SliderField with a simple numeric value label:
+                    formPanel.add(new SliderField("With value label:", 0, 100, 50).setShowValueLabel(true));
+                    
+                    // We can add custom color stops to make the SliderField look more interesting:
+                    formPanel.add(new SliderField("Custom colors:", 0, 100, 50)
+                                    .setColorStops(List.of(Color.BLACK, Color.BLUE, Color.CYAN, Color.WHITE)));
+                    
+                    // And we can add custom labels to represent our colors:
+                    formPanel.add(new SliderField("Custom labels:", 0, 100, 50)
+                                    .setColorStops(List.of(Color.RED, Color.YELLOW, Color.GREEN))
+                                    .setLabels(List.of("Very low", "Low", "Medium", "High", "Very high"), false));
+                    
+                    // Note that the count of custom labels doesn't have to match the count of color stops!
+                    // SliderField is smart enough to interpolate accordingly.
+                    """;
+        }
+    }
+
+    /**
+     * Shows a code snippet for creating ColorFields.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    private static class ColorFieldSnippetAction extends SnippetAction {
+        @Override
+        protected String getSnippet() {
+            return """
+                    ColorField solidOnly = new ColorField("Solid color:", ColorSelectionType.SOLID);
+                    solidOnly.setColor(Color.BLUE); // or whatever initial value we want
+                    
+                    ColorField gradientOnly = new ColorField("Gradients:", ColorSelectionType.GRADIENT);
+                    gradientOnly.setGradient(buildDefaultGradient()); // set our initial gradient
+                    
+                    ColorField either = new ColorField("Either:", ColorSelectionType.EITHER);
+                    either.setColor(Color.RED); // set a solid color initially, but user can also choose gradients.
+                    """;
+        }
     }
 }

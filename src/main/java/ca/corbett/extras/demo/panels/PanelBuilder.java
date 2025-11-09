@@ -1,6 +1,7 @@
 package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.demo.SnippetAction;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
@@ -56,11 +57,33 @@ public abstract class PanelBuilder {
         return formPanel;
     }
 
+    /**
+     * Can be invoked internally to create a header label whose color is highlighted
+     * according to the current look and feel. A listener will be added such that
+     * if the current LaF is changed, this label will recolor itself as needed.
+     */
     protected LabelField buildHighlightedHeaderLabel(String text, int pointSize) {
         LabelField label = LabelField.createBoldHeaderLabel(text, pointSize, 0, 8);
         label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
         LookAndFeelManager.addChangeListener(
                 e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
+        return label;
+    }
+
+    /**
+     * Shorthand for creating a snippet label with a bottom margin of 16.
+     */
+    protected LabelField createSnippetLabel(SnippetAction action) {
+        return createSnippetLabel(action, 16);
+    }
+
+    /**
+     * Can be invoked by demo panels as a shortcut to create a code snippet label.
+     */
+    protected LabelField createSnippetLabel(SnippetAction action, int bottomMargin) {
+        LabelField label = new LabelField("Code snippet:", "Click here to view");
+        label.setHyperlink(action);
+        label.getMargins().setBottom(bottomMargin);
         return label;
     }
 }
