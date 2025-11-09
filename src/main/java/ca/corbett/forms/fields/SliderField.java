@@ -47,6 +47,7 @@ public class SliderField extends FormField {
     private final JLabel valueLabel;
     private boolean showValueLabel;
     private boolean showNumericValueInLabel;
+    private ColorInterpolatingSliderUI lastGeneratedUI;
 
     public SliderField(String labelText, int min, int max, int value) {
         fieldLabel.setText(labelText);
@@ -65,6 +66,14 @@ public class SliderField extends FormField {
         }
         showValueLabel = true; // arbitrary default
         updateValueLabel();
+
+        // We need to watch out for Look and Feel changes, otherwise we might
+        // lose our custom ColorInterpolatingSliderUI:
+        LookAndFeelManager.addChangeListener(e -> {
+            if (lastGeneratedUI != null) {
+                slider.setUI(lastGeneratedUI);
+            }
+        });
     }
 
     /**
@@ -83,7 +92,8 @@ public class SliderField extends FormField {
             ((ColorInterpolatingSliderUI)slider.getUI()).setColorStops(colorStops);
         }
         else {
-            slider.setUI(new ColorInterpolatingSliderUI(colorStops));
+            lastGeneratedUI = new ColorInterpolatingSliderUI(colorStops);
+            slider.setUI(lastGeneratedUI);
         }
         return this;
     }
@@ -110,7 +120,8 @@ public class SliderField extends FormField {
             ((ColorInterpolatingSliderUI)slider.getUI()).setStopLabels(labels);
         }
         else {
-            slider.setUI(new ColorInterpolatingSliderUI(null, labels));
+            lastGeneratedUI = new ColorInterpolatingSliderUI(null, labels);
+            slider.setUI(lastGeneratedUI);
         }
         updateValueLabel();
         return this;

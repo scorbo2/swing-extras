@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.5.0 [TODO release date] - TODO description
+  #166 - Fix Look and Feel bug in ColorField and SliderField
   #165 - Demo app: code cleanup and documentation pass
   #164 - General: callback listeners were not thread safe
   #163 - New FormField: PasswordField
