@@ -42,6 +42,7 @@ public class PopupTextDialog extends JDialog {
 
     protected static int lastWidth = 600;  // arbitrary default for initial display
     protected static int lastHeight = 400; // arbitrary default for initial display
+    protected final Window ownerWindow;
     protected JTextArea textArea;
     protected JButton copyButton;
     protected boolean wasOkayed;
@@ -51,6 +52,7 @@ public class PopupTextDialog extends JDialog {
         setModal(isModal);
         setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
         setSize(Math.max(lastWidth, MIN_WIDTH), Math.max(lastHeight, MIN_HEIGHT));
+        ownerWindow = owner;
         setLocationRelativeTo(owner);
         setResizable(true);
         initComponents(text);
@@ -123,23 +125,13 @@ public class PopupTextDialog extends JDialog {
     }
 
     /**
-     * This is invoked internally when the window is resized, so the dialog can remember the new size
-     * for the next time it's launched. But, it's public, so this is also a sneaky way of setting
-     * the size of the dialog before creating a new instance of it.
-     * <p>
-     * <b>Wait, why not just invoke setSize() after I instantiate the dialog?</b> - a good question.
-     * The constructor of this class not only invokes setSize(), but it also invokes setLocationRelativeTo()
-     * immediately afterwards. This not only sets the size of the dialog before showing it, but also ensures
-     * that the dialog will pop up nicely centered over the owning window. If you instantiate an instance
-     * of this dialog and THEN invoke setSize() on it, the dialog will no longer be nicely centered.
-     * To fix this, you either have to invoke setLocationRelativeTo() yourself after setSize(), or just
-     * invoke this setSavedDimensions() method BEFORE you instantiate. Both solutions work, but this
-     * one saves you a line of code.
-     * </p>
+     * Overridden here so that when the dialog size is programmatically changed, we re-center
+     * ourselves over our owner window.
      */
-    public static void setSavedDimensions(int width, int height) {
-        lastWidth = Math.max(width, MIN_WIDTH);
-        lastHeight = Math.max(height, MIN_HEIGHT);
+    @Override
+    public void setSize(Dimension dim) {
+        super.setSize(dim);
+        setLocationRelativeTo(ownerWindow);
     }
 
     protected void buttonHandler(boolean isOk) {
@@ -158,7 +150,8 @@ public class PopupTextDialog extends JDialog {
             public void componentResized(ComponentEvent e) {
                 // Update static variables with current size
                 Dimension currentSize = getSize();
-                setSavedDimensions(Math.max(currentSize.width, MIN_WIDTH), Math.max(currentSize.height, MIN_HEIGHT));
+                lastWidth = Math.max(currentSize.width, MIN_WIDTH);
+                lastHeight = Math.max(currentSize.height, MIN_HEIGHT);
             }
         });
     }
