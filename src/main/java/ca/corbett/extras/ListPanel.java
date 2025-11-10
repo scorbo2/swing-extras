@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ListSelectionListener;
@@ -97,6 +98,14 @@ public class ListPanel<T> extends JPanel {
         list.repaint();
     }
 
+    public T getItemAt(int index) {
+        return listModel.getElementAt(index);
+    }
+
+    public void removeItemAt(int index) {
+        listModel.removeElementAt(index);
+    }
+
     public void setPreferredWidth(int width) {
         preferredWidth = width;
     }
@@ -105,6 +114,10 @@ public class ListPanel<T> extends JPanel {
     public void setPreferredSize(Dimension dim) {
         super.setPreferredSize(dim);
         preferredWidth = dim.width;
+    }
+
+    public void setListCellRenderer(ListCellRenderer<T> renderer) {
+        list.setCellRenderer(renderer);
     }
 
     /**

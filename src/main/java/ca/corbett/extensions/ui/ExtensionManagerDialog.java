@@ -2,6 +2,7 @@ package ca.corbett.extensions.ui;
 
 import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.ExtensionManager;
+import ca.corbett.extras.ToggleableTabbedPane;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -12,7 +13,7 @@ import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
+import java.awt.Window;
 
 /**
  * Provides a standardized way of viewing and enabling extensions across applications.
@@ -39,9 +40,9 @@ import java.awt.Frame;
 public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
 
     private final ExtensionManager<T> extManager;
-    private final Frame ownerFrame;
 
-    private ExtensionManagerPanel extPanel;
+    private ToggleableTabbedPane tabbedPane;
+    private InstalledExtensionsPanel<T> extPanel;
     private boolean autoCommit;
     private boolean wasOkayed;
     private boolean wasModified;
@@ -51,9 +52,9 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
      * default title of "Extension Manager".
      *
      * @param manager The ExtensionManager containing our list of extensions.
-     * @param owner   The owner frame. This dialog will be modal.
+     * @param owner   The owner window. This dialog will be modal.
      */
-    public ExtensionManagerDialog(ExtensionManager manager, Frame owner) {
+    public ExtensionManagerDialog(ExtensionManager<T> manager, Window owner) {
         this(manager, owner, null);
     }
 
@@ -62,17 +63,16 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
      * and the given window title.
      *
      * @param manager The ExtensionManager containing our list of extensions.
-     * @param owner   The owner frame. This dialog will be modal.
+     * @param owner   The owner window. This dialog will be modal.
      * @param title   The window title. Will be "Extension Manager" if null.
      */
-    public ExtensionManagerDialog(ExtensionManager manager, Frame owner, String title) {
+    public ExtensionManagerDialog(ExtensionManager<T> manager, Window owner, String title) {
         super(owner, title == null ? "Extension Manager" : title);
         this.extManager = manager;
-        this.ownerFrame = owner;
         this.setSize(new Dimension(700, 485));
         this.setResizable(false);
         this.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
-        this.setLocationRelativeTo(ownerFrame);
+        this.setLocationRelativeTo(owner);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.autoCommit = true;
         this.wasOkayed = false;
@@ -170,10 +170,47 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         dispose();
     }
 
+    /**
+     * Utility method to trim the given String to a max length of 50 chars, with
+     * a "..." added to it if we had to cut it down. See trimString(String,int) for
+     * a more flexible version of this method.
+     */
+    protected static String trimString(String input) {
+        return trimString(input, 50);
+    }
+
+    /**
+     * Utility method to trim the given String to the given length, with a "..." added
+     * to it if it was too long.
+     *
+     * @param input The String to be trimmed.
+     * @param LIMIT The maximum length to allow.
+     * @return The input string if it was shorter than LIMIT, or the chopped string plus "..." otherwise.
+     */
+    public static String trimString(String input, final int LIMIT) {
+        if (input == null) {
+            return null;
+        }
+        if (input.length() >= LIMIT) {
+            input = input.substring(0, LIMIT) + "...";
+        }
+        return input;
+    }
+
+
     private void initComponents() {
         setLayout(new BorderLayout());
-        extPanel = new ExtensionManagerPanel(this, extManager);
-        add(extPanel, BorderLayout.CENTER);
+        tabbedPane = new ToggleableTabbedPane();
+        extPanel = new InstalledExtensionsPanel<>(this, extManager);
+        tabbedPane.addTab("Installed", extPanel);
+
+        // TODO add pane for update sources
+
+        if (!extManager.getStartupErrors().isEmpty()) {
+            tabbedPane.addTab("Errors", new ExtensionErrorsTab(this, extManager));
+        }
+
+        add(tabbedPane, BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
     }
 

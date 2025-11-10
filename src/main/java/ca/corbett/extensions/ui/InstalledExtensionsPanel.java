@@ -4,16 +4,13 @@ import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.ListPanel;
 import ca.corbett.extras.LookAndFeelManager;
-import ca.corbett.updates.VersionManifest;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,26 +26,26 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This panel combines a configurable ListPanel on the left side, a configurable ExtensionTitleBar
- * in the top right, and an ExtensionDetailsPanel in the main right position. The combination of these
- * three allows the user to pick an extension on the left and view/edit its details on the right.
- * <p>
- *
- * </p>
+ * This panel shows a list of all installed extensions, and allows the user to enable/disable them,
+ * or uninstall them if desired.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
-public class ExtensionManagerPanel<T extends AppExtension> extends JPanel {
+public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
 
     protected final Window owner;
     protected final ExtensionManager<T> extManager;
+
     protected final JPanel contentPanel = new JPanel(new BorderLayout());
+    protected final JPanel headerPanel = new JPanel(new BorderLayout());
+    protected final JPanel detailsPanel = new JPanel(new BorderLayout());
+
     protected final Map<String, ExtensionDetailsPanel> detailsPanelMap;
     protected final ListPanel<AppExtensionPlaceholder<T>> extensionListPanel;
     protected ExtensionDetailsPanel emptyPanel;
 
-    public ExtensionManagerPanel(Window owner, ExtensionManager<T> manager) {
+    public InstalledExtensionsPanel(Window owner, ExtensionManager<T> manager) {
         this.owner = owner;
         extManager = manager;
         detailsPanelMap = new HashMap<>();
@@ -61,8 +58,8 @@ public class ExtensionManagerPanel<T extends AppExtension> extends JPanel {
         List<T> extensions = extManager.getAllLoadedExtensions();
         extensions.sort(Comparator.comparing(o -> o.getInfo().getName()));
         for (T extension : extensions) {
-            AppExtensionPlaceholder<T> placeholder = new AppExtensionPlaceholder<>(extension);
-            placeholder.setEnabled(extManager.isExtensionEnabled(extension.getClass().getName()));
+            boolean isEnabled = extManager.isExtensionEnabled(extension.getClass().getName());
+            AppExtensionPlaceholder<T> placeholder = new AppExtensionPlaceholder<>(extension, isEnabled);
             extensionListPanel.addItem(placeholder);
         }
         initComponents();
@@ -89,43 +86,35 @@ public class ExtensionManagerPanel<T extends AppExtension> extends JPanel {
     protected void setAllEnabled(boolean enabled) {
         for (AppExtensionPlaceholder<T> placeholder : extensionListPanel.getAll()) {
             placeholder.isEnabled = enabled;
-            ExtensionDetailsPanel detailsPanel = detailsPanelMap.get(placeholder.extension.getClass().getName());
-            if (detailsPanel != null) {
-                detailsPanel.setExtensionEnabled(enabled);
+            for (Component c : headerPanel.getComponents()) {
+                if (c instanceof ExtensionTitleBar) {
+                    ((ExtensionTitleBar<?>)c).setExtensionEnabled(enabled);
+                }
             }
         }
         rejigger(extensionListPanel);
     }
 
     protected void listSelectionChanged() {
-        contentPanel.removeAll();
+        headerPanel.removeAll();
+        detailsPanel.removeAll();
         final AppExtensionPlaceholder<?> placeholder = extensionListPanel.getSelected();
         if (placeholder == null) {
-            contentPanel.add(emptyPanel);
+            headerPanel.add(new ExtensionTitleBar<>(null));
+            detailsPanel.add(emptyPanel);
             rejigger(contentPanel);
             return; // no selection
         }
-        ExtensionDetailsPanel detailsPanel = detailsPanelMap.get(placeholder.extension.getClass().getName());
-        if (detailsPanel == null) {
-            detailsPanel = new ExtensionDetailsPanel(owner, extManager, placeholder.extension,
-                                                     placeholder.isEnabled);
-            detailsPanel.addExtensionDetailsPanelListener(new ExtensionDetailsPanelListener() {
-                @Override
-                public void extensionEnabled(ExtensionDetailsPanel source, String className) {
-                    placeholder.isEnabled = true;
-                    rejigger(extensionListPanel);
-                }
 
-                @Override
-                public void extensionDisabled(ExtensionDetailsPanel source, String className) {
-                    placeholder.isEnabled = false;
-                    rejigger(extensionListPanel);
-                }
-
-            });
-            detailsPanelMap.put(placeholder.extension.getClass().getName(), detailsPanel);
-        }
-        contentPanel.add(detailsPanel, BorderLayout.CENTER);
+        ExtensionTitleBar<AppExtension> titleBar = new ExtensionTitleBar<>(placeholder.extension);
+        titleBar.setAllowUninstall(true).setAllowEnable(true);
+        titleBar.setExtensionEnabled(placeholder.isEnabled());
+        headerPanel.add(titleBar);
+        detailsPanel.add(detailsPanelMap.computeIfAbsent(
+                                 placeholder.extension.getClass().getName(),
+                                 k -> new ExtensionDetailsPanel(owner, extManager, placeholder.extension)
+                                         .setNameFieldVisible(false)),
+                         BorderLayout.CENTER);
         rejigger(contentPanel);
     }
 
@@ -151,16 +140,15 @@ public class ExtensionManagerPanel<T extends AppExtension> extends JPanel {
         setLayout(new BorderLayout());
 
         // The empty panel will be shown by default, or whenever the list selection is cleared.
-        emptyPanel = new ExtensionDetailsPanel(owner, extManager, null, false);
+        emptyPanel = new ExtensionDetailsPanel(owner, extManager, (AppExtension)null);
 
         // Add the extension list on the left:
         add(extensionListPanel, BorderLayout.WEST);
 
         // And we have our layout:
-        JScrollPane scrollPane = new JScrollPane(contentPanel);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(headerPanel, BorderLayout.NORTH);
+        contentPanel.add(detailsPanel, BorderLayout.CENTER);
+        add(contentPanel, BorderLayout.CENTER);
 
         // If we have at least one extension, select it:
         if (!extensionListPanel.isEmpty()) {
@@ -208,15 +196,11 @@ public class ExtensionManagerPanel<T extends AppExtension> extends JPanel {
         protected final T extension;
         protected String name;
         protected boolean isEnabled;
-        protected boolean isInstalled;
-        protected VersionManifest.ExtensionVersion extensionVersion;
 
-        public AppExtensionPlaceholder(T extension) {
+        public AppExtensionPlaceholder(T extension, boolean isEnabled) {
             this.extension = extension;
             this.name = extension.getInfo().getName();
-            this.isEnabled = false;
-            this.isInstalled = false;
-            this.extensionVersion = null;
+            this.isEnabled = isEnabled;
         }
 
         public AppExtensionPlaceholder<T> setEnabled(boolean enabled) {
@@ -224,22 +208,8 @@ public class ExtensionManagerPanel<T extends AppExtension> extends JPanel {
             return this;
         }
 
-        public AppExtensionPlaceholder<T> setInstalled(boolean installed) {
-            isInstalled = installed;
-            return this;
-        }
-
-        public AppExtensionPlaceholder<T> setExtensionVersion(VersionManifest.ExtensionVersion version) {
-            extensionVersion = version;
-
-        }
-
         public boolean isEnabled() {
             return isEnabled;
-        }
-
-        public boolean isInstalled() {
-            return isInstalled;
         }
 
         @Override

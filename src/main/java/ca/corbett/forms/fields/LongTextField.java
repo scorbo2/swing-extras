@@ -113,7 +113,28 @@ public class LongTextField extends FormField {
     public FormField setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         textArea.setEnabled(enabled);
+        if (!enabled) {
+            textArea.setEditable(false); // explicit if disabled
+        }
         return this;
+    }
+
+    /**
+     * This allows the text component (and popout editor) to be read-only
+     * without marking the entire field as disabled.
+     */
+    public LongTextField setEditable(boolean editable) {
+        textArea.setEditable(editable);
+        return this;
+    }
+
+    /**
+     * Indicates whether the text area (and popout editor) are editable.
+     * This may be false if the entire field is disabled, or if the
+     * field is enabled but setEditable(false) has been invoked.
+     */
+    public boolean isEditable() {
+        return textArea.isEditable();
     }
 
     /**
@@ -227,7 +248,7 @@ public class LongTextField extends FormField {
                                                              fieldLabel.getText(),
                                                              textArea.getText(),
                                                              true);
-                editor.setReadOnly(!isEnabled());
+                editor.setReadOnly(!isEditable());
                 editor.setVisible(true);
                 if (editor.wasOkayed()) {
                     textArea.setText(editor.getText());
