@@ -29,6 +29,10 @@ import java.util.Objects;
  */
 public class AppExtensionInfo {
 
+    public static final String EXT_TYPE_BUILTIN = "Application built-in";
+    public static final String EXT_TYPE_SYSTEM = "System extension";
+    public static final String EXT_TYPE_USER = "User extension";
+
     protected static Gson gson;
 
     protected final String name;
@@ -45,9 +49,9 @@ public class AppExtensionInfo {
 
     protected AppExtensionInfo(Builder builder) {
         this.name = builder.name;
-        this.projectUrl = builder.extensionUrl;
         this.author = builder.author;
         this.authorUrl = builder.authorUrl;
+        this.projectUrl = builder.projectUrl;
         this.version = builder.version;
         this.targetAppName = builder.targetAppName;
         this.targetAppVersion = builder.targetAppVersion;
@@ -203,9 +207,9 @@ public class AppExtensionInfo {
 
         protected final String name;
         protected String version;
-        protected String extensionUrl;
         protected String author;
         protected String authorUrl;
+        protected String projectUrl;
         protected String targetAppName;
         protected String targetAppVersion;
         protected String shortDescription;
@@ -233,8 +237,8 @@ public class AppExtensionInfo {
             return this;
         }
 
-        public Builder setExtensionUrl(String extensionUrl) {
-            this.extensionUrl = extensionUrl;
+        public Builder setProjectUrl(String projectUrl) {
+            this.projectUrl = projectUrl;
             return this;
         }
 

@@ -70,7 +70,8 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         super(owner, title == null ? "Extension Manager" : title);
         this.extManager = manager;
         this.setSize(new Dimension(700, 485));
-        this.setResizable(false);
+        this.setMinimumSize(new Dimension(700, 485));
+        this.setResizable(true);
         this.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
         this.setLocationRelativeTo(owner);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -205,6 +206,7 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         tabbedPane.addTab("Installed", extPanel);
 
         // TODO add pane for update sources
+        // TODO consider hiding the tab bar if there's only one tab standing at the end of this method
 
         if (!extManager.getStartupErrors().isEmpty()) {
             tabbedPane.addTab("Errors", new ExtensionErrorsTab(this, extManager));

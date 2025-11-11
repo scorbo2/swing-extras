@@ -110,11 +110,17 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
         titleBar.setAllowUninstall(true).setAllowEnable(true);
         titleBar.setExtensionEnabled(placeholder.isEnabled());
         headerPanel.add(titleBar);
-        detailsPanel.add(detailsPanelMap.computeIfAbsent(
-                                 placeholder.extension.getClass().getName(),
-                                 k -> new ExtensionDetailsPanel(owner, extManager, placeholder.extension)
-                                         .setNameFieldVisible(false)),
-                         BorderLayout.CENTER);
+        String className = placeholder.extension.getClass().getName();
+        ExtensionDetailsPanel extPanel = detailsPanelMap.get(className);
+        if (extPanel == null) {
+            // We haven't visited this one before, so create a new panel for it now:
+            extPanel = new ExtensionDetailsPanel(owner, placeholder.extension.getInfo());
+            extPanel.setIsLocallyInstalledExtension(extManager.getSourceJar(className));
+            extPanel.setConfigProperties(placeholder.extension.getConfigProperties());
+            extPanel.setNameFieldVisible(false); // we have our own title bar
+            detailsPanelMap.put(className, extPanel);
+        }
+        detailsPanel.add(extPanel);
         rejigger(contentPanel);
     }
 
@@ -140,7 +146,7 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
         setLayout(new BorderLayout());
 
         // The empty panel will be shown by default, or whenever the list selection is cleared.
-        emptyPanel = new ExtensionDetailsPanel(owner, extManager, (AppExtension)null);
+        emptyPanel = new ExtensionDetailsPanel(owner, null);
 
         // Add the extension list on the left:
         add(extensionListPanel, BorderLayout.WEST);

@@ -16,7 +16,6 @@ import ca.corbett.forms.fields.PanelField;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import java.awt.FlowLayout;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,11 +45,6 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
         extManager.addExtension(new FakeExtension1(), true);
         extManager.addExtension(new FakeExtension2(), true);
         extManager.addExtension(new FakeExtension3(), true);
-
-        // TEMP: simulate some startup errors so I can see the error tab: TODO remove me
-        extManager.addStartupError(new File("/some/file.jar"), "something bad happened");
-        extManager.addStartupError(new File("/some/other/file/myJar.jar"), "Something really bad happened.");
-        extManager.addStartupError(new File("/home/scorbett/nothing.jar"), "Remove this one");
     }
 
     @Override
