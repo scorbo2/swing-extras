@@ -1,8 +1,8 @@
 package ca.corbett.extensions.ui;
 
-import ca.corbett.extensions.AppExtension;
 import ca.corbett.extras.LookAndFeelManager;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -15,6 +15,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 
 /**
  * To be used in ExtensionManagerDialog - this class represents the title panel
@@ -24,46 +25,81 @@ import java.awt.Insets;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.5
  */
-public class ExtensionTitleBar<T extends AppExtension> extends JPanel {
+public class ExtensionTitleBar extends JPanel {
 
-    private final T extension;
     private final JLabel titleLabel;
     private final JCheckBox enabledCheckBox;
     private final JButton installButton;
     private final JButton uninstallButton;
     private final JButton updateButton;
 
-    public ExtensionTitleBar(T extension) {
-        this.extension = extension;
-
-        titleLabel = new JLabel();
+    public ExtensionTitleBar(String title) {
+        titleLabel = new JLabel(title);
         enabledCheckBox = new JCheckBox("Enabled", false);
         installButton = new JButton("Install");
         uninstallButton = new JButton("Uninstall");
         updateButton = new JButton("Update");
 
-        if (extension != null) {
+        if (title != null && !title.isBlank()) {
             initComponents();
+        }
+        else {
+            setVisible(false);
         }
     }
 
-    public ExtensionTitleBar<T> setAllowEnable(boolean allow) {
-        enabledCheckBox.setVisible(allow);
+    /**
+     * Sets some action to execute when the enabled checkbox is selected or unselected.
+     * This implicitly makes the checkbox visible, if it wasn't already.
+     * You can supply null as the action, which hides the checkbox.
+     */
+    public ExtensionTitleBar setEnabledToggleAction(AbstractAction action) {
+        enabledCheckBox.setVisible(action != null);
+        if (action != null) {
+            enabledCheckBox.addActionListener(e -> {
+                ActionEvent evt = new ActionEvent(this, 0, "");
+                action.actionPerformed(evt);
+            });
+        }
         return this;
     }
 
-    public ExtensionTitleBar<T> setAllowInstall(boolean allow) {
-        installButton.setVisible(allow);
+    /**
+     * Sets some action to execute when the install button is pressed.
+     * This implicitly makes the button visible, if it wasn't already.
+     * You can supply null as the action, which hides the button.
+     */
+    public ExtensionTitleBar setInstallAction(AbstractAction action) {
+        installButton.setVisible(action != null);
+        if (action != null) {
+            installButton.setAction(action);
+        }
         return this;
     }
 
-    public ExtensionTitleBar<T> setAllowUninstall(boolean allow) {
-        uninstallButton.setVisible(allow);
+    /**
+     * Sets some action to execute when the uninstall button is pressed.
+     * This implicitly makes the button visible, if it wasn't already.
+     * You can supply null as the action, which hides the button.
+     */
+    public ExtensionTitleBar setUninstallAction(AbstractAction action) {
+        uninstallButton.setVisible(action != null);
+        if (action != null) {
+            uninstallButton.setAction(action);
+        }
         return this;
     }
 
-    public ExtensionTitleBar<T> setAllowUpdate(boolean allow) {
-        updateButton.setVisible(allow);
+    /**
+     * Sets some action to execute when the update button is pressed.
+     * This implicitly makes the button visible, if it wasn't already.
+     * You can supply null as the action, which hides the button.
+     */
+    public ExtensionTitleBar setUpdateAction(AbstractAction action) {
+        updateButton.setVisible(action != null);
+        if (action != null) {
+            updateButton.setAction(action);
+        }
         return this;
     }
 
@@ -83,7 +119,7 @@ public class ExtensionTitleBar<T extends AppExtension> extends JPanel {
         return updateButton.isVisible();
     }
 
-    public ExtensionTitleBar<T> setExtensionEnabled(boolean enable) {
+    public ExtensionTitleBar setExtensionEnabled(boolean enable) {
         enabledCheckBox.setSelected(enable);
         return this;
     }
@@ -101,7 +137,6 @@ public class ExtensionTitleBar<T extends AppExtension> extends JPanel {
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(0, 12, 0, 12);
-        titleLabel.setText(extension.getInfo().getName());
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 24f));
         titleLabel.setHorizontalAlignment(JLabel.LEFT);
         titleLabel.setVerticalAlignment(JLabel.CENTER);

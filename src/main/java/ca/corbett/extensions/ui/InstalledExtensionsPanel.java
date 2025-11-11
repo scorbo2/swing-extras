@@ -88,7 +88,7 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
             placeholder.isEnabled = enabled;
             for (Component c : headerPanel.getComponents()) {
                 if (c instanceof ExtensionTitleBar) {
-                    ((ExtensionTitleBar<?>)c).setExtensionEnabled(enabled);
+                    ((ExtensionTitleBar)c).setExtensionEnabled(enabled);
                 }
             }
         }
@@ -100,14 +100,15 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
         detailsPanel.removeAll();
         final AppExtensionPlaceholder<?> placeholder = extensionListPanel.getSelected();
         if (placeholder == null) {
-            headerPanel.add(new ExtensionTitleBar<>(null));
+            headerPanel.add(new ExtensionTitleBar(null));
             detailsPanel.add(emptyPanel);
             rejigger(contentPanel);
             return; // no selection
         }
 
-        ExtensionTitleBar<AppExtension> titleBar = new ExtensionTitleBar<>(placeholder.extension);
-        titleBar.setAllowUninstall(true).setAllowEnable(true);
+        ExtensionTitleBar titleBar = new ExtensionTitleBar(placeholder.extension.getInfo().getName())
+                .setEnabledToggleAction(new ExtensionEnabledToggleAction(placeholder))
+                .setUninstallAction(new ExtensionUninstallAction(placeholder));
         titleBar.setExtensionEnabled(placeholder.isEnabled());
         headerPanel.add(titleBar);
         String className = placeholder.extension.getClass().getName();
@@ -240,6 +241,50 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
             return sb.toString();
         }
 
+    }
+
+    /**
+     * An action that can respond to an extension being enabled or disabled. We present
+     * a checkbox for this in the ExtensionTitleBar, and this action can be invoked
+     * when the checkbox is toggled. We update the extension status and change
+     * the label for it in the extension list on the left.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    protected class ExtensionEnabledToggleAction extends AbstractAction {
+
+        private final AppExtensionPlaceholder<?> placeholder;
+
+        public ExtensionEnabledToggleAction(AppExtensionPlaceholder<?> placeholder) {
+            super("Enabled");
+            this.placeholder = placeholder;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() instanceof ExtensionTitleBar) {
+                placeholder.setEnabled(((ExtensionTitleBar)e.getSource()).isExtensionEnabled());
+                extensionListPanel.revalidate();
+                extensionListPanel.repaint();
+            }
+        }
+    }
+
+    protected class ExtensionUninstallAction extends AbstractAction {
+
+        private final AppExtensionPlaceholder<?> placeholder;
+
+        public ExtensionUninstallAction(AppExtensionPlaceholder<?> placeholder) {
+            super("Uninstall");
+            this.placeholder = placeholder;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // TODO if it's a built-in, just say "sorry, no uninstall possible"
+            // Otherwise, prompt to confirm, then remove the jar, popup to say restart required.
+            //JOptionPane.showMessageDialog(owner, "No, I don't think I will.");
+        }
     }
 
     /**
