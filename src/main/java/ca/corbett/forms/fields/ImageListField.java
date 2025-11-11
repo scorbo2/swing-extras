@@ -22,6 +22,7 @@ public class ImageListField extends FormField implements ChangeListener {
 
     private static final Logger log = Logger.getLogger(ImageListField.class.getName());
 
+    private final JScrollPane scrollPane;
     private final ImageListPanel imageListPanel;
     private boolean shouldExpand;
 
@@ -63,7 +64,7 @@ public class ImageListField extends FormField implements ChangeListener {
         imageListPanel = new ImageListPanel(null);
         imageListPanel.setThumbnailSize(thumbDimension);
         imageListPanel.addChangeListener(this);
-        JScrollPane scrollPane = new JScrollPane(imageListPanel);
+        scrollPane = new JScrollPane(imageListPanel);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(12);
         int panelWidth = thumbDimension * initialSize;
         scrollPane.setPreferredSize(new Dimension(panelWidth, thumbDimension + 20)); // + scrollbar
@@ -123,6 +124,21 @@ public class ImageListField extends FormField implements ChangeListener {
      */
     public int getMaxImageCount() {
         return imageListPanel.getMaxListSize();
+    }
+
+    /**
+     * Adjusts the desired thumbnail size for images in this field. Note that you shouldn't
+     * bypass this method by doing imageListField.getImageListPanel().setThumbnailSize(),
+     * because then this FormField is cut out of the loop and will not resize to the new
+     * thumbnail dimensions. This method intercepts the request, adjusts this FormField
+     * size, and then forwards the request to the underlying ImageListPanel.
+     */
+    public ImageListField setThumbnailSize(int size) {
+        imageListPanel.setThumbnailSize(size);
+        scrollPane.setPreferredSize(new Dimension(scrollPane.getPreferredSize().width, size));
+        scrollPane.revalidate();
+        scrollPane.repaint();
+        return this;
     }
 
     /**
