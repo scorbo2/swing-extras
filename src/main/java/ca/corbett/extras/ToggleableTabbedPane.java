@@ -154,6 +154,11 @@ public class ToggleableTabbedPane extends JTabbedPane {
         }
 
         @Override
+        protected void paintContentBorder(Graphics g, int tabPlacement, int selectedIndex) {
+            // Don't paint the content border
+        }
+
+        @Override
         protected MouseListener createMouseListener() {
             // Return a no-op mouse listener to prevent tab switching via mouse
             return new MouseListener() {
@@ -167,6 +172,16 @@ public class ToggleableTabbedPane extends JTabbedPane {
 
         @Override
         protected Insets getTabAreaInsets(int tabPlacement) {
+            return new Insets(0, 0, 0, 0);
+        }
+
+        @Override
+        protected Insets getContentBorderInsets(int tabPlacement) {
+            return new Insets(0, 0, 0, 0);
+        }
+
+        @Override
+        protected Insets getSelectedTabPadInsets(int tabPlacement) {
             return new Insets(0, 0, 0, 0);
         }
     }
