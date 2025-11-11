@@ -284,6 +284,10 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
             // TODO if it's a built-in, just say "sorry, no uninstall possible"
             // Otherwise, prompt to confirm, then remove the jar, popup to say restart required.
             //JOptionPane.showMessageDialog(owner, "No, I don't think I will.");
+            // TODO and remember to remove the placeholder! And update the list on the left!
+            //      and update selection to the next in the list, or blank it out if nothing left!
+            //      and the save() method might need to update ExtensionManager to let it know!
+            //      Wait... actually... shouldn't wait until save() if the jar is gone immediately...
         }
     }
 

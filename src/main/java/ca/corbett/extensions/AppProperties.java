@@ -6,9 +6,11 @@ import ca.corbett.extras.properties.FileBasedProperties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.Alignment;
+import ca.corbett.updates.UpdateSources;
 
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -202,8 +204,12 @@ public abstract class AppProperties<T extends AppExtension> {
      * @param owner The owning Frame (so we can make the dialog modal to that Frame).
      * @return true if the user OK'd the dialog and changes were made - reload your UI!
      */
-    public boolean showExtensionDialog(Frame owner) {
-        ExtensionManagerDialog<T> dialog = new ExtensionManagerDialog<>(extManager, owner);
+    public boolean showExtensionDialog(Window owner) {
+        return showExtensionDialog(owner, null);
+    }
+
+    public boolean showExtensionDialog(Window owner, UpdateSources updateSources) {
+        ExtensionManagerDialog<T> dialog = new ExtensionManagerDialog<>(extManager, owner, updateSources);
         dialog.setVisible(true);
         if (dialog.wasOkayed() && dialog.wasModified()) {
             save();

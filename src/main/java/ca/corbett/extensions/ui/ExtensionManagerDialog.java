@@ -3,6 +3,7 @@ package ca.corbett.extensions.ui;
 import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.ToggleableTabbedPane;
+import ca.corbett.updates.UpdateSources;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -40,9 +41,11 @@ import java.awt.Window;
 public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
 
     private final ExtensionManager<T> extManager;
+    private final UpdateSources updateSources;
 
     private ToggleableTabbedPane tabbedPane;
-    private InstalledExtensionsPanel<T> extPanel;
+    private InstalledExtensionsPanel<T> installedExtensionsPanel;
+    private AvailableExtensionsPanel availableExtensionsPanel;
     private boolean autoCommit;
     private boolean wasOkayed;
     private boolean wasModified;
@@ -60,15 +63,18 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
 
     /**
      * Creates an ExtensionManager dialog with the given ExtensionManager
-     * and the given window title.
+     * and the given UpdateSources instance, which may be null. If UpdateSources
+     * is specified, the "available" tab will be shown with options to query
+     * the remote update source for possible downloads.
      *
      * @param manager The ExtensionManager containing our list of extensions.
      * @param owner   The owner window. This dialog will be modal.
-     * @param title   The window title. Will be "Extension Manager" if null.
+     * @param updateSources An optional UpdateSources instance for querying remote downloadable extensions.
      */
-    public ExtensionManagerDialog(ExtensionManager<T> manager, Window owner, String title) {
-        super(owner, title == null ? "Extension Manager" : title);
+    public ExtensionManagerDialog(ExtensionManager<T> manager, Window owner, UpdateSources updateSources) {
+        super(owner, "Extension Manager");
         this.extManager = manager;
+        this.updateSources = updateSources;
         this.setSize(new Dimension(700, 485));
         this.setMinimumSize(new Dimension(700, 485));
         this.setResizable(true);
@@ -137,13 +143,14 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
      * @return Whether or not the extension is marked as enabled in this dialog.
      */
     public boolean isExtensionEnabled(String className) {
-        return extPanel.isExtensionEnabled(className);
+        return installedExtensionsPanel.isExtensionEnabled(className);
     }
 
     /**
      * Invoked internally when the dialog is okayed. Will determine whether any change
      * was made and store the result in wasModified. Will notify ExtensionManager of any
      * changes if autoCommit is true.
+     * TODO this is old code from when we only dealt with installed extensions... update for the new case
      */
     private void okay() {
         wasOkayed = true;
@@ -152,7 +159,7 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         // First determine if any changes were made:
         for (AppExtension extension : extManager.getAllLoadedExtensions()) {
             String className = extension.getClass().getName();
-            if (extManager.isExtensionEnabled(className) != extPanel.isExtensionEnabled(className)) {
+            if (extManager.isExtensionEnabled(className) != installedExtensionsPanel.isExtensionEnabled(className)) {
                 wasModified = true;
             }
         }
@@ -164,7 +171,7 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
 
                 // This call does nothing if the new enabled state matches the old one,
                 // so we can just fire it off here blindly and let ExtensionManager deal with it:
-                extManager.setExtensionEnabled(className, extPanel.isExtensionEnabled(className));
+                extManager.setExtensionEnabled(className, installedExtensionsPanel.isExtensionEnabled(className));
             }
         }
 
@@ -202,14 +209,21 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
     private void initComponents() {
         setLayout(new BorderLayout());
         tabbedPane = new ToggleableTabbedPane();
-        extPanel = new InstalledExtensionsPanel<>(this, extManager);
-        tabbedPane.addTab("Installed", extPanel);
+        installedExtensionsPanel = new InstalledExtensionsPanel<>(this, extManager);
+        tabbedPane.addTab("Installed", installedExtensionsPanel);
 
-        // TODO add pane for update sources
-        // TODO consider hiding the tab bar if there's only one tab standing at the end of this method
+        if (updateSources != null) {
+            availableExtensionsPanel = new AvailableExtensionsPanel();
+            tabbedPane.addTab("Available", availableExtensionsPanel);
+        }
 
         if (!extManager.getStartupErrors().isEmpty()) {
             tabbedPane.addTab("Errors", new ExtensionErrorsTab(this, extManager));
+        }
+
+        // No point showing the tab header bar if there's only one tab:
+        if (tabbedPane.getTabCount() == 1) {
+            tabbedPane.setTabHeaderVisible(false);
         }
 
         add(tabbedPane, BorderLayout.CENTER);

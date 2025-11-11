@@ -1,4 +1,6 @@
 package ca.corbett.extensions.ui;
 
-public class AvailableExtensionsPanel {
+import javax.swing.JPanel;
+
+public class AvailableExtensionsPanel extends JPanel {
 }
