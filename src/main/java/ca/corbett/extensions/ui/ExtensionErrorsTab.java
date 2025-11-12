@@ -80,8 +80,8 @@ public class ExtensionErrorsTab extends JPanel {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.setBorderMargin(24);
 
-        formPanel.add(LabelField.createBoldHeaderLabel(error.getJarFile().getName()));
-        formPanel.add(new LabelField("Jar file:", error.getJarFile().getAbsolutePath()));
+        String name = ExtensionManagerDialog.trimString(error.getJarFile().getName(), 30);
+        formPanel.add(LabelField.createBoldHeaderLabel(name));
         LongTextField errorField = LongTextField.ofDynamicSizingMultiLine("Error message:", 5);
         errorField.setEditable(false);
         errorField.setText(error.getErrorMessage());
