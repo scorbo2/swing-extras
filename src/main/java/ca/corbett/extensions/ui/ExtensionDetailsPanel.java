@@ -39,11 +39,11 @@ import java.util.Map;
  * Optionally, callers can provide additional information about the extension to
  * display extra information:
  * <ul>
- *     <ul>For locally installed and loaded extensions, you can supply a jar file
+ *     <li>For locally installed and loaded extensions, you can supply a jar file
  *         to display information about where the extension is installed.
- *     <ul>For downloadable extensions that are not yet installed, you can display
+ *     <li>For downloadable extensions that are not yet installed, you can display
  *         information such as the list of screenshots provided (if any).
- *     <ul>You can supply a null AppExtensionInfo instance for a "blank" display panel.
+ *     <li>You can supply a null AppExtensionInfo instance for a "blank" display panel.
  * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
