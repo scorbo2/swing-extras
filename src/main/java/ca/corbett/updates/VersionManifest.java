@@ -258,6 +258,11 @@ public class VersionManifest {
         public int hashCode() {
             return Objects.hash(name, versions);
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     /**

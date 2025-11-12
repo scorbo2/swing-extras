@@ -213,7 +213,7 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         tabbedPane.addTab("Installed", installedExtensionsPanel);
 
         if (updateSources != null) {
-            availableExtensionsPanel = new AvailableExtensionsPanel();
+            availableExtensionsPanel = new AvailableExtensionsPanel(this, updateSources);
             tabbedPane.addTab("Available", availableExtensionsPanel);
         }
 

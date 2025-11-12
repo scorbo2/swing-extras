@@ -12,6 +12,7 @@ import ca.corbett.extras.properties.ShortTextProperty;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
+import ca.corbett.updates.UpdateSources;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -83,7 +84,8 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
      * Invoked internally to create and show an ExtensionManagerDialog to show our fake extensions.
      */
     private void showExtensionDialog() {
-        ExtensionManagerDialog<AppExtension> dialog = new ExtensionManagerDialog<>(extManager, DemoApp.getInstance());
+        ExtensionManagerDialog<AppExtension> dialog = new ExtensionManagerDialog<>(extManager, DemoApp.getInstance(),
+                                                                                   new UpdateSources("Hello"));
         dialog.setVisible(true);
     }
 
