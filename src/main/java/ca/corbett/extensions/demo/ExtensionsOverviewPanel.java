@@ -17,6 +17,7 @@ import ca.corbett.updates.UpdateSources;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import java.awt.FlowLayout;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,9 +85,23 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
      * Invoked internally to create and show an ExtensionManagerDialog to show our fake extensions.
      */
     private void showExtensionDialog() {
-        ExtensionManagerDialog<AppExtension> dialog = new ExtensionManagerDialog<>(extManager, DemoApp.getInstance(),
-                                                                                   new UpdateSources("Hello"));
-        dialog.setVisible(true);
+
+        // TODO remove me, temp code for testing ExtensionManagerDialog
+        try {
+            UpdateSources updateSources = new UpdateSources("Test");
+            updateSources.addUpdateSource(
+                    new UpdateSources.UpdateSource("Test 1", new URL("http://www.corbett.ca/1"), "version", "pub"));
+            updateSources.addUpdateSource(
+                    new UpdateSources.UpdateSource("Test 2", new URL("http://www.corbett.ca/2"), "version", "pub"));
+
+            ExtensionManagerDialog<AppExtension> dialog = new ExtensionManagerDialog<>(extManager,
+                                                                                       DemoApp.getInstance(),
+                                                                                       updateSources);
+            dialog.setVisible(true);
+        }
+        catch (Exception e) {
+            System.out.println("Back to the drawing board!");
+        }
     }
 
     /**

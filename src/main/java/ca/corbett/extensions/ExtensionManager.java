@@ -51,6 +51,9 @@ public abstract class ExtensionManager<T extends AppExtension> {
     private final Map<String, ExtensionWrapper> loadedExtensions;
     private final List<StartupError> startupErrors;
 
+    private String applicationName;
+    private String applicationVersion;
+
     public ExtensionManager() {
         loadedExtensions = new HashMap<>();
         startupErrors = new ArrayList<>();
@@ -71,6 +74,22 @@ public abstract class ExtensionManager<T extends AppExtension> {
      */
     public List<StartupError> getStartupErrors() {
         return new ArrayList<>(startupErrors);
+    }
+
+    /**
+     * Returns the application name as it was supplied to the loadExtensions method,
+     * or null if loadExtensions has not yet been invoked.
+     */
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    /**
+     * Returns the application version as it was supplied to the loadExtensions method,
+     * or null if loadExtensions has not yet been invoked.
+     */
+    public String getApplicationVersion() {
+        return applicationVersion;
     }
 
     /**
@@ -369,6 +388,10 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * @return The count of extensions that were loaded by this operation.
      */
     public int loadExtensions(File directory, Class<T> extClass, String appName, String requiredVersion) {
+        // Make a note of these for later:
+        this.applicationName = appName;
+        this.applicationVersion = requiredVersion;
+
         Map<File, AppExtensionInfo> map = findCandidateExtensionJars(directory, appName, requiredVersion);
         if (map.isEmpty()) {
             return 0;

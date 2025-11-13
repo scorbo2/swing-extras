@@ -68,8 +68,6 @@ public class UpdateManager {
      */
     public static final int APPLICATION_RESTART = 100;
 
-    protected final Gson gson;
-    protected final File sourceFile;
     protected final UpdateSources updateSources;
     protected final List<UpdateManagerListener> listeners = new ArrayList<>();
     protected final List<ShutdownHook> shutdownHooks = new ArrayList<>();
@@ -82,9 +80,16 @@ public class UpdateManager {
      * invoke any of the retrieve methods!
      */
     public UpdateManager(File sourceFile) throws JsonSyntaxException, IOException {
-        this.gson = new GsonBuilder().setPrettyPrinting().create();
-        this.sourceFile = sourceFile;
+        Gson gson = new GsonBuilder().create();
         this.updateSources = gson.fromJson(FileSystemUtil.readFileToString(sourceFile), UpdateSources.class);
+        this.downloadManager = new DownloadManager();
+    }
+
+    /**
+     * If you have already parsed the UpdateSources instance, you can supply it to this constructor.
+     */
+    public UpdateManager(UpdateSources sources) {
+        this.updateSources = sources;
         this.downloadManager = new DownloadManager();
     }
 

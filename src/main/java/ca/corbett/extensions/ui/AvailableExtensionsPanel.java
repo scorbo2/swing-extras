@@ -2,10 +2,12 @@ package ca.corbett.extensions.ui;
 
 import ca.corbett.extras.ListPanel;
 import ca.corbett.extras.MessageUtil;
+import ca.corbett.updates.UpdateManager;
 import ca.corbett.updates.UpdateSources;
 import ca.corbett.updates.VersionManifest;
 
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -33,9 +35,14 @@ public class AvailableExtensionsPanel extends JPanel {
     protected final ListPanel<ExtensionPlaceholder> extensionListPanel;
     protected ExtensionDetailsPanel emptyPanel;
 
-    public AvailableExtensionsPanel(Window owner, UpdateSources updateSources) {
+    protected final String applicationName;
+    protected final String applicationVersion;
+
+    public AvailableExtensionsPanel(Window owner, UpdateSources updateSources, String appName, String appVersion) {
         this.owner = owner;
         this.updateSources = updateSources;
+        this.applicationName = appName;
+        this.applicationVersion = appVersion;
         detailsPanelMap = new HashMap<>();
         extensionListPanel = new ListPanel<>(List.of(new RefreshAction()));
         extensionListPanel.setPreferredSize(new Dimension(200, 200));
@@ -72,15 +79,39 @@ public class AvailableExtensionsPanel extends JPanel {
             return;
         }
 
-        // If there's only one, just do it:
+        // TODO let's do it:
+        UpdateSources.UpdateSource updateSource = getUpdateSource();
+        UpdateManager manager = new UpdateManager(updateSources);
+        //manager.retrieveVersionManifest(updateSource); // I want this to be synchronous...
+        // Like, I don't want to have to set up callback listeners here and wait for the file to come in
+        // I want UpdateManager to block until it has the file (or it errors out), and then return it to me
+    }
+
+    /**
+     * Assuming there is at least one update source, this method will return one, else null.
+     * If there are more than one update sources available, this method will prompt the user
+     * in a dialog to pick which one to use, and then return that one (or null if the user cancels).
+     */
+    protected UpdateSources.UpdateSource getUpdateSource() {
+        // If there are none, return null:
+        if (updateSources == null || updateSources.getUpdateSources().isEmpty()) {
+            return null;
+        }
+
+        // If there's exactly one, then the choice is easy:
         if (updateSources.getUpdateSources().size() == 1) {
-
+            return updateSources.getUpdateSources().get(0);
         }
 
-        // otherwise, prompt for which one to use:
-        else {
-            
-        }
+        // If we get here, there are more than one. Prompt for user input:
+        Object[] choices = updateSources.getUpdateSources().toArray();
+        return (UpdateSources.UpdateSource)JOptionPane.showInputDialog(owner,
+                                                                       "Select which update source to query:",
+                                                                       "Select update source",
+                                                                       JOptionPane.QUESTION_MESSAGE,
+                                                                       null,
+                                                                       choices,
+                                                                       choices[0]);
     }
 
     protected class RefreshAction extends AbstractAction {

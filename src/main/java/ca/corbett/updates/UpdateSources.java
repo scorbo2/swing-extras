@@ -178,5 +178,10 @@ public class UpdateSources {
         public int hashCode() {
             return Objects.hash(name, baseUrl, versionManifest, publicKey);
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }
