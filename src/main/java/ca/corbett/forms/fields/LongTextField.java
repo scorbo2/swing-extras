@@ -7,18 +7,14 @@ import ca.corbett.forms.validators.NonBlankFieldValidator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -234,17 +230,11 @@ public class LongTextField extends FormField {
     private JPanel buildPopoutPanel() {
         final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btn = new JButton("Pop out...");
-        btn.setPreferredSize(new Dimension(90, 23));
+        btn.setPreferredSize(new Dimension(120, 24));
         btn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Window owningWindow = SwingUtilities.getWindowAncestor(panel);
-                if (!(owningWindow instanceof Frame) && !(owningWindow instanceof Dialog)) {
-                    JOptionPane.showMessageDialog(panel, "Unable to determine owner window for popout editor!", "Error",
-                                                  JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                PopupTextDialog editor = new PopupTextDialog(owningWindow,
+                PopupTextDialog editor = new PopupTextDialog(SwingUtilities.getWindowAncestor(panel),
                                                              fieldLabel.getText(),
                                                              textArea.getText(),
                                                              true);
