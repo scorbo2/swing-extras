@@ -111,7 +111,11 @@ public class DownloadThread implements Runnable {
 
         isRunning = true;
         isKilled = false;
-        File targetFile = new File(targetDir, DownloadManager.getFilenameComponent(url.toString()));
+        String filename = DownloadManager.getFilenameComponent(url.toString());
+        if (filename.isBlank()) {
+            filename = "unnamed";
+        }
+        File targetFile = new File(targetDir, filename);
         fireDownloadBegins();
 
         try {

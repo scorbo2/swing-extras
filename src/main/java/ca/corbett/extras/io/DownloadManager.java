@@ -107,9 +107,6 @@ public class DownloadManager {
      *     <li>getFileExtension("That. Does not make sense"); // returns ". Does not make sense"
      *     <li>getFileExtension("hello"); // returns ""
      * </ul>
-     *
-     * @param filename
-     * @return
      */
     public static String getFileExtension(String filename) {
         if (filename == null || filename.isBlank() || !filename.contains(".")) {
