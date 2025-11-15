@@ -85,6 +85,10 @@ public class AvailableExtensionsPanel extends JPanel {
         //manager.retrieveVersionManifest(updateSource); // I want this to be synchronous...
         // Like, I don't want to have to set up callback listeners here and wait for the file to come in
         // I want UpdateManager to block until it has the file (or it errors out), and then return it to me
+
+        // TODO change of plans, it will be UpdateManagerDialog managing this.
+        //      Calling code can treat it synchronously.
+        //      This makes it harder to do headless! Batch scripting and the like. But probably fair tradeoff.
     }
 
     /**
