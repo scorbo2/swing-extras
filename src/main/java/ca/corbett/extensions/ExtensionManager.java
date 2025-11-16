@@ -184,6 +184,23 @@ public abstract class ExtensionManager<T extends AppExtension> {
     }
 
     /**
+     * Searches for any loaded extension with a matching name (case-sensitive) and returns
+     * the first match. Will return null if no extensions are loaded or no match is found.
+     */
+    public T findExtensionByName(String name) {
+        for (String key : loadedExtensions.keySet()) {
+            ExtensionWrapper wrapper = loadedExtensions.get(key);
+            if (wrapper.extension != null
+                    && wrapper.extension.getInfo() != null
+                    && wrapper.extension.getInfo().getName() != null
+                    && wrapper.extension.getInfo().getName().equals(name)) {
+                return wrapper.extension;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns a list of all loaded extensions - beware that this method will return
      * extensions even if they are marked as disabled! If you only want to get the
      * extensions that are currently enabled, use getEnabledLoadedExtensions() instead.
