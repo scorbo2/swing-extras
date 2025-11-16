@@ -21,6 +21,7 @@ public class SliderProperty extends AbstractProperty {
     private final List<String> labels;
     private boolean showNumericValueInLabel;
     private boolean showValueLabel;
+    private boolean shouldExpand;
 
     public SliderProperty(String name, String label, int min, int max, int value) {
         super(name, label);
@@ -30,6 +31,7 @@ public class SliderProperty extends AbstractProperty {
         colorStops = new ArrayList<>();
         labels = new ArrayList<>();
         showValueLabel = true;
+        shouldExpand = true;
     }
 
     public int getMinValue() {
@@ -97,6 +99,15 @@ public class SliderProperty extends AbstractProperty {
         return this;
     }
 
+    public SliderProperty setShouldExpand(boolean should) {
+        shouldExpand = should;
+        return this;
+    }
+
+    public boolean isShouldExpand() {
+        return shouldExpand;
+    }
+
     @Override
     public void saveToProps(Properties props) {
         props.setInteger(fullyQualifiedName + ".min", minValue);
@@ -108,6 +119,7 @@ public class SliderProperty extends AbstractProperty {
                                                                       .map(Properties::encodeColor)
                                                                       .collect(Collectors.joining(",")));
         props.setString(fullyQualifiedName + ".labels", String.join(",", labels));
+        props.setBoolean(fullyQualifiedName + ".shouldExpand", shouldExpand);
     }
 
     @Override
@@ -117,6 +129,7 @@ public class SliderProperty extends AbstractProperty {
         currentValue = props.getInteger(fullyQualifiedName + ".value", currentValue);
         showNumericValueInLabel = props.getBoolean(fullyQualifiedName + ".showNumericValueInLabel", showNumericValueInLabel);
         showValueLabel = props.getBoolean(fullyQualifiedName + ".showValueLabel", showValueLabel);
+        shouldExpand = props.getBoolean(fullyQualifiedName + ".shouldExpand", shouldExpand);
 
         // Parse out our color stops:
         String rawValue = props.getString(fullyQualifiedName + ".colorStops", colorStops.stream()
@@ -157,6 +170,7 @@ public class SliderProperty extends AbstractProperty {
         if (! labels.isEmpty()) {
             field.setLabels(labels, showNumericValueInLabel);
         }
+        field.setShouldExpand(shouldExpand);
         return field;
     }
 

@@ -48,6 +48,7 @@ public class SliderField extends FormField {
     private boolean showValueLabel;
     private boolean showNumericValueInLabel;
     private ColorInterpolatingSliderUI lastGeneratedUI;
+    private boolean shouldExpand;
 
     public SliderField(String labelText, int min, int max, int value) {
         fieldLabel.setText(labelText);
@@ -65,6 +66,7 @@ public class SliderField extends FormField {
             setDefaultBorder();
         }
         showValueLabel = true; // arbitrary default
+        shouldExpand = true; // arbitrary default
         updateValueLabel();
 
         // We need to watch out for Look and Feel changes, otherwise we might
@@ -148,9 +150,14 @@ public class SliderField extends FormField {
         return this;
     }
 
+    public SliderField setShouldExpand(boolean should) {
+        shouldExpand = should;
+        return this;
+    }
+
     @Override
     public boolean shouldExpand() {
-        return true;
+        return shouldExpand;
     }
 
     @Override
