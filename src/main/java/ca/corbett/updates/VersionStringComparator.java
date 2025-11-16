@@ -13,6 +13,8 @@ import java.util.Comparator;
  */
 public class VersionStringComparator implements Comparator<String> {
 
+    private static final VersionStringComparator comparator = new VersionStringComparator();
+
     /**
      * Given a version string in the format "x.y.z", return a String that is safe for
      * use in string comparison operations. This involves removing the dots and zero-padding
@@ -53,6 +55,22 @@ public class VersionStringComparator implements Comparator<String> {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Convenience method to quickly compare a candidate version and report if it is
+     * newer (higher version number) than the given target version.
+     */
+    public static boolean isNewerThan(String candidateVersion, String targetVersion) {
+        return comparator.compare(candidateVersion, targetVersion) > 0;
+    }
+
+    /**
+     * Convenience method to quickly compare a candidate version and report if it is
+     * older (lower version number) than the given target version.
+     */
+    public static boolean isOlderThan(String candidateVersion, String targetVersion) {
+        return comparator.compare(candidateVersion, targetVersion) < 0;
     }
 
     @Override

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VersionStringComparatorTest {
 
@@ -42,5 +43,26 @@ class VersionStringComparatorTest {
         assertEquals("001000000", VersionStringComparator.convertVersionToSafeCompareString("v1-SNAPSHOT"));
         assertEquals("000000000", VersionStringComparator.convertVersionToSafeCompareString("hello"));
         assertEquals("001002003", VersionStringComparator.convertVersionToSafeCompareString("v1.?2.!3.asdf"));
+    }
+
+    @Test
+    public void isNewerThan() {
+        assertTrue(VersionStringComparator.isNewerThan("1.1", "1.0"));
+        assertTrue(VersionStringComparator.isNewerThan("1.1", "1"));
+        assertTrue(VersionStringComparator.isNewerThan("1.1", "1.0.1"));
+        assertTrue(VersionStringComparator.isNewerThan("1", "0"));
+        assertTrue(VersionStringComparator.isNewerThan("1", "0.9"));
+        assertTrue(VersionStringComparator.isNewerThan("11", "1.111111"));
+    }
+
+    @Test
+    public void isOlderThan() {
+        assertTrue(VersionStringComparator.isOlderThan("1.0", "2.0"));
+        assertTrue(VersionStringComparator.isOlderThan("1.0", "1.1"));
+        assertTrue(VersionStringComparator.isOlderThan("1.0", "11"));
+        assertTrue(VersionStringComparator.isOlderThan("1.0", "1.0.1"));
+        assertTrue(VersionStringComparator.isOlderThan("1.0", "2"));
+        assertTrue(VersionStringComparator.isOlderThan("1.0", "2.0.0.0.0"));
+        assertTrue(VersionStringComparator.isOlderThan("1.0", "10"));
     }
 }
