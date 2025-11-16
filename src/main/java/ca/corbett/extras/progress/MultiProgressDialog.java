@@ -372,6 +372,7 @@ public final class MultiProgressDialog extends JDialog {
         private long startTimeMS;
         private int totalMajorSteps;
         private int totalMinorSteps;
+        private boolean isFinished;
 
         public MultiProgressHandler(MultiProgressDialog ownerDialog, long initialShowDelay, boolean disposeWhenComplete) {
             this.progressDialog = ownerDialog;
@@ -384,7 +385,7 @@ public final class MultiProgressDialog extends JDialog {
         }
 
         private void showDialogIfNeeded() {
-            if (progressDialog.isVisible()) {
+            if (progressDialog.isVisible() || isFinished) {
                 return;
             }
             if (initialShowDelayMS <= 0 || getElapsedTime() > initialShowDelayMS) {
@@ -437,6 +438,7 @@ public final class MultiProgressDialog extends JDialog {
 
         @Override
         public void progressComplete() {
+            isFinished = true;
             SwingUtilities.invokeLater(() -> {
                 if (disposeWhenComplete) {
                     progressDialog.dispose();
@@ -449,6 +451,7 @@ public final class MultiProgressDialog extends JDialog {
 
         @Override
         public void progressCanceled() {
+            isFinished = true;
             SwingUtilities.invokeLater(() -> {
                 if (disposeWhenComplete) {
                     progressDialog.dispose();
@@ -470,6 +473,7 @@ public final class MultiProgressDialog extends JDialog {
         private final boolean disposeWhenComplete;
         private long startTimeMS;
         private int totalSteps;
+        private boolean isFinished;
 
         public SimpleProgressHandler(MultiProgressDialog ownerDialog, long initialShowDelay, boolean disposeWhenComplete) {
             this.progressDialog = ownerDialog;
@@ -482,7 +486,7 @@ public final class MultiProgressDialog extends JDialog {
         }
 
         private void showDialogIfNeeded() {
-            if (progressDialog.isVisible()) {
+            if (progressDialog.isVisible() || isFinished) {
                 return;
             }
             if (initialShowDelayMS <= 0 || getElapsedTime() > initialShowDelayMS) {
@@ -523,6 +527,7 @@ public final class MultiProgressDialog extends JDialog {
 
         @Override
         public void progressComplete() {
+            isFinished = true;
             SwingUtilities.invokeLater(() -> {
                 if (disposeWhenComplete) {
                     progressDialog.dispose();
@@ -535,6 +540,7 @@ public final class MultiProgressDialog extends JDialog {
 
         @Override
         public void progressCanceled() {
+            isFinished = true;
             SwingUtilities.invokeLater(() -> {
                 if (disposeWhenComplete) {
                     progressDialog.dispose();
