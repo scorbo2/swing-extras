@@ -1,7 +1,11 @@
 package ca.corbett.updates;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -26,15 +30,45 @@ import java.security.PublicKey;
 public class UpdateManagerDialog extends JDialog implements UpdateManagerListener {
 
     private final UpdateManager updateManager;
+    private boolean wasOkayed;
 
-    public UpdateManagerDialog(Window owner, String title, UpdateSources sources) {
+    public UpdateManagerDialog(Window owner, UpdateManager updateManager, String title) {
         super(owner, title, ModalityType.APPLICATION_MODAL);
         setSize(new Dimension(500, 500));
         setResizable(false);
         setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-        updateManager = new UpdateManager(sources);
+        this.updateManager = updateManager;
+        setLayout(new BorderLayout());
+        add(buildContentPanel(), BorderLayout.CENTER);
+        add(buildButtonPanel(), BorderLayout.SOUTH);
     }
 
+    public boolean wasOkayed() {
+        return wasOkayed;
+    }
+
+    private JPanel buildContentPanel() {
+        return new JPanel();
+    }
+
+    private void buttonHandler(boolean okay) {
+        wasOkayed = okay;
+        // TODO if not okay, cancel anything in progress
+        dispose();
+    }
+
+    private JPanel buildButtonPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton button = new JButton("OK");
+        button.setPreferredSize(new Dimension(90, 24));
+        button.addActionListener(e -> buttonHandler(true));
+        panel.add(button);
+        button = new JButton("Cancel");
+        button.setPreferredSize(new Dimension(90, 24));
+        button.addActionListener(e -> buttonHandler(false));
+        panel.add(button);
+        return panel;
+    }
 
     @Override
     public void versionManifestDownloaded(UpdateManager manager, URL sourceUrl, VersionManifest versionManifest) {
