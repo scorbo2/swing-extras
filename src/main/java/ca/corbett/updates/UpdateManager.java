@@ -243,6 +243,11 @@ public class UpdateManager {
      * so that your cleanup code can be executed before a restart!
      */
     public void restartApplication() {
+        // TODO this is awful
+        //      - no exception handling on shutdown hooks
+        //      - we're reinventing the wheel (there is already a shutdown hook mechanism in Java)
+        //      - System.exit happens IMMEDIATELY after the shutdown hooks execute (thread issues)
+
         // Run all registered shutdown hooks:
         for (ShutdownHook hook : new ArrayList<>(shutdownHooks)) {
             hook.applicationWillRestart();
@@ -250,6 +255,38 @@ public class UpdateManager {
 
         // Do it:
         System.exit(APPLICATION_RESTART);
+
+
+        // claude.ai suggests something more like this instead:
+//        ExecutorService executor = Executors.newFixedThreadPool(shutdownHooks.size());
+//        List<Future<?>> futures = new ArrayList<>();
+//
+//        // Execute all hooks in parallel
+//        for (ShutdownHook hook : shutdownHooks) {
+//            futures.add(executor.submit(() -> {
+//                try {
+//                    hook.applicationWillRestart();
+//                } catch (Exception e) {
+//                    logger.error("Error in shutdown hook", e);
+//                }
+//            }));
+//        }
+//
+//        // Wait for completion with timeout
+//        executor.shutdown();
+//        try {
+//            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+//                logger.warn("Some shutdown hooks did not complete in time");
+//                executor.shutdownNow();
+//            }
+//        } catch (InterruptedException e) {
+//            executor.shutdownNow();
+//            Thread.currentThread().interrupt();
+//        }
+//
+//        // Now safe to exit
+//        System.exit(APPLICATION_RESTART);
+
     }
 
     /**
