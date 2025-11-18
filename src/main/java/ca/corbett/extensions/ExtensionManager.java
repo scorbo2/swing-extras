@@ -812,12 +812,18 @@ public abstract class ExtensionManager<T extends AppExtension> {
         }
     }
 
-    // TODO protected
-    public void addStartupError(File jarFile, String msg) {
+    /**
+     * Invoked internally to log a startup error which can be displayed on the
+     * ExtensionManagerDialog later.
+     */
+    protected void addStartupError(File jarFile, String msg) {
         addStartupError(jarFile, msg, Level.WARNING, null);
     }
 
-    // TODO protected
+    /**
+     * Invoked internally to log a startup error which can be displayed on the
+     * ExtensionManagerDialog later.
+     */
     protected void addStartupError(File jarFile, String msg, Level logLevel, Throwable e) {
         startupErrors.add(new StartupError(jarFile, msg));
         if (e != null) {
