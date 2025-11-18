@@ -4,6 +4,7 @@ import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.ListPanel;
 import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.MessageUtil;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -19,11 +20,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * This panel shows a list of all installed extensions, and allows the user to enable/disable them,
@@ -33,6 +36,8 @@ import java.util.Objects;
  * @since 2023-11-11
  */
 public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
+
+    private static final Logger log = Logger.getLogger(InstalledExtensionsPanel.class.getName());
 
     protected final Window owner;
     protected final ExtensionManager<T> extManager;
@@ -44,6 +49,8 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
     protected final Map<String, ExtensionDetailsPanel> detailsPanelMap;
     protected final ListPanel<AppExtensionPlaceholder<T>> extensionListPanel;
     protected ExtensionDetailsPanel emptyPanel;
+    protected MessageUtil messageUtil;
+    protected boolean isRestartRequired;
 
     public InstalledExtensionsPanel(Window owner, ExtensionManager<T> manager) {
         this.owner = owner;
@@ -62,7 +69,16 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
             AppExtensionPlaceholder<T> placeholder = new AppExtensionPlaceholder<>(extension, isEnabled);
             extensionListPanel.addItem(placeholder);
         }
+        isRestartRequired = false;
         initComponents();
+    }
+
+    /**
+     * Indicates whether any change made on this panel requires an application restart.
+     * (Extension uninstalled perhaps).
+     */
+    public boolean isRestartRequired() {
+        return isRestartRequired;
     }
 
     /**
@@ -281,9 +297,17 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // TODO if it's a built-in, just say "sorry, no uninstall possible"
-            // Otherwise, prompt to confirm, then remove the jar, popup to say restart required.
-            //JOptionPane.showMessageDialog(owner, "No, I don't think I will.");
+            File jarFile = extManager.getSourceJar(placeholder.extension.getClass().getName());
+            if (jarFile == null) {
+                getMessageUtil().info("The extension \"" + placeholder.name + "\" is a built-in extension.\n"
+                                              + "It cannot be uninstalled.");
+                return;
+            }
+
+            isRestartRequired = true;
+
+            // TODO prompt to confirm, then remove the jar, popup to say restart required.
+            // TODO we have no UpdateManager here! should restartApplication be static or should UpdateManager be supplied?
             // TODO and remember to remove the placeholder! And update the list on the left!
             //      and update selection to the next in the list, or blank it out if nothing left!
             //      and the save() method might need to update ExtensionManager to let it know!
@@ -320,5 +344,12 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
             }
             return this;
         }
+    }
+
+    protected MessageUtil getMessageUtil() {
+        if (messageUtil == null) {
+            messageUtil = new MessageUtil(owner, log);
+        }
+        return messageUtil;
     }
 }

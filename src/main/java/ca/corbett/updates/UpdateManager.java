@@ -10,6 +10,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import javax.swing.JOptionPane;
+import java.awt.Component;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -248,6 +250,34 @@ public class UpdateManager {
 
         // Do it:
         System.exit(APPLICATION_RESTART);
+    }
+
+    /**
+     * Prompts the user to suggest an application restart. If the user
+     * accepts the prompt, then restartApplication() is invoked.
+     * Callers must provide the window or dialog or frame that should
+     * own the popup window.
+     */
+    public void showApplicationRestartPrompt(Component parent) {
+        showApplicationRestartPrompt(parent, null);
+    }
+
+    /**
+     * Prompts the user to suggest an application restart using the given
+     * prompt text. If the user accepts the prompt, then restartApplication() is invoked.
+     * Callers must provide the window or dialog or frame that should
+     * own the popup window.
+     */
+    public void showApplicationRestartPrompt(Component parent, String promptText) {
+        if (promptText == null || promptText.isBlank()) {
+            promptText = "The application must restart for changes to take effect.\nRestart now?";
+        }
+        if (JOptionPane.showConfirmDialog(parent,
+                                          promptText,
+                                          "Restart required",
+                                          JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            restartApplication();
+        }
     }
 
     protected void fireVersionManifestDownloaded(URL sourceUrl, VersionManifest manifest) {

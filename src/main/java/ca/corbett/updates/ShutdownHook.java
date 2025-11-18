@@ -6,6 +6,7 @@ package ca.corbett.updates;
  * as new extension jars are downloaded, installed, or uninstalled. The application may
  * need to do some cleanup before the application exits - close database connections,
  * save all work, etc. This hook provides a way to be notified before a restart.
+ * Shutdown hooks cannot prevent the restart - this is a notification, not a request.
  * <p>
  * <b>NOTE:</b> all registered shutdown hooks are triggered ONLY on application
  * restart, not when the application exits normally. This is not a replacement

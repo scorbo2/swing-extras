@@ -70,6 +70,7 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
      * @param manager The ExtensionManager containing our list of extensions.
      * @param owner   The owner window. This dialog will be modal.
      * @param updateSources An optional UpdateSources instance for querying remote downloadable extensions.
+     *                      TODO the UpdateManager should be passed in, not the UpdateSources
      */
     public ExtensionManagerDialog(ExtensionManager<T> manager, Window owner, UpdateSources updateSources) {
         super(owner, "Extension Manager");
