@@ -247,6 +247,7 @@ public class UpdateManager {
         //      - no exception handling on shutdown hooks
         //      - we're reinventing the wheel (there is already a shutdown hook mechanism in Java)
         //      - System.exit happens IMMEDIATELY after the shutdown hooks execute (thread issues)
+        //      - maybe also log a warning if no shutdown hooks are registered (or prevent restart without at least one?)
 
         // Run all registered shutdown hooks:
         for (ShutdownHook hook : new ArrayList<>(shutdownHooks)) {
