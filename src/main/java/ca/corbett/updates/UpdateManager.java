@@ -24,6 +24,12 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Applications built with swing-extras have a way of detecting if they are out of date, or if any of their
@@ -61,6 +67,8 @@ import java.util.List;
  * @since swing-extras 2.5
  */
 public class UpdateManager {
+
+    private static final Logger log = Logger.getLogger(UpdateManager.class.getName());
 
     /**
      * The process exit code that signals to our launcher script that we want to
@@ -243,51 +251,48 @@ public class UpdateManager {
      * so that your cleanup code can be executed before a restart!
      */
     public void restartApplication() {
-        // TODO this is awful
-        //      - no exception handling on shutdown hooks
-        //      - we're reinventing the wheel (there is already a shutdown hook mechanism in Java)
-        //      - System.exit happens IMMEDIATELY after the shutdown hooks execute (thread issues)
-        //      - maybe also log a warning if no shutdown hooks are registered (or prevent restart without at least one?)
+        log.info("Restarting application...");
+        executeShutdownHooks();
+        System.exit(APPLICATION_RESTART);
+    }
 
-        // Run all registered shutdown hooks:
-        for (ShutdownHook hook : new ArrayList<>(shutdownHooks)) {
-            hook.applicationWillRestart();
+    /**
+     * Invoked internally by restartApplication() to execute all shutdown hooks.
+     * This is separated out from that method so that it can be unit tested.
+     */
+    protected void executeShutdownHooks() {
+        ExecutorService executor = Executors.newFixedThreadPool(shutdownHooks.size());
+        List<Future<?>> futures = new ArrayList<>();
+
+        if (shutdownHooks.isEmpty()) {
+            log.warning("No shutdown hooks are registered! Application may not terminate cleanly.");
         }
 
-        // Do it:
-        System.exit(APPLICATION_RESTART);
+        // Execute all hooks in parallel
+        for (ShutdownHook hook : shutdownHooks) {
+            futures.add(executor.submit(() -> {
+                try {
+                    hook.applicationWillRestart();
+                }
+                catch (Exception e) {
+                    log.log(Level.SEVERE, "Error reported by shutdown hook: " + e.getMessage(), e);
+                }
+            }));
+        }
 
-
-        // claude.ai suggests something more like this instead:
-//        ExecutorService executor = Executors.newFixedThreadPool(shutdownHooks.size());
-//        List<Future<?>> futures = new ArrayList<>();
-//
-//        // Execute all hooks in parallel
-//        for (ShutdownHook hook : shutdownHooks) {
-//            futures.add(executor.submit(() -> {
-//                try {
-//                    hook.applicationWillRestart();
-//                } catch (Exception e) {
-//                    logger.error("Error in shutdown hook", e);
-//                }
-//            }));
-//        }
-//
-//        // Wait for completion with timeout
-//        executor.shutdown();
-//        try {
-//            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
-//                logger.warn("Some shutdown hooks did not complete in time");
-//                executor.shutdownNow();
-//            }
-//        } catch (InterruptedException e) {
-//            executor.shutdownNow();
-//            Thread.currentThread().interrupt();
-//        }
-//
-//        // Now safe to exit
-//        System.exit(APPLICATION_RESTART);
-
+        // Wait for completion with timeout
+        executor.shutdown();
+        try {
+            Thread.sleep(250); // give the above log messages a chance to output in case we're super fast here.
+            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                log.warning("Some shutdown hooks did not complete in time - terminating.");
+                executor.shutdownNow();
+            }
+        }
+        catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**

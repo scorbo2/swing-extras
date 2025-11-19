@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.5.0 [TODO release date] - TODO description
+  #168 - UpdateManager: more graceful application restarts
   #167 - New UI component: ToggleableTabbedPane
   #166 - Fix Look and Feel bug in ColorField and SliderField
   #165 - Demo app: code cleanup and documentation pass

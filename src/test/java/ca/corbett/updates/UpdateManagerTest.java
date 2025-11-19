@@ -202,6 +202,23 @@ class UpdateManagerTest {
         Mockito.verify(fakeListener, Mockito.never()).downloadFailed(Mockito.any(), Mockito.any(), Mockito.any());
     }
 
+    @Test
+    public void executeShutdownHooks_withHooksRegistered_shouldExecute() throws Exception {
+        // GIVEN a couple of registered shutdown hooks:
+        UpdateManager updateManager = new UpdateManager(buildTestUpdateSources(new File("/"), "Test"));
+        ShutdownHook hook1 = Mockito.mock(ShutdownHook.class);
+        ShutdownHook hook2 = Mockito.mock(ShutdownHook.class);
+        updateManager.registerShutdownHook(hook1);
+        updateManager.registerShutdownHook(hook2);
+
+        // WHEN we execute the shutdown hooks via UpdateManager:
+        updateManager.executeShutdownHooks();
+
+        // THEN we should see that each go invoked:
+        Mockito.verify(hook1, Mockito.times(1)).applicationWillRestart();
+        Mockito.verify(hook2, Mockito.times(1)).applicationWillRestart();
+    }
+
     /**
      * Builds up a fake version manifest with a sample extension in the system temp dir
      * and returns the directory where it lives. We can pretend it's a remote update source.
