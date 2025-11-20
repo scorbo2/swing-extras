@@ -6,7 +6,7 @@ import ca.corbett.extras.properties.FileBasedProperties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.Alignment;
-import ca.corbett.updates.UpdateSources;
+import ca.corbett.updates.UpdateManager;
 
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -212,12 +212,12 @@ public abstract class AppProperties<T extends AppExtension> {
     /**
      * Generates and shows an ExtensionManagerDialog to allow the user to view
      * all currently loaded extensions, and to enable or disable them. Additionally,
-     * the given UpdateSources can be queried to find and show a list of extensions
+     * the given UpdateManager can be queried to find and show a list of extensions
      * available for download. The user can download new extensions or update
      * existing ones using the "available" tab on the dialog.
      */
-    public boolean showExtensionDialog(Window owner, UpdateSources updateSources) {
-        ExtensionManagerDialog<T> dialog = new ExtensionManagerDialog<>(extManager, owner, updateSources);
+    public boolean showExtensionDialog(Window owner, UpdateManager updateManager) {
+        ExtensionManagerDialog<T> dialog = new ExtensionManagerDialog<>(extManager, owner, updateManager);
         dialog.setVisible(true);
         if (dialog.wasOkayed() && dialog.wasModified()) {
             save();

@@ -5,6 +5,7 @@ import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.ListPanel;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.MessageUtil;
+import ca.corbett.updates.UpdateManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -41,6 +42,7 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
 
     protected final Window owner;
     protected final ExtensionManager<T> extManager;
+    protected final UpdateManager updateManager;
 
     protected final JPanel contentPanel = new JPanel(new BorderLayout());
     protected final JPanel headerPanel = new JPanel(new BorderLayout());
@@ -53,8 +55,13 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
     protected boolean isRestartRequired;
 
     public InstalledExtensionsPanel(Window owner, ExtensionManager<T> manager) {
+        this(owner, manager, null);
+    }
+
+    public InstalledExtensionsPanel(Window owner, ExtensionManager<T> manager, UpdateManager updateManager) {
         this.owner = owner;
         extManager = manager;
+        this.updateManager = updateManager;
         detailsPanelMap = new HashMap<>();
         extensionListPanel = new ListPanel<>(List.of(new EnableAllAction(), new DisableAllAction()));
         extensionListPanel.setListCellRenderer(new ExtensionListRenderer());
@@ -304,14 +311,24 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
                 return;
             }
 
+            jarFile.deleteOnExit();
             isRestartRequired = true;
 
-            // TODO prompt to confirm, then remove the jar, popup to say restart required.
-            // TODO we have no UpdateManager here! should restartApplication be static or should UpdateManager be supplied?
-            // TODO and remember to remove the placeholder! And update the list on the left!
-            //      and update selection to the next in the list, or blank it out if nothing left!
-            //      and the save() method might need to update ExtensionManager to let it know!
-            //      Wait... actually... shouldn't wait until save() if the jar is gone immediately...
+            // If we have no update manager, just do an info prompt:
+            if (updateManager == null) {
+                getMessageUtil().info("Changes will take effect when the application is restarted.");
+            }
+
+            // Otherwise, we can do it now:
+            else {
+                updateManager.showApplicationRestartPrompt(owner);
+            }
+
+            // We could do stuff here like remove it from the menu on the left, update our UI to reflect
+            // that that extension is no longer with us, and etc, but eh... I feel like if you're uninstalling
+            // stuff, and you know you need a restart to reflect the change, then it's probably a
+            // reasonable expectation that the restart will happen soon enough after the uninstall that
+            // updating the UI is probably not worth the effort.
         }
     }
 

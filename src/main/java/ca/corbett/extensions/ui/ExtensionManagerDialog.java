@@ -3,7 +3,7 @@ package ca.corbett.extensions.ui;
 import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.ToggleableTabbedPane;
-import ca.corbett.updates.UpdateSources;
+import ca.corbett.updates.UpdateManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -41,7 +41,7 @@ import java.awt.Window;
 public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
 
     private final ExtensionManager<T> extManager;
-    private final UpdateSources updateSources;
+    private final UpdateManager updateManager;
 
     private ToggleableTabbedPane tabbedPane;
     private InstalledExtensionsPanel<T> installedExtensionsPanel;
@@ -69,13 +69,12 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
      *
      * @param manager The ExtensionManager containing our list of extensions.
      * @param owner   The owner window. This dialog will be modal.
-     * @param updateSources An optional UpdateSources instance for querying remote downloadable extensions.
-     *                      TODO the UpdateManager should be passed in, not the UpdateSources
+     * @param updateManager An optional UpdateManager instance for querying remote downloadable extensions.
      */
-    public ExtensionManagerDialog(ExtensionManager<T> manager, Window owner, UpdateSources updateSources) {
+    public ExtensionManagerDialog(ExtensionManager<T> manager, Window owner, UpdateManager updateManager) {
         super(owner, "Extension Manager");
         this.extManager = manager;
-        this.updateSources = updateSources;
+        this.updateManager = updateManager;
         this.setSize(new Dimension(700, 485));
         this.setMinimumSize(new Dimension(700, 485));
         this.setResizable(true);
@@ -210,13 +209,13 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
     private void initComponents() {
         setLayout(new BorderLayout());
         tabbedPane = new ToggleableTabbedPane();
-        installedExtensionsPanel = new InstalledExtensionsPanel<>(this, extManager);
+        installedExtensionsPanel = new InstalledExtensionsPanel<>(this, extManager, updateManager);
         tabbedPane.addTab("Installed", installedExtensionsPanel);
 
-        if (updateSources != null) {
+        if (updateManager != null) {
             String appName = extManager.getApplicationName();
             String appVersion = extManager.getApplicationVersion();
-            availableExtensionsPanel = new AvailableExtensionsPanel(this, extManager, updateSources, appName,
+            availableExtensionsPanel = new AvailableExtensionsPanel(this, extManager, updateManager, appName,
                                                                     appVersion);
             tabbedPane.addTab("Available", availableExtensionsPanel);
         }

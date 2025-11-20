@@ -43,7 +43,7 @@ public class AvailableExtensionsPanel extends JPanel {
     protected MessageUtil messageUtil;
     protected final Window owner;
     protected final ExtensionManager<?> extensionManager;
-    protected final UpdateSources updateSources;
+    protected final UpdateManager updateManager;
     protected final DownloadManager downloadManager;
 
     protected final JPanel contentPanel = new JPanel(new BorderLayout());
@@ -57,9 +57,9 @@ public class AvailableExtensionsPanel extends JPanel {
     protected final String applicationName;
     protected final String applicationVersion;
 
-    public AvailableExtensionsPanel(Window owner, ExtensionManager<?> extManager, UpdateSources updateSources, String appName, String appVersion) {
+    public AvailableExtensionsPanel(Window owner, ExtensionManager<?> extManager, UpdateManager updateManager, String appName, String appVersion) {
         this.owner = owner;
-        this.updateSources = updateSources;
+        this.updateManager = updateManager;
         this.extensionManager = extManager;
         this.applicationName = appName;
         this.applicationVersion = appVersion;
@@ -158,7 +158,7 @@ public class AvailableExtensionsPanel extends JPanel {
     }
 
     protected void refreshList() {
-        if (updateSources == null || updateSources.getUpdateSources().isEmpty()) {
+        if (updateManager == null || updateManager.getUpdateSources().isEmpty()) {
             getMessageUtil().info("This application does not define any update sources.\n"
                                           + "Dynamic extension download/install/upgrade is not available.");
             return;
@@ -171,7 +171,7 @@ public class AvailableExtensionsPanel extends JPanel {
             return;
         }
         downloadManager.downloadFile(updateSource.getVersionManifestUrl(), new VersionManifestDownloadListener());
-        UpdateManager manager = new UpdateManager(updateSources);
+
         //manager.retrieveVersionManifest(updateSource); // I want this to be synchronous...
         // Like, I don't want to have to set up callback listeners here and wait for the file to come in
         // I want UpdateManager to block until it has the file (or it errors out), and then return it to me
@@ -188,17 +188,17 @@ public class AvailableExtensionsPanel extends JPanel {
      */
     protected UpdateSources.UpdateSource getUpdateSource() {
         // If there are none, return null:
-        if (updateSources == null || updateSources.getUpdateSources().isEmpty()) {
+        if (updateManager == null || updateManager.getUpdateSources().isEmpty()) {
             return null;
         }
 
         // If there's exactly one, then the choice is easy:
-        if (updateSources.getUpdateSources().size() == 1) {
-            return updateSources.getUpdateSources().get(0);
+        if (updateManager.getUpdateSources().size() == 1) {
+            return updateManager.getUpdateSources().get(0);
         }
 
         // If we get here, there are more than one. Prompt for user input:
-        Object[] choices = updateSources.getUpdateSources().toArray();
+        Object[] choices = updateManager.getUpdateSources().toArray();
         return (UpdateSources.UpdateSource)JOptionPane.showInputDialog(owner,
                                                                        "Select which update source to query:",
                                                                        "Select update source",
