@@ -261,12 +261,13 @@ public class UpdateManager {
      * This is separated out from that method so that it can be unit tested.
      */
     protected void executeShutdownHooks() {
-        ExecutorService executor = Executors.newFixedThreadPool(shutdownHooks.size());
-        List<Future<?>> futures = new ArrayList<>();
-
         if (shutdownHooks.isEmpty()) {
             log.warning("No shutdown hooks are registered! Application may not terminate cleanly.");
+            return;
         }
+
+        ExecutorService executor = Executors.newFixedThreadPool(shutdownHooks.size());
+        List<Future<?>> futures = new ArrayList<>();
 
         // Execute all hooks in parallel
         for (ShutdownHook hook : shutdownHooks) {
