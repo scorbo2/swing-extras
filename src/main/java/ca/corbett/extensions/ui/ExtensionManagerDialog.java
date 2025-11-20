@@ -131,6 +131,10 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         return wasModified;
     }
 
+    public boolean isRestartRequired() {
+        return installedExtensionsPanel.isRestartRequired() || availableExtensionsPanel.isRestartRequired();
+    }
+
     /**
      * Reports whether the extension with the given class name was toggled to enabled or
      * disabled while this dialog was open. If autoCommit is true, these changes are pushed

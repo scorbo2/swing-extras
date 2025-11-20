@@ -45,6 +45,7 @@ public class AvailableExtensionsPanel extends JPanel {
     protected final ExtensionManager<?> extensionManager;
     protected final UpdateManager updateManager;
     protected final DownloadManager downloadManager;
+    protected boolean isRestartRequired;
 
     protected final JPanel contentPanel = new JPanel(new BorderLayout());
     protected final JPanel headerPanel = new JPanel(new BorderLayout());
@@ -64,6 +65,7 @@ public class AvailableExtensionsPanel extends JPanel {
         this.applicationName = appName;
         this.applicationVersion = appVersion;
         this.downloadManager = new DownloadManager();
+        this.isRestartRequired = false;
         detailsPanelMap = new HashMap<>();
         extensionListPanel = new ListPanel<>(List.of(new RefreshAction()));
         extensionListPanel.setPreferredSize(new Dimension(200, 200));
@@ -71,6 +73,10 @@ public class AvailableExtensionsPanel extends JPanel {
         extensionListPanel.setMaximumSize(new Dimension(200, Integer.MAX_VALUE));
         extensionListPanel.addListSelectionListener(e -> listSelectionChanged());
         initComponents();
+    }
+
+    public boolean isRestartRequired() {
+        return isRestartRequired;
     }
 
     protected void initComponents() {

@@ -8,6 +8,7 @@ import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.Alignment;
 import ca.corbett.updates.UpdateManager;
 
+import javax.swing.JOptionPane;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
@@ -221,6 +222,17 @@ public abstract class AppProperties<T extends AppExtension> {
         dialog.setVisible(true);
         if (dialog.wasOkayed() && dialog.wasModified()) {
             save();
+        }
+        if (dialog.isRestartRequired()) {
+            if (updateManager != null) {
+                updateManager.showApplicationRestartPrompt(owner);
+            }
+            else {
+                JOptionPane.showMessageDialog(owner,
+                                              "Changes will take effect when the application is restarted.",
+                                              "Restart required",
+                                              JOptionPane.INFORMATION_MESSAGE);
+            }
         }
         return dialog.wasOkayed() && dialog.wasModified();
     }
