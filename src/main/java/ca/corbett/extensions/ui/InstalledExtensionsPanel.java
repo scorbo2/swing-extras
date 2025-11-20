@@ -11,6 +11,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
@@ -308,6 +309,14 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
             if (jarFile == null) {
                 getMessageUtil().info("The extension \"" + placeholder.name + "\" is a built-in extension.\n"
                                               + "It cannot be uninstalled.");
+                return;
+            }
+
+            // Give user a chance to back out:
+            if (JOptionPane.showConfirmDialog(owner,
+                                              "Really uninstall this extension?",
+                                              "Confirm",
+                                              JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
                 return;
             }
 
