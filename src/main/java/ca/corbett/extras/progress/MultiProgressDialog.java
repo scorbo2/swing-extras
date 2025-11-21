@@ -17,6 +17,7 @@ import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -71,34 +72,16 @@ public final class MultiProgressDialog extends JDialog {
     private boolean isCanceled;
 
     /**
-     * Creates a new, blank MultiProgressDialog with the specified owner frame
+     * Creates a new, blank MultiProgressDialog with the specified owner window
      * and window title. Closing the progress dialog will act the same
      * as though the cancel button had been clicked. Call isCanceled()
      * at any time to see if the operation should continue or not (that is,
      * if the user has clicked the cancel button on the progress dialog).
      *
-     * @param owner The JFrame that will own this MultiProgressDialog
+     * @param owner The Window that will own this MultiProgressDialog
      * @param title The window title
      */
-    public MultiProgressDialog(JFrame owner, String title) {
-        super(owner, title);
-        initComponents();
-        resetProgress();
-        setLocationRelativeTo(owner);
-        initialShowDelayMS = 0;
-    }
-
-    /**
-     * Creates a new, blank MultiProgressDialog with the specified owner dialog
-     * and window title. Closing the progress dialog will act the same
-     * as though the cancel button had been clicked. Call isCanceled()
-     * at any time to see if the operation should continue or not (that is,
-     * if the user has clicked the cancel button on the progress dialog).
-     *
-     * @param owner The JDialog that will own this MultiProgressDialog
-     * @param title The window title
-     */
-    public MultiProgressDialog(JDialog owner, String title) {
+    public MultiProgressDialog(Window owner, String title) {
         super(owner, title);
         initComponents();
         resetProgress();

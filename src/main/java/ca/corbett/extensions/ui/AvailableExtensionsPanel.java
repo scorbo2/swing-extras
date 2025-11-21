@@ -7,6 +7,9 @@ import ca.corbett.extras.MessageUtil;
 import ca.corbett.extras.io.DownloadAdapter;
 import ca.corbett.extras.io.DownloadManager;
 import ca.corbett.extras.io.DownloadThread;
+import ca.corbett.extras.progress.MultiProgressDialog;
+import ca.corbett.extras.progress.SimpleProgressAdapter;
+import ca.corbett.updates.ExtensionDownloadThread;
 import ca.corbett.updates.UpdateManager;
 import ca.corbett.updates.UpdateSources;
 import ca.corbett.updates.VersionManifest;
@@ -54,6 +57,7 @@ public class AvailableExtensionsPanel extends JPanel {
     protected final Map<String, ExtensionDetailsPanel> detailsPanelMap;
     protected final ListPanel<ExtensionPlaceholder> extensionListPanel;
     protected ExtensionDetailsPanel emptyPanel;
+    protected UpdateSources.UpdateSource currentUpdateSource;
 
     protected final String applicationName;
     protected final String applicationVersion;
@@ -66,6 +70,7 @@ public class AvailableExtensionsPanel extends JPanel {
         this.applicationVersion = appVersion;
         this.downloadManager = new DownloadManager();
         this.isRestartRequired = false;
+        this.currentUpdateSource = null;
         detailsPanelMap = new HashMap<>();
         extensionListPanel = new ListPanel<>(List.of(new RefreshAction()));
         extensionListPanel.setPreferredSize(new Dimension(200, 200));
@@ -143,6 +148,8 @@ public class AvailableExtensionsPanel extends JPanel {
             extPanel = new ExtensionDetailsPanel(owner, latestVersion.getExtInfo());
             extPanel.setNameFieldVisible(false); // we have our own title bar
             detailsPanelMap.put(placeholder.extension.getName(), extPanel);
+
+            // TODO download screenshots and display
         }
         detailsPanel.add(extPanel);
         contentPanel.revalidate();
@@ -170,42 +177,37 @@ public class AvailableExtensionsPanel extends JPanel {
             return;
         }
 
-        // TODO let's do it:
-        UpdateSources.UpdateSource updateSource = getUpdateSource();
-        if (updateSource == null) {
+        promptForUpdateSource();
+        if (currentUpdateSource == null) {
             // user hit cancel on update source chooser
             return;
         }
-        downloadManager.downloadFile(updateSource.getVersionManifestUrl(), new VersionManifestDownloadListener());
-
-        //manager.retrieveVersionManifest(updateSource); // I want this to be synchronous...
-        // Like, I don't want to have to set up callback listeners here and wait for the file to come in
-        // I want UpdateManager to block until it has the file (or it errors out), and then return it to me
-
-        // TODO change of plans, it will be UpdateManagerDialog managing this.
-        //      Calling code can treat it synchronously.
-        //      This makes it harder to do headless! Batch scripting and the like. But probably fair tradeoff.
+        downloadManager.downloadFile(currentUpdateSource.getVersionManifestUrl(),
+                                     new VersionManifestDownloadListener());
     }
 
     /**
      * Assuming there is at least one update source, this method will return one, else null.
      * If there are more than one update sources available, this method will prompt the user
      * in a dialog to pick which one to use, and then return that one (or null if the user cancels).
+     * The result is stored in currentUpdateSource (may be null);
      */
-    protected UpdateSources.UpdateSource getUpdateSource() {
+    protected void promptForUpdateSource() {
         // If there are none, return null:
         if (updateManager == null || updateManager.getUpdateSources().isEmpty()) {
-            return null;
+            currentUpdateSource = null;
+            return;
         }
 
         // If there's exactly one, then the choice is easy:
         if (updateManager.getUpdateSources().size() == 1) {
-            return updateManager.getUpdateSources().get(0);
+            currentUpdateSource = updateManager.getUpdateSources().get(0);
+            return;
         }
 
         // If we get here, there are more than one. Prompt for user input:
         Object[] choices = updateManager.getUpdateSources().toArray();
-        return (UpdateSources.UpdateSource)JOptionPane.showInputDialog(owner,
+        currentUpdateSource = (UpdateSources.UpdateSource)JOptionPane.showInputDialog(owner,
                                                                        "Select which update source to query:",
                                                                        "Select update source",
                                                                        JOptionPane.QUESTION_MESSAGE,
@@ -335,7 +337,46 @@ public class AvailableExtensionsPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // TODO download jar, sig file, public key, do signature match, prompt user, copy into place, prompt restart
+            if (currentUpdateSource == null) {
+                getMessageUtil().info("There is no update source selected.");
+                return;
+            }
+            MultiProgressDialog progressDialog = new MultiProgressDialog(owner, "Downloading...");
+            progressDialog.setInitialShowDelayMS(500);
+            final ExtensionDownloadThread workerThread = new ExtensionDownloadThread(downloadManager,
+                                                                                     currentUpdateSource,
+                                                                                     findLatestExtVersion(
+                                                                                             extension.getExtension()));
+            workerThread.addProgressListener(new SimpleProgressAdapter() {
+                @Override
+                public void progressComplete() {
+                    // TODO remove this debug code, just testing
+                    for (String error : workerThread.getErrors()) {
+                        System.out.println("ERROR: " + error);
+                    }
+                    System.out.println("Jar: " + workerThread.getDownloadedExtension().getJarFile().getAbsolutePath());
+                    File sigFile = workerThread.getDownloadedExtension().getSignatureFile();
+                    if (sigFile == null) {
+                        System.out.println("No signature.");
+                    }
+                    else {
+                        System.out.println("Signature: " + sigFile.getAbsolutePath());
+                    }
+                    System.out.println(
+                            "Found " + workerThread.getDownloadedExtension().getScreenshots().size() + " screenshots.");
+
+                    if (!workerThread.getErrors().isEmpty()) {
+                        // TODO move extension jar to app extensions dir... wait, where is that? Do we know?
+                        //      note we can leave the signature file and screenshots behind as we don't need them
+                        //      wait... why did we download screenshots for an install if we don't need them...
+                    }
+                    else {
+                        isRestartRequired = true;
+                        updateManager.showApplicationRestartPrompt(owner);
+                    }
+                }
+            });
+            progressDialog.runWorker(workerThread, true);
         }
     }
 
