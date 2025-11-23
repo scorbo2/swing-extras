@@ -4,11 +4,13 @@ import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.ListPanel;
 import ca.corbett.extras.MessageUtil;
+import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.DownloadAdapter;
 import ca.corbett.extras.io.DownloadManager;
 import ca.corbett.extras.io.DownloadThread;
 import ca.corbett.extras.progress.MultiProgressDialog;
 import ca.corbett.extras.progress.SimpleProgressAdapter;
+import ca.corbett.updates.DownloadedExtension;
 import ca.corbett.updates.ExtensionDownloadThread;
 import ca.corbett.updates.UpdateManager;
 import ca.corbett.updates.UpdateSources;
@@ -18,10 +20,12 @@ import ca.corbett.updates.VersionStringComparator;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -30,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -149,7 +154,10 @@ public class AvailableExtensionsPanel extends JPanel {
             extPanel.setNameFieldVisible(false); // we have our own title bar
             detailsPanelMap.put(placeholder.extension.getName(), extPanel);
 
-            // TODO download screenshots and display
+            // If there are screenshots for this version, load them async:
+            if (!latestVersion.getScreenshots().isEmpty()) {
+                new ScreenshotDownloader(latestVersion, extPanel).start();
+            }
         }
         detailsPanel.add(extPanel);
         contentPanel.revalidate();
@@ -347,6 +355,7 @@ public class AvailableExtensionsPanel extends JPanel {
                                                                                      currentUpdateSource,
                                                                                      findLatestExtVersion(
                                                                                              extension.getExtension()));
+            workerThread.setDownloadOptions(true, true, false);
             workerThread.addProgressListener(new SimpleProgressAdapter() {
                 @Override
                 public void progressComplete() {
@@ -412,6 +421,54 @@ public class AvailableExtensionsPanel extends JPanel {
         }
     }
 
+    /**
+     * Internal helper class to grab all the screenshots for the given extension version
+     * and load them into the given ExtensionDetailsPanel.
+     * <p>
+     * Currently, there's no caching. So, every time you visit an extension in the
+     * left menu, the screenshots for it get re-downloaded. That's wasteful.
+     * </p>
+     */
+    private class ScreenshotDownloader {
+        private final VersionManifest.ExtensionVersion extVersion;
+        private final ExtensionDetailsPanel extDetailsPanel;
+
+        public ScreenshotDownloader(VersionManifest.ExtensionVersion version,
+                                    ExtensionDetailsPanel panel) {
+            this.extVersion = version;
+            this.extDetailsPanel = panel;
+        }
+
+        public void start() {
+            MultiProgressDialog progressDialog = new MultiProgressDialog(owner, "Downloading...");
+            ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager,
+                                                                         currentUpdateSource,
+                                                                         extVersion);
+            worker.setDownloadOptions(false, false, true);
+            worker.addProgressListener(new SimpleProgressAdapter() {
+                @Override
+                public void progressComplete() {
+                    processResults(worker.getDownloadedExtension());
+                }
+            });
+            progressDialog.runWorker(worker, true);
+        }
+
+        public void processResults(DownloadedExtension extensionFiles) {
+            for (File screenshotFile : extensionFiles.getScreenshots()) {
+                try {
+                    // Do I/O on the worker thread:
+                    BufferedImage image = ImageUtil.loadImage(screenshotFile);
+
+                    // Do UI updates on the EDT:
+                    SwingUtilities.invokeLater(() -> extDetailsPanel.addScreenshot(image, false));
+                }
+                catch (IOException ioe) {
+                    log.log(Level.SEVERE, "Problem parsing screenshot: " + ioe.getMessage(), ioe);
+                }
+            }
+        }
+    }
 
     protected MessageUtil getMessageUtil() {
         if (messageUtil == null) {
