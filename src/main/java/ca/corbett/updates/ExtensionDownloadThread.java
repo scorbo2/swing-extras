@@ -1,21 +1,22 @@
 package ca.corbett.updates;
 
-import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.DownloadAdapter;
 import ca.corbett.extras.io.DownloadManager;
 import ca.corbett.extras.io.DownloadThread;
 import ca.corbett.extras.progress.SimpleProgressWorker;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 /**
  * A SimpleProgressWorker implementation that can download the given Extension and
- * return it as a DownloadedExtension instance if the download succeeds.
+ * return it as a DownloadedExtension instance if the download succeeds. You can configure
+ * which extension file(s) you wish to download using the setDownloadOptions() method,
+ * but it must be invoked before the thread is started.
  * <p>
  * <b>NOTE:</b> This worker thread will not fire a progressError event!
  * It will invoke progressComplete when all associated files have either
@@ -55,6 +56,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ExtensionDownloadThread extends SimpleProgressWorker {
 
+    private final static Logger log = Logger.getLogger(ExtensionDownloadThread.class.getName());
+
     private final DownloadManager downloadManager;
     private final UpdateSources.UpdateSource updateSource;
     private final VersionManifest.ExtensionVersion extensionVersion;
@@ -62,6 +65,10 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
     private final AtomicInteger downloadRemaining = new AtomicInteger();
     private final List<String> errors = new ArrayList<>();
     private DownloadedExtension downloadedExtension;
+    private boolean downloadJar;
+    private boolean downloadSignature;
+    private boolean downloadScreenshots;
+    private long timeoutMs;
 
     public ExtensionDownloadThread(DownloadManager downloadManager,
                                    UpdateSources.UpdateSource updateSource,
@@ -69,6 +76,14 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
         this.updateSource = updateSource;
         this.extensionVersion = extensionVersion;
         this.downloadManager = downloadManager;
+
+        // By default, we will download all associated extension files:
+        downloadJar = true;
+        downloadSignature = true;
+        downloadScreenshots = true;
+
+        // By default, we'll allow 10s for the download(s) to complete before we give up:
+        timeoutMs = 10000;
     }
 
     public List<String> getErrors() {
@@ -79,35 +94,87 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
         return downloadedExtension;
     }
 
+    /**
+     * Before starting the worker thread, you can decide which file(s) should be downloaded
+     * for the extension in question. By default, all options are set to true.
+     */
+    public void setDownloadOptions(boolean downloadJar, boolean downloadSignature, boolean downloadScreenshots) {
+        this.downloadJar = downloadJar;
+        this.downloadSignature = downloadSignature;
+        this.downloadScreenshots = downloadScreenshots;
+    }
+
+    /**
+     * Before starting the download, you can set a download timeout - if the total time to download
+     * all requested files exceeds this value, the download will abort. Default is 10 seconds.
+     */
+    public void setDownloadTimeoutMs(long timeout) {
+        timeoutMs = Math.min(0, timeout);
+    }
+
     @Override
     public void run() {
         errors.clear();
         downloadedExtension = new DownloadedExtension();
 
-        // Resolve all of our URLs to download (should be at least one - the jar URL):
-        URL jarUrl = UpdateManager.resolveUrl(updateSource.getBaseUrl(), extensionVersion.getDownloadPath());
+        // Figure out what exactly we are downloading:
+        URL jarUrl = null;
         URL sigUrl = null;
-        if (extensionVersion.getSignaturePath() != null) {
-            sigUrl = UpdateManager.resolveUrl(updateSource.getBaseUrl(), extensionVersion.getSignaturePath());
-        }
         List<URL> screenshotURLs = new ArrayList<>();
-        for (String screenshotPath : extensionVersion.getScreenshots()) {
-            screenshotURLs.add(UpdateManager.resolveUrl(updateSource.getBaseUrl(), screenshotPath));
-        }
-        downloadTotal = 1 + screenshotURLs.size();
-        if (sigUrl != null) {
+        downloadTotal = 0;
+        if (downloadJar) {
+            jarUrl = UpdateManager.resolveUrl(updateSource.getBaseUrl(), extensionVersion.getDownloadPath());
             downloadTotal++;
         }
-        downloadRemaining.set(downloadTotal);
+        if (downloadSignature && extensionVersion.getSignaturePath() != null) {
+            sigUrl = UpdateManager.resolveUrl(updateSource.getBaseUrl(), extensionVersion.getSignaturePath());
+            downloadTotal++;
+        }
+        if (downloadScreenshots) {
+            for (String screenshotPath : extensionVersion.getScreenshots()) {
+                screenshotURLs.add(UpdateManager.resolveUrl(updateSource.getBaseUrl(), screenshotPath));
+                downloadTotal++;
+            }
+        }
+
+        // If we have nothing to download, we're done here:
+        if (downloadTotal == 0) {
+            log.warning("ExtensionDownloadThread: nothing to download. Skipping.");
+            fireProgressComplete();
+            return;
+        }
+
+        System.out.println("Will download " + downloadTotal + " files.");
 
         // Fire off all download requests:
+        long startTime = System.currentTimeMillis();
+        downloadRemaining.set(downloadTotal);
         fireProgressBegins(downloadTotal);
-        downloadManager.downloadFile(jarUrl, new JarFileListener());
+        if (jarUrl != null) {
+            downloadManager.downloadFile(jarUrl, new JarFileListener());
+        }
         if (sigUrl != null) {
             downloadManager.downloadFile(sigUrl, new SigFileListener());
         }
         for (URL url : screenshotURLs) {
             downloadManager.downloadFile(url, new ScreenshotListener());
+        }
+
+        // Wait for completion:
+        while (downloadRemaining.get() > 0) {
+            try {
+                Thread.sleep(100); // cheesy
+
+                // Check for stuck or very long-running downloads:
+                if ((System.currentTimeMillis() - startTime) > timeoutMs) {
+                    log.warning("ExtensionDownloadThread: download timeout exceeded; aborting.");
+                    downloadManager.stopAllDownloads();
+                    break;
+                }
+            }
+            catch (InterruptedException ignored) {
+                break;
+            }
         }
     }
 
@@ -166,12 +233,7 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
 
         @Override
         public void downloadComplete(DownloadThread thread, URL url, File result) {
-            try {
-                downloadedExtension.addScreenshot(ImageUtil.loadImage(result));
-            }
-            catch (IOException ioe) {
-                errors.add("Failed to parse downloaded screenshot: " + ioe.getMessage());
-            }
+            downloadedExtension.addScreenshot(result);
             int remaining = downloadRemaining.decrementAndGet();
             if (remaining == 0) {
                 fireProgressComplete();

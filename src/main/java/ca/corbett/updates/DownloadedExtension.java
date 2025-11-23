@@ -1,6 +1,5 @@
 package ca.corbett.updates;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,7 @@ public class DownloadedExtension {
 
     private File jarFile;
     private File signatureFile;
-    private final List<BufferedImage> screenshots = new ArrayList<>();
+    private final List<File> screenshots = new ArrayList<>();
 
     public File getJarFile() {
         return jarFile;
@@ -35,11 +34,11 @@ public class DownloadedExtension {
         this.signatureFile = signatureFile;
     }
 
-    public void addScreenshot(BufferedImage image) {
+    public void addScreenshot(File image) {
         screenshots.add(image);
     }
 
-    public List<BufferedImage> getScreenshots() {
+    public List<File> getScreenshots() {
         return new ArrayList<>(screenshots);
     }
 
