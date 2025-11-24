@@ -4,6 +4,7 @@ import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.ListPanel;
 import ca.corbett.extras.MessageUtil;
+import ca.corbett.extras.crypt.SignatureUtil;
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.DownloadAdapter;
 import ca.corbett.extras.io.DownloadManager;
@@ -29,6 +30,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.security.PublicKey;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +67,7 @@ public class AvailableExtensionsPanel extends JPanel {
     protected final ListPanel<ExtensionPlaceholder> extensionListPanel;
     protected ExtensionDetailsPanel emptyPanel;
     protected UpdateSources.UpdateSource currentUpdateSource;
+    protected PublicKey currentPublicKey;
 
     protected final String applicationName;
     protected final String applicationVersion;
@@ -192,6 +197,28 @@ public class AvailableExtensionsPanel extends JPanel {
         }
         downloadManager.downloadFile(currentUpdateSource.getVersionManifestUrl(),
                                      new VersionManifestDownloadListener());
+
+
+        // Also grab this update source's public key if it has one:
+        currentPublicKey = null;
+        if (currentUpdateSource.hasPublicKey()) {
+            downloadManager.downloadFile(currentUpdateSource.getPublicKeyUrl(), new DownloadAdapter() {
+                @Override
+                public void downloadComplete(DownloadThread thread, URL url, File result) {
+                    if (result != null && result.exists()) {
+                        try {
+                            currentPublicKey = SignatureUtil.loadPublicKey(result);
+                        }
+                        catch (Exception e) {
+                            log.log(Level.SEVERE, "Unable to download public key: " + e.getMessage(), e);
+                        }
+                    }
+                }
+            });
+        }
+        else {
+            log.warning("Remote host does not specify a public key - extension verification will not be possible.");
+        }
     }
 
     /**
@@ -252,6 +279,113 @@ public class AvailableExtensionsPanel extends JPanel {
             return false;
         }
         return extensionManager.findExtensionByName(extension.getName()) != null;
+    }
+
+    /**
+     * Invoked internally from the install and update actions, after the extension is downloaded,
+     * to complete the process and then prompt to restart the application.
+     */
+    protected void extensionInstallCallback(DownloadedExtension downloadedExtension) {
+        if (downloadedExtension == null
+                || downloadedExtension.getJarFile() == null
+                || !downloadedExtension.getJarFile().exists()) {
+            getMessageUtil().info("Unable to complete extension install: no jar file downloaded.");
+            return;
+        }
+
+        // This is a very wonky case, but if our ExtensionManager is for some reason not configured
+        // with an extensions directory, we can't proceed:
+        File extensionsDir = extensionManager.getExtensionsDirectory();
+        if (extensionsDir == null) {
+            getMessageUtil().info("Unable to install new extensions: application extension dir is not set.");
+            return;
+        }
+        if (!extensionsDir.exists() || !extensionsDir.canWrite()) {
+            getMessageUtil().info("Unable to install new extensions: extension dir does not exist or is not writable.\n"
+                                          + extensionsDir.getAbsolutePath());
+            return;
+        }
+
+        // If we don't have a public key, warn:
+        if (currentPublicKey == null) {
+            if (JOptionPane.showConfirmDialog(owner,
+                                              "The selected update source does not specify a public key.\n"
+                                                      + "It is not possible to verify extensions downloaded from this source.\n"
+                                                      + "Only download extensions fromm sources that you trust!\n\n"
+                                                      + "Proceed without verification?",
+                                              "No public key",
+                                              JOptionPane.YES_NO_OPTION,
+                                              JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
+                return;
+            }
+        }
+
+        else {
+            // If we didn't get a signature, prompt with a huge warning:
+            if (downloadedExtension.getSignatureFile() == null || !downloadedExtension.getSignatureFile().exists()) {
+                if (JOptionPane.showConfirmDialog(owner,
+                                                  "This extension is not digitally signed.\n"
+                                                          + "It is not possible to verify its integrity.\n\n"
+                                                          + "Are you sure you wish to proceed with the installation?",
+                                                  "Extension not signed",
+                                                  JOptionPane.YES_NO_OPTION,
+                                                  JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
+                    return;
+                }
+            }
+
+            // Otherwise, do the verification:
+            else {
+                try {
+                    if (!SignatureUtil.verifyFile(downloadedExtension.getJarFile(),
+                                                  downloadedExtension.getSignatureFile(),
+                                                  currentPublicKey)) {
+                        if (JOptionPane.showConfirmDialog(owner,
+                                                          "This extension's digital signature does not match!\n"
+                                                                  + "The extension may not have downloaded correctly,\n"
+                                                                  + "or the extension may have been tampered with.\n"
+                                                                  + "It is STRONGLY RECOMMENDED not to proceed.\n\n"
+                                                                  + "Proceed anyway?",
+                                                          "Verification failed!",
+                                                          JOptionPane.YES_NO_OPTION,
+                                                          JOptionPane.ERROR_MESSAGE) == JOptionPane.NO_OPTION) {
+                            return;
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    log.log(Level.SEVERE, "Problem verifying signature: " + e.getMessage(), e);
+                    if (JOptionPane.showConfirmDialog(owner,
+                                                      "There was a problem verifying this extension:\n"
+                                                              + e.getMessage()
+                                                              + "\n\nProceed without verification?",
+                                                      "Unable to verify extension",
+                                                      JOptionPane.YES_NO_OPTION,
+                                                      JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        // If we make it to this point, the extension has either been verified, or the user has
+        // made a deliberate decision to proceed without verification.
+        try {
+            Files.move(downloadedExtension.getJarFile().toPath(),
+                       new File(extensionsDir, downloadedExtension.getJarFile().getName()).toPath(),
+                       StandardCopyOption.REPLACE_EXISTING);
+
+            isRestartRequired = true;
+            if (updateManager != null) {
+                updateManager.showApplicationRestartPrompt(owner);
+            }
+            else {
+                getMessageUtil().info("Changes will take effect when the application is restarted.");
+            }
+        }
+        catch (IOException ioe) {
+            getMessageUtil().error("Problem saving extension jar: " + ioe.getMessage(), ioe);
+        }
     }
 
     protected class RefreshAction extends AbstractAction {
@@ -359,30 +493,12 @@ public class AvailableExtensionsPanel extends JPanel {
             workerThread.addProgressListener(new SimpleProgressAdapter() {
                 @Override
                 public void progressComplete() {
-                    // TODO remove this debug code, just testing
-                    for (String error : workerThread.getErrors()) {
-                        System.out.println("ERROR: " + error);
-                    }
-                    System.out.println("Jar: " + workerThread.getDownloadedExtension().getJarFile().getAbsolutePath());
-                    File sigFile = workerThread.getDownloadedExtension().getSignatureFile();
-                    if (sigFile == null) {
-                        System.out.println("No signature.");
-                    }
-                    else {
-                        System.out.println("Signature: " + sigFile.getAbsolutePath());
-                    }
-                    System.out.println(
-                            "Found " + workerThread.getDownloadedExtension().getScreenshots().size() + " screenshots.");
-
                     if (!workerThread.getErrors().isEmpty()) {
-                        // TODO move extension jar to app extensions dir... wait, where is that? Do we know?
-                        //      note we can leave the signature file and screenshots behind as we don't need them
-                        //      wait... why did we download screenshots for an install if we don't need them...
+                        String errorText = String.join("\n", workerThread.getErrors());
+                        getMessageUtil().error("Problem downloading extension:\n" + errorText);
+                        return;
                     }
-                    else {
-                        isRestartRequired = true;
-                        updateManager.showApplicationRestartPrompt(owner);
-                    }
+                    extensionInstallCallback(workerThread.getDownloadedExtension());
                 }
             });
             progressDialog.runWorker(workerThread, true);
@@ -417,7 +533,41 @@ public class AvailableExtensionsPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // TODO nuke existing one, prompt restart
+            // TODO this check is failing and I'm not sure why... can't uninstall from this tab currently
+            File jarFile = extensionManager.getSourceJar(extension.extension.getClass().getName());
+            if (jarFile == null) {
+                getMessageUtil().info("The extension \"" + extension.getExtension().getName()
+                                              + "\" is a built-in extension.\n"
+                                              + "It cannot be uninstalled.");
+                return;
+            }
+
+            // Give user a chance to back out:
+            if (JOptionPane.showConfirmDialog(owner,
+                                              "Really uninstall this extension?",
+                                              "Confirm",
+                                              JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
+                return;
+            }
+
+            jarFile.deleteOnExit();
+            isRestartRequired = true;
+
+            // If we have no update manager, just do an info prompt:
+            if (updateManager == null) {
+                getMessageUtil().info("Changes will take effect when the application is restarted.");
+            }
+
+            // Otherwise, we can do it now:
+            else {
+                updateManager.showApplicationRestartPrompt(owner);
+            }
+
+            // We could do stuff here like remove it from the menu on the left, update our UI to reflect
+            // that that extension is no longer with us, and etc, but eh... I feel like if you're uninstalling
+            // stuff, and you know you need a restart to reflect the change, then it's probably a
+            // reasonable expectation that the restart will happen soon enough after the uninstall that
+            // updating the UI is probably not worth the effort.
         }
     }
 
@@ -448,6 +598,12 @@ public class AvailableExtensionsPanel extends JPanel {
             worker.addProgressListener(new SimpleProgressAdapter() {
                 @Override
                 public void progressComplete() {
+                    if (!worker.getErrors().isEmpty()) {
+                        for (String error : worker.getErrors()) {
+                            // Log it but proceed as it may have downloaded at least some of them
+                            log.log(Level.SEVERE, "Error downloading extension screenshots: " + error);
+                        }
+                    }
                     processResults(worker.getDownloadedExtension());
                 }
             });

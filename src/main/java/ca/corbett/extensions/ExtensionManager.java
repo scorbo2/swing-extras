@@ -53,6 +53,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
     private String applicationName;
     private String applicationVersion;
+    private File extensionsDirectory;
 
     public ExtensionManager() {
         loadedExtensions = new HashMap<>();
@@ -74,6 +75,24 @@ public abstract class ExtensionManager<T extends AppExtension> {
      */
     public List<StartupError> getStartupErrors() {
         return new ArrayList<>(startupErrors);
+    }
+
+    /**
+     * Applications will typically have a single directory where they store extension jars,
+     * but this is not a hard requirements - this method returns the last directory that
+     * was given to loadExtensions(), or whatever directory was last given to
+     * setExtensionsDirectory(), whichever occurred more recently.
+     */
+    public File getExtensionsDirectory() {
+        return extensionsDirectory;
+    }
+
+    /**
+     * Sets the directory where the application wishes to store extension jars.
+     * This is implicitly overwritten on every call to loadExtensions().
+     */
+    public void setExtensionsDirectory(File extensionsDirectory) {
+        this.extensionsDirectory = extensionsDirectory;
     }
 
     /**
@@ -408,6 +427,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
         // Make a note of these for later:
         this.applicationName = appName;
         this.applicationVersion = requiredVersion;
+        this.extensionsDirectory = directory;
 
         Map<File, AppExtensionInfo> map = findCandidateExtensionJars(directory, appName, requiredVersion);
         if (map.isEmpty()) {

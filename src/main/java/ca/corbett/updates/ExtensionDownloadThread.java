@@ -144,7 +144,7 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
             return;
         }
 
-        System.out.println("Will download " + downloadTotal + " files.");
+        log.info("Extension download thread will download " + downloadTotal + " associated extension files.");
 
         // Fire off all download requests:
         long startTime = System.currentTimeMillis();
