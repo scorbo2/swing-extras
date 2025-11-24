@@ -14,6 +14,19 @@ public abstract class MultiProgressWorker implements Runnable {
 
     private final List<MultiProgressListener> listeners = new ArrayList<>();
 
+    /**
+     * Listeners are notified in the order they were added. Normally, this isn't an issue.
+     * But if you need your listener invoked before any other, you can use this method
+     * to put your listener first in the list.
+     */
+    public void addPriorityProgressListener(MultiProgressListener listener) {
+        if (listeners.isEmpty()) {
+            addProgressListener(listener);
+            return;
+        }
+        listeners.add(0, listener);
+    }
+
     public void addProgressListener(MultiProgressListener listener) {
         listeners.add(listener);
     }

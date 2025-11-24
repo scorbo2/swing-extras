@@ -142,7 +142,10 @@ public final class MultiProgressDialog extends JDialog {
         minorProgressLabel.setVisible(true);
         minorProgressBar.setVisible(true);
         setSize(new Dimension(500, 210));
-        worker.addProgressListener(new MultiProgressHandler(this, initialShowDelayMS, disposeWhenComplete));
+        // Use a priority listener to make sure we get notified first...
+        // otherwise, the timer on the dialog may force it visible even if some other handler is showing a popup
+        // Our listener will kill the timer, which avoids that problem as long as our listener is invoked first.
+        worker.addPriorityProgressListener(new MultiProgressHandler(this, initialShowDelayMS, disposeWhenComplete));
         new Thread(worker).start();
     }
 
@@ -164,7 +167,10 @@ public final class MultiProgressDialog extends JDialog {
         minorProgressLabel.setVisible(false);
         minorProgressBar.setVisible(false);
         setSize(new Dimension(500, 160));
-        worker.addProgressListener(new SimpleProgressHandler(this, initialShowDelayMS, disposeWhenComplete));
+        // Use a priority listener to make sure we get notified first...
+        // otherwise, the timer on the dialog may force it visible even if some other handler is showing a popup
+        // Our listener will kill the timer, which avoids that problem as long as our listener is invoked first.
+        worker.addPriorityProgressListener(new SimpleProgressHandler(this, initialShowDelayMS, disposeWhenComplete));
         new Thread(worker).start();
     }
 
