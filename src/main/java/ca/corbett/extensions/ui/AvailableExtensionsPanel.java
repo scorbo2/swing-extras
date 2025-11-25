@@ -94,6 +94,19 @@ public class AvailableExtensionsPanel extends JPanel {
         return isRestartRequired;
     }
 
+    /**
+     * Invoked from ExtensionManagerDialog when our tab becomes active - if we have
+     * no currently-selected UpdateSource, we'll prompt for one.
+     * There is also a manual "refresh" button on this tab, but it may not be
+     * immediately intuitive for the user when first visiting this tab to click it,
+     * so we can make it happen automatically on first visit.
+     */
+    public void tabActivated() {
+        if (currentUpdateSource == null) {
+            promptForUpdateSource();
+        }
+    }
+
     protected void initComponents() {
         setLayout(new BorderLayout());
 
@@ -191,6 +204,40 @@ public class AvailableExtensionsPanel extends JPanel {
         }
 
         promptForUpdateSource();
+    }
+
+    /**
+     * Tries to select an UpdateSource intelligently and display it.
+     * If there are no update sources, the view is cleared.
+     * If there's only one update source, it is selected automatically.
+     * If there are more than one, the user is prompted to pick one.
+     * If an update source is chosen as a result of the above, its
+     * version manifest and public key are downloaded and set as current.
+     */
+    protected void promptForUpdateSource() {
+        // If there are none, return null:
+        if (updateManager == null || updateManager.getUpdateSources().isEmpty()) {
+            currentUpdateSource = null;
+            return;
+        }
+
+        // If there's exactly one, then the choice is easy:
+        if (updateManager.getUpdateSources().size() == 1) {
+            currentUpdateSource = updateManager.getUpdateSources().get(0);
+        }
+
+        // Otherwise, prompt the use to pick one:
+        else {
+            Object[] choices = updateManager.getUpdateSources().toArray();
+            currentUpdateSource = (UpdateSources.UpdateSource)JOptionPane.showInputDialog(owner,
+                                                                                          "Select which update source to query:",
+                                                                                          "Select update source",
+                                                                                          JOptionPane.QUESTION_MESSAGE,
+                                                                                          null,
+                                                                                          choices,
+                                                                                          choices[0]);
+        }
+
         if (currentUpdateSource == null) {
             // user hit cancel on update source chooser
             return;
@@ -219,36 +266,7 @@ public class AvailableExtensionsPanel extends JPanel {
         else {
             log.warning("Remote host does not specify a public key - extension verification will not be possible.");
         }
-    }
 
-    /**
-     * Assuming there is at least one update source, this method will return one, else null.
-     * If there are more than one update sources available, this method will prompt the user
-     * in a dialog to pick which one to use, and then return that one (or null if the user cancels).
-     * The result is stored in currentUpdateSource (may be null);
-     */
-    protected void promptForUpdateSource() {
-        // If there are none, return null:
-        if (updateManager == null || updateManager.getUpdateSources().isEmpty()) {
-            currentUpdateSource = null;
-            return;
-        }
-
-        // If there's exactly one, then the choice is easy:
-        if (updateManager.getUpdateSources().size() == 1) {
-            currentUpdateSource = updateManager.getUpdateSources().get(0);
-            return;
-        }
-
-        // If we get here, there are more than one. Prompt for user input:
-        Object[] choices = updateManager.getUpdateSources().toArray();
-        currentUpdateSource = (UpdateSources.UpdateSource)JOptionPane.showInputDialog(owner,
-                                                                       "Select which update source to query:",
-                                                                       "Select update source",
-                                                                       JOptionPane.QUESTION_MESSAGE,
-                                                                       null,
-                                                                       choices,
-                                                                       choices[0]);
     }
 
     protected void setVersionManifest(VersionManifest manifest) {

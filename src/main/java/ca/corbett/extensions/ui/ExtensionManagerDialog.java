@@ -11,6 +11,8 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -232,6 +234,15 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         if (tabbedPane.getTabCount() == 1) {
             tabbedPane.setTabHeaderVisible(false);
         }
+
+        tabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (tabbedPane.getSelectedComponent() == availableExtensionsPanel) {
+                    availableExtensionsPanel.tabActivated();
+                }
+            }
+        });
 
         add(tabbedPane, BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
