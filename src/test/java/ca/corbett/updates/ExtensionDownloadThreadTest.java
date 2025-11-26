@@ -60,7 +60,7 @@ class ExtensionDownloadThreadTest {
         // GIVEN an ExtensionDownloadThread set to download only the extension jar:
         testResult = null;
         ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager, updateSource, extensionVersion);
-        worker.setDownloadOptions(true, false, false);
+        worker.setDownloadOptions(ExtensionDownloadThread.Options.JarOnly);
         worker.addProgressListener(new DownloadProgressListener(worker));
 
         // WHEN we execute it:
@@ -81,7 +81,7 @@ class ExtensionDownloadThreadTest {
         // GIVEN an ExtensionDownloadThread set to download only the screenshots:
         testResult = null;
         ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager, updateSource, extensionVersion);
-        worker.setDownloadOptions(false, false, true);
+        worker.setDownloadOptions(ExtensionDownloadThread.Options.ScreenshotsOnly);
         worker.addProgressListener(new DownloadProgressListener(worker));
 
         // WHEN we execute it:
@@ -94,26 +94,6 @@ class ExtensionDownloadThreadTest {
         assertNull(testResult.getJarFile());
         assertNull(testResult.getSignatureFile());
         assertEquals(testExtensionFiles.getScreenshots().size(), testResult.getScreenshots().size());
-    }
-
-    @Test
-    public void downloadNothing_shouldDownloadNothing() throws Exception {
-        // GIVEN a wonky case where an ExtensionDownloadThread is configured to download nothing:
-        testResult = null;
-        ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager, updateSource, extensionVersion);
-        worker.setDownloadOptions(false, false, false);
-        worker.addProgressListener(new DownloadProgressListener(worker));
-
-        // WHEN we execute it:
-        Thread thread = new Thread(worker);
-        thread.start();
-        thread.join();
-
-        // THEN it should have downloaded nothing:
-        assertNotNull(testResult);
-        assertNull(testResult.getJarFile());
-        assertNull(testResult.getSignatureFile());
-        assertEquals(0, testResult.getScreenshots().size());
     }
 
     private static DownloadedExtension createSampleExtensionFiles(File tempDir) throws Exception {

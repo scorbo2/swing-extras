@@ -156,7 +156,13 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
      * Invoked internally when the dialog is okayed. Will determine whether any change
      * was made and store the result in wasModified. Will notify ExtensionManager of any
      * changes if autoCommit is true.
-     * TODO this is old code from when we only dealt with installed extensions... update for the new case
+     * <p>
+     *     <B>NOTE:</B> callers should also check isRestartRequired(), in case extensions
+     *     were added or removed. This dialog gives the user the option of restarting immediately,
+     *     but the user can say no, in which case we'll report it to whoever invoked us, and
+     *     it's on you. If extensions have been installed or uninstalled, the application might
+     *     be in a weird state until it restarts. Might be worth forcing a restart in that case.
+     * </p>
      */
     private void okay() {
         wasOkayed = true;

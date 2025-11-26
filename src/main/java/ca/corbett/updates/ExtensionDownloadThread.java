@@ -58,6 +58,25 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
 
     private final static Logger log = Logger.getLogger(ExtensionDownloadThread.class.getName());
 
+    public enum Options {
+        JarOnly,
+        JarAndSignature,
+        ScreenshotsOnly,
+        Everything;
+
+        public boolean isJarFileDownload() {
+            return this == JarOnly || this == JarAndSignature || this == Everything;
+        }
+
+        public boolean isSignatureDownload() {
+            return this == JarAndSignature || this == Everything;
+        }
+
+        public boolean isScreenshotsDownload() {
+            return this == ScreenshotsOnly || this == Everything;
+        }
+    }
+
     private final DownloadManager downloadManager;
     private final UpdateSources.UpdateSource updateSource;
     private final VersionManifest.ExtensionVersion extensionVersion;
@@ -65,9 +84,7 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
     private final AtomicInteger downloadRemaining = new AtomicInteger();
     private final List<String> errors = new ArrayList<>();
     private DownloadedExtension downloadedExtension;
-    private boolean downloadJar;
-    private boolean downloadSignature;
-    private boolean downloadScreenshots;
+    private Options downloadOptions;
     private long timeoutMs;
 
     public ExtensionDownloadThread(DownloadManager downloadManager,
@@ -78,9 +95,7 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
         this.downloadManager = downloadManager;
 
         // By default, we will download all associated extension files:
-        downloadJar = true;
-        downloadSignature = true;
-        downloadScreenshots = true;
+        downloadOptions = Options.Everything;
 
         // By default, we'll allow 10s for the download(s) to complete before we give up:
         timeoutMs = 10000;
@@ -98,10 +113,8 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
      * Before starting the worker thread, you can decide which file(s) should be downloaded
      * for the extension in question. By default, all options are set to true.
      */
-    public void setDownloadOptions(boolean downloadJar, boolean downloadSignature, boolean downloadScreenshots) {
-        this.downloadJar = downloadJar;
-        this.downloadSignature = downloadSignature;
-        this.downloadScreenshots = downloadScreenshots;
+    public void setDownloadOptions(Options options) {
+        this.downloadOptions = options;
     }
 
     /**
@@ -122,15 +135,15 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
         URL sigUrl = null;
         List<URL> screenshotURLs = new ArrayList<>();
         downloadTotal = 0;
-        if (downloadJar) {
+        if (downloadOptions.isJarFileDownload()) {
             jarUrl = UpdateManager.resolveUrl(updateSource.getBaseUrl(), extensionVersion.getDownloadPath());
             downloadTotal++;
         }
-        if (downloadSignature && extensionVersion.getSignaturePath() != null) {
+        if (downloadOptions.isSignatureDownload() && extensionVersion.getSignaturePath() != null) {
             sigUrl = UpdateManager.resolveUrl(updateSource.getBaseUrl(), extensionVersion.getSignaturePath());
             downloadTotal++;
         }
-        if (downloadScreenshots) {
+        if (downloadOptions.isScreenshotsDownload()) {
             for (String screenshotPath : extensionVersion.getScreenshots()) {
                 screenshotURLs.add(UpdateManager.resolveUrl(updateSource.getBaseUrl(), screenshotPath));
                 downloadTotal++;

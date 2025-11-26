@@ -220,6 +220,24 @@ public abstract class ExtensionManager<T extends AppExtension> {
     }
 
     /**
+     * Similar to findExtensionByName, but will specifically return the Jar file from which
+     * the given extension was loaded, assuming it was loaded from a jar file.
+     * Built-in extensions will return null. If the named extension is not found, also null.
+     */
+    public File findExtensionJarByExtensionName(String name) {
+        for (String key : loadedExtensions.keySet()) {
+            ExtensionWrapper wrapper = loadedExtensions.get(key);
+            if (wrapper.extension != null
+                    && wrapper.extension.getInfo() != null
+                    && wrapper.extension.getInfo().getName() != null
+                    && wrapper.extension.getInfo().getName().equals(name)) {
+                return wrapper.sourceJar;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns a list of all loaded extensions - beware that this method will return
      * extensions even if they are marked as disabled! If you only want to get the
      * extensions that are currently enabled, use getEnabledLoadedExtensions() instead.

@@ -26,6 +26,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -303,12 +305,12 @@ public class AvailableExtensionsPanel extends JPanel {
      * Invoked internally from the install and update actions, after the extension is downloaded,
      * to complete the process and then prompt to restart the application.
      */
-    protected void extensionInstallCallback(DownloadedExtension downloadedExtension) {
+    protected boolean extensionInstallCallback(DownloadedExtension downloadedExtension) {
         if (downloadedExtension == null
                 || downloadedExtension.getJarFile() == null
                 || !downloadedExtension.getJarFile().exists()) {
             getMessageUtil().info("Unable to complete extension install: no jar file downloaded.");
-            return;
+            return false;
         }
 
         // This is a very wonky case, but if our ExtensionManager is for some reason not configured
@@ -316,12 +318,12 @@ public class AvailableExtensionsPanel extends JPanel {
         File extensionsDir = extensionManager.getExtensionsDirectory();
         if (extensionsDir == null) {
             getMessageUtil().info("Unable to install new extensions: application extension dir is not set.");
-            return;
+            return false;
         }
         if (!extensionsDir.exists() || !extensionsDir.canWrite()) {
             getMessageUtil().info("Unable to install new extensions: extension dir does not exist or is not writable.\n"
                                           + extensionsDir.getAbsolutePath());
-            return;
+            return false;
         }
 
         // If we don't have a public key, warn:
@@ -334,7 +336,7 @@ public class AvailableExtensionsPanel extends JPanel {
                                               "No public key",
                                               JOptionPane.YES_NO_OPTION,
                                               JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
-                return;
+                return false;
             }
         }
 
@@ -348,7 +350,7 @@ public class AvailableExtensionsPanel extends JPanel {
                                                   "Extension not signed",
                                                   JOptionPane.YES_NO_OPTION,
                                                   JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
-                    return;
+                    return false;
                 }
             }
 
@@ -367,7 +369,7 @@ public class AvailableExtensionsPanel extends JPanel {
                                                           "Verification failed!",
                                                           JOptionPane.YES_NO_OPTION,
                                                           JOptionPane.ERROR_MESSAGE) == JOptionPane.NO_OPTION) {
-                            return;
+                            return false;
                         }
                     }
                 }
@@ -380,7 +382,7 @@ public class AvailableExtensionsPanel extends JPanel {
                                                       "Unable to verify extension",
                                                       JOptionPane.YES_NO_OPTION,
                                                       JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
-                        return;
+                        return false;
                     }
                 }
             }
@@ -392,17 +394,11 @@ public class AvailableExtensionsPanel extends JPanel {
             Files.move(downloadedExtension.getJarFile().toPath(),
                        new File(extensionsDir, downloadedExtension.getJarFile().getName()).toPath(),
                        StandardCopyOption.REPLACE_EXISTING);
-
-            isRestartRequired = true;
-            if (updateManager != null) {
-                updateManager.showApplicationRestartPrompt(owner);
-            }
-            else {
-                getMessageUtil().info("Changes will take effect when the application is restarted.");
-            }
+            return true;
         }
         catch (IOException ioe) {
             getMessageUtil().error("Problem saving extension jar: " + ioe.getMessage(), ioe);
+            return false;
         }
     }
 
@@ -489,10 +485,15 @@ public class AvailableExtensionsPanel extends JPanel {
     protected class InstallAction extends AbstractAction {
 
         private final ExtensionPlaceholder extension;
+        private final List<ActionListener> completionListeners = new ArrayList<>();
 
         public InstallAction(ExtensionPlaceholder placeholder) {
             super("Install");
             this.extension = placeholder;
+        }
+
+        public void addCompletionListener(ActionListener listener) {
+            completionListeners.add(listener);
         }
 
         @Override
@@ -507,7 +508,7 @@ public class AvailableExtensionsPanel extends JPanel {
                                                                                      currentUpdateSource,
                                                                                      findLatestExtVersion(
                                                                                              extension.getExtension()));
-            workerThread.setDownloadOptions(true, true, false);
+            workerThread.setDownloadOptions(ExtensionDownloadThread.Options.JarAndSignature);
             workerThread.addProgressListener(new SimpleProgressAdapter() {
                 @Override
                 public void progressComplete() {
@@ -516,7 +517,29 @@ public class AvailableExtensionsPanel extends JPanel {
                         getMessageUtil().error("Problem downloading extension:\n" + errorText);
                         return;
                     }
-                    extensionInstallCallback(workerThread.getDownloadedExtension());
+                    SwingUtilities.invokeLater(() -> {
+                        if (extensionInstallCallback(workerThread.getDownloadedExtension())) {
+                            VersionManifest.ExtensionVersion latestVersion = findLatestExtVersion(extension.extension);
+                            String version = latestVersion == null
+                                    ? "(latest)"
+                                    : latestVersion.getExtInfo().getVersion();
+                            log.info(
+                                    "Successfully installed extension " + extension.extension.getName() + " version " + version);
+
+                            // Execute any additional completion listeners we have before we prompt for restart:
+                            for (ActionListener listener : completionListeners) {
+                                listener.actionPerformed(null);
+                            }
+
+                            isRestartRequired = true;
+                            if (updateManager != null) {
+                                updateManager.showApplicationRestartPrompt(owner);
+                            }
+                            else {
+                                getMessageUtil().info("Changes will take effect when the application is restarted.");
+                            }
+                        }
+                    });
                 }
             });
             progressDialog.runWorker(workerThread, true);
@@ -534,9 +557,45 @@ public class AvailableExtensionsPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Existing jar is out of date, need to pull new one
-            // TODO uninstall existing one
-            // TODO download jar, sig file, public key, do signature match, prompt user, copy into place, prompt restart
+            if (currentUpdateSource == null) {
+                getMessageUtil().info("There is no update source selected.");
+                return;
+            }
+            final File jarFile = extensionManager.findExtensionJarByExtensionName(extension.extension.getName());
+            VersionManifest.ExtensionVersion latestVersion = findLatestExtVersion(extension.getExtension());
+            String latestVersionStr = latestVersion == null ? "(latest)" : latestVersion.getExtInfo().getVersion();
+            if (jarFile == null) {
+                getMessageUtil().info("The extension \"" + extension.getExtension().getName()
+                                              + "\" is a built-in extension.\n"
+                                              + "It cannot be updated.");
+                return;
+            }
+
+            // Give user a chance to back out:
+            if (JOptionPane.showConfirmDialog(owner,
+                                              "Extension "
+                                                      + extension.extension.getName()
+                                                      + " will be updated to version "
+                                                      + latestVersionStr
+                                                      + "\n\nProceed?",
+                                              "Confirm",
+                                              JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
+                return;
+            }
+
+            InstallAction installAction = new InstallAction(extension);
+
+            // Don't mark the old extension for deletion unless the install of the new version succeeds:
+            installAction.addCompletionListener(e1 -> {
+                log.info("Uninstalling older version of extension "
+                                 + extension.extension.getName()
+                                 + ": "
+                                 + jarFile.getName());
+                jarFile.deleteOnExit();
+            });
+            installAction.actionPerformed(null);
+
+            // No need to prompt for restart as the InstallAction will handle it.
         }
     }
 
@@ -551,8 +610,7 @@ public class AvailableExtensionsPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // TODO this check is failing and I'm not sure why... can't uninstall from this tab currently
-            File jarFile = extensionManager.getSourceJar(extension.extension.getClass().getName());
+            File jarFile = extensionManager.findExtensionJarByExtensionName(extension.extension.getName());
             if (jarFile == null) {
                 getMessageUtil().info("The extension \"" + extension.getExtension().getName()
                                               + "\" is a built-in extension.\n"
@@ -568,6 +626,7 @@ public class AvailableExtensionsPanel extends JPanel {
                 return;
             }
 
+            log.info("Uninstalling extension " + extension.extension.getName() + ": " + jarFile.getName());
             jarFile.deleteOnExit();
             isRestartRequired = true;
 
@@ -612,7 +671,7 @@ public class AvailableExtensionsPanel extends JPanel {
             ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager,
                                                                          currentUpdateSource,
                                                                          extVersion);
-            worker.setDownloadOptions(false, false, true);
+            worker.setDownloadOptions(ExtensionDownloadThread.Options.ScreenshotsOnly);
             worker.addProgressListener(new SimpleProgressAdapter() {
                 @Override
                 public void progressComplete() {
