@@ -544,7 +544,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 if (extRequires < theVersion) {
                     addStartupError(jarFile, "jarFileMeetsRequirements: Jar file "
                             + jarFile.getAbsolutePath()
-                            + "contains an older extension with version "
+                            + " contains an older extension with version "
                             + extInfo.getTargetAppVersion()
                             + ", below the required version of "
                             + requiredVersion
@@ -554,7 +554,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 else if (extRequires > theVersion) {
                     addStartupError(jarFile, "jarFileMeetsRequirements: Jar file "
                             + jarFile.getAbsolutePath()
-                            + "contains a newer extension with version "
+                            + " contains a newer extension with version "
                             + extInfo.getTargetAppVersion()
                             + ", above the required version of "
                             + requiredVersion
