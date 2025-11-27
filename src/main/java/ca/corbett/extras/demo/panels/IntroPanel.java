@@ -34,10 +34,9 @@ public class IntroPanel extends PanelBuilder {
         FormPanel introPanel = buildFormPanel("Welcome to swing-extras!");
 
         // Multi-line labels are quite easy to generate by wrapping the text in html tags:
-        String txt = "<html>This is a library of components for Java Swing application. This collection has<br>" +
-                "been in development since around 2012, but was not publicly available until 2025.<br>" +
-                "This documentation guide covers the possibilities that swing-extras offers that allow<br>" +
-                "you to quickly and easily add useful functionality to your Java Swing applications.<br/></html>";
+        String txt = "<html>This is a library of components and add-ons for Java Swing applications.<br>" +
+                "Applications built with swing-extras can quickly and easily incorporate<br>" +
+                "powerful functionality.</html>";
         introPanel.add(LabelField.createPlainHeaderLabel(txt, 14));
 
         txt = "<html>This demo application will show you just some of the many possibilities that this<br>" +
@@ -49,7 +48,6 @@ public class IntroPanel extends PanelBuilder {
         txt = "<html>swing-extras is licensed under the MIT license, which allows you to use it as you<br/>"
                 + "wish, provided the copyright notices remain intact.</html>";
         labelField = LabelField.createPlainHeaderLabel(txt, 14);
-        labelField.getMargins().setTop(14);
         introPanel.add(labelField);
 
         labelField = LabelField.createPlainHeaderLabel("Important links and references:", 14);
@@ -58,7 +56,7 @@ public class IntroPanel extends PanelBuilder {
 
         // We can use custom left margins to indent sub-fields like these.
         // We can also reduce the bottom margin to 0 to push the fields together vertically.
-        labelField = new LabelField("Source code:", Version.PROJECT_URL);
+        labelField = new LabelField("Project home:", Version.PROJECT_URL);
         Font labelFont = LabelField.getDefaultLabelFont().deriveFont(14f); // make it a bit bigger
         labelField.getFieldLabel().setFont(labelFont);
         labelField.setFont(labelFont);
@@ -74,17 +72,23 @@ public class IntroPanel extends PanelBuilder {
         addHyperlinkIfUrlIsValid(labelField, docUrl);
         introPanel.add(labelField);
 
-        final String javadocUrl = "http://www.corbett.ca/swing-extras-javadoc/";
+        final String javadocUrl = "http://www.corbett.ca/swing-extras-javadocs/";
         labelField = new LabelField("Javadocs:", javadocUrl);
         labelField.getFieldLabel().setFont(labelFont);
         labelField.setFont(labelFont);
-        labelField.getMargins().setLeft(48); // indent
+        labelField.getMargins().setLeft(48).setBottom(0); // indent and also group together vertically
         addHyperlinkIfUrlIsValid(labelField, javadocUrl);
+        introPanel.add(labelField);
+
+        labelField = new LabelField("Copyright:", "2012-2025 Steve Corbett");
+        labelField.getFieldLabel().setFont(labelFont);
+        labelField.setFont(labelFont);
+        labelField.getMargins().setLeft(48); // indent
         introPanel.add(labelField);
 
         // We can use LookAndFeelProperty to generate a FormField for us that we can use
         // to change the Look and Feel for the demo app. Wiring up this field is quite easy:
-        LookAndFeelProperty lafProperty = new LookAndFeelProperty("", "Change demo app look and feel:");
+        LookAndFeelProperty lafProperty = new LookAndFeelProperty("", "Change look and feel:");
         //noinspection unchecked
         final ComboField<String> lafCombo = (ComboField<String>)lafProperty.generateFormField();
         lafCombo.addValueChangedListener(field -> {
