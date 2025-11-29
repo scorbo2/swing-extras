@@ -5,9 +5,6 @@ import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.DownloadAdapter;
 import ca.corbett.extras.io.DownloadManager;
 import ca.corbett.extras.io.DownloadThread;
-import ca.corbett.extras.io.FileSystemUtil;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
 import javax.swing.JOptionPane;
@@ -90,8 +87,7 @@ public class UpdateManager {
      * invoke any of the retrieve methods!
      */
     public UpdateManager(File sourceFile) throws JsonSyntaxException, IOException {
-        Gson gson = new GsonBuilder().create();
-        this.updateSources = gson.fromJson(FileSystemUtil.readFileToString(sourceFile), UpdateSources.class);
+        this.updateSources = UpdateSources.fromFile(sourceFile);
         this.downloadManager = new DownloadManager();
     }
 
