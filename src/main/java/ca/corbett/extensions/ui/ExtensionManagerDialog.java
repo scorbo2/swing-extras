@@ -134,7 +134,8 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
     }
 
     public boolean isRestartRequired() {
-        return installedExtensionsPanel.isRestartRequired() || availableExtensionsPanel.isRestartRequired();
+        return (installedExtensionsPanel != null && installedExtensionsPanel.isRestartRequired())
+                || (availableExtensionsPanel != null && availableExtensionsPanel.isRestartRequired());
     }
 
     /**
