@@ -372,6 +372,9 @@ public class AvailableExtensionsPanel extends JPanel {
                             return false;
                         }
                     }
+                    else {
+                        log.info("Signature matches! The downloaded extension has a valid signature.");
+                    }
                 }
                 catch (Exception e) {
                     log.log(Level.SEVERE, "Problem verifying signature: " + e.getMessage(), e);
