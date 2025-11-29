@@ -4,7 +4,7 @@ import ca.corbett.extras.crypt.SignatureUtil;
 import ca.corbett.extras.io.FileSystemUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.JsonParseException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -75,9 +75,9 @@ class UpdateManagerTest {
         // WHEN we try to parse it:
         try {
             new UpdateManager(sourcesFile);
-            fail("Expected MalformedURLException but didn't get one!");
+            fail("Expected JsonParseException but didn't get one!");
         }
-        catch (JsonSyntaxException ignored) {
+        catch (JsonParseException ignored) {
         }
     }
 

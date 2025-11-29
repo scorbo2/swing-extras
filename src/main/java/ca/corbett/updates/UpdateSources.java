@@ -64,11 +64,17 @@ import java.util.logging.Logger;
 public class UpdateSources {
 
     private static final Logger log = Logger.getLogger(UpdateSources.class.getName());
-    private static final Gson gson = new GsonBuilder().create();
+    private static final Gson gson;
 
     private final String applicationName;
     private final List<UpdateSource> updateSources;
     private boolean isAllowSnapshots;
+
+    static {
+        gson = new GsonBuilder()
+                .registerTypeAdapter(URL.class, new UrlDeserializer())
+                .create();
+    }
 
     public UpdateSources(String applicationName) {
         this.applicationName = applicationName;

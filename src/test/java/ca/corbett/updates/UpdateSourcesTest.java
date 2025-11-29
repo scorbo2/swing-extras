@@ -4,6 +4,7 @@ import ca.corbett.extras.io.FileSystemUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -63,7 +64,7 @@ class UpdateSourcesTest {
     }
 
     @Test
-    public void fromJson_withVariableSubstitution_shouldSubstitute() throws Exception {
+    public void fromJsonUpdateSource_withVariableSubstitution_shouldSubstitute() throws Exception {
         // GIVEN UpdateSource json that includes a variable to substitute:
         System.setProperty("user.home", "/test/directory");
         final String testJson = """
@@ -73,13 +74,45 @@ class UpdateSourcesTest {
                 }
                 """;
 
-        // WHEN we parse it via UpdateSource.fromJson:
+        // WHEN we parse it via UpdateSources.UpdateSource.fromJson:
         UpdateSources.UpdateSource updateSource = UpdateSources.UpdateSource.fromJson(testJson);
 
         // THEN we should see it parsed okay and did the variable substitution:
         assertNotNull(updateSource);
         assertEquals("Test", updateSource.getName());
         assertEquals("file:/test/directory/hello", updateSource.getBaseUrl().toString());
+    }
+
+    @Test
+    public void fromJsonUpdateSources_withVariableSubstitution_shouldSubstitute() throws Exception {
+        // GIVEN UpdateSources json that includes a variable to substitute:
+        File tmpDir = Files.createTempDirectory("test").toFile();
+        File subDir = new File(tmpDir, "hello");
+        subDir.mkdir();
+        System.setProperty("user.home", tmpDir.getAbsolutePath());
+        final String testJson = """
+                {
+                  "applicationName": "TestApplication",
+                  "isAllowSnapshots": "true",
+                  "updateSources": [
+                    {
+                      "name": "filesystem",
+                      "baseUrl": "file:${user.home}/hello",
+                      "versionManifest": "version_manifest.json",
+                      "publicKey": "public.key"
+                    }
+                  ]
+                }
+                """;
+
+        // WHEN we parse it via UpdateSources.fromJson:
+        UpdateSources updateSources = UpdateSources.fromJson(testJson);
+
+        // THEN we should see it parsed okay and did the variable substitution:
+        assertNotNull(updateSources);
+        assertEquals(1, updateSources.getUpdateSources().size());
+        final String expected = "file:" + tmpDir.getAbsolutePath() + "/hello";
+        assertEquals(expected, updateSources.getUpdateSources().get(0).getBaseUrl().toString());
     }
 
     @Test
