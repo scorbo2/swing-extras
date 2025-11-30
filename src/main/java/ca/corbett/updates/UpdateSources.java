@@ -110,7 +110,11 @@ public class UpdateSources {
 
     /**
      * Invoked internally to automatically remove any local filesystem-based update source
-     * if the directory that it points to does not exist.
+     * if the directory that it points to does not exist. This allows applications to safely
+     * bundle update sources json referencing internal filesystem update sources - when run
+     * on an internal machine with access to that update source, it will be available in
+     * the ExtensionManagerDialog, and when run on any other machine, the filesystem source
+     * will be automatically pruned and hidden.
      */
     void pruneLocalSources() {
         // Walk backwards so we can remove as we go:

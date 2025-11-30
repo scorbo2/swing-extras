@@ -122,7 +122,7 @@ public class DownloadThread implements Runnable {
             // If we were given a file url, just do a local file copy and we're done:
             if ("file".equalsIgnoreCase(url.getProtocol())) {
                 File sourceFile = new File(url.toURI());
-                log.info("DownloadThread: copying local file "
+                log.fine("DownloadThread: copying local file "
                                  + sourceFile.getAbsolutePath()
                                  + " to "
                                  + targetDir.getAbsolutePath());
@@ -222,7 +222,7 @@ public class DownloadThread implements Runnable {
     }
 
     private void fireDownloadBegins() {
-        log.info("DownloadThread: beginning download: " + url.toString());
+        log.fine("DownloadThread: beginning download: " + url.toString());
         for (DownloadListener listener : new ArrayList<>(listeners)) {
             listener.downloadBegins(this, url);
         }
@@ -257,7 +257,7 @@ public class DownloadThread implements Runnable {
     }
 
     private void fireDownloadComplete(File targetFile) {
-        log.info("DownloadThread: downloaded "
+        log.fine("DownloadThread: downloaded "
                          + url.toString()
                          + " to local file "
                          + targetFile.getAbsolutePath());

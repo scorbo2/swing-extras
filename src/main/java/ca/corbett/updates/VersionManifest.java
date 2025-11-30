@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -164,6 +165,39 @@ public class VersionManifest {
     @Override
     public int hashCode() {
         return Objects.hash(applicationName, applicationVersions);
+    }
+
+    /**
+     * Returns the ApplicationVersion with the highest version number.
+     * Will return null if there are no ApplicationVersions here.
+     */
+    public ApplicationVersion findLatestApplicationVersion() {
+        if (applicationVersions.isEmpty()) {
+            return null;
+        }
+
+        return applicationVersions
+                .stream()
+                .max(Comparator.comparing(ApplicationVersion::getVersion, new VersionStringComparator()))
+                .orElse(null);
+    }
+
+    /**
+     * Given an Extension, find and return its highest ExtensionVersion.
+     * Will return null if there are no versions specified.
+     */
+    public static VersionManifest.ExtensionVersion findLatestExtVersion(VersionManifest.Extension extension) {
+        if (extension == null || extension.getVersions() == null || extension.getVersions().isEmpty()) {
+            return null;
+        }
+
+        // Stream all versions of this extension, sort them by version and find the highest one:
+        return extension
+                .getVersions()
+                .stream()
+                .filter(ev -> ev.getExtInfo() != null)
+                .max(Comparator.comparing(ev -> ev.getExtInfo().getVersion(), new VersionStringComparator()))
+                .orElse(null);
     }
 
     /**

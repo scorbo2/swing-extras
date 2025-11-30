@@ -75,10 +75,17 @@ public class UpdateManager {
      */
     public static final int APPLICATION_RESTART = 100;
 
+    /**
+     * Disable this to prevent the constructor from attempting to automatically
+     * download the version manifest.
+     */
+    public static boolean isAutoManifestDownloadEnabled = true;
+
     protected final UpdateSources updateSources;
     protected final List<UpdateManagerListener> listeners = new ArrayList<>();
     protected final List<ShutdownHook> shutdownHooks = new ArrayList<>();
     protected final DownloadManager downloadManager;
+    protected VersionManifest versionManifest;
 
     /**
      * Creates a new UpdateManager using the given update sources json file. If the file fails to parse,
@@ -87,8 +94,7 @@ public class UpdateManager {
      * invoke any of the retrieve methods!
      */
     public UpdateManager(File sourceFile) throws JsonSyntaxException, IOException {
-        this.updateSources = UpdateSources.fromFile(sourceFile);
-        this.downloadManager = new DownloadManager();
+        this(UpdateSources.fromFile(sourceFile));
     }
 
     /**
@@ -97,6 +103,17 @@ public class UpdateManager {
     public UpdateManager(UpdateSources sources) {
         this.updateSources = sources;
         this.downloadManager = new DownloadManager();
+        if (isAutoManifestDownloadEnabled) {
+            retrieveVersionManifestWithoutNotify();
+        }
+    }
+
+    /**
+     * UpdateManager will make an attempt to retrieve the VersionManifest when it is instantiated.
+     * If it succeeds, the manifest can be retrieved with this method. May return null.
+     */
+    public VersionManifest getVersionManifest() {
+        return versionManifest;
     }
 
     /**
@@ -156,6 +173,34 @@ public class UpdateManager {
      */
     public void retrieveVersionManifest(UpdateSources.UpdateSource updateSource) {
         downloadManager.downloadFile(updateSource.getVersionManifestUrl(), new VersionManifestDownloadListener());
+    }
+
+    /**
+     * Invoked internally to silently retrieve the VersionManifest, without notifying listeners of
+     * success or failure.
+     */
+    void retrieveVersionManifestWithoutNotify() {
+        if (updateSources == null || updateSources.getUpdateSources().isEmpty()) {
+            return;
+        }
+
+        // Grab the first local filesystem update source we have, if there is one:
+        UpdateSources.UpdateSource updateSource = null;
+        for (UpdateSources.UpdateSource source : updateSources.getUpdateSources()) {
+            if (source.isLocalSource()) {
+                updateSource = source;
+                break;
+            }
+        }
+
+        // If there isn't one, then just grab the first one in the list:
+        if (updateSource == null) {
+            updateSource = updateSources.getUpdateSources().get(0);
+        }
+
+        // Interrogate it for its manifest, but do it silently:
+        downloadManager.downloadFile(updateSource.getVersionManifestUrl(),
+                                     new VersionManifestDownloadListener(false));
     }
 
     /**
@@ -437,9 +482,23 @@ public class UpdateManager {
      */
     protected class VersionManifestDownloadListener extends DownloadAdapter {
 
+        private final boolean notifyListeners;
+
+        public VersionManifestDownloadListener() {
+            this(true);
+        }
+
+        public VersionManifestDownloadListener(boolean notifyListeners) {
+            this.notifyListeners = notifyListeners;
+        }
+
         @Override
         public void downloadFailed(DownloadThread thread, URL url, String errorMsg) {
-            fireDownloadFailed(url, "Unable to retrieve version manifest: " + errorMsg);
+            String logMsg = "Unable to retrieve version manifest: " + errorMsg;
+            log.warning(logMsg);
+            if (notifyListeners) {
+                fireDownloadFailed(url, logMsg);
+            }
         }
 
         @Override
@@ -450,8 +509,10 @@ public class UpdateManager {
             }
 
             try {
-                VersionManifest manifest = VersionManifest.fromFile(result);
-                fireVersionManifestDownloaded(url, manifest);
+                versionManifest = VersionManifest.fromFile(result);
+                if (notifyListeners) {
+                    fireVersionManifestDownloaded(url, versionManifest);
+                }
             }
             catch (IOException ioe) {
                 downloadFailed(thread, url, "Problem parsing manifest: " + ioe.getMessage());

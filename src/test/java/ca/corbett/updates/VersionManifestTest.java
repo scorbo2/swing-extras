@@ -67,4 +67,90 @@ class VersionManifestTest {
                       .getScreenshots().get(0));
     }
 
+    @Test
+    public void findLatestExtVersion_shouldFindHighestVersion() throws Exception {
+        // GIVEN a manifest with an extension with two versions:
+        final String manifestJson = """
+                {
+                  "manifestGenerated": "2025-11-30T05:12:44.276439348Z",
+                  "applicationName": "Test",
+                  "applicationVersions": [
+                    {
+                      "version": "1.0",
+                      "extensions": [
+                        {
+                          "name": "ExtensionTest",
+                          "versions": [
+                            {
+                              "extInfo": {
+                                "name": "ExtensionTest",
+                                "version": "1.0",
+                                "targetAppName": "Test",
+                                "targetAppVersion": "1.0"
+                              },
+                              "downloadPath": "extensions/1.0/Test-1.0.jar",
+                              "signaturePath": "extensions/1.0/Test-1.0.sig",
+                              "screenshots": []
+                            },
+                            {
+                              "extInfo": {
+                                "name": "ExtensionTest",
+                                "version": "1.6",
+                                "targetAppName": "Test",
+                                "targetAppVersion": "1.0"
+                              },
+                              "downloadPath": "extensions/1.0/Test-1.6.jar",
+                              "signaturePath": "extensions/1.0/Test-1.6.sig",
+                              "screenshots": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+                """;
+        VersionManifest manifest = VersionManifest.fromJson(manifestJson);
+
+        // WHEN we ask it for the latest version:
+        VersionManifest.Extension extension = manifest.getApplicationVersions().get(0).getExtensions().get(0);
+        VersionManifest.ExtensionVersion extVersion = VersionManifest.findLatestExtVersion(extension);
+
+        // THEN we should see the highest version:
+        assertNotNull(extVersion);
+        assertEquals("1.6", extVersion.getExtInfo().getVersion());
+    }
+
+    @Test
+    public void findLatestApplicationVersion_shouldFindLatestVersion() throws Exception {
+        // GIVEN a manifest with multiple application versions:
+        final String manifestJson = """
+                {
+                  "manifestGenerated": "2025-11-30T05:12:44.276439348Z",
+                  "applicationName": "Test",
+                  "applicationVersions": [
+                    {
+                      "version": "1.0",
+                      "extensions": [ ]
+                    },
+                    {
+                      "version": "9.9",
+                      "extensions": [ ]
+                    },
+                    {
+                      "version": "0.1alpha",
+                      "extensions": [ ]
+                    }
+                  ]
+                }
+                """;
+        VersionManifest manifest = VersionManifest.fromJson(manifestJson);
+
+        // WHEN we ask for the highest app version:
+        VersionManifest.ApplicationVersion appVersion = manifest.findLatestApplicationVersion();
+
+        // THEN we should see the highest one:
+        assertNotNull(appVersion);
+        assertEquals("9.9", appVersion.getVersion());
+    }
 }

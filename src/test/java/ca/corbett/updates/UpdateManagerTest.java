@@ -5,6 +5,7 @@ import ca.corbett.extras.io.FileSystemUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -18,6 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class UpdateManagerTest {
+
+    @BeforeAll
+    public static void setup() {
+        // Disable the auto-download of version manifest for testing:
+        UpdateManager.isAutoManifestDownloadEnabled = false;
+    }
 
     @Test
     public void newUpdateManager_withValidJson_shouldParse() throws Exception {

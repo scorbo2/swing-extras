@@ -136,7 +136,7 @@ public class AvailableExtensionsPanel extends JPanel {
         detailsPanel.removeAll();
         final ExtensionPlaceholder placeholder = extensionListPanel.getSelected();
         final VersionManifest.ExtensionVersion latestVersion =
-                placeholder == null ? null : findLatestExtVersion(placeholder.getExtension());
+                placeholder == null ? null : VersionManifest.findLatestExtVersion(placeholder.getExtension());
         if (placeholder == null || latestVersion == null) {
             headerPanel.add(new ExtensionTitleBar(null));
             detailsPanel.add(emptyPanel);
@@ -182,20 +182,6 @@ public class AvailableExtensionsPanel extends JPanel {
         detailsPanel.add(extPanel);
         contentPanel.revalidate();
         contentPanel.repaint();
-    }
-
-    protected VersionManifest.ExtensionVersion findLatestExtVersion(VersionManifest.Extension extension) {
-        if (extension == null || extension.getVersions() == null || extension.getVersions().isEmpty()) {
-            return null;
-        }
-
-        // Stream all versions of this extension, sort them by version and find the highest one:
-        return extension
-                .getVersions()
-                .stream()
-                .filter(ev -> ev.getExtInfo() != null)
-                .max(Comparator.comparing(ev -> ev.getExtInfo().getVersion(), new VersionStringComparator()))
-                .orElse(null);
     }
 
     protected void refreshList() {
@@ -509,7 +495,7 @@ public class AvailableExtensionsPanel extends JPanel {
             progressDialog.setInitialShowDelayMS(500);
             final ExtensionDownloadThread workerThread = new ExtensionDownloadThread(downloadManager,
                                                                                      currentUpdateSource,
-                                                                                     findLatestExtVersion(
+                                                                                     VersionManifest.findLatestExtVersion(
                                                                                              extension.getExtension()));
             workerThread.setDownloadOptions(ExtensionDownloadThread.Options.JarAndSignature);
             workerThread.addProgressListener(new SimpleProgressAdapter() {
@@ -522,7 +508,8 @@ public class AvailableExtensionsPanel extends JPanel {
                     }
                     SwingUtilities.invokeLater(() -> {
                         if (extensionInstallCallback(workerThread.getDownloadedExtension())) {
-                            VersionManifest.ExtensionVersion latestVersion = findLatestExtVersion(extension.extension);
+                            VersionManifest.ExtensionVersion latestVersion = VersionManifest
+                                    .findLatestExtVersion(extension.extension);
                             String version = latestVersion == null
                                     ? "(latest)"
                                     : latestVersion.getExtInfo().getVersion();
@@ -565,7 +552,8 @@ public class AvailableExtensionsPanel extends JPanel {
                 return;
             }
             final File jarFile = extensionManager.findExtensionJarByExtensionName(extension.extension.getName());
-            VersionManifest.ExtensionVersion latestVersion = findLatestExtVersion(extension.getExtension());
+            VersionManifest.ExtensionVersion latestVersion = VersionManifest
+                    .findLatestExtVersion(extension.getExtension());
             String latestVersionStr = latestVersion == null ? "(latest)" : latestVersion.getExtInfo().getVersion();
             if (jarFile == null) {
                 getMessageUtil().info("The extension \"" + extension.getExtension().getName()
