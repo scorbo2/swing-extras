@@ -266,7 +266,9 @@ public class ImageListPanel extends JPanel {
         imagePanel.setPreferredSize(new Dimension(thumbSize, thumbSize));
         imagePanel.setExtraAttribute("originalImage", imageIcon != null ? imageIcon : image);
         imagePanel.setExtraAttribute("listIndex", getImageCount());
-        imagePanel.setPopupMenu(buildPopupMenu(imagePanel));
+        if (!isReadOnly) {
+            imagePanel.setPopupMenu(buildPopupMenu(imagePanel));
+        }
         imagePanel.addMouseListener(buildMouseListener(imagePanel));
         imagePanel.addMouseMotionListener(buildMouseMotionListener(imagePanel));
 
