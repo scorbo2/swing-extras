@@ -1,7 +1,7 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
-Version 2.5.0 [TODO release date] - TODO description
+Version 2.5.0 [2025-12-01] - Dynamic extension discovery
   #171 - UpdateSources: prune local sources automatically
   #170 - UpdateSources: allow variable substitution
   #169 - ImageListPanel wasn't handling isReadOnly properly
@@ -172,7 +172,7 @@ Version 1.9.1 [2025-03-26]
   #1 - Change ConfigObject from abstract class to interface
 
 Version 1.9 [2025-03-09]
-  - Project moved to github
+  - Project moved to GitHub
 
 Version 1.8 [2024-12-30] - ExtensionManager/PropertiesManager/EMS
   [UTIL-141] - NumberField(String, SpinnerModel) should be public
@@ -250,7 +250,7 @@ Version 1.6 [2022-05-10] - Properties, progress, gradients, and more
   [UTIL-97] - Make better use of unit testing
   [UTIL-98] - Create FileBasedProperties
   [UTIL-99] - AudioUtil needs a way to limit size of waveform images
-  [UTIL-100] - Add progress handling utiltiies
+  [UTIL-100] - Add progress handling utilities
   [UTIL-101] - MessageUtil should allow warnings
   [UTIL-102] - AboutPanel custom fields should be updateable
   [UTIL-103] - More intelligent color property loading
@@ -323,7 +323,7 @@ Version 1.4 [2020-10-07] - Maintenance release
   [UTIL-70] - TextField should be expandable if multi-line
   [UTIL-71] - FormField.addFieldValidator should reject duplicates
 
-Version 1.3 [2019-11-07] - Mainenance release
+Version 1.3 [2019-11-07] - Maintenance release
   [UTIL-36] - YMDDate needs a copy constructor
   [UTIL-37] - Add AboutDialog and AboutPanel as generic components
   [UTIL-38] - Add ModelObject and DAO base classes
@@ -366,7 +366,7 @@ Version 1.0 [2018-01-02] - Initial version
   [UTIL-12] - ImagePanel is stealing mouse wheel events
   [UTIL-13] - ImagePanel: add a map of configurable properties
   [UTIL-14] - DirTree is sorting directory names stupidly
-  [UTIL-15] - ImagePanel not resizing the image propertly
+  [UTIL-15] - ImagePanel not resizing the image properly
   [UTIL-16] - DirTree needs a "reload"
   [UTIL-17] - ImagePanel auto best fit is wonky sometimes
   [UTIL-18] - FileSystemUtil default sort file is wrong
