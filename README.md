@@ -12,6 +12,23 @@ You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
 - The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
 
+## NEWS! December 1, 2025 - swing-extras 2.5 release is here!
+
+The 2.5 release of swing-extras is HUGE, and contains not only some new form fields and properties, but
+also a major addition to app-extensions: the ability for applications built with swing-extras to
+allow dynamic discovery, download, installation, and updating of application extensions! Check out
+the new `UpdateManager` class and also the [ext-packager](https://github.com/scorbo2/ext-packager) 
+project for details on how to set this up!
+
+Other notable additions in swing-extras 2.5:
+- new FormField: SliderField
+- new FormField: CollapsiblePanelField
+- new FormField: ImageListField
+- much cleaner demo application with code snippets!
+
+There are also numerous bug fixes and minor improvements throughout the library in this release.
+Refer to the [release notes](src/main/resources/swing-extras/releaseNotes.txt) for a complete list.
+
 ## How do I get it?
 
 `swing-extras` is available in Maven Central, so you can simply list it as a dependency:
