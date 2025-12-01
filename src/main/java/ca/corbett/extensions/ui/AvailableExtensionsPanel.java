@@ -463,7 +463,7 @@ public class AvailableExtensionsPanel extends JPanel {
 
             try {
                 VersionManifest manifest = VersionManifest.fromFile(result);
-                setVersionManifest(manifest);
+                SwingUtilities.invokeLater(() -> setVersionManifest(manifest));
             }
             catch (IOException ioe) {
                 downloadFailed(thread, url, "Problem parsing manifest: " + ioe.getMessage());
