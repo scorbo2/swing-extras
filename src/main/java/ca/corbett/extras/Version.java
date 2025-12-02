@@ -29,6 +29,6 @@ public final class Version {
         aboutInfo.projectUrl = PROJECT_URL;
         aboutInfo.logoImageLocation = "/swing-extras/images/swing-extras-logo.jpg";
         aboutInfo.applicationName = Version.NAME;
-        aboutInfo.applicationVersion = Version.VERSION + "-SNAPSHOT";
+        aboutInfo.applicationVersion = Version.VERSION;
     }
 }
