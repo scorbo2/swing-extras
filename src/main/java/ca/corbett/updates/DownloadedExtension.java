@@ -3,6 +3,7 @@ package ca.corbett.updates;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Used internally when retrieving a remote extension to store all associated
@@ -16,7 +17,7 @@ public class DownloadedExtension {
 
     private File jarFile;
     private File signatureFile;
-    private final List<File> screenshots = new ArrayList<>();
+    private final List<File> screenshots = new CopyOnWriteArrayList<>();
 
     public File getJarFile() {
         return jarFile;

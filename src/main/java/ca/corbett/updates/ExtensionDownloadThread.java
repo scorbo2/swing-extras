@@ -58,6 +58,8 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
 
     private final static Logger log = Logger.getLogger(ExtensionDownloadThread.class.getName());
 
+    private final Object downloadLock = new Object();
+
     public enum Options {
         JarOnly,
         JarAndSignature,
@@ -246,13 +248,15 @@ public class ExtensionDownloadThread extends SimpleProgressWorker {
 
         @Override
         public void downloadComplete(DownloadThread thread, URL url, File result) {
-            downloadedExtension.addScreenshot(result);
-            int remaining = downloadRemaining.decrementAndGet();
-            if (remaining == 0) {
-                fireProgressComplete();
-            }
-            else {
-                fireProgressUpdate(downloadTotal - remaining, "Downloaded screenshot...");
+            synchronized(downloadLock) {
+                downloadedExtension.addScreenshot(result);
+                int remaining = downloadRemaining.decrementAndGet();
+                if (remaining == 0) {
+                    fireProgressComplete();
+                }
+                else {
+                    fireProgressUpdate(downloadTotal - remaining, "Downloaded screenshot...");
+                }
             }
         }
     }
