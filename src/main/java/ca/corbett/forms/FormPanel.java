@@ -49,7 +49,7 @@ public final class FormPanel extends JPanel {
 
     private final List<FormField> formFields = new ArrayList<>();
     private Alignment alignment;
-    private int borderMargin = 0;
+    private final Margins formPanelMargins = new Margins(0);
     private boolean renderInProgress = false;
 
     /**
@@ -67,24 +67,43 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * An optional pixel margin that will be applied to FormFields as necessary to keep them
-     * away from the form border. The default value is zero, meaning no extra margins will
+     * An optional pixel margin for the FormPanel itself to keep it away from the edges
+     * of its container. The default value is zero, meaning no extra margins will
      * be applied. Note that any value given here is added to whatever margins are already present on
-     * each FormField. This value does not replace those values. So, you can still indent
-     * a FormField from the others by setting its left margin on a left-aligned form, for example.
+     * each individual FormField. This value does not replace those values. So, you can still indent
+     * a FormField from the others by setting its left margin on a left-aligned form, even if the
+     * FormPanel itself already specifies a left margin. The two values are added together in that case.
      *
-     * @param margin The margin, in pixels, to apply to FormFields as needed. Negative values are treated as 0.
+     * @param margin The margin, in pixels, to apply to the FormPanel. Negative values are treated as 0.
      */
     public FormPanel setBorderMargin(int margin) {
-        borderMargin = Math.max(0, margin); // Convert negative values to 0
+        formPanelMargins.setAll(margin);
+        return this;
+    }
+
+    /**
+     * Sets optional pixel margins for the FormPanel itself to keep it away from the edges
+     * of its container. The default value is zero, meaning no extra margins will
+     * be applied. Note that any value given here is added to whatever margins are already present on
+     * each individual FormField. This value does not replace those values. So, you can still indent
+     * a FormField from the others by setting its left margin on a left-aligned form, even if the
+     * FormPanel itself already specifies a left margin. The two values are added together in that case.
+     * <p>
+     * <b>Note:</b> the Margins class defines an internalSpacing property. That property is ignored
+     * for FormPanel margin calculations. We only care about top, left, bottom, and right.
+     * </p>
+     */
+    public FormPanel setBorderMargin(Margins margins) {
+        formPanelMargins.copy(margins);
         return this;
     }
 
     /**
      * Returns the optional border margin to be applied as described in setBorderMargin.
+     * The actual instance is returned, so callers can modify individual properties.
      */
-    public int getBorderMargin() {
-        return borderMargin;
+    public Margins getBorderMargin() {
+        return formPanelMargins;
     }
 
     /**
@@ -134,6 +153,20 @@ public final class FormPanel extends JPanel {
         super.removeAll();
         if (!renderInProgress) {
             removeAllFormFields(); // don't invoke if this call came from our own render() method, else infinite loop
+        }
+    }
+
+    /**
+     * Overridden here so we can enable/disable all FormField instances when
+     * we receive a setEnabled request.
+     *
+     * @param enabled true if this component should be enabled, false otherwise
+     */
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        for (FormField field : formFields) {
+            field.setEnabled(enabled);
         }
     }
 
@@ -438,20 +471,15 @@ public final class FormPanel extends JPanel {
         FormField field = formFields.get(fieldIndex);
         Margins margins = new Margins(field.getMargins());
 
-        // If there is no border margin to add, we are done here:
-        if (borderMargin == 0) {
-            return margins;
-        }
-
         if (fieldIndex == 0) {
-            margins.setTop(margins.getTop() + borderMargin);
+            margins.setTop(margins.getTop() + formPanelMargins.getTop());
         }
 
-        margins.setLeft(margins.getLeft() + borderMargin);
-        margins.setRight(margins.getRight() + borderMargin);
+        margins.setLeft(margins.getLeft() + formPanelMargins.getLeft());
+        margins.setRight(margins.getRight() + formPanelMargins.getRight());
 
         if (fieldIndex == formFields.size() - 1) {
-            margins.setBottom(margins.getBottom() + borderMargin);
+            margins.setBottom(margins.getBottom() + formPanelMargins.getBottom());
         }
 
         return margins;

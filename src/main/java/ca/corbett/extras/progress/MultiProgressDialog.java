@@ -12,10 +12,12 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -24,6 +26,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Replacement for ProgressMonitor, which is a bit limiting.
@@ -64,40 +68,25 @@ public final class MultiProgressDialog extends JDialog {
     private LabelField minorProgressLabel;
     private JProgressBar majorProgressBar;
     private JProgressBar minorProgressBar;
+    private long initialShowDelayMS;
     private boolean isCanceled;
 
     /**
-     * Creates a new, blank MultiProgressDialog with the specified owner frame
+     * Creates a new, blank MultiProgressDialog with the specified owner window
      * and window title. Closing the progress dialog will act the same
      * as though the cancel button had been clicked. Call isCanceled()
      * at any time to see if the operation should continue or not (that is,
      * if the user has clicked the cancel button on the progress dialog).
      *
-     * @param owner The JFrame that will own this MultiProgressDialog
+     * @param owner The Window that will own this MultiProgressDialog
      * @param title The window title
      */
-    public MultiProgressDialog(JFrame owner, String title) {
+    public MultiProgressDialog(Window owner, String title) {
         super(owner, title);
         initComponents();
         resetProgress();
         setLocationRelativeTo(owner);
-    }
-
-    /**
-     * Creates a new, blank MultiProgressDialog with the specified owner dialog
-     * and window title. Closing the progress dialog will act the same
-     * as though the cancel button had been clicked. Call isCanceled()
-     * at any time to see if the operation should continue or not (that is,
-     * if the user has clicked the cancel button on the progress dialog).
-     *
-     * @param owner The JDialog that will own this MultiProgressDialog
-     * @param title The window title
-     */
-    public MultiProgressDialog(JDialog owner, String title) {
-        super(owner, title);
-        initComponents();
-        resetProgress();
-        setLocationRelativeTo(owner);
+        initialShowDelayMS = 0;
     }
 
     /**
@@ -111,6 +100,27 @@ public final class MultiProgressDialog extends JDialog {
         setMajorProgressBounds(0, 100);
         setMinorProgressBounds(0, 100);
         isCanceled = false;
+    }
+
+    /**
+     * Returns the optional delay time, in milliseconds, between the time when the work
+     * begins and the time when the progress dialog is made visible. The default value
+     * is 0, meaning the dialog will appear as soon as the work begins.
+     */
+    public long getInitialShowDelayMS() {
+        return initialShowDelayMS;
+    }
+
+    /**
+     * Sets an optional delay time, in milliseconds, between the time when the work starts
+     * and the time when the dialog will make itself visible. The default value is 0, which
+     * means the dialog will appear as soon as the work begins. But you can set this to
+     * avoid showing a dialog for very short-running tasks. For example, setting this value
+     * to 2000 will prevent the dialog from showing if the work to be executed completes in
+     * less than 2 seconds.
+     */
+    public void setInitialShowDelayMS(long initialShowDelayMS) {
+        this.initialShowDelayMS = initialShowDelayMS;
     }
 
     /**
@@ -129,61 +139,13 @@ public final class MultiProgressDialog extends JDialog {
      *                             hides the dialog.
      */
     public void runWorker(final MultiProgressWorker worker, final boolean disposeWhenComplete) {
-        final MultiProgressDialog progressDialog = this;
         minorProgressLabel.setVisible(true);
         minorProgressBar.setVisible(true);
         setSize(new Dimension(500, 210));
-        final MultiProgressListener listener = new MultiProgressAdapter() {
-            private int totalMajorSteps;
-            private int totalMinorSteps;
-
-            @Override
-            public void progressBegins(int totalMajorSteps) {
-                this.totalMajorSteps = totalMajorSteps;
-                progressDialog.setMajorProgressBounds(0, totalMajorSteps);
-                progressDialog.setVisible(true);
-            }
-
-            @Override
-            public boolean majorProgressUpdate(int majorStep, int totalMinorSteps, String message) {
-                this.totalMinorSteps = totalMinorSteps;
-                progressDialog.setMinorProgressBounds(0, totalMinorSteps);
-                progressDialog.setMajorProgress(majorStep + 1,
-                                                message + " (" + (majorStep + 1) + " of " + totalMajorSteps + ")");
-                progressDialog.setMinorProgress(0, "");
-                return !isCanceled;
-            }
-
-            @Override
-            public boolean minorProgressUpdate(int majorStep, int minorStep, String message) {
-                progressDialog.setMinorProgress(minorStep + 1,
-                                                message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
-                return !isCanceled;
-            }
-
-            @Override
-            public void progressComplete() {
-                if (disposeWhenComplete) {
-                    progressDialog.dispose();
-                }
-                else {
-                    progressDialog.setVisible(false);
-                }
-            }
-
-            @Override
-            public void progressCanceled() {
-                if (disposeWhenComplete) {
-                    progressDialog.dispose();
-                }
-                else {
-                    progressDialog.setVisible(false);
-                }
-            }
-
-        };
-
-        worker.addProgressListener(listener);
+        // Use a priority listener to make sure we get notified first...
+        // otherwise, the timer on the dialog may force it visible even if some other handler is showing a popup
+        // Our listener will kill the timer, which avoids that problem as long as our listener is invoked first.
+        worker.addPriorityProgressListener(new MultiProgressHandler(this, initialShowDelayMS, disposeWhenComplete));
         new Thread(worker).start();
     }
 
@@ -202,51 +164,13 @@ public final class MultiProgressDialog extends JDialog {
      *                             hides the dialog.
      */
     public void runWorker(final SimpleProgressWorker worker, final boolean disposeWhenComplete) {
-        final MultiProgressDialog progressDialog = this;
         minorProgressLabel.setVisible(false);
         minorProgressBar.setVisible(false);
         setSize(new Dimension(500, 160));
-        final SimpleProgressListener listener = new SimpleProgressAdapter() {
-            private int totalSteps;
-
-            @Override
-            public void progressBegins(int totalSteps) {
-                this.totalSteps = totalSteps;
-                progressDialog.setMajorProgressBounds(0, totalSteps);
-                progressDialog.setVisible(true);
-            }
-
-            @Override
-            public boolean progressUpdate(int currentStep, String message) {
-                progressDialog.setMajorProgress(currentStep + 1,
-                                                message + " (" + (currentStep + 1) + " of " + totalSteps + ")");
-                progressDialog.setMinorProgress(0, "");
-                return !isCanceled;
-            }
-
-            @Override
-            public void progressComplete() {
-                if (disposeWhenComplete) {
-                    progressDialog.dispose();
-                }
-                else {
-                    progressDialog.setVisible(false);
-                }
-            }
-
-            @Override
-            public void progressCanceled() {
-                if (disposeWhenComplete) {
-                    progressDialog.dispose();
-                }
-                else {
-                    progressDialog.setVisible(false);
-                }
-            }
-
-        };
-
-        worker.addProgressListener(listener);
+        // Use a priority listener to make sure we get notified first...
+        // otherwise, the timer on the dialog may force it visible even if some other handler is showing a popup
+        // Our listener will kill the timer, which avoids that problem as long as our listener is invoked first.
+        worker.addPriorityProgressListener(new SimpleProgressHandler(this, initialShowDelayMS, disposeWhenComplete));
         new Thread(worker).start();
     }
 
@@ -356,25 +280,23 @@ public final class MultiProgressDialog extends JDialog {
         setSize(new Dimension(500, 210));
         setResizable(false);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        final JButton cancelButton = new JButton("Cancel");
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 isCanceled = true;
+                cancelButton.setEnabled(false);
             }
-
         });
 
         addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent e) {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_ESCAPE: {
-                        isCanceled = true;
-                    }
-                    break;
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    isCanceled = true;
+                    cancelButton.setEnabled(false);
                 }
             }
-
         });
 
         setLayout(new BorderLayout());
@@ -387,7 +309,6 @@ public final class MultiProgressDialog extends JDialog {
         majorProgressBar = new JProgressBar();
         majorProgressBar.setPreferredSize(new Dimension(450, 20));
         majorProgressBar.setStringPainted(true);
-        //majorProgressBar.setForeground(Color.BLUE);
         PanelField panelField = new PanelField();
         panelField.getMargins().setAll(0);
         panelField.getPanel().setLayout(new BorderLayout());
@@ -414,23 +335,209 @@ public final class MultiProgressDialog extends JDialog {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-
-        final JButton button = new JButton("Cancel");
-        button.setPreferredSize(new Dimension(90, 23));
-        button.setFocusable(false);
-        buttonPanel.add(button);
-
+        cancelButton.setPreferredSize(new Dimension(90, 23));
+        cancelButton.setFocusable(false);
+        buttonPanel.add(cancelButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        button.addActionListener(new ActionListener() {
+        cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                button.setEnabled(false);
+                cancelButton.setEnabled(false);
                 isCanceled = true;
             }
-
         });
-
     }
 
+    /**
+     * Used internally to wire up a MultiProgressWorker to the UI elements in this progress
+     * dialog, so that we can show current progress.
+     */
+    private static class MultiProgressHandler extends MultiProgressAdapter {
+
+        private final MultiProgressDialog progressDialog;
+        private final long initialShowDelayMS;
+        private final boolean disposeWhenComplete;
+        private long startTimeMS;
+        private int totalMajorSteps;
+        private int totalMinorSteps;
+        private boolean isFinished;
+
+        public MultiProgressHandler(MultiProgressDialog ownerDialog, long initialShowDelay, boolean disposeWhenComplete) {
+            this.progressDialog = ownerDialog;
+            this.initialShowDelayMS = initialShowDelay;
+            this.disposeWhenComplete = disposeWhenComplete;
+        }
+
+        private long getElapsedTime() {
+            return System.currentTimeMillis() - startTimeMS;
+        }
+
+        private void showDialogIfNeeded() {
+            if (progressDialog.isVisible() || isFinished) {
+                return;
+            }
+            if (initialShowDelayMS <= 0 || getElapsedTime() > initialShowDelayMS) {
+                progressDialog.setVisible(true);
+            }
+        }
+
+        @Override
+        public void progressBegins(int totalMajorSteps) {
+            this.startTimeMS = System.currentTimeMillis();
+            this.totalMajorSteps = totalMajorSteps;
+            SwingUtilities.invokeLater(() -> {
+                progressDialog.setMajorProgressBounds(0, totalMajorSteps);
+                showDialogIfNeeded();
+            });
+            if (initialShowDelayMS > 0) {
+                // We'll check this on each progress update, but if there's a very
+                // long-running step, we still want to show the progress dialog after our configured delay:
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        SwingUtilities.invokeLater(() -> showDialogIfNeeded());
+                    }
+                }, initialShowDelayMS);
+            }
+        }
+
+        @Override
+        public boolean majorProgressUpdate(int majorStep, int totalMinorSteps, String message) {
+            this.totalMinorSteps = totalMinorSteps;
+            SwingUtilities.invokeLater(() -> {
+                showDialogIfNeeded();
+                progressDialog.setMinorProgressBounds(0, totalMinorSteps);
+                progressDialog.setMajorProgress(majorStep + 1,
+                                                message + " (" + (majorStep + 1) + " of " + totalMajorSteps + ")");
+                progressDialog.setMinorProgress(0, "");
+            });
+            return !progressDialog.isCanceled();
+        }
+
+        @Override
+        public boolean minorProgressUpdate(int majorStep, int minorStep, String message) {
+            SwingUtilities.invokeLater(() -> {
+                showDialogIfNeeded();
+                progressDialog.setMinorProgress(minorStep + 1,
+                                                message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
+            });
+            return !progressDialog.isCanceled();
+        }
+
+        @Override
+        public void progressComplete() {
+            isFinished = true;
+            SwingUtilities.invokeLater(() -> {
+                if (disposeWhenComplete) {
+                    progressDialog.dispose();
+                }
+                else {
+                    progressDialog.setVisible(false);
+                }
+            });
+        }
+
+        @Override
+        public void progressCanceled() {
+            isFinished = true;
+            SwingUtilities.invokeLater(() -> {
+                if (disposeWhenComplete) {
+                    progressDialog.dispose();
+                }
+                else {
+                    progressDialog.setVisible(false);
+                }
+            });
+        }
+    }
+
+    /**
+     * Used internally to wire up a SimpleProgressWorker to the UI elements in this progress
+     * dialog, so we can show current progress.
+     */
+    private static class SimpleProgressHandler extends SimpleProgressAdapter {
+        private final MultiProgressDialog progressDialog;
+        private final long initialShowDelayMS;
+        private final boolean disposeWhenComplete;
+        private long startTimeMS;
+        private int totalSteps;
+        private boolean isFinished;
+
+        public SimpleProgressHandler(MultiProgressDialog ownerDialog, long initialShowDelay, boolean disposeWhenComplete) {
+            this.progressDialog = ownerDialog;
+            this.initialShowDelayMS = initialShowDelay;
+            this.disposeWhenComplete = disposeWhenComplete;
+        }
+
+        private long getElapsedTime() {
+            return System.currentTimeMillis() - startTimeMS;
+        }
+
+        private void showDialogIfNeeded() {
+            if (progressDialog.isVisible() || isFinished) {
+                return;
+            }
+            if (initialShowDelayMS <= 0 || getElapsedTime() > initialShowDelayMS) {
+                progressDialog.setVisible(true);
+            }
+        }
+
+        @Override
+        public void progressBegins(int totalSteps) {
+            this.totalSteps = totalSteps;
+            this.startTimeMS = System.currentTimeMillis();
+            SwingUtilities.invokeLater(() -> {
+                progressDialog.setMajorProgressBounds(0, totalSteps);
+                showDialogIfNeeded();
+            });
+            if (initialShowDelayMS > 0) {
+                // We'll check this on each progress update, but if there's a very
+                // long-running step, we still want to show the progress dialog after our configured delay:
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        SwingUtilities.invokeLater(() -> showDialogIfNeeded());
+                    }
+                }, initialShowDelayMS);
+            }
+        }
+
+        @Override
+        public boolean progressUpdate(int currentStep, String message) {
+            SwingUtilities.invokeLater(() -> {
+                showDialogIfNeeded();
+                progressDialog.setMajorProgress(currentStep + 1,
+                                                message + " (" + (currentStep + 1) + " of " + totalSteps + ")");
+                progressDialog.setMinorProgress(0, "");
+            });
+            return !progressDialog.isCanceled();
+        }
+
+        @Override
+        public void progressComplete() {
+            isFinished = true;
+            SwingUtilities.invokeLater(() -> {
+                if (disposeWhenComplete) {
+                    progressDialog.dispose();
+                }
+                else {
+                    progressDialog.setVisible(false);
+                }
+            });
+        }
+
+        @Override
+        public void progressCanceled() {
+            isFinished = true;
+            SwingUtilities.invokeLater(() -> {
+                if (disposeWhenComplete) {
+                    progressDialog.dispose();
+                }
+                else {
+                    progressDialog.setVisible(false);
+                }
+            });
+        }
+    }
 }

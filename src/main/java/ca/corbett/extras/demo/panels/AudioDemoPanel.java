@@ -50,7 +50,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
 
     private MessageUtil messageUtil;
     private final JFileChooser fileChooser;
-    private JComboBox audioSourceCombo;
+    private JComboBox<String> audioSourceCombo;
     private JLabel audioFileLabel;
     private JTextField audioFileTextField;
     private JButton audioFileButton;
@@ -59,12 +59,8 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
     private File recordedAudioFile;
     private final WaveformConfig wavePrefs;
     private WaveformConfigField waveformConfigField;
-    private WaveformPanelFormField audioPanelPrefsPanel;
     private final JLabel waveformLabel;
     private JPanel panel;
-
-    private static final int DEFAULT_XSCALE = 512;
-    private static final int DEFAULT_YSCALE = 64;
 
     private AudioWaveformPanel waveformPanel;
 
@@ -79,8 +75,12 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
 
         try {
             InputStream inStream = getClass().getResourceAsStream("/swing-extras/audio/motorcycle-startup.wav");
+            if (inStream == null) {
+                throw new IOException("Problem loading motorcycle-startup.wav from resources.");
+            }
             BufferedInputStream buf = new BufferedInputStream(inStream);
             exampleAudioFile = File.createTempFile("audio_", "_example.wav");
+            exampleAudioFile.deleteOnExit();
             BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(exampleAudioFile));
             buf.transferTo(out);
             buf.close();
@@ -108,20 +108,8 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         waveformPanel.addAudioPanelListener(this);
         waveformPanel.setWaveformPreferences(wavePrefs);
 
-        String s = "Audio panel preferences";
-        audioPanelPrefsPanel = new WaveformPanelFormField(s);
-        audioPanelPrefsPanel.setControlType(waveformPanel.getControlType());
-        audioPanelPrefsPanel.setControlSize(waveformPanel.getControlPanelSize());
-        audioPanelPrefsPanel.setControlPosition(waveformPanel.getControlPanelPosition());
-        audioPanelPrefsPanel.addValueChangedListener(new ValueChangedListener() {
-            @Override
-            public void formFieldValueChanged(FormField field) {
-                WaveformPanelFormField formField = (WaveformPanelFormField)field;
-                waveformPanel.setControlType(formField.getControlType());
-                waveformPanel.setControlPanelSize(formField.getControlSize());
-                waveformPanel.setControlPanelPosition(formField.getControlPosition());
-            }
-        });
+        // Build the waveform panel configuration controls:
+        WaveformPanelFormField audioPanelPrefsPanel = buildWaveformPanelField();
         constraints.gridx = 1;
         constraints.gridwidth = 1;
         constraints.gridy++;
@@ -130,18 +118,24 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         constraints.fill = GridBagConstraints.BOTH;
         panel.add(audioPanelPrefsPanel.getFieldComponent(), constraints);
 
+        // The waveform config field has a lot of options for drawing the waveform image.
+        // Fortunately, we can use the WaveformConfig object to generate that FormField
+        // for us:
         constraints.gridx = 2;
         constraints.gridheight = 2;
         waveformConfigField = (WaveformConfigField)wavePrefs.generateFormField(new FormPanel());
         panel.add(waveformConfigField.getFieldComponent(), constraints);
 
-        JPanel controlPanel = buildControlPanel(panel);
+        // The audio source panel lets the user choose, load, or create an audio sample:
+        JPanel audioSourcePanel = buildAudioSourcePanel(panel);
         constraints.gridx = 1;
         constraints.gridy++;
         constraints.gridheight = 1;
         constraints.insets = new Insets(2, leftMargin, 2, 2);
-        panel.add(controlPanel, constraints);
+        panel.add(audioSourcePanel, constraints);
 
+        // Now we can add the audio waveform panel itself, which is the point of this audio demo.
+        // All the other controls on this demo page revolve around this panel:
         constraints.gridy++;
         waveformPanel.setPreferredSize(new Dimension(100, 120));
         waveformPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
@@ -150,12 +144,14 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         constraints.gridwidth = 2;
         panel.add(waveformPanel, constraints);
 
+        // We can also add a little informational label under the waveform for status info:
         constraints.gridx = 1;
         constraints.gridy++;
         constraints.insets = new Insets(4, leftMargin + 10, 4, 4);
         constraints.anchor = GridBagConstraints.WEST;
         panel.add(waveformLabel, constraints);
 
+        // GridBagLayout trick: add a spacer label to keep our contents top-left when the window is resized:
         JLabel spacer = new JLabel("");
         constraints.gridx = 3;
         constraints.gridy = 99;
@@ -167,6 +163,11 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         return panel;
     }
 
+    /**
+     * This is invoked whenever we need to redraw the audio waveform image.
+     * For example, when a new audio sample is loaded, or when the cosmetic properties
+     * of the waveform image generator are modified.
+     */
     public void generateWaveform() {
         waveformPanel.clear();
         wavePrefs.loadFromFormField(waveformConfigField);
@@ -206,7 +207,34 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         }
     }
 
-    private JPanel buildControlPanel(final JPanel ownerPanel) {
+    /**
+     * Builds and returns the configuration controls for our audio waveform panel.
+     * This allows selection of what controls are shown on the panel, what size
+     * they are, and where they are located on the panel.
+     */
+    private WaveformPanelFormField buildWaveformPanelField() {
+        String s = "Audio panel preferences";
+        WaveformPanelFormField audioPanelPrefsPanel = new WaveformPanelFormField(s);
+        audioPanelPrefsPanel.setControlType(waveformPanel.getControlType());
+        audioPanelPrefsPanel.setControlSize(waveformPanel.getControlPanelSize());
+        audioPanelPrefsPanel.setControlPosition(waveformPanel.getControlPanelPosition());
+        audioPanelPrefsPanel.addValueChangedListener(new ValueChangedListener() {
+            @Override
+            public void formFieldValueChanged(FormField field) {
+                WaveformPanelFormField formField = (WaveformPanelFormField)field;
+                waveformPanel.setControlType(formField.getControlType());
+                waveformPanel.setControlPanelSize(formField.getControlSize());
+                waveformPanel.setControlPanelPosition(formField.getControlPosition());
+            }
+        });
+        return audioPanelPrefsPanel;
+    }
+
+    /**
+     * Builds the audio source selection controls, which lets you pick
+     * a built-in sound, load your own audio file, or record a new one.
+     */
+    private JPanel buildAudioSourcePanel(final JPanel ownerPanel) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
@@ -221,7 +249,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         panel.add(label, constraints);
 
         String[] items = new String[]{"Motorcycle startup", "Choose a file", "Manual recording"};
-        audioSourceCombo = new JComboBox(items);
+        audioSourceCombo = new JComboBox<>(items);
         audioSourceCombo.setEditable(false);
         audioSourceCombo.setSelectedIndex(0);
         audioSourceCombo.setFont(labelFont);
@@ -236,7 +264,6 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
                 audioFileButton.setEnabled(audioSourceCombo.getSelectedIndex() == 1);
                 generateWaveform();
             }
-
         });
         panel.add(audioSourceCombo, constraints);
 
@@ -296,6 +323,10 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         return panel;
     }
 
+    /**
+     * Returns a MessageUtil instance, which is handy for logging messages and also showing
+     * them to the user in information dialogs.
+     */
     private MessageUtil getMessageUtil() {
         if (messageUtil == null) {
             messageUtil = new MessageUtil(panel, Logger.getLogger(AudioDemoPanel.class.getName()));
@@ -303,10 +334,17 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         return messageUtil;
     }
 
+    // ----- AudioPanelListener methods ----------
+
     @Override
     public void stateChanged(AudioWaveformPanel sourcePanel, AudioWaveformPanel.PanelState state) {
+        // ignored here
     }
 
+    /**
+     * Invoked when the user has recorded a clip in the audio panel. We can add the resulting
+     * clip as an option in the audio source combo.
+     */
     @Override
     public void recordingComplete(AudioWaveformPanel sourcePanel) {
         if (waveformPanel.getAudioData() == null) {
@@ -316,6 +354,7 @@ public final class AudioDemoPanel extends PanelBuilder implements AudioPanelList
         recordedAudioFile = null;
         try {
             File tempFile = File.createTempFile("audio_", "_recording.wav");
+            tempFile.deleteOnExit();
             AudioUtil.saveAudioFile(tempFile, waveformPanel.getAudioData());
             recordedAudioFile = tempFile;
             audioSourceCombo.setSelectedIndex(2);

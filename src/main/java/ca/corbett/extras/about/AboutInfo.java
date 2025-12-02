@@ -1,5 +1,7 @@
 package ca.corbett.extras.about;
 
+import ca.corbett.updates.UpdateManager;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,6 +99,13 @@ public final class AboutInfo {
      * as a bit of an easter egg thing to open the LogConsole.
      */
     public boolean showLogConsole = false;
+
+    /**
+     * Optional - if you supply an UpdateManager, it can be interrogated for
+     * the latest available application version, so that we can show an informational
+     * notice on the AboutPanel/AboutDialog if a newer version is available.
+     */
+    public UpdateManager updateManager;
 
     /**
      * Custom fields can be specified and will be displayed in a name:value fashion.

@@ -6,9 +6,12 @@ import ca.corbett.extras.properties.FileBasedProperties;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.Alignment;
+import ca.corbett.updates.UpdateManager;
 
+import javax.swing.JOptionPane;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -131,9 +134,6 @@ public abstract class AppProperties<T extends AppExtension> {
 
             // Also enable or disable any properties for this extension:
             List<AbstractProperty> disabledProps = extension.getConfigProperties();
-            if (disabledProps == null) {
-                continue;
-            }
             for (AbstractProperty prop : disabledProps) {
                 if (propsManager.getProperty(prop.getFullyQualifiedName()) != null) {
                     propsManager.getProperty(prop.getFullyQualifiedName()).setEnabled(isEnabled);
@@ -198,15 +198,41 @@ public abstract class AppProperties<T extends AppExtension> {
     /**
      * Generates and shows an ExtensionManagerDialog to allow the user to view all
      * currently loaded extensions, and to enable or disable them.
+     * <p>
+     *     Note: dynamic extension discovery and download will be disabled and hidden.
+     *     Use showExtensionDialog(Window, UpdateSources) instead if you want this feature.
+     * </p>
      *
      * @param owner The owning Frame (so we can make the dialog modal to that Frame).
      * @return true if the user OK'd the dialog and changes were made - reload your UI!
      */
-    public boolean showExtensionDialog(Frame owner) {
-        ExtensionManagerDialog<T> dialog = new ExtensionManagerDialog<>(extManager, owner);
+    public boolean showExtensionDialog(Window owner) {
+        return showExtensionDialog(owner, null);
+    }
+
+    /**
+     * Generates and shows an ExtensionManagerDialog to allow the user to view
+     * all currently loaded extensions, and to enable or disable them. Additionally,
+     * the given UpdateManager can be queried to find and show a list of extensions
+     * available for download. The user can download new extensions or update
+     * existing ones using the "available" tab on the dialog.
+     */
+    public boolean showExtensionDialog(Window owner, UpdateManager updateManager) {
+        ExtensionManagerDialog<T> dialog = new ExtensionManagerDialog<>(extManager, owner, updateManager);
         dialog.setVisible(true);
         if (dialog.wasOkayed() && dialog.wasModified()) {
             save();
+        }
+        if (dialog.isRestartRequired()) {
+            if (updateManager != null) {
+                updateManager.showApplicationRestartPrompt(owner);
+            }
+            else {
+                JOptionPane.showMessageDialog(owner,
+                                              "Changes will take effect when the application is restarted.",
+                                              "Restart required",
+                                              JOptionPane.INFORMATION_MESSAGE);
+            }
         }
         return dialog.wasOkayed() && dialog.wasModified();
     }

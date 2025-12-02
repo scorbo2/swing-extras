@@ -1,6 +1,5 @@
 package ca.corbett.extras.demo.panels;
 
-import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.gradient.GradientType;
@@ -9,7 +8,6 @@ import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.LogoFormField;
 import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.extras.image.LogoProperty;
-import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
@@ -17,15 +15,20 @@ import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
+/**
+ * ImageUtil is a utility class that offers a lot of handy functionality around loading, saving, and
+ * manipulating images. It's tough to demo ALL of its capabilities, but this demo panel will show
+ * off at least some of what it can do.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ */
+public class ImageUtilDemoPanel extends PanelBuilder {
     private ShortTextField textField;
     private ImagePanel imagePanel;
     private ImagePanelConfig imagePanelConfig;
@@ -44,14 +47,7 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
 
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BorderLayout());
-        FormPanel controlPanel = new FormPanel(Alignment.TOP_LEFT);
-        controlPanel.setBorderMargin(12);
-
-        final LabelField label = LabelField.createBoldHeaderLabel("ImageUtil", 20, 0, 8);
-        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        controlPanel.add(label);
+        FormPanel controlPanel = buildFormPanel("ImageUtil", 12);
 
         LabelField labelField = new LabelField("<html>ImageUtil and the associated color<br>"
                                             + "gradient classes can generate images with<br>"
@@ -59,36 +55,18 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         labelField.setFont(FontField.getDefaultFont().deriveFont(Font.PLAIN, 12f));
         controlPanel.add(labelField);
 
+        // Let's have a short text field for entering example text:
         textField = new ShortTextField("Text:", 14);
         textField.setText(Version.NAME);
-        textField.addValueChangedListener(field -> {
-            regenerate();
-        });
+        textField.addValueChangedListener(field -> regenerate());
         controlPanel.add(textField);
 
-        List<String> options = new ArrayList<>();
-        options.add("Center");
-        options.add("Best fit");
-        options.add("Stretch");
-        ComboField<String> displayModeChooser = new ComboField<>("Display mode:", options, 0, false);
-        displayModeChooser.getMargins().setBottom(24);
-        displayModeChooser.addValueChangedListener(field -> {
-            ImagePanelConfig.DisplayMode displayMode;
-            switch (displayModeChooser.getSelectedIndex()) {
-                case 2:
-                    displayMode = ImagePanelConfig.DisplayMode.STRETCH;
-                    break;
-                case 1:
-                    displayMode = ImagePanelConfig.DisplayMode.BEST_FIT;
-                    break;
-                default:
-                    displayMode = ImagePanelConfig.DisplayMode.CENTER;
-            }
-            imagePanelConfig.setDisplayMode(displayMode);
-            regenerate();
-        });
-        controlPanel.add(displayModeChooser);
+        // Let's add a combo field for picking the display mode for our image:
+        controlPanel.add(buildDisplayModeCombo());
 
+        // The text config options are fairly complex. Fortunately, we don't
+        // have to build out the UI for it here, because the LogoFormField
+        // class has a method to build and return the FormField for us:
         logo = createDefaultLogo();
         logoFormField = (LogoFormField)logo.generateFormField(controlPanel);
         logoFormField.setFieldLabelText("Image options");
@@ -100,7 +78,7 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         panel.add(leftPanel, BorderLayout.WEST);
 
         imagePanelConfig = ImagePanelConfig.createSimpleReadOnlyProperties();
-        imagePanelConfig.setDisplayMode(ImagePanelConfig.DisplayMode.CENTER);
+        imagePanelConfig.setDisplayMode(ImagePanelConfig.DisplayMode.BEST_FIT);
         imagePanel = new ImagePanel(imagePanelConfig);
         panel.add(imagePanel, BorderLayout.CENTER);
 
@@ -109,6 +87,33 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         return panel;
     }
 
+    /**
+     * Invoked internally to build and return a ComboField suitable for picking
+     * a custom display mode for our generated image.
+     */
+    private ComboField<String> buildDisplayModeCombo() {
+        List<String> options = new ArrayList<>();
+        options.add("Center");
+        options.add("Best fit");
+        options.add("Stretch");
+        ComboField<String> displayModeCombo = new ComboField<>("Display mode:", options, 1, false);
+        displayModeCombo.getMargins().setBottom(24);
+        displayModeCombo.addValueChangedListener(field -> {
+            ImagePanelConfig.DisplayMode displayMode = switch (displayModeCombo.getSelectedIndex()) {
+                case 2 -> ImagePanelConfig.DisplayMode.STRETCH;
+                case 1 -> ImagePanelConfig.DisplayMode.BEST_FIT;
+                default -> ImagePanelConfig.DisplayMode.CENTER;
+            };
+            imagePanelConfig.setDisplayMode(displayMode);
+            regenerate();
+        });
+        return displayModeCombo;
+    }
+
+    /**
+     * Creates an arbitrary default LogoProperty for initial display.
+     * The user can tinker with the settings to modify it.
+     */
     private LogoProperty createDefaultLogo() {
         LogoProperty logoProperty = new LogoProperty("logoPropertyDemoApp", "Image options");
         logoProperty.setAutoSize(true);
@@ -123,11 +128,10 @@ public class ImageUtilDemoPanel extends PanelBuilder implements ChangeListener {
         return logoProperty;
     }
 
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        regenerate();
-    }
-
+    /**
+     * Invoked internally to regenerate the image when the text changes,
+     * or when any of our display properties change.
+     */
     private void regenerate() {
         String text = textField.getText().isBlank() ? Version.NAME : textField.getText();
         logo.loadFromFormField(logoFormField);

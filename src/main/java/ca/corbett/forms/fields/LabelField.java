@@ -10,7 +10,11 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.font.TextAttribute;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -25,9 +29,6 @@ import java.util.Objects;
  * To reduce confusion, the terminology is as follows: (fieldLabel):(labelText),
  * where (fieldLabel) is optional (if not set, the colon separator will
  * also be hidden).
- * <p>
- * Note that label fields ignore validation, as there's no user input to validate.
- * </p>
  * <p>
  * You can make a multiline label by wrapping the label text in html tags:
  * </p>
@@ -51,7 +52,6 @@ public final class LabelField extends FormField {
     private static int extraBottomMarginHeader = 8;
 
     private final JLabel label;
-    private Action hyperlinkAction;
 
     /**
      * Creates a form-width label in the format "labelText".
@@ -73,7 +73,6 @@ public final class LabelField extends FormField {
         label = new JLabel(labelText == null ? "" : labelText);
         label.setFont(getDefaultFont());
         label.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
-        label.addMouseListener(new HyperlinkMouseListener());
         fieldLabel.setText(fieldLabelText == null ? "" : fieldLabelText);
         fieldComponent = label;
     }
@@ -81,6 +80,9 @@ public final class LabelField extends FormField {
     /**
      * Overridden here as we generally don't want to show a validation label on a label.
      * Will return true only if one or more FieldValidators have been explicitly assigned.
+     * Yes! You can assign a FieldValidator to a LabelField if you really want to, and it
+     * will perform validation if so. This generally makes no sense, as LabelFields do not
+     * allow user input, and so validation is disabled by default.
      */
     @Override
     public boolean hasValidationLabel() {
@@ -89,8 +91,13 @@ public final class LabelField extends FormField {
 
     /**
      * A static convenience factory method to create a bold header label with sensible
-     * defaults for a section header label. The default values are 16 point bold black
+     * defaults for a section header label. The default values are 16 point bold
      * text with a slightly larger top margin and normal bottom margin.
+     * <p>
+     *     You can control the extra top and bottom margin for generated header
+     *     labels by invoking LabelField.setHeaderLabelExtraMargins() before
+     *     invoking this method.
+     * </p>
      *
      * @param text The label text
      * @return A LabelField suitable for use as a header.
@@ -99,18 +106,41 @@ public final class LabelField extends FormField {
         return createHeaderLabel(text, getDefaultHeaderFont(), extraTopMarginHeader, extraBottomMarginHeader);
     }
 
+    /**
+     * A static convenience factory method to create a bold header label with the given
+     * font size and with default margins.
+     * <p>
+     * You can control the extra top and bottom margin for generated header
+     * labels by invoking LabelField.setHeaderLabelExtraMargins() before
+     * invoking this method.
+     * </p>
+     *
+     * @param text     The label text
+     * @param fontSize The point size for the label text
+     * @return A LabelField suitable for use as a header.
+     */
     public static LabelField createBoldHeaderLabel(String text, int fontSize) {
         return createBoldHeaderLabel(text, fontSize, extraTopMarginHeader, extraBottomMarginHeader);
     }
 
+    /**
+     * A static convenience factory method to create a bold header label with the given
+     * font size and margins.
+     *
+     * @param text              The label text
+     * @param fontSize          The point size for the label text
+     * @param extraTopMargin    An extra margin to apply above the LabelField
+     * @param extraBottomMargin An extra margin to apply below the LabelField
+     * @return A LabelField suitable for use as a header.
+     */
     public static LabelField createBoldHeaderLabel(String text, int fontSize, int extraTopMargin, int extraBottomMargin) {
         return createHeaderLabel(text, getDefaultHeaderFont().deriveFont((float)fontSize), extraTopMargin,
                                  extraBottomMargin);
     }
 
     /**
-     * A static convenience factory method to create a "normal" header label with sensible
-     * defaults for a form label. The default values are 12 point plain black text
+     * A static convenience factory method to create a "plain" header label with sensible
+     * defaults for a form label. The default values are 12 point plain text
      * with top and bottom margin values read from our current margin properties.
      * <p>
      *     You can control the extra top and bottom margin for generated header
@@ -126,7 +156,15 @@ public final class LabelField extends FormField {
     }
 
     /**
-     * A static convenience factory method to create a "normal" header label the
+     * A static convenience factory method to create a "plain" header label with default
+     * font and with the given extra top and bottom margins.
+     */
+    public static LabelField createPlainHeaderLabel(String text, int extraTopMargin, int extraBottomMargin) {
+        return createHeaderLabel(text, getDefaultFont(), extraTopMargin, extraBottomMargin);
+    }
+
+    /**
+     * A static convenience factory method to create a "plain" header label with the
      * given font size and with top and bottom margin values read from our current
      * margin properties.
      * <p>
@@ -141,6 +179,17 @@ public final class LabelField extends FormField {
     public static LabelField createPlainHeaderLabel(String text, int fontSize) {
         return createHeaderLabel(text, getDefaultFont().deriveFont((float)fontSize), extraTopMarginNormal,
                                  extraBottomMarginNormal);
+    }
+
+    /**
+     * A static convenience factory method to create a "plain" header label with the
+     * given font size and extra margins for top and bottom.
+     */
+    public static LabelField createPlainHeaderLabel(String text, int fontSize, int extraTopMargin, int extraBottomMargin) {
+        return createHeaderLabel(text,
+                                 getDefaultFont().deriveFont((float)fontSize),
+                                 extraTopMargin,
+                                 extraBottomMargin);
     }
 
     /**
@@ -202,6 +251,63 @@ public final class LabelField extends FormField {
     }
 
     /**
+     * Static convenience method to restyle the given JLabel to look like a hyperlink - this involves
+     * changing the font color, adding an underline effect, changing the mouse cursor when hovering over
+     * the label, and executing the given Action when the label is clicked.
+     */
+    public static void setLabelHyperlink(JLabel label, Action action) {
+        // If the label was already hyperlinked, unlink it:
+        if (isLabelHyperlinked(label)) {
+            removeLabelHyperlink(label);
+        }
+
+        // Set font properties and mouse cursor:
+        label.setForeground(LookAndFeelManager.getLafColor("Component.linkColor", Color.BLUE));
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        Map<TextAttribute, Object> attributes = new HashMap<>(label.getFont().getAttributes());
+        attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+        label.setFont(label.getFont().deriveFont(attributes));
+
+        // Add a mouse listener with the action:
+        label.addMouseListener(new HyperlinkMouseListener(label, action));
+    }
+
+    /**
+     * Static convenience method to report if the given JLabel has been styled by the setLabelHyperlink method
+     * to look like a hyperlink.
+     */
+    public static boolean isLabelHyperlinked(JLabel label) {
+        for (MouseListener listener : label.getMouseListeners()) {
+            if (listener instanceof HyperlinkMouseListener) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Can be used to "un-style" an image that was styled by the setLabelHyperlink method to look like a JLabel.
+     * This will also remove the mouse listener so that its hyperlink action will no longer trigger
+     * when the label is clicked.
+     */
+    public static void removeLabelHyperlink(JLabel label) {
+        label.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
+        Map<TextAttribute, Object> attributes = new HashMap<>(label.getFont().getAttributes());
+        attributes.put(TextAttribute.UNDERLINE, -1);
+        label.setFont(label.getFont().deriveFont(attributes));
+        label.setCursor(Cursor.getDefaultCursor());
+        List<HyperlinkMouseListener> toRemove = new ArrayList<>();
+        for (MouseListener listener : label.getMouseListeners()) {
+            if (listener instanceof HyperlinkMouseListener) {
+                toRemove.add((HyperlinkMouseListener)listener);
+            }
+        }
+        for (HyperlinkMouseListener listener : toRemove) {
+            label.removeMouseListener(listener);
+        }
+    }
+
+    /**
      * Reports whether this is a "header" label. That means the fieldLabel text
      * is blank or empty, so instead of a fieldLabel:labeltext pairing, we just
      * have a formwidth-spanning labeltext instead.
@@ -218,7 +324,7 @@ public final class LabelField extends FormField {
      * @return true if this label contains a hyperlink.
      */
     public boolean isHyperlinked() {
-        return hyperlinkAction != null;
+        return isLabelHyperlinked(fieldLabel) || isLabelHyperlinked(label);
     }
 
     /**
@@ -226,17 +332,18 @@ public final class LabelField extends FormField {
      * a hyperlink, by adding a custom mouse cursor and mouse listener with the given
      * ActionListener attached to the single click event. The label font is also modified
      * with color and underline and custom mouse cursor as hints that it is now clickable.
+     * <p>
+     *     <b>But I want the field label to be a hyperlink, not the main label!</b> - this can
+     *     be achieved via the static setLabelHyperlink method:
+     *     LabelField.setLabelHyperlink(myLabelField.getFieldLabel(), myAction); ... but note
+     *     that this only applies if the fieldLabel is visible (that is, if isHeaderLabel()
+     *     is false).
+     * </p>
      *
      * @param action The Action to fire when the label is clicked.
      */
     public LabelField setHyperlink(Action action) {
-        JLabel linkLabel = label; // whether header label or not, put the link on "label" and not "fieldLabel"
-        linkLabel.setForeground(Color.BLUE);
-        linkLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        Map attributes = linkLabel.getFont().getAttributes();
-        attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-        linkLabel.setFont(linkLabel.getFont().deriveFont(attributes));
-        hyperlinkAction = action;
+        setLabelHyperlink(label, action);
         return this;
     }
 
@@ -245,17 +352,8 @@ public final class LabelField extends FormField {
      * This will return the label to DEFAULT_FONT and default label text color.
      */
     public void clearHyperlink() {
-        hyperlinkAction = null;
-        if (isHeaderLabel()) {
-            label.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
-            label.setFont(DEFAULT_FONT);
-            label.setCursor(Cursor.getDefaultCursor());
-        }
-        else {
-            fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
-            fieldLabel.setFont(DEFAULT_FONT);
-            fieldLabel.setCursor(Cursor.getDefaultCursor());
-        }
+        removeLabelHyperlink(fieldLabel);
+        removeLabelHyperlink(label);
     }
 
     /**
@@ -320,14 +418,22 @@ public final class LabelField extends FormField {
         return label.getForeground();
     }
 
-    private final class HyperlinkMouseListener extends MouseAdapter {
+    private static final class HyperlinkMouseListener extends MouseAdapter {
+
+        private final JLabel ownerLabel;
+        private final Action hyperlinkAction;
+
+        public HyperlinkMouseListener(JLabel label, Action action) {
+            this.ownerLabel = label;
+            this.hyperlinkAction = action;
+        }
+
         @Override
         public void mouseClicked(MouseEvent e) {
             if (hyperlinkAction == null) {
                 return; // do nothing if there is no link action
             }
-            hyperlinkAction.actionPerformed(new ActionEvent(fieldComponent, 0, ""));
+            hyperlinkAction.actionPerformed(new ActionEvent(ownerLabel, 0, "hyperlink"));
         }
-
     }
 }

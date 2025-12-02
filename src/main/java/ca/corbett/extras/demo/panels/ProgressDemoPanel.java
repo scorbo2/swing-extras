@@ -1,6 +1,5 @@
 package ca.corbett.extras.demo.panels;
 
-import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.gradient.ColorSelectionType;
@@ -13,7 +12,6 @@ import ca.corbett.extras.progress.MultiProgressWorker;
 import ca.corbett.extras.progress.SimpleProgressAdapter;
 import ca.corbett.extras.progress.SimpleProgressWorker;
 import ca.corbett.extras.progress.SplashProgressWindow;
-import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.LabelField;
@@ -24,13 +22,20 @@ import ca.corbett.forms.fields.ShortTextField;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * A quick demo of the capabilities of the progress classes.
+ * These can be used as a replacement for the Java built-in class ProgressMonitor,
+ * which is a bit limiting. MultiProgressDialog, for example, can show major
+ * and minor progress bars for long-running tasks, and can be supplied
+ * any implementation of MultiProgressWorker or SimpleProgressWorker.
+ * <p>
+ *     This panel also shows off the SplashProgressWindow, which is
+ *     kind of neat for long-running application startups.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-03-15
@@ -59,43 +64,29 @@ public class ProgressDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
-        formPanel.setBorderMargin(24);
-
-        final LabelField simpleLabel = LabelField.createBoldHeaderLabel("SimpleProgressDialog", 20, 0, 8);
-        simpleLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> simpleLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(simpleLabel);
-
+        FormPanel formPanel = buildFormPanel(null);
+        formPanel.add(buildHighlightedHeaderLabel("SimpleProgressDialog", 20));
         formPanel.add(LabelField.createPlainHeaderLabel("A simple replacement for ProgressMonitor!", 14));
 
+        // Let's add a ShortTextField for inputting text to show as the progress bar label:
         simpleProgressTextField = new ShortTextField("Progress label:", 16).setAllowBlank(false);
         simpleProgressTextField.setText("Some task in progress...");
         formPanel.add(simpleProgressTextField);
 
+        // And a NumberField for picking how many fake work steps we should do:
         simpleProgressStepsField = new NumberField("Progress steps:", 6, 1, 10, 1);
         formPanel.add(simpleProgressStepsField);
 
-        PanelField panelField = new PanelField();
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
+        // We can use PanelField to wrap a launcher button:
+        PanelField panelField = new PanelField(new FlowLayout(FlowLayout.LEFT));
         JButton btn = new JButton("Show simple progress dialog");
-        btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showSimpleProgress();
-            }
-        });
+        btn.addActionListener(e -> showSimpleProgress());
         panelField.getPanel().add(btn);
         panelField.getMargins().setBottom(24);
         formPanel.add(panelField);
 
-        final LabelField label = LabelField.createBoldHeaderLabel("MultiProgressDialog", 20);
-        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(label);
-
+        // Now move on to MultiProgressDialog:
+        formPanel.add(buildHighlightedHeaderLabel("MultiProgressDialog", 20));
         formPanel.add(LabelField.createPlainHeaderLabel(
                 "<html>Java Swing comes with the ProgressMonitor class, which is great for<br>" +
                         "simple scenarios. But, sometimes it's useful to be able to show major and<br>" +
@@ -115,25 +106,16 @@ public class ProgressDemoPanel extends PanelBuilder {
         minorProgressStepsField = new NumberField("Minor progress steps:", 5, 1, 15, 1);
         formPanel.add(minorProgressStepsField);
 
-        panelField = new PanelField();
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
+        // Add a PanelField with a button for launching the MultiProgressDialog:
+        panelField = new PanelField(new FlowLayout(FlowLayout.LEFT));
         btn = new JButton("Show multi-progress dialog");
-        btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showMultiProgress();
-            }
-        });
+        btn.addActionListener(e -> showMultiProgress());
         panelField.getPanel().add(btn);
         panelField.getMargins().setBottom(24);
         formPanel.add(panelField);
 
-        final LabelField labelField = LabelField.createBoldHeaderLabel("SplashProgress", 20);
-        labelField.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> labelField.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(labelField);
-
+        // And finally, move on to SplashProgressWindow:
+        formPanel.add(buildHighlightedHeaderLabel("SplashProgressWindow", 20));
         formPanel.add(LabelField.createPlainHeaderLabel(
                 "<html>Java offers the SplashScreen class for showing a splash screen as your application<br>" +
                         "starts up. But sometimes, your application startup may involve some complex loading<br>" +
@@ -144,14 +126,19 @@ public class ProgressDemoPanel extends PanelBuilder {
         splashAppNameField.setText(Version.NAME);
         formPanel.add(splashAppNameField);
 
+        // We can allow either a Gradient or a solid color for the background of our SplashProgressWindow:
         Gradient gradient = new Gradient(GradientType.HORIZONTAL_STRIPE, Color.BLACK, Color.BLUE);
-        splashBgColorField = new ColorField("Background:", ColorSelectionType.EITHER).setColor(Color.BLACK)
-                                                                                     .setGradient(gradient);
+        splashBgColorField = new ColorField("Background:", ColorSelectionType.EITHER)
+                .setColor(Color.BLACK)
+                .setGradient(gradient);
         formPanel.add(splashBgColorField);
 
-        splashFgColorField = new ColorField("Foreground:", ColorSelectionType.SOLID).setColor(Color.WHITE);
+        // But let's limit selection to only solid colors for the foreground color:
+        splashFgColorField = new ColorField("Foreground:", ColorSelectionType.SOLID)
+                .setColor(Color.WHITE);
         formPanel.add(splashFgColorField);
 
+        // We can add options for controlling the size of the splash window:
         splashWidthField = new NumberField("Logo width:", 400, 100, 2000, 25);
         formPanel.add(splashWidthField);
 
@@ -161,69 +148,65 @@ public class ProgressDemoPanel extends PanelBuilder {
         splashBorderWidthField = new NumberField("Border width:", 0, 0, 6, 1);
         formPanel.add(splashBorderWidthField);
 
-        panelField = new PanelField();
-        panelField.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
+        // And a PanelField with a button for launching the SplashProgressWindow:
+        panelField = new PanelField(new FlowLayout(FlowLayout.LEFT));
         btn = new JButton("Show splash progress dialog");
-        btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showSplashProgress();
-            }
-        });
+        btn.addActionListener(e -> showSplashProgress());
         panelField.getPanel().add(btn);
         formPanel.add(panelField);
 
         return formPanel;
     }
 
+    /**
+     * A quick internal method for either returning the input string, or returning the
+     * defaultValue string if the input is null or blank.
+     */
+    private String getTextOrDefault(String input, String defaultValue) {
+        return input == null || input.isBlank() ? defaultValue : input;
+    }
+
+    /**
+     * Invoked internally to show our progress dialog with a fake SimpleProgressWorker.
+     */
     private void showSimpleProgress() {
-        String text = simpleProgressTextField.getText().isBlank() ? "Progress" : simpleProgressTextField.getText();
-        int totalSteps = (Integer)simpleProgressStepsField.getCurrentValue();
-        SimpleProgressDummyWorker worker = new SimpleProgressDummyWorker(text, totalSteps);
-        worker.addProgressListener(new SimpleProgressAdapter() {
-            @Override
-            public void progressCanceled() {
-                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was canceled.");
-            }
+        // Create our dummy worker thread and add our progress listener:
+        SimpleProgressDummyWorker worker = new SimpleProgressDummyWorker(
+                getTextOrDefault(simpleProgressTextField.getText(), "Progress"),
+                (Integer)simpleProgressStepsField.getCurrentValue());
+        worker.addProgressListener(new SimpleProgressDummyAdapter());
 
-            @Override
-            public void progressComplete() {
-                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was completed.");
-            }
-        });
-
+        // Now we can create a MultiProgressDialog instance and give it our worker thread:
         MultiProgressDialog dialog = new MultiProgressDialog(DemoApp.getInstance(), "Fake work in progress");
-        dialog.runWorker(worker, true);
+        dialog.runWorker(worker, true); // shows the dialog automatically!
     }
 
+    /**
+     * Invoked internally to show our progress dialog with a fake MultiProgressWorker.
+     */
     private void showMultiProgress() {
-        String majorText = majorProgressTextField.getText()
-                                                 .isBlank() ? "Major progress" : majorProgressTextField.getText();
-        String minorText = minorProgressTextField.getText()
-                                                 .isBlank() ? "Minor progress" : minorProgressTextField.getText();
-        int majorSteps = (Integer)majorProgressStepsField.getCurrentValue();
-        int minorSteps = (Integer)minorProgressStepsField.getCurrentValue();
+        // Create our dummy worker thread and add our progress listener to it:
+        MultiProgressDummyWorker worker = new MultiProgressDummyWorker(
+                getTextOrDefault(majorProgressTextField.getText(), "Major progress"),
+                (Integer)majorProgressStepsField.getCurrentValue(),
+                getTextOrDefault(minorProgressTextField.getText(), "Minor progress"),
+                (Integer)minorProgressStepsField.getCurrentValue());
+        worker.addProgressListener(new MultiProgressDummyAdapter());
 
-        MultiProgressDummyWorker worker = new MultiProgressDummyWorker(majorText, majorSteps, minorText, minorSteps);
-        worker.addProgressListener(new MultiProgressAdapter() {
-            @Override
-            public void progressCanceled() {
-                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was canceled.");
-            }
-
-            @Override
-            public void progressComplete() {
-                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was completed.");
-            }
-        });
-
+        // Now we can create a MultiProgressDialog instance and hand it our worker thread:
         MultiProgressDialog dialog = new MultiProgressDialog(DemoApp.getInstance(), "Fake work in progress");
-        dialog.runWorker(worker, true);
+        dialog.runWorker(worker, true); // shows the dialog automatically!
     }
 
+    /**
+     * Invoked internally to show an example SplashProgressWindow.
+     */
     private void showSplashProgress() {
-        String appName = splashAppNameField.getText().isBlank() ? Version.NAME : splashAppNameField.getText();
+        // Get the user-entered parameters for the splash window:
+        String appName = getTextOrDefault(splashAppNameField.getText(), Version.NAME);
         LogoProperty config = new LogoProperty(appName);
+
+        // Remember that our background color can either be a gradient or a solid color:
         Object something = splashBgColorField.getSelectedValue();
         if (something instanceof Gradient) {
             config.setBgColorType(LogoProperty.ColorType.GRADIENT);
@@ -233,6 +216,8 @@ public class ProgressDemoPanel extends PanelBuilder {
             config.setBgColorType(LogoProperty.ColorType.SOLID);
             config.setBgColor((Color)something);
         }
+
+        // Collect the rest of the properties:
         config.setTextColorType(LogoProperty.ColorType.SOLID);
         config.setTextColor(splashFgColorField.getColor());
         config.setBorderColorType(LogoProperty.ColorType.SOLID);
@@ -240,9 +225,17 @@ public class ProgressDemoPanel extends PanelBuilder {
         config.setBorderWidth((Integer)splashBorderWidthField.getCurrentValue());
         config.setLogoWidth((Integer)splashWidthField.getCurrentValue());
         config.setLogoHeight((Integer)splashHeightField.getCurrentValue());
+
+        // We don't need to create a worker thread for this one because the
+        // SplashProgressWindow class has a built-in "showFakeProgress" method, lol.
         new SplashProgressWindow(DemoApp.getInstance(), appName, config).showFakeProgress(5, 666);
     }
 
+    /**
+     * This example implementation of SimpleProgressWorker will fake doing a certain number
+     * of steps of work, with a configurable delay between each step. Good enough for
+     * showing off the progress dialog, but it doesn't actually do anything.
+     */
     private static class SimpleProgressDummyWorker extends SimpleProgressWorker {
 
         public final int STEP_DURATION_MS = 750;
@@ -265,17 +258,21 @@ public class ProgressDemoPanel extends PanelBuilder {
             fireProgressBegins(totalSteps);
             int curStep = 0;
             while (!wasCanceled && curStep < totalSteps) {
+                // Make sure to check for cancellations, which can be signaled by the
+                // user hitting ESC on the dialog or clicking the "cancel" button:
                 wasCanceled = !fireProgressUpdate(curStep, text);
 
                 try {
                     Thread.sleep(STEP_DURATION_MS);
                 }
                 catch (InterruptedException ex) {
-                    wasCanceled = true;
+                    wasCanceled = true; // we'll treat a thread interrupt like a cancel
                 }
 
                 curStep++;
             }
+
+            // Let callers know how it all ended:
             if (wasCanceled) {
                 fireProgressCanceled();
             }
@@ -285,6 +282,31 @@ public class ProgressDemoPanel extends PanelBuilder {
         }
     }
 
+    /**
+     * A very simple implementation of SimpleProgressListener that will just pop a dialog
+     * when the progress is completed or canceled.
+     */
+    private static class SimpleProgressDummyAdapter extends SimpleProgressAdapter {
+        @Override
+        public void progressCanceled() {
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was canceled.");
+            });
+        }
+
+        @Override
+        public void progressComplete() {
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was completed.");
+            });
+        }
+    }
+
+    /**
+     * This example implementation of MultiProgressWorker will complete a configurable number
+     * of fake major and minor steps, each with a configurable delay in between. Useful for
+     * showing off the progress dialog, but it doesn't actually do anything.
+     */
     private static class MultiProgressDummyWorker extends MultiProgressWorker {
         public final int STEP_DURATION_MS = 500;
         private final int majorSteps;
@@ -310,6 +332,8 @@ public class ProgressDemoPanel extends PanelBuilder {
             fireProgressBegins(majorSteps);
             int curMajorStep = 0;
             while (!wasCanceled && curMajorStep < majorSteps) {
+                // Remember to check for cancellations on each major and minor step.
+                // These can be signaled by the user hitting ESC or hitting the cancel button.
                 wasCanceled = !fireMajorProgressUpdate(curMajorStep, minorSteps, majorText);
 
                 for (int curMinorStep = 0; (curMinorStep < minorSteps) && !wasCanceled; curMinorStep++) {
@@ -323,6 +347,8 @@ public class ProgressDemoPanel extends PanelBuilder {
                 }
                 curMajorStep++;
             }
+
+            // Let callers know how it all ended:
             if (wasCanceled) {
                 fireProgressCanceled();
             }
@@ -332,13 +358,23 @@ public class ProgressDemoPanel extends PanelBuilder {
         }
     }
 
-    private class MyWorker extends SimpleProgressWorker {
+    /**
+     * A simple implementation of MultiProgressListener that will simply pop a dialog
+     * when the progress is completed or canceled.
+     */
+    private static class MultiProgressDummyAdapter extends MultiProgressAdapter {
+        @Override
+        public void progressCanceled() {
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was canceled.");
+            });
+        }
 
         @Override
-        public void run() {
-
+        public void progressComplete() {
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(DemoApp.getInstance(), "The fake work was completed.");
+            });
         }
     }
-
-    ;
 }

@@ -10,7 +10,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Provides a way to scan, organize, and search through a given file system, looking for
@@ -92,34 +97,62 @@ public final class FileSystemUtil {
                                        final boolean recursive,
                                        final List<String> extensions,
                                        final FileSearchListener listener) {
+        // Pre-process extensions once (lowercase + add dots)
+        Set<String> extSet = new HashSet<>();
+        for (String ext : extensions) {
+            extSet.add("." + ext.toLowerCase());
+        }
+
+        List<File> result = findFilesRecurse(rootDir, recursive, extSet, listener, false);
+        sortFiles(result); // Sort only once at the end
+        return result;
+    }
+
+    /**
+     * Internally invoked as needed from findFiles to recurse through a directory structure.
+     */
+    private static List<File> findFilesRecurse(final File rootDir,
+                                               final boolean recursive,
+                                               final Set<String> extSet,
+                                               final FileSearchListener listener,
+                                               final boolean invertSearch) {
         File[] children = rootDir.listFiles();
         if (children == null) {
             return new ArrayList<>();
         }
 
         List<File> fileList = new ArrayList<>();
+
         for (File child : children) {
             if (child.isDirectory() && recursive) {
-                fileList.addAll(findFiles(child, true, extensions, listener));
+                fileList.addAll(findFilesRecurse(child, recursive, extSet, listener, invertSearch));
             }
-            else if (!child.isDirectory()) {
+            else if (child.isFile()) {
                 String filename = child.getName().toLowerCase();
-                for (String ext : extensions) {
-                    if (filename.endsWith("." + ext.toLowerCase())) {
-                        if (listener != null) {
-                            if (!listener.fileFound(child)) {
-                                break;
-                            }
-                        }
-                        fileList.add(child);
+
+                // if any extensions match, it's a hit:
+                boolean fileMatched = false;
+                for (String ext : extSet) {
+                    if (filename.endsWith(ext)) {
+                        fileMatched = true;
+                        break; // Found match, no need to check other extensions
                     }
+                }
+
+                // If the file matched an extension and our search is not inverted, it's a hit:
+                // OR if the file did NOT match any extension and our search IS inverted, it's a hit:
+                if ((fileMatched && !invertSearch) || (!fileMatched && invertSearch)) {
+                    if (listener != null) {
+                        if (!listener.fileFound(child)) { // give caller a chance to cancel
+                            break;
+                        }
+                    }
+                    fileList.add(child);
                 }
             }
         }
 
-        // Sort and return the response:
-        sortFiles(fileList);
-        return fileList;
+        return fileList; // No sorting in helper method
     }
 
     /**
@@ -188,39 +221,15 @@ public final class FileSystemUtil {
                                                 final boolean recursive,
                                                 final List<String> extensions,
                                                 final FileSearchListener listener) {
-        File[] children = rootDir.listFiles();
-        if (children == null) {
-            return new ArrayList<>();
+        // Pre-process extensions once (lowercase + add dots)
+        Set<String> extSet = new HashSet<>();
+        for (String ext : extensions) {
+            extSet.add("." + ext.toLowerCase());
         }
 
-        List<File> fileList = new ArrayList<>();
-        for (File child : children) {
-            if (child.isDirectory() && recursive) {
-                fileList.addAll(findFilesExcluding(child, true, extensions));
-            }
-            else if (!child.isDirectory()) {
-                String filename = child.getName().toLowerCase();
-                boolean matched = false;
-                for (String ext : extensions) {
-                    if (filename.endsWith("." + ext.toLowerCase())) {
-                        matched = true;
-                        break;
-                    }
-                }
-                if (!matched) {
-                    if (listener != null) {
-                        if (!listener.fileFound(child)) {
-                            break;
-                        }
-                    }
-                    fileList.add(child);
-                }
-            }
-        }
-
-        // Sort and return the response:
-        sortFiles(fileList);
-        return fileList;
+        List<File> result = findFilesRecurse(rootDir, recursive, extSet, listener, true);
+        sortFiles(result); // Sort only once at the end
+        return result;
     }
 
     /**
@@ -489,7 +498,7 @@ public final class FileSystemUtil {
      * @throws IOException If something goes wrong.
      */
     public static void writeLinesToFile(List<String> lines, File out) throws IOException {
-        writeLineToFile(lines, out, StandardCharsets.UTF_8.name());
+        writeLinesToFile(lines, out, StandardCharsets.UTF_8.name());
     }
 
     /**
@@ -501,8 +510,63 @@ public final class FileSystemUtil {
      * @param charset The Charset to use.
      * @throws IOException If something goes wrong.
      */
-    public static void writeLineToFile(List<String> lines, File out, String charset) throws IOException {
+    public static void writeLinesToFile(List<String> lines, File out, String charset) throws IOException {
         Files.write(out.toPath(), lines, Charset.forName(charset));
     }
 
+    /**
+     * Given a count of bytes, returns a human-readable String representation of it.
+     */
+    public static String getPrintableSize(long size) {
+        if (size < 1024) { return size + " bytes"; }
+
+        String[] units = {"KB", "MB", "GB", "TB", "PB"};
+        int unitIndex = (int)(Math.log(size) / Math.log(1024)) - 1;
+        unitIndex = Math.min(unitIndex, units.length - 1);
+
+        double value = size / Math.pow(1024, unitIndex + 1);
+        return String.format("%.1f %s", value, units[unitIndex]);
+    }
+
+    public static String extractTextFileFromJar(String targetFilename, File jarFile) throws Exception {
+        return extractTextFileFromJar(targetFilename, jarFile, StandardCharsets.UTF_8);
+    }
+
+    public static String extractTextFileFromJar(String targetFilename, File jarFile, Charset charset) throws Exception {
+        if (jarFile == null || !jarFile.exists() || !jarFile.isFile() || !jarFile.canRead()) {
+            throw new Exception("Input jar file does not exist or can't be read!");
+        }
+
+        try (JarFile jar = new JarFile(jarFile)) {
+            Enumeration<JarEntry> e = jar.entries();
+            while (e.hasMoreElements()) {
+                JarEntry je = e.nextElement();
+                if (je.isDirectory()) {
+                    continue; // skip directories
+                }
+                if (!je.getName().equals(targetFilename) && !je.getName().endsWith("/" + targetFilename)) {
+                    continue; // Name doesn't match
+                }
+
+                try (InputStream is = jar.getInputStream(je)) {
+                    byte[] bytes = is.readAllBytes();
+
+                    // Check first N bytes for binary indicators
+                    int sampleSize = Math.min(512, bytes.length);
+                    for (int i = 0; i < sampleSize; i++) {
+                        byte b = bytes[i];
+                        // Allow printable ASCII, common whitespace, and UTF-8 continuation bytes
+                        if (b < 32 && b != '\n' && b != '\r' && b != '\t') {
+                            throw new Exception("File to extract appears to be binary data.");
+                        }
+                    }
+
+                    return new String(bytes, charset);
+                }
+            }
+        }
+
+        // If we get here, we didn't find anything:
+        return null;
+    }
 }

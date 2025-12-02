@@ -181,21 +181,21 @@ public class PlaybackThread implements Runnable {
     }
 
     protected void fireStartedEvent() {
-        for (PlaybackListener listener : listeners) {
+        for (PlaybackListener listener : new ArrayList<>(listeners)) {
             listener.started();
         }
     }
 
     protected boolean fireProgressEvent(long current, long total) {
         boolean shouldContinue = true;
-        for (PlaybackListener listener : listeners) {
+        for (PlaybackListener listener : new ArrayList<>(listeners)) {
             shouldContinue = shouldContinue && listener.updateProgress(current, total);
         }
         return shouldContinue;
     }
 
     protected void fireStopEvent(StopReason stopReason) {
-        for (PlaybackListener listener : listeners) {
+        for (PlaybackListener listener : new ArrayList<>(listeners)) {
             listener.stopped(stopReason);
         }
     }

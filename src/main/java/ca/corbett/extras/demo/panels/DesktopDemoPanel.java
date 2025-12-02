@@ -21,25 +21,26 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A demo panel for the CustomizableDesktopPane, showing off color gradient backgrounds
+ * and optional placement of a logo image on the desktop background.
+ */
 public class DesktopDemoPanel extends PanelBuilder {
 
-    private Gradient gradient;
-    private CustomizableDesktopPane desktopPane;
+    private static final Gradient INITIAL_GRADIENT = new Gradient(GradientType.STAR, Color.BLACK, Color.BLUE);
+    private final CustomizableDesktopPane desktopPane;
 
     public DesktopDemoPanel() {
-        gradient = new Gradient(GradientType.STAR, Color.BLACK, Color.BLUE);
-
         LogoProperty logoProperty = new LogoProperty("demo");
         logoProperty.setLogoHeight(80);
         BufferedImage logoImage = LogoGenerator.generateImage("Logo", logoProperty);
-        desktopPane = new CustomizableDesktopPane(logoImage, CustomizableDesktopPane.LogoPlacement.BOTTOM_RIGHT, 0.5f,
-                                                  gradient);
+        desktopPane = new CustomizableDesktopPane(logoImage,
+                                                  CustomizableDesktopPane.LogoPlacement.BOTTOM_RIGHT,
+                                                  0.5f,
+                                                  INITIAL_GRADIENT);
     }
 
     @Override
@@ -53,70 +54,53 @@ public class DesktopDemoPanel extends PanelBuilder {
         container.setLayout(new BorderLayout());
 
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
-        formPanel.setBorderMargin(24);
+        formPanel.setBorderMargin(16);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>If your application uses JDesktopPane, you may be frustrated with the lack of<br/>");
-        sb.append("options for customization.  Meet the CustomizableDesktopPane!</html>");
-        LabelField labelField = new LabelField(sb.toString());
+        String sb = "<html>If your application uses JDesktopPane, you may be frustrated with the lack of<br/>" +
+                "options for customization.  Meet the CustomizableDesktopPane!</html>";
+        LabelField labelField = new LabelField(sb);
         labelField.getMargins().setTop(14).setBottom(18);
         formPanel.add(labelField);
 
-        final ColorField bgColorField = new ColorField("Background:", ColorSelectionType.EITHER).setGradient(gradient)
-                                                                                                .setColor(Color.BLACK);
+        // We can set up a ColorField for allowing either solid-color backgrounds or gradient backgrounds.
+        final ColorField bgColorField = new ColorField("Background:", ColorSelectionType.EITHER)
+                .setColor(Color.BLACK)
+                .setGradient(INITIAL_GRADIENT);
         bgColorField.addValueChangedListener(field -> {
             Object val = bgColorField.getSelectedValue();
             if (val instanceof Color) {
-                //TODO wtf is this trying to do gradient.setColor1((Color)val);
-                //TODO and this gradient.setColor2((Color)val);
+                desktopPane.setBgSolidColor((Color)val);
             }
             else {
-                gradient = (Gradient)val;
+                desktopPane.setGradientConfig((Gradient)val);
             }
-            desktopPane.setGradientConfig(gradient);
         });
         formPanel.add(bgColorField);
 
+        // If a logo image is to be displayed, you can control its transparency:
         NumberField alphaField = new NumberField("Logo alpha:", 0.5, 0.0, 1.0, 0.1);
         alphaField.addValueChangedListener(field -> {
             desktopPane.setLogoImageTransparency(alphaField.getCurrentValue().floatValue());
         });
         formPanel.add(alphaField);
 
-        List<String> options = new ArrayList<>();
-        for (CustomizableDesktopPane.LogoPlacement placement : CustomizableDesktopPane.LogoPlacement.values()) {
-            options.add(placement.toString());
-        }
-        ComboField<String> placementCombo = new ComboField<>("Logo placement:", options, 4, false);
+        // We can easily create a combo field to represent the placement options.
+        // This is because ComboField can be driven directly from an enum, as long as sensible toString() is provided.
+        ComboField<CustomizableDesktopPane.LogoPlacement> placementCombo;
+        placementCombo = new ComboField<>("Logo placement:",
+                                          List.of(CustomizableDesktopPane.LogoPlacement.values()),
+                                          4,
+                                          false);
         placementCombo.addValueChangedListener(field -> {
-            desktopPane.setLogoImagePlacement(
-                    CustomizableDesktopPane.LogoPlacement.fromLabel(placementCombo.getSelectedItem()));
+            desktopPane.setLogoImagePlacement(placementCombo.getSelectedItem());
         });
         formPanel.add(placementCombo);
 
+        // Let's add a button that lets the user put a dummy internal frame into the desktop:
         PanelField buttonWrapper = new PanelField();
         buttonWrapper.getPanel().setLayout(new FlowLayout(FlowLayout.LEFT));
         JButton button = new JButton("Add frame");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JInternalFrame frame = new JInternalFrame("Example frame", true, true, true, true) {
-                    @Override
-                    public void setVisible(boolean v) {
-                        setSize(new Dimension(250, 100));
-                        setLocation(100, 100);
-                        setMinimumSize(new Dimension(250, 100));
-                        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-                        setResizable(true);
-                        super.setVisible(v);
-                    }
-
-                };
-                desktopPane.add(frame);
-                frame.setVisible(true);
-            }
-
-        });
+        button.addActionListener(e -> addFrame());
         buttonWrapper.getPanel().add(button);
         buttonWrapper.getMargins().setAll(0).setLeft(24).setTop(8);
         formPanel.add(buttonWrapper);
@@ -124,5 +108,25 @@ public class DesktopDemoPanel extends PanelBuilder {
         container.add(formPanel, BorderLayout.SOUTH);
         container.add(desktopPane, BorderLayout.CENTER);
         return container;
+    }
+
+    /**
+     * Invoked internally to add a dummy internal frame to our sample desktop
+     * so you can get a feel for how it will look and behave in an actual application.
+     */
+    private void addFrame() {
+        JInternalFrame frame = new JInternalFrame("Example frame", true, true, true, true) {
+            @Override
+            public void setVisible(boolean v) {
+                setSize(new Dimension(250, 100));
+                setLocation(100, 100);
+                setMinimumSize(new Dimension(250, 100));
+                setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+                setResizable(true);
+                super.setVisible(v);
+            }
+        };
+        desktopPane.add(frame);
+        frame.setVisible(true);
     }
 }

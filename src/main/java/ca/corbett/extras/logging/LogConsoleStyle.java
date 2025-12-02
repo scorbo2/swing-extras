@@ -242,7 +242,7 @@ public final class LogConsoleStyle {
     }
 
     private void fireChangeEvent() {
-        for (ChangeListener listener : changeListeners) {
+        for (ChangeListener listener : new ArrayList<>(changeListeners)) {
             ChangeEvent event = new ChangeEvent(this);
             listener.stateChanged(event);
         }

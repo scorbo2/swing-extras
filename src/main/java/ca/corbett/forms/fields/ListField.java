@@ -1,6 +1,5 @@
 package ca.corbett.forms.fields;
 
-import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
@@ -20,7 +19,7 @@ import java.util.List;
 public class ListField<T> extends FormField {
 
     private final JList<T> list;
-    private final AbstractListModel<T> listModel;
+    private final DefaultListModel<T> listModel;
     private boolean shouldExpand = false;
 
     /**
@@ -33,9 +32,10 @@ public class ListField<T> extends FormField {
 
     /**
      * If you supply a ListModel of T, we will use that instead of creating a
-     * DefaultListModel, but beware - you must populate the model beforehand.
+     * DefaultListModel. Either way, you can retrieve the model after creation
+     * with the getListModel() method.
      */
-    public ListField(String label, AbstractListModel<T> listModel) {
+    public ListField(String label, DefaultListModel<T> listModel) {
         fieldLabel.setText(label);
         this.listModel = listModel;
         list = new JList<>(listModel);
@@ -97,6 +97,13 @@ public class ListField<T> extends FormField {
             case JList.HORIZONTAL_WRAP:
                 list.setLayoutOrientation(orientation);
         }
+        return this;
+    }
+
+    @Override
+    public FormField setEnabled(boolean isEnabled) {
+        super.setEnabled(isEnabled);
+        list.setEnabled(isEnabled);
         return this;
     }
 
@@ -165,7 +172,7 @@ public class ListField<T> extends FormField {
      * By default (unless the constructor was given something else), this will
      * return a DefaultListModel&lt;T&gt; instance.
      */
-    public AbstractListModel<T> getListModel() {
+    public DefaultListModel<T> getListModel() {
         return listModel;
     }
 
@@ -231,7 +238,7 @@ public class ListField<T> extends FormField {
         return shouldExpand;
     }
 
-    private static <T> DefaultListModel<T> createDefaultListModel(List<T> items) {
+    protected static <T> DefaultListModel<T> createDefaultListModel(List<T> items) {
         DefaultListModel<T> model = new DefaultListModel<>();
         model.addAll(items);
         return model;

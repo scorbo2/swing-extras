@@ -19,21 +19,29 @@ import java.util.Objects;
  * fields can be thrown into the custom field map, but you are restricted
  * to simple single-line string values. Every extension should package
  * an extInfo.json file as a resource into its jar file so that it can
- * be discovered and interrogated by ExtensionManager. See ExtensionManager.extractExtInfo()
- * for more.
+ * be discovered and interrogated by ExtensionManager.
+ * <p>
+ * See ExtensionManager.extractExtInfo() for more.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public class AppExtensionInfo {
 
+    public static final String EXT_TYPE_BUILTIN = "Application built-in";
+    public static final String EXT_TYPE_SYSTEM = "System extension";
+    public static final String EXT_TYPE_USER = "User extension";
+
     protected static Gson gson;
 
     protected final String name;
     protected final String version;
+    protected final String projectUrl; // GitHub page or whatever
     protected final String targetAppName;
     protected final String targetAppVersion;
     protected final String author;
+    protected final String authorUrl;
     protected final String releaseNotes;
     protected final String shortDescription;
     protected final String longDescription;
@@ -42,6 +50,8 @@ public class AppExtensionInfo {
     protected AppExtensionInfo(Builder builder) {
         this.name = builder.name;
         this.author = builder.author;
+        this.authorUrl = builder.authorUrl;
+        this.projectUrl = builder.projectUrl;
         this.version = builder.version;
         this.targetAppName = builder.targetAppName;
         this.targetAppVersion = builder.targetAppVersion;
@@ -119,6 +129,14 @@ public class AppExtensionInfo {
         return author;
     }
 
+    public String getAuthorUrl() {
+        return authorUrl;
+    }
+
+    public String getProjectUrl() {
+        return projectUrl;
+    }
+
     public String getVersion() {
         return version;
     }
@@ -157,57 +175,25 @@ public class AppExtensionInfo {
     }
 
     @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 23 * hash + Objects.hashCode(this.name);
-        hash = 23 * hash + Objects.hashCode(this.version);
-        hash = 23 * hash + Objects.hashCode(this.targetAppName);
-        hash = 23 * hash + Objects.hashCode(this.targetAppVersion);
-        hash = 23 * hash + Objects.hashCode(this.author);
-        hash = 23 * hash + Objects.hashCode(this.releaseNotes);
-        hash = 23 * hash + Objects.hashCode(this.shortDescription);
-        hash = 23 * hash + Objects.hashCode(this.longDescription);
-        hash = 23 * hash + Objects.hashCode(this.customFields);
-        return hash;
+    public boolean equals(Object object) {
+        if (!(object instanceof AppExtensionInfo that)) { return false; }
+        return Objects.equals(name, that.name)
+                && Objects.equals(version, that.version)
+                && Objects.equals(projectUrl, that.projectUrl)
+                && Objects.equals(targetAppName, that.targetAppName)
+                && Objects.equals(targetAppVersion, that.targetAppVersion)
+                && Objects.equals(author, that.author)
+                && Objects.equals(authorUrl, that.authorUrl)
+                && Objects.equals(releaseNotes, that.releaseNotes)
+                && Objects.equals(shortDescription, that.shortDescription)
+                && Objects.equals(longDescription, that.longDescription)
+                && Objects.equals(customFields, that.customFields);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AppExtensionInfo other = (AppExtensionInfo)obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        if (!Objects.equals(this.version, other.version)) {
-            return false;
-        }
-        if (!Objects.equals(this.targetAppName, other.targetAppName)) {
-            return false;
-        }
-        if (!Objects.equals(this.targetAppVersion, other.targetAppVersion)) {
-            return false;
-        }
-        if (!Objects.equals(this.author, other.author)) {
-            return false;
-        }
-        if (!Objects.equals(this.releaseNotes, other.releaseNotes)) {
-            return false;
-        }
-        if (!Objects.equals(this.shortDescription, other.shortDescription)) {
-            return false;
-        }
-        if (!Objects.equals(this.longDescription, other.longDescription)) {
-            return false;
-        }
-        return Objects.equals(this.customFields, other.customFields);
+    public int hashCode() {
+        return Objects.hash(name, version, projectUrl, targetAppName, targetAppVersion, author, authorUrl,
+                            releaseNotes, shortDescription, longDescription, customFields);
     }
 
     protected static Gson getGson() {
@@ -222,6 +208,8 @@ public class AppExtensionInfo {
         protected final String name;
         protected String version;
         protected String author;
+        protected String authorUrl;
+        protected String projectUrl;
         protected String targetAppName;
         protected String targetAppVersion;
         protected String shortDescription;
@@ -241,6 +229,16 @@ public class AppExtensionInfo {
 
         public Builder setAuthor(String author) {
             this.author = author;
+            return this;
+        }
+
+        public Builder setAuthorUrl(String authorUrl) {
+            this.authorUrl = authorUrl;
+            return this;
+        }
+
+        public Builder setProjectUrl(String projectUrl) {
+            this.projectUrl = projectUrl;
             return this;
         }
 

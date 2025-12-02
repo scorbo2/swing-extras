@@ -16,12 +16,7 @@ import java.util.List;
  */
 public abstract class AppExtension {
 
-    protected final List<AbstractProperty> configProperties;
-
-    public AppExtension() {
-        List<AbstractProperty> props = createConfigProperties();
-        configProperties = props == null ? new ArrayList<>() : props;
-    }
+    protected List<AbstractProperty> configProperties;
 
     /**
      * Should return an AppExtensionInfo object that describes this extension.
@@ -72,4 +67,17 @@ public abstract class AppExtension {
      * @return A List of AbstractProperty instance. May be null or empty.
      */
     protected abstract List<AbstractProperty> createConfigProperties();
+
+    /**
+     * This method is invoked exactly once when an extension is dynamically loaded from
+     * a jar file. If the extension has resources (images, sound effects, icons, text files,
+     * config files, or any other resource type) that it wishes to load from its jar file
+     * via class.getResource() or class.getResourceAsStream(), it MUST do it either in its
+     * constructor or in this method. Attempting to load jar resources anywhere else in the
+     * extension will fail, because the URLClassLoader that loads the extension is closed
+     * by ExtensionManager immediately after the extension is instantiated.
+     * No default implementation is provided so that extensions are forced to implement
+     * this method (even if empty, in the case of an extension with no resources to load).
+     */
+    protected abstract void loadJarResources();
 }

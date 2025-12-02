@@ -1,6 +1,5 @@
 package ca.corbett.extras.demo.panels;
 
-import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.gradient.Gradient;
@@ -10,7 +9,6 @@ import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageTextUtil;
 import ca.corbett.extras.properties.Properties;
-import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
@@ -54,7 +52,6 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
     private boolean isBold;
     private boolean isItalic;
     private Gradient bgGradient;
-    private Color bgSolidColor;
     private Color fillColor;
     private Color outlineColor;
     private int outlineWidth;
@@ -68,7 +65,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         isItalic = false;
         bgGradient = new Gradient(GradientType.HORIZONTAL_STRIPE, Color.BLUE, Color.BLACK);
         fillColor = Color.CYAN;
-        outlineColor = Color.ORANGE;
+        outlineColor = Color.DARK_GRAY;
         outlineWidth = 20;
         textAlign = ImageTextUtil.TextAlign.CENTER;
         lineWrapAt = 25;
@@ -87,14 +84,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         imagePanel = new ImagePanel(image, ImagePanelConfig.createDefaultProperties());
         panel.add(imagePanel, BorderLayout.CENTER);
 
-        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
-        formPanel.setBorderMargin(12);
-
-        final LabelField label = LabelField.createBoldHeaderLabel("ImageTextUtil", 20, 0, 8);
-        label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> label.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(label);
+        FormPanel formPanel = buildFormPanel("ImageTextUtil", 12);
 
         LabelField labelField = new LabelField("<html>The ImageTextUtil class gives you a way<br>" +
                                             "to write multiple lines of text to an image<br>" +
@@ -103,38 +93,43 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         labelField.getMargins().setBottom(10);
         formPanel.add(labelField);
 
+        // Let's create a small-ish multi-line text field for entering text:
         textField = LongTextField.ofFixedSizeMultiLine("Text:", 4, 16);
         textField.setText(text);
         textField.addValueChangedListener(changeListener);
         formPanel.add(textField);
 
+        // We can add a FontField for picking the desired font:
         fontField = new FontField("Font:");
         fontField.addValueChangedListener(changeListener);
         fontField.setShowSizeField(false);
         formPanel.add(fontField);
 
+        // Solid-color backgrounds are boring, so let's force a gradient background for our image:
         bgColorField = new ColorField("Background:", ColorSelectionType.GRADIENT).setGradient(bgGradient);
         bgColorField.addValueChangedListener(changeListener);
         formPanel.add(bgColorField);
 
+        // For text generation we can limit the color options to solid colors:
         textFillColorField = new ColorField("Text fill:", ColorSelectionType.SOLID).setColor(fillColor);
         textFillColorField.addValueChangedListener(changeListener);
         formPanel.add(textFillColorField);
 
+        // Likewise for text outline color selection, let's limit the options to solid colors:
         textOutlineColorField = new ColorField("Text outline:", ColorSelectionType.SOLID).setColor(outlineColor);
         textOutlineColorField.addValueChangedListener(changeListener);
         formPanel.add(textOutlineColorField);
 
-        List<String> options = new ArrayList<>();
-        for (ImageTextUtil.TextAlign align : ImageTextUtil.TextAlign.values()) {
-            options.add(align.toString());
-        }
+        // We can build our text alignment options directly from the TextAlign enum:
         textAlignField = new ComboField<>("Text align:",
-                                          List.of(ImageTextUtil.TextAlign.values()), 4, false);
+                                          List.of(ImageTextUtil.TextAlign.values()),
+                                          4,
+                                          false);
         textAlignField.addValueChangedListener(changeListener);
         formPanel.add(textAlignField);
 
-        options.clear();
+        // We can add a combo for picking an outline width:
+        List<String> options = new ArrayList<>();
         options.add("None");
         options.add("Thin");
         options.add("Medium");
@@ -143,6 +138,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         outlineWidthField.addValueChangedListener(changeListener);
         formPanel.add(outlineWidthField);
 
+        // And for line wrap, we can just let the user pick the character count at which wrap will occur:
         lineWrapField = new NumberField("Line wrap:", 25, 5, 100, 1);
         lineWrapField.addValueChangedListener(changeListener);
         formPanel.add(lineWrapField);
@@ -154,27 +150,51 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         return panel;
     }
 
+    /**
+     * Invoked internally to render the image with current settings and display it:
+     */
     private void render() {
         Graphics2D graphics = image.createGraphics();
-        if (bgGradient != null) {
-            GradientUtil.fill(bgGradient, graphics, 0, 0, image.getWidth(), image.getHeight());
-        }
-        else {
-            graphics.setColor(bgSolidColor);
-            graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
-        }
-        graphics.dispose();
+        try {
+            // If our gradient makes sense, use it to fill the image:
+            if (bgGradient != null) {
+                GradientUtil.fill(bgGradient, graphics, 0, 0, image.getWidth(), image.getHeight());
+            }
 
+            // Otherwise, something has gone wrong, so default to something else:
+            else {
+                graphics.setColor(Color.BLACK);
+                graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
+            }
+        }
+        finally {
+            graphics.dispose();
+        }
+
+        // If our text makes no sense, default it to something safe:
         if (text.isBlank()) {
             text = Version.NAME;
         }
 
-        ImageTextUtil.drawText(image, text, lineWrapAt,
-                               Properties.createFontFromAttributes(fontFamily, isBold, isItalic, 12), textAlign,
-                               outlineColor, outlineWidth, fillColor);
+        // ImageTextUtil has many options for rendering text!
+        // It's worth exploring that class to really see what it can do!
+        ImageTextUtil.drawText(image,
+                               text,
+                               lineWrapAt,
+                               Properties.createFontFromAttributes(fontFamily, isBold, isItalic, 12),
+                               textAlign,
+                               outlineColor,
+                               outlineWidth,
+                               fillColor);
+
+        // Render the results into our ImagePanel:
         imagePanel.setImage(image);
     }
 
+    /**
+     * All of our FormFields can share this one ValueChangedListener, which simply
+     * grabs all of our current settings and uses them to render the example image.
+     */
     private final ValueChangedListener changeListener = new ValueChangedListener() {
         @Override
         public void formFieldValueChanged(FormField field) {
@@ -182,15 +202,7 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
             fontFamily = fontField.getSelectedFont().getFamily();
             isBold = fontField.getSelectedFont().isBold();
             isItalic = fontField.getSelectedFont().isItalic();
-            Object something = bgColorField.getSelectedValue();
-            if (something instanceof Color) {
-                bgGradient = null;
-                bgSolidColor = (Color)something;
-            }
-            else {
-                bgSolidColor = null;
-                bgGradient = (Gradient)something;
-            }
+            bgGradient = (Gradient)bgColorField.getSelectedValue();
             fillColor = textFillColorField.getColor();
             outlineColor = textOutlineColorField.getColor();
             //@formatter:off

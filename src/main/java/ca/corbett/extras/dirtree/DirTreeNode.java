@@ -4,6 +4,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * Represents a single directory within our DirTree.
@@ -67,5 +68,25 @@ public final class DirTreeNode extends DefaultMutableTreeNode {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof DirTreeNode that)) { return false; }
+        if (dir == null && that.dir != null) {
+            return false;
+        }
+        if (dir != null && that.dir == null) {
+            return false;
+        }
+        if (dir != null && !dir.getAbsolutePath().equals(that.dir.getAbsolutePath())) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dir);
     }
 }

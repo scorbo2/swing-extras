@@ -1,256 +1,391 @@
 package ca.corbett.extensions.ui;
 
-import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.AppExtensionInfo;
-import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.extras.properties.Properties;
+import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FontField;
+import ca.corbett.forms.fields.ImageListField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.LongTextField;
-import ca.corbett.forms.fields.PanelField;
 
 import javax.swing.AbstractAction;
-import javax.swing.JCheckBox;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import java.awt.Desktop;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Shows the details of a single AppExtension (by interrogating its AppExtensionInfo).
- * Can also be used to enable or disable an extension. You shouldn't generally need
- * to instantiate this panel yourself... much easier to go through ExtensionPanel
- * or ExtensionDialog.
+ * Displays details about an extension using a supplied AppExtensionInfo instance.
+ * Optionally, callers can provide additional information about the extension to
+ * display extra information:
+ * <ul>
+ *     <li>For locally installed and loaded extensions, you can supply a jar file
+ *         to display information about where the extension is installed.
+ *     <li>For downloadable extensions that are not yet installed, you can display
+ *         information such as the list of screenshots provided (if any).
+ *     <li>You can supply a null AppExtensionInfo instance for a "blank" display panel.
+ * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public class ExtensionDetailsPanel extends JPanel {
 
+    private static final Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+
     protected final Window owner;
-    protected final ExtensionManager extManager;
-    protected final List<ExtensionDetailsPanelListener> listeners;
-    protected final AppExtension extension;
+    protected final AppExtensionInfo extInfo;
     protected FormPanel formPanel;
-
-    protected JCheckBox enabledCheckBox;
+    protected LabelField nameField;
+    protected LabelField extensionTypeField;
+    protected LabelField jarLocationField;
+    protected LabelField jarNameField;
+    protected LabelField configPropsField;
+    protected ImageListField screenshotsField;
 
     /**
-     * Creates a new ExtensionDetailsPanel for the given AppExtension, which can be null - if
-     * null, an empty disabled panel will be generated.
-     *
-     * @param owner The Window that owns this panel.
-     * @param manager   The ExtensionManager that's managing this extension.
-     * @param extension Any AppExtension, or null to generate a disabled empty details panel.
-     * @param isEnabled Whether the given extension is enabled (ignored if extension is null).
+     * Creates an ExtensionDetailsPanel for the given AppExtensionInfo instance (which may be null).
+     * The Window parameter is to set ownership and position of any popups launched from this panel.
      */
-    public ExtensionDetailsPanel(Window owner, ExtensionManager manager, AppExtension extension, boolean isEnabled) {
+    public ExtensionDetailsPanel(Window owner, AppExtensionInfo extInfo) {
         this.owner = owner;
-        listeners = new ArrayList<>();
-        this.extension = extension;
-        this.extManager = manager;
-        initComponents(isEnabled);
+        this.extInfo = extInfo;
+        initComponents();
     }
 
     /**
-     * Returns the state of the "enabled" checkbox, which can be manipulated by the user.
-     *
-     * @return Whether this extension is marked as enabled or not.
+     * The extension Name field can be optionally made hidden. This is useful if you are selecting
+     * extensions out of a list, and the name of the extension is already obvious from context.
      */
-    public boolean isExtensionEnabled() {
-        return enabledCheckBox.isSelected();
+    public ExtensionDetailsPanel setNameFieldVisible(boolean visible) {
+        nameField.setVisible(visible);
+        return this;
     }
 
     /**
-     * Allows programmatic setting of the "enabled" checkbox. Note that this doesn't actually
-     * enable or disable the extension - it just sets the checkbox state in this
-     * details panel, which can later be read by isExtensionEnabled().
-     *
-     * @param enabled The new value for the enabled checkbox.
+     * Use this method to indicate that the extension in question is a locally-installed
+     * extension with the given source jar. Doing so will display extra information
+     * inferred from the supplied jar file (which may be null).
+     * <p>
+     * <b>If the given jar file is null:</b> the extension is considered a "built-in"
+     * (application-supplied) extension that does not have an install location.
+     * </p>
+     * <p>
+     * <b>If the given jar file is not null:</b>
+     * </p>
+     * <ul>
+     *     <li>The install location of the jar file is displayed.
+     *     <li>The name of the jar file is displayed.
+     *     <li>Extension type: "system" if the jar is in a read-only location, or "user"
+     *         if the jar is in a writable directory.
+     * </ul>
+     * <p>
+     *     Note that this method does nothing if the AppExtensionInfo supplied to
+     *     the constructor was null.
+     * </p>
      */
-    public void setExtensionEnabled(boolean enabled) {
-        enabledCheckBox.setSelected(enabled);
+    public ExtensionDetailsPanel setIsLocallyInstalledExtension(File jarFile) {
+        if (extInfo == null) {
+            return this;
+        }
+
+        // If there's no jar file, then it's an application-supplied extension.
+        if (jarFile == null) {
+            extensionTypeField.setText(AppExtensionInfo.EXT_TYPE_BUILTIN);
+            extensionTypeField.setVisible(true);
+        }
+
+        // Otherwise, show information about the jar file:
+        else {
+            File parentDir = jarFile.getParentFile();
+            extensionTypeField.setText(parentDir.canWrite()
+                                               ? AppExtensionInfo.EXT_TYPE_USER
+                                               : AppExtensionInfo.EXT_TYPE_SYSTEM);
+            jarLocationField.setText(ExtensionManagerDialog.trimString(jarFile.getParentFile().getAbsolutePath()));
+            jarNameField.setText(ExtensionManagerDialog.trimString(jarFile.getName()));
+            extensionTypeField.setVisible(true);
+            jarLocationField.setVisible(true);
+            jarNameField.setVisible(true);
+        }
+
+        return this;
     }
 
     /**
-     * Registers a listener that will be informed when our enabled checkbox state is modified.
-     *
-     * @param listener An ExtensionDetailsPanelListener
+     * You can supply optional screenshots to accompany this extension's display.
      */
-    public void addExtensionDetailsPanelListener(ExtensionDetailsPanelListener listener) {
-        listeners.add(listener);
+    public ExtensionDetailsPanel addScreenshot(BufferedImage screenshot, boolean isEditable) {
+        screenshotsField.setVisible(true);
+        screenshotsField.setEnabled(isEditable);
+        screenshotsField.addImage(screenshot);
+        return this;
     }
 
     /**
-     * Unregisters the given listener.
-     *
-     * @param listener An ExtensionDetailsPanelListener
+     * You can supply optional screenshots to accompany this extension's display.
      */
-    public void removeExtensionDetailsPanelListener(ExtensionDetailsPanelListener listener) {
-        listeners.remove(listener);
+    public ExtensionDetailsPanel addScreenshot(BufferedImage thumbnail, ImageIcon screenshot, boolean isEditable) {
+        screenshotsField.setVisible(true);
+        screenshotsField.setEnabled(isEditable);
+        screenshotsField.addImage(thumbnail, screenshot);
+        return this;
     }
 
-    protected void initComponents(boolean isEnabled) {
+    public ExtensionDetailsPanel setScreenshotsVisible(boolean visible) {
+        screenshotsField.setVisible(visible);
+        return this;
+    }
+
+    public ExtensionDetailsPanel setScreenshotsEditable(boolean editable) {
+        screenshotsField.setEnabled(editable);
+        return this;
+    }
+
+    public int getScreenshotCount() {
+        return screenshotsField.getImageCount();
+    }
+
+    public Object getScreenshotAtIndex(int i) {
+        return screenshotsField.getImageAt(i);
+    }
+
+    public ExtensionDetailsPanel setScreenshotsThumbnailSize(int size) {
+        screenshotsField.setVisible(true);
+        screenshotsField.setThumbnailSize(size);
+        return this;
+    }
+
+    /**
+     * You can supply a list of configuration properties for the extension, in which case a hyperlink
+     * field will be shown to display a preview of those properties. Note that if the given list does
+     * not contain any exposed properties (isExposed() == true), then the field will not be shown.
+     */
+    public ExtensionDetailsPanel setConfigProperties(List<AbstractProperty> configProps) {
+        if (hasVisibleProps(configProps)) {
+            configPropsField.setVisible(true);
+            configPropsField.clearHyperlink();
+            boolean isPlural = configProps.size() > 1;
+            String labelText = configProps.size() + " " + (isPlural ? "properties" : "property");
+            configPropsField.setText(labelText);
+            configPropsField.setHyperlink(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    showConfigPreview(configProps);
+                }
+            });
+        }
+        else {
+            configPropsField.setVisible(false);
+            configPropsField.clearHyperlink();
+        }
+        return this;
+    }
+
+    protected void initComponents() {
         setLayout(new BorderLayout());
         formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.setBorderMargin(16);
 
-        PanelField panelField = new PanelField(new FlowLayout(FlowLayout.RIGHT));
-        JPanel panel = panelField.getPanel();
-        enabledCheckBox = new JCheckBox("Enabled", isEnabled);
-        enabledCheckBox.setOpaque(false);
-        if (extension == null) {
-            enabledCheckBox.setSelected(false);
-            enabledCheckBox.setEnabled(false);
-        }
-        enabledCheckBox.addActionListener(e -> fireEnableChangeEvent());
-        panel.add(enabledCheckBox);
-        panelField.getMargins().setAll(0).setInternalSpacing(2);
-        formPanel.add(panelField);
+        addNameField();
+        addVersionField();
+        addVersionRequiredField();
+        addExtensionJarFields();
+        addShortDescriptionField();
+        addAuthorField();
+        addConfigPropsField();
+        addCustomFields();
+        addLongDescriptionField();
+        addProjectUrlField();
+        addReleaseNotesField();
+        addScreenshotsField();
 
-        AppExtensionInfo extInfo = extension == null ? null : extension.getInfo();
-        String name = extInfo == null ? "" : trimString(extInfo.getName(), 40);
-        LabelField nameField = new LabelField(name);
+        add(PropertiesDialog.buildScrollPane(formPanel), BorderLayout.CENTER);
+    }
+
+    /**
+     * Adds a LabelField for displaying the extension name in slightly larger font.
+     * This can be hidden via setNameFieldVisible().
+     */
+    protected void addNameField() {
+        String name = extInfo == null
+                ? "(nothing selected)"
+                : ExtensionManagerDialog.trimString(extInfo.getName(), 40);
+        nameField = new LabelField(name);
+        nameField.setEnabled(extInfo != null);
         nameField.setFont(FontField.getDefaultFont().deriveFont(Font.BOLD, 16f));
         nameField.getMargins().setAll(0).setTop(4).setRight(6);
+        nameField.setVisible(true);
         formPanel.add(nameField);
+    }
 
-        File jarFile = getSourceJar();
-        formPanel.add(new LabelField("Type:", extInfo == null ? "" : determineExtensionType()));
-        if (jarFile != null) {
-            String location = trimString(jarFile.getParentFile().getAbsolutePath());
-            formPanel.add(new LabelField("Location:", location));
-            formPanel.add(new LabelField("Jar file:", trimString(jarFile.getName())));
+    /**
+     * Adds initially-hidden fields for displaying information about locally-installed extensions.
+     * These fields can be made visible via setIsLocallyInstalledExtension().
+     */
+    protected void addExtensionJarFields() {
+        if (extInfo != null) {
+            extensionTypeField = new LabelField("Type:", "");
+            jarLocationField = new LabelField("Location:", "");
+            jarNameField = new LabelField("Jar file:", "");
+            extensionTypeField.setVisible(false);
+            jarLocationField.setVisible(false);
+            jarNameField.setVisible(false);
+            formPanel.add(extensionTypeField);
+            formPanel.add(jarLocationField);
+            formPanel.add(jarNameField);
         }
-        formPanel.add(new LabelField("Version:", extInfo == null ? "" : trimString(extInfo.getVersion())));
+    }
+
+    /**
+     * Adds a LabelField for showing the extension version (if one is set).
+     */
+    protected void addVersionField() {
+        String version = extInfo == null ? "" : ExtensionManagerDialog.trimString(extInfo.getVersion());
+        formPanel.add(new LabelField("Version:", version));
+    }
+
+    /**
+     * If the extension has a targetAppName and a targetAppVersion (which it typically will),
+     * adds a LabelField to show this.
+     */
+    protected void addVersionRequiredField() {
         if (extInfo != null && extInfo.getTargetAppName() != null && extInfo.getTargetAppVersion() != null) {
-            String requires = trimString(extInfo.getTargetAppName() + " " + extInfo.getTargetAppVersion());
+            String requires = ExtensionManagerDialog.trimString(extInfo.getTargetAppName()
+                                                                        + " "
+                                                                        + extInfo.getTargetAppVersion());
             formPanel.add(new LabelField("Requires:", requires));
         }
-        formPanel.add(new LabelField("Author:", extInfo == null ? "" : trimString(extInfo.getAuthor())));
+    }
 
-        if (extension != null) {
-            final List<AbstractProperty> configProps = extension.getConfigProperties();
-            if (hasVisibleProps(configProps)) {
-                boolean isPlural = configProps.size() > 1;
-                String labelText = configProps.size() + " " + (isPlural ? "properties" : "property");
-                LabelField labelField = new LabelField("Config:", labelText);
-                labelField.setHyperlink(new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        showConfigPreview(configProps);
-                    }
-                });
-                formPanel.add(labelField);
-            }
+    /**
+     * Adds a LabelField to show the author name. If an author URL is also set,
+     * adds a LabelField to show that as well.
+     */
+    protected void addAuthorField() {
+        String author = "";
+        if (extInfo != null) {
+            author = ExtensionManagerDialog.trimString(extInfo.getAuthor());
         }
+        formPanel.add(new LabelField("Author:", author));
 
+        if (extInfo != null && extInfo.getAuthorUrl() != null && !extInfo.getAuthorUrl().isBlank()) {
+            LabelField urlField = new LabelField("Author URL:", extInfo.getAuthorUrl());
+            if (isUrl(extInfo.getAuthorUrl())) {
+                urlField.setHyperlink(new HyperlinkAction(owner, extInfo.getAuthorUrl()));
+            }
+            formPanel.add(urlField);
+        }
+    }
+
+    /**
+     * Adds a multi-line text field for showing the short description of this extension.
+     */
+    protected void addShortDescriptionField() {
+        String desc = extInfo == null ? "" : extInfo.getShortDescription();
+        LongTextField field = LongTextField.ofDynamicSizingMultiLine("Description:", 2);
+        field.setText(desc);
+        field.setEditable(false);
+        field.getTextArea().setCaretPosition(0); // scroll to top
+        formPanel.add(field);
+    }
+
+    /**
+     * Adds an initially-hidden LabelField which can show a hyperlink for showing a preview
+     * of any config properties specified by this extension. This field can be made
+     * visible via setConfigProperties().
+     */
+    protected void addConfigPropsField() {
+        configPropsField = new LabelField("Config:", "");
+        configPropsField.setVisible(false);
+        formPanel.add(configPropsField);
+    }
+
+    /**
+     * If any custom fields are defined in the AppExtensionInfo instance, this will
+     * add one LabelField for each defined field.
+     */
+    protected void addCustomFields() {
         if (extInfo != null && !extInfo.getCustomFieldNames().isEmpty()) {
             List<String> customFieldNames = extInfo.getCustomFieldNames();
             for (String fieldName : customFieldNames) {
-                String fieldNameShort = trimString(fieldName, 20);
-                String fieldValueShort = trimString(extInfo.getCustomFieldValue(fieldName));
+                String fieldNameShort = ExtensionManagerDialog.trimString(fieldName, 20);
+                String fieldValueShort = ExtensionManagerDialog.trimString(extInfo.getCustomFieldValue(fieldName));
                 formPanel.add(new LabelField(fieldNameShort + ":", fieldValueShort));
             }
         }
+    }
 
-        LongTextField descriptionField = LongTextField.ofDynamicSizingMultiLine("Description", 8);
-
-        // Marking the TextField as disabled will unfortunately change the text color to something
-        // much lighter, which makes it very hard or almost impossible to read in some look and feels:
-        //descriptionField.setEnabled(false);
-
-        // So instead, we'll leave it as "enabled" but mark the JTextArea itself as read-only:
-        JTextArea jTextArea = descriptionField.getTextArea();
-        jTextArea.setEditable(false);
-
+    /**
+     * Adds a LongTextField with popout capabilities to display the extension's long description.
+     */
+    protected void addLongDescriptionField() {
+        LongTextField descriptionField = LongTextField.ofDynamicSizingMultiLine("Description:", 5);
+        descriptionField.setEditable(false);
+        descriptionField.setAllowPopoutEditing(true);
         descriptionField.setText(extInfo == null ? "" : extInfo.getLongDescription());
-        jTextArea.setCaretPosition(0); // scroll to top
+        descriptionField.getTextArea().setCaretPosition(0); // scroll to top
         descriptionField.getMargins().setAll(4);
         formPanel.add(descriptionField);
-
-        add(formPanel, BorderLayout.CENTER);
-    }
-
-    protected void fireEnableChangeEvent() {
-        String className = extension == null ? null : extension.getClass().getName();
-        if (className == null) {
-            return;
-        }
-        for (ExtensionDetailsPanelListener listener : listeners) {
-            if (enabledCheckBox.isSelected()) {
-                listener.extensionEnabled(this, className);
-            }
-            else {
-                listener.extensionDisabled(this, className);
-            }
-        }
-
     }
 
     /**
-     * If an extension jar exists in a read-only directory, we consider it a "system" extension,
-     * and if it is in a readable directory, it is a "user" extension - there is a third class
-     * of extensions called "application built-in" which are those provided directly by an application
-     * without being externally loaded from a jar file. Applications can decide how to package
-     * and install extensions, and users can decide where to put their own extension jars.
-     * This classification, or "extension type" is displayed in the ExtensionDetailsPanel for
-     * informational purposes, but it doesn't change the way we interact with those extensions.
-     *
-     * @return A String describing the type of extension: System, User, or Application built-in.
+     * If the AppExtensionInfo specifies a project URL, adds a hyperlink label for viewing it.
      */
-    protected String determineExtensionType() {
-        if (extension == null) {
-            return "";
+    protected void addProjectUrlField() {
+        if (extInfo != null && extInfo.getProjectUrl() != null && !extInfo.getProjectUrl().isBlank()) {
+            LabelField urlField = new LabelField("Project URL:", extInfo.getProjectUrl());
+            if (isUrl(extInfo.getAuthorUrl())) {
+                urlField.setHyperlink(new HyperlinkAction(owner, extInfo.getProjectUrl()));
+            }
+            formPanel.add(urlField);
         }
-        File sourceJar = getSourceJar();
-        if (sourceJar == null) {
-            return "Application built-in";
-        }
-        File parentDir = sourceJar.getParentFile();
-        if (!parentDir.canWrite()) {
-            return "System extension";
-        }
-        return "User extension";
     }
 
     /**
-     * Returns the source jar file from which this extension was loaded, or null if there isn't one
-     * (which will be the case for built-in extensions, which are not loaded from external jar files).
-     *
-     * @return A File representing the jar file from which this extension was loaded, or null.
+     * If the AppExtensionInfo specifies release notes, adds a LongTextField with popout capabilities for viewing them.
      */
-    protected File getSourceJar() {
-        if (extension == null) {
-            return null;
+    protected void addReleaseNotesField() {
+        if (extInfo != null && extInfo.getReleaseNotes() != null && !extInfo.getReleaseNotes().isBlank()) {
+            LongTextField releaseNotesField = LongTextField.ofDynamicSizingMultiLine("Release notes:", 5);
+            releaseNotesField.setEditable(false);
+            releaseNotesField.setAllowPopoutEditing(true);
+            releaseNotesField.setText(extInfo.getReleaseNotes());
+            releaseNotesField.getTextArea().setCaretPosition(0); // scroll to top
+            releaseNotesField.getMargins().setAll(4);
+            formPanel.add(releaseNotesField);
         }
-        return extManager.getSourceJar(extension.getClass().getName());
     }
 
-    protected String trimString(String input) {
-        return trimString(input, 50);
-    }
-
-    protected String trimString(String input, final int LIMIT) {
-        if (input == null) {
-            return null;
-        }
-        if (input.length() >= LIMIT) {
-            input = input.substring(0, LIMIT) + "...";
-        }
-        return input;
+    /**
+     * Adds an initially-hidden ImageListPanel for viewing extension screenshots.
+     * This field can be made visible via either of the addScreenshot() methods.
+     */
+    protected void addScreenshotsField() {
+        screenshotsField = new ImageListField("Screenshots:", 1);
+        screenshotsField.setShouldExpand(true);
+        screenshotsField.setVisible(false);
+        screenshotsField.getImageListPanel().setOwnerWindow(owner);
+        formPanel.add(screenshotsField);
     }
 
     /**
@@ -312,5 +447,59 @@ public class ExtensionDetailsPanel extends JPanel {
             prop.setInitiallyEditable(initiallyEditableMap.get(prop.getFullyQualifiedName()));
             prop.setEnabled(enabledMap.get(prop.getFullyQualifiedName()));
         }
+    }
+
+    /**
+     * A generic action that can be hooked onto any hyperlinked LabelField to open
+     * the given url in the user's default browser. If the given URL can't be parsed,
+     * or if the current JRE doesn't support link browsing, then the url is copied
+     * to the system clipboard and an informational popup is shown to that effect.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    protected static class HyperlinkAction extends AbstractAction {
+
+        private final Window ownerWindow;
+        private final String url;
+
+        public HyperlinkAction(Window ownerWindow, String url) {
+            this.ownerWindow = ownerWindow;
+            this.url = url;
+        }
+
+        private void copyToClipboard() {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(url), null);
+            JOptionPane.showMessageDialog(ownerWindow, "Link copied to clipboard.");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (isBrowsingSupported() && desktop != null) {
+                try {
+                    desktop.browse(new URI(url));
+                }
+                catch (IOException | URISyntaxException | IllegalArgumentException ignored) {
+                    copyToClipboard();
+                }
+            }
+            else {
+                copyToClipboard();
+            }
+        }
+    }
+
+    /**
+     * Reports whether the current JRE supports browsing (needed to open hyperlinks).
+     */
+    protected static boolean isBrowsingSupported() {
+        return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);
+    }
+
+    /**
+     * Does a very quick check on the given String to see if it looks like a URL.
+     * This doesn't guarantee that it will parse as one! This is just a very quick check.
+     */
+    public static boolean isUrl(String url) {
+        return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }
 }

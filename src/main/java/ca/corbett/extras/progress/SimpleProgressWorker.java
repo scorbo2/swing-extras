@@ -16,6 +16,19 @@ public abstract class SimpleProgressWorker implements Runnable {
 
     private final List<SimpleProgressListener> listeners = new ArrayList<>();
 
+    /**
+     * Listeners are notified in the order they were added. Normally, this isn't an issue.
+     * But if you need your listener invoked before any other, you can use this method
+     * to put your listener first in the list.
+     */
+    public void addPriorityProgressListener(SimpleProgressListener listener) {
+        if (listeners.isEmpty()) {
+            addProgressListener(listener);
+            return;
+        }
+        listeners.add(0, listener);
+    }
+
     public void addProgressListener(SimpleProgressListener listener) {
         listeners.add(listener);
     }
@@ -29,14 +42,14 @@ public abstract class SimpleProgressWorker implements Runnable {
     }
 
     protected void fireProgressBegins(int totalMajorSteps) {
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             listener.progressBegins(totalMajorSteps);
         }
     }
 
     protected boolean fireProgressUpdate(int currentStep, String message) {
         boolean shouldContinue = true;
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             shouldContinue = shouldContinue && listener.progressUpdate(currentStep, message);
         }
         return shouldContinue;
@@ -44,7 +57,7 @@ public abstract class SimpleProgressWorker implements Runnable {
 
     protected boolean fireProgressError(String errorSource, String errorDetails) {
         boolean shouldContinue = true;
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             shouldContinue = shouldContinue && listener.progressError(errorSource, errorDetails);
         }
         return shouldContinue;
@@ -52,13 +65,13 @@ public abstract class SimpleProgressWorker implements Runnable {
     }
 
     protected void fireProgressComplete() {
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             listener.progressComplete();
         }
     }
 
     public void fireProgressCanceled() {
-        for (SimpleProgressListener listener : listeners) {
+        for (SimpleProgressListener listener : new ArrayList<>(listeners)) {
             listener.progressCanceled();
         }
     }

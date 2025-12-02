@@ -1,6 +1,62 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.5.0 [2025-12-01] - Dynamic extension discovery
+  #171 - UpdateSources: prune local sources automatically
+  #170 - UpdateSources: allow variable substitution
+  #169 - ImageListPanel wasn't handling isReadOnly properly
+  #168 - UpdateManager: more graceful application restarts
+  #167 - New UI component: ToggleableTabbedPane
+  #166 - Fix Look and Feel bug in ColorField and SliderField
+  #165 - Demo app: code cleanup and documentation pass
+  #164 - General: callback listeners were not thread safe
+  #163 - New FormField: PasswordField
+  #161 - MessageUtil: fix warning icon
+  #160 - Add a way to compare version strings reliably
+  #159 - ImageListPanel: fix minor bug with owner window
+  #158 - ExtensionDetailsPanel: make it more flexible
+  #157 - ImageListPanel: animated GIF support
+  #156 - VersionManifest: use relative paths not URLs
+  #155 - General: smarten up listener handling
+  #154 - UpdateSource: force manifest and public key to same host
+  #153 - ListField: use DefaultListModel as the starting point
+  #152 - New FormField: ImageListField
+  #151 - UpdateManager: better unit tests
+  #150 - UpdateManager: handle downloads asynchronously
+  #149 - New dialog: PopupTextDialog
+  #148 - MultiProgressDialog: add initial show delay option
+  #147 - UpdateManager: add flag to allow SNAPSHOT downloads
+  #146 - More customization options in FileField
+  #145 - Add FileSystemUtil.extractTextFileFromJar()
+  #144 - UpdateManager: Support dynamic application restart
+  #143 - ExtensionManagerDialog: rewrite for update support
+  #142 - PanelField/CollapsiblePanelField: handle setEnabled()
+  #139 - Add FileSystemUtil.getPrintableSize()
+  #138 - Add bounds checking to Margins class
+  #137 - Improved FormPanel.setBorderMargin() method
+  #136 - AbstractProperty: add hook for form field generation
+  #135 - CustomizableDesktopPane: add solid color bg option
+  #134 - ComboField should expose its underlying model
+  #133 - ExtensionManager: change extension resource loading
+  #132 - LabelField: make hyperlinks smarter and easier
+  #131 - AboutPanel: show if newer version is available
+  #130 - ExtensionManager: Better logging on initial load
+  #129 - ImageUtil: Faster scanning of image dimensions
+  #128 - AboutPanel should warn about snapshot builds
+  #127 - Performance improvements in FileSystemUtil
+  #126 - Fix resource loading issue in extensions
+  #123 - DirTree: fix node comparison bug
+  #122 - FormPanel.setEnabled() now works as it should
+  #121 - README updates for 2.5.0
+  #120 - FormField: setters should be fluent-style
+  #119 - Fix flickering during dynamic LongTextField resize
+  #116 - Extensions: fix dynamic instantiation issue
+  #115 - Fix NullPointerException in Properties
+  #114 - FormField: pass on validate if field is invisible
+  #113 - FileProperty/DirectoryProperty wired up incorrectly
+  #111 - New FormField: CollapsiblePanelField
+  #109 - New FormField: SliderField
+
 Version 2.4.0 [2025-09-01] - swing-forms rewrite
   #108 - ExtensionManager: fix config preview bug
   #107 - Fix minor form field alignment bug
@@ -116,7 +172,7 @@ Version 1.9.1 [2025-03-26]
   #1 - Change ConfigObject from abstract class to interface
 
 Version 1.9 [2025-03-09]
-  - Project moved to github
+  - Project moved to GitHub
 
 Version 1.8 [2024-12-30] - ExtensionManager/PropertiesManager/EMS
   [UTIL-141] - NumberField(String, SpinnerModel) should be public
@@ -194,7 +250,7 @@ Version 1.6 [2022-05-10] - Properties, progress, gradients, and more
   [UTIL-97] - Make better use of unit testing
   [UTIL-98] - Create FileBasedProperties
   [UTIL-99] - AudioUtil needs a way to limit size of waveform images
-  [UTIL-100] - Add progress handling utiltiies
+  [UTIL-100] - Add progress handling utilities
   [UTIL-101] - MessageUtil should allow warnings
   [UTIL-102] - AboutPanel custom fields should be updateable
   [UTIL-103] - More intelligent color property loading
@@ -267,7 +323,7 @@ Version 1.4 [2020-10-07] - Maintenance release
   [UTIL-70] - TextField should be expandable if multi-line
   [UTIL-71] - FormField.addFieldValidator should reject duplicates
 
-Version 1.3 [2019-11-07] - Mainenance release
+Version 1.3 [2019-11-07] - Maintenance release
   [UTIL-36] - YMDDate needs a copy constructor
   [UTIL-37] - Add AboutDialog and AboutPanel as generic components
   [UTIL-38] - Add ModelObject and DAO base classes
@@ -310,7 +366,7 @@ Version 1.0 [2018-01-02] - Initial version
   [UTIL-12] - ImagePanel is stealing mouse wheel events
   [UTIL-13] - ImagePanel: add a map of configurable properties
   [UTIL-14] - DirTree is sorting directory names stupidly
-  [UTIL-15] - ImagePanel not resizing the image propertly
+  [UTIL-15] - ImagePanel not resizing the image properly
   [UTIL-16] - DirTree needs a "reload"
   [UTIL-17] - ImagePanel auto best fit is wonky sometimes
   [UTIL-18] - FileSystemUtil default sort file is wrong

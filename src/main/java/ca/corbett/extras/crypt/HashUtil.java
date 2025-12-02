@@ -1,4 +1,4 @@
-package ca.corbett.extras;
+package ca.corbett.extras.crypt;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A simple wrapper class to wrap and simplify hashing functionality a little.
+ * A simple wrapper class to simplify hashing functionality a little.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-08-29 (originally written for ICE and then generalized much later)
@@ -23,27 +23,42 @@ public final class HashUtil {
     private static final Logger log = Logger.getLogger(HashUtil.class.getName());
 
     public enum HashType {
-        MD2, MD5, SHA1, SHA256, SHA384, SHA512
+        MD2("MD2"),
+        MD5("MD5"),
+        SHA1("SHA-1"),
+        SHA256("SHA-256"),
+        SHA384("SHA-384"),
+        SHA512("SHA-512");
+
+        private final String label;
+
+        HashType(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 
-    private static Map<HashType, MessageDigest> hashMap;
+    private final static Map<HashType, MessageDigest> hashMap;
 
     private HashUtil() {
     }
 
     static {
-        try {
-            hashMap = new HashMap<>();
-            hashMap.put(HashType.MD2, MessageDigest.getInstance("MD2"));
-            hashMap.put(HashType.MD5, MessageDigest.getInstance("MD5"));
-            hashMap.put(HashType.SHA1, MessageDigest.getInstance("SHA-1"));
-            hashMap.put(HashType.SHA256, MessageDigest.getInstance("SHA-256"));
-            hashMap.put(HashType.SHA384, MessageDigest.getInstance("SHA-384"));
-            hashMap.put(HashType.SHA512, MessageDigest.getInstance("SHA-512"));
-        }
-        catch (NoSuchAlgorithmException nsae) {
-            // The above are all guaranteed to us by the java standard, so this *should* be okay
-            log.log(Level.SEVERE, "Standard digest algorithms are not available in this JDK.", nsae);
+        hashMap = new HashMap<>();
+        for (HashType hashType : HashType.values()) {
+            // Nest the try/catch inside the loop so that if one
+            // fails, the others still have a chance to load:
+            try {
+                hashMap.put(hashType, MessageDigest.getInstance(hashType.toString()));
+            }
+            catch (NoSuchAlgorithmException nsae) {
+                // The above are all guaranteed to us by the java standard, so this *should* be okay
+                log.log(Level.SEVERE, "Digest algorithm not available: " + hashType, nsae);
+            }
         }
         for (MessageDigest digest : hashMap.values()) {
             digest.reset();
@@ -165,5 +180,4 @@ public final class HashUtil {
     public static String byteArrayToHexString(final byte[] data) {
         return HexFormat.of().formatHex(data);
     }
-
 }

@@ -1,5 +1,6 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.gradient.Gradient;
 import ca.corbett.extras.gradient.GradientColorChooser;
@@ -58,6 +59,14 @@ public class ColorField extends FormField {
         else {
             setGradient(gradient);
         }
+
+        // We need to listen for Look and Feel changes, because if we're displaying a
+        // solid color, our panel background will get overridden by the new LaF:
+        LookAndFeelManager.addChangeListener(e -> {
+            if (colorPanel.getImage() == null && solidColor != null) {
+                colorPanel.setBackground(solidColor);
+            }
+        });
     }
 
     /**

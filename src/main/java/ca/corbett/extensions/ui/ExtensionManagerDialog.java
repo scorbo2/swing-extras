@@ -2,6 +2,8 @@ package ca.corbett.extensions.ui;
 
 import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.ExtensionManager;
+import ca.corbett.extras.ToggleableTabbedPane;
+import ca.corbett.updates.UpdateManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -9,10 +11,12 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
+import java.awt.Window;
 
 /**
  * Provides a standardized way of viewing and enabling extensions across applications.
@@ -39,9 +43,11 @@ import java.awt.Frame;
 public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
 
     private final ExtensionManager<T> extManager;
-    private final Frame ownerFrame;
+    private final UpdateManager updateManager;
 
-    private ExtensionManagerPanel extPanel;
+    private ToggleableTabbedPane tabbedPane;
+    private InstalledExtensionsPanel<T> installedExtensionsPanel;
+    private AvailableExtensionsPanel availableExtensionsPanel;
     private boolean autoCommit;
     private boolean wasOkayed;
     private boolean wasModified;
@@ -51,28 +57,31 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
      * default title of "Extension Manager".
      *
      * @param manager The ExtensionManager containing our list of extensions.
-     * @param owner   The owner frame. This dialog will be modal.
+     * @param owner   The owner window. This dialog will be modal.
      */
-    public ExtensionManagerDialog(ExtensionManager manager, Frame owner) {
+    public ExtensionManagerDialog(ExtensionManager<T> manager, Window owner) {
         this(manager, owner, null);
     }
 
     /**
      * Creates an ExtensionManager dialog with the given ExtensionManager
-     * and the given window title.
+     * and the given UpdateSources instance, which may be null. If UpdateSources
+     * is specified, the "available" tab will be shown with options to query
+     * the remote update source for possible downloads.
      *
      * @param manager The ExtensionManager containing our list of extensions.
-     * @param owner   The owner frame. This dialog will be modal.
-     * @param title   The window title. Will be "Extension Manager" if null.
+     * @param owner   The owner window. This dialog will be modal.
+     * @param updateManager An optional UpdateManager instance for querying remote downloadable extensions.
      */
-    public ExtensionManagerDialog(ExtensionManager manager, Frame owner, String title) {
-        super(owner, title == null ? "Extension Manager" : title);
+    public ExtensionManagerDialog(ExtensionManager<T> manager, Window owner, UpdateManager updateManager) {
+        super(owner, "Extension Manager");
         this.extManager = manager;
-        this.ownerFrame = owner;
+        this.updateManager = updateManager;
         this.setSize(new Dimension(700, 485));
-        this.setResizable(false);
+        this.setMinimumSize(new Dimension(700, 485));
+        this.setResizable(true);
         this.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
-        this.setLocationRelativeTo(ownerFrame);
+        this.setLocationRelativeTo(owner);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.autoCommit = true;
         this.wasOkayed = false;
@@ -124,6 +133,11 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         return wasModified;
     }
 
+    public boolean isRestartRequired() {
+        return (installedExtensionsPanel != null && installedExtensionsPanel.isRestartRequired())
+                || (availableExtensionsPanel != null && availableExtensionsPanel.isRestartRequired());
+    }
+
     /**
      * Reports whether the extension with the given class name was toggled to enabled or
      * disabled while this dialog was open. If autoCommit is true, these changes are pushed
@@ -136,13 +150,20 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
      * @return Whether or not the extension is marked as enabled in this dialog.
      */
     public boolean isExtensionEnabled(String className) {
-        return extPanel.isExtensionEnabled(className);
+        return installedExtensionsPanel.isExtensionEnabled(className);
     }
 
     /**
      * Invoked internally when the dialog is okayed. Will determine whether any change
      * was made and store the result in wasModified. Will notify ExtensionManager of any
      * changes if autoCommit is true.
+     * <p>
+     *     <B>NOTE:</B> callers should also check isRestartRequired(), in case extensions
+     *     were added or removed. This dialog gives the user the option of restarting immediately,
+     *     but the user can say no, in which case we'll report it to whoever invoked us, and
+     *     it's on you. If extensions have been installed or uninstalled, the application might
+     *     be in a weird state until it restarts. Might be worth forcing a restart in that case.
+     * </p>
      */
     private void okay() {
         wasOkayed = true;
@@ -151,7 +172,7 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         // First determine if any changes were made:
         for (AppExtension extension : extManager.getAllLoadedExtensions()) {
             String className = extension.getClass().getName();
-            if (extManager.isExtensionEnabled(className) != extPanel.isExtensionEnabled(className)) {
+            if (extManager.isExtensionEnabled(className) != installedExtensionsPanel.isExtensionEnabled(className)) {
                 wasModified = true;
             }
         }
@@ -163,17 +184,74 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
 
                 // This call does nothing if the new enabled state matches the old one,
                 // so we can just fire it off here blindly and let ExtensionManager deal with it:
-                extManager.setExtensionEnabled(className, extPanel.isExtensionEnabled(className));
+                extManager.setExtensionEnabled(className, installedExtensionsPanel.isExtensionEnabled(className));
             }
         }
 
         dispose();
     }
 
+    /**
+     * Utility method to trim the given String to a max length of 50 chars, with
+     * a "..." added to it if we had to cut it down. See trimString(String,int) for
+     * a more flexible version of this method.
+     */
+    protected static String trimString(String input) {
+        return trimString(input, 50);
+    }
+
+    /**
+     * Utility method to trim the given String to the given length, with a "..." added
+     * to it if it was too long.
+     *
+     * @param input The String to be trimmed.
+     * @param LIMIT The maximum length to allow.
+     * @return The input string if it was shorter than LIMIT, or the chopped string plus "..." otherwise.
+     */
+    public static String trimString(String input, final int LIMIT) {
+        if (input == null) {
+            return null;
+        }
+        if (input.length() >= LIMIT) {
+            input = input.substring(0, LIMIT) + "...";
+        }
+        return input;
+    }
+
+
     private void initComponents() {
         setLayout(new BorderLayout());
-        extPanel = new ExtensionManagerPanel(this, extManager);
-        add(extPanel, BorderLayout.CENTER);
+        tabbedPane = new ToggleableTabbedPane();
+        installedExtensionsPanel = new InstalledExtensionsPanel<>(this, extManager, updateManager);
+        tabbedPane.addTab("Installed", installedExtensionsPanel);
+
+        if (updateManager != null) {
+            String appName = extManager.getApplicationName();
+            String appVersion = extManager.getApplicationVersion();
+            availableExtensionsPanel = new AvailableExtensionsPanel(this, extManager, updateManager, appName,
+                                                                    appVersion);
+            tabbedPane.addTab("Available", availableExtensionsPanel);
+        }
+
+        if (!extManager.getStartupErrors().isEmpty()) {
+            tabbedPane.addTab("Errors", new ExtensionErrorsTab(this, extManager));
+        }
+
+        // No point showing the tab header bar if there's only one tab:
+        if (tabbedPane.getTabCount() == 1) {
+            tabbedPane.setTabHeaderVisible(false);
+        }
+
+        tabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                if (tabbedPane.getSelectedComponent() == availableExtensionsPanel) {
+                    availableExtensionsPanel.tabActivated();
+                }
+            }
+        });
+
+        add(tabbedPane, BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
     }
 

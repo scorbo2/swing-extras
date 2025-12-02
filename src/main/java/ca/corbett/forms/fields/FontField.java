@@ -103,8 +103,9 @@ public final class FontField extends FormField {
      * This must be set before the field is rendered. Some use cases require
      * choosing just the font and not also the size.
      */
-    public void setShowSizeField(boolean show) {
+    public FontField setShowSizeField(boolean show) {
         showSizeField = show;
+        return this;
     }
 
     /**
@@ -198,9 +199,10 @@ public final class FontField extends FormField {
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    public FormField setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         button.setEnabled(enabled);
+        return this;
     }
 
     @Override

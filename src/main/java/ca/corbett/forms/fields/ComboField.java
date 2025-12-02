@@ -79,6 +79,10 @@ public class ComboField<T> extends FormField {
         return this;
     }
 
+
+    /**
+     * Returns the number of items currently in the combo box.
+     */
     public int getItemCount() {
         return comboBox.getItemCount();
     }
@@ -137,5 +141,13 @@ public class ComboField<T> extends FormField {
      */
     public ListCellRenderer<? super T> getCellRenderer() {
         return comboBox.getRenderer();
+    }
+
+    /**
+     * Exposes the underlying DefaultComboBoxModel if you need to add or remove elements
+     * after the ComboField has been instantiated.
+     */
+    public DefaultComboBoxModel<T> getComboModel() {
+        return comboModel;
     }
 }

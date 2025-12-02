@@ -1,10 +1,14 @@
 package ca.corbett.forms;
 
+import ca.corbett.extras.image.ImageUtil;
+
 import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -17,17 +21,32 @@ public final class Resources {
 
     private static final Logger log = Logger.getLogger(Resources.class.getName());
     private static Resources instance = null;
+    private static final int DEFAULT_SIZE = 22;
 
     private static final String PREFIX = "ca/corbett/swing-forms";
     private static final String VALID = PREFIX + "/images/formfield-valid.png";
     private static final String INVALID = PREFIX + "/images/formfield-invalid.png";
     private static final String HELP = PREFIX + "/images/formfield-help.png";
     private static final String BLANK = PREFIX + "/images/formfield-blank.png";
+    private static final String PLUS = PREFIX + "/images/icon-plus.png";
+    private static final String MINUS = PREFIX + "/images/icon-minus.png";
+    private static final String LOCKED = PREFIX + "/images/formfield-locked.png";
+    private static final String UNLOCKED = PREFIX + "/images/formfield-unlocked.png";
+    private static final String COPY = PREFIX + "/images/formfield-copy.png";
+    private static final String HIDDEN = PREFIX + "/images/formfield-hidden.png";
+    private static final String REVEALED = PREFIX + "/images/formfield-revealed.png";
 
     private final ImageIcon validIcon;
     private final ImageIcon invalidIcon;
     private final ImageIcon helpIcon;
     private final ImageIcon blankIcon;
+    private final ImageIcon plusIcon;
+    private final ImageIcon minusIcon;
+    private final ImageIcon lockedIcon;
+    private final ImageIcon unlockedIcon;
+    private final ImageIcon copyIcon;
+    private final ImageIcon hiddenIcon;
+    private final ImageIcon revealedIcon;
 
     private Resources() {
         ClassLoader classLoader = Resources.class.getClassLoader();
@@ -35,14 +54,37 @@ public final class Resources {
         invalidIcon = loadIcon(INVALID, classLoader.getResource(INVALID), Color.RED);
         helpIcon = loadIcon(HELP, classLoader.getResource(HELP), Color.YELLOW);
         blankIcon = loadIcon(HELP, classLoader.getResource(BLANK), new Color(0, 0, 0, 0));
+        plusIcon = loadIcon(PLUS, classLoader.getResource(PLUS), Color.GRAY, 20);
+        minusIcon = loadIcon(MINUS, classLoader.getResource(MINUS), Color.GRAY, 20);
+        lockedIcon = loadIcon(LOCKED, classLoader.getResource(LOCKED), Color.RED, 22);
+        unlockedIcon = loadIcon(UNLOCKED, classLoader.getResource(UNLOCKED), Color.GREEN, 22);
+        copyIcon = loadIcon(COPY, classLoader.getResource(COPY), Color.BLUE, 22);
+        hiddenIcon = loadIcon(HIDDEN, classLoader.getResource(HIDDEN), Color.DARK_GRAY, 22);
+        revealedIcon = loadIcon(REVEALED, classLoader.getResource(REVEALED), Color.LIGHT_GRAY, 22);
     }
 
     private ImageIcon loadIcon(String path, URL url, Color defaultColor) {
+        return loadIcon(path, url, defaultColor, 0);
+    }
+
+    private ImageIcon loadIcon(String path, URL url, Color defaultColor, int size) {
         if (url == null) {
             log.severe("Unable to load resource " + path);
             return createIcon(defaultColor);
         }
-        return new ImageIcon(url);
+        if (size == 0) { // no scaling requested
+            return new ImageIcon(url);
+        }
+        else {
+            try {
+                BufferedImage rawImage = ImageUtil.loadImage(url);
+                return new ImageIcon(ImageUtil.generateThumbnailWithTransparency(rawImage, size, size));
+            }
+            catch (IOException ioe) {
+                log.log(Level.SEVERE, "Caught IOException while loading resources: " + ioe.getMessage(), ioe);
+                return createIcon(defaultColor);
+            }
+        }
     }
 
     private static Resources getInstance() {
@@ -85,43 +127,63 @@ public final class Resources {
     }
 
     /**
-     * Cheesy fallback in case our images can't be loaded for some reason.
+     * Returns an ImageIcon to represent a plus sign (expand, zoom in, etc).
      */
-    private ImageIcon createIcon(Color color) {
-        BufferedImage image = new BufferedImage(22, 22, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = image.createGraphics();
-        g.setColor(color);
-        g.fillRect(0, 0, 22, 22);
-        g.dispose();
-        return new ImageIcon(image);
+    public static ImageIcon getPlusIcon() {
+        return getInstance().plusIcon;
     }
 
     /**
-     * Ignore this - just debugging weird classloader issue in client apps.
+     * Returns an ImageIcon to represent a minus sign (collapse, zoom out, etc).
      */
-    private void debug() {
-        System.out.println("=== Classloader Investigation ===");
+    public static ImageIcon getMinusIcon() {
+        return getInstance().minusIcon;
+    }
 
-        // Check what classloader loaded us
-        ClassLoader demoAppCL = Resources.class.getClassLoader();
-        System.out.println("Resources classloader: " + demoAppCL);
-        System.out.println("Resources classloader class: " + demoAppCL.getClass().getName());
+    /**
+     * Returns an ImageIcon to represent a lock.
+     */
+    public static ImageIcon getLockedIcon() {
+        return getInstance().lockedIcon;
+    }
 
-        // Check the classloader hierarchy
-        ClassLoader current = demoAppCL;
-        int level = 0;
-        while (current != null) {
-            System.out.println("Level " + level + ": " + current + " (" + current.getClass().getName() + ")");
-            current = current.getParent();
-            level++;
-        }
+    /**
+     * Returns an ImageIcon to represent an open lock.
+     */
+    public static ImageIcon getUnlockedIcon() {
+        return getInstance().unlockedIcon;
+    }
 
-        // Check where Resources class is actually loaded from
-        URL classLocation = Resources.class.getProtectionDomain().getCodeSource().getLocation();
-        System.out.println("DemoApp loaded from: " + classLocation);
+    /**
+     * Returns an ImageIcon to represent a copy operation.
+     */
+    public static ImageIcon getCopyIcon() {
+        return getInstance().copyIcon;
+    }
 
-        // Try to find the resource using the same classloader that loaded DemoApp
-        URL resourceUrl = demoAppCL.getResource(VALID);
-        System.out.println("Resource URL: " + resourceUrl);
+    /**
+     * Returns an ImageIcon to represent something that is hidden.
+     */
+    public static ImageIcon getHiddenIcon() {
+        return getInstance().hiddenIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent something that is revealed.
+     */
+    public static ImageIcon getRevealedIcon() {
+        return getInstance().revealedIcon;
+    }
+
+    /**
+     * Cheesy fallback in case our images can't be loaded for some reason.
+     */
+    private ImageIcon createIcon(Color color) {
+        BufferedImage image = new BufferedImage(DEFAULT_SIZE, DEFAULT_SIZE, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        g.setColor(color);
+        g.fillRect(0, 0, DEFAULT_SIZE, DEFAULT_SIZE);
+        g.dispose();
+        return new ImageIcon(image);
     }
 }

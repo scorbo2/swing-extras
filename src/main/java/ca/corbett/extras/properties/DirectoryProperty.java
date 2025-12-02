@@ -31,6 +31,7 @@ public class DirectoryProperty extends AbstractProperty {
 
     public DirectoryProperty(String name, String label, boolean allowBlank, File dir) {
         super(name, label);
+        this.allowBlank = allowBlank;
         this.dir = dir;
         this.columns = 20;
     }

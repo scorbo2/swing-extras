@@ -2,12 +2,17 @@ package ca.corbett.extras.image;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 import javax.swing.ImageIcon;
+import javax.swing.filechooser.FileFilter;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -454,17 +459,104 @@ public final class ImageUtil {
     }
 
     /**
+     * Very quickly reads the dimensions of the given image without parsing the entire image data.
+     * This is useful for displaying basic information about an image without paying the computational
+     * expense of actually loading the whole thing.
+     *
+     * @param imageFile The image file in question. Must be in an image format supported by ImageIO.
+     * @return The dimensions of the image.
+     * @throws IOException for unsupported image formats, or if the file is corrupt or missing.
+     */
+    public static Dimension getImageDimensions(File imageFile) throws IOException {
+        try (ImageInputStream stream = ImageIO.createImageInputStream(imageFile)) {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+
+            if (!readers.hasNext()) {
+                throw new IOException("No ImageReader found for the image format");
+            }
+
+            ImageReader reader = readers.next();
+            try {
+                reader.setInput(stream);
+                int width = reader.getWidth(0);  // 0 = first image
+                int height = reader.getHeight(0);
+                return new Dimension(width, height);
+            }
+            finally {
+                reader.dispose();
+            }
+        }
+    }
+
+    /**
+     * Returns a human-readable description of an image's aspect ratio based on the given dimensions.
+     * The possible return values are "portrait", "square", or "landscape" based on the ratio of width
+     * versus height. A "fuzzy" percentage is applied, such that images don't need to be exactly
+     * square to be considered "square". For example, an image of 999x1000 is technically portrait,
+     * but really, it could be considered "close enough" to be called square.
+     */
+    public static String getAspectRatioDescription(Dimension imageDim) {
+        final double TOLERANCE = 0.05; // five percent is "close enough"
+        int width = imageDim.width;
+        int height = imageDim.height;
+
+        // Calculate the ratio of the smaller dimension to the larger dimension
+        double ratio = (double)Math.min(width, height) / Math.max(width, height);
+
+        // If the ratio is close enough to 1.0 (square), consider it square
+        if (ratio >= (1.0 - TOLERANCE)) {
+            return "square";
+        }
+
+        // Otherwise, determine landscape vs portrait
+        if (width > height) {
+            return "landscape";
+        }
+        else {
+            return "portrait";
+        }
+    }
+
+    /**
      * Scales an image up or down proportionally until it fits inside the square bounding area
      * specified by maxDimension. The image is scaled based on its largest dimension.
      * For example, a landscape image will be scaled so that its with matches maxDimension.
      * A portrait image will be scaled so that its height matches maxDimension.
      * A square image will be scaled until both width and height equals maxDimension.
+     * <p>
+     *     <b>Note:</b> this method will return an image that is not square, if the input
+     *     image is not square. You can use scaleImageToFitSquareBounds(BufferedImage,int,boolean) to
+     *     force the resulting image to be square.
+     * </p>
      *
      * @param image        The image to scale.
      * @param maxDimension The desired largest dimension of the scaled image.
      * @return The scaled image.
      */
     public static BufferedImage scaleImageToFitSquareBounds(BufferedImage image, int maxDimension) {
+        return scaleImageToFitSquareBounds(image, maxDimension, false);
+    }
+
+    /**
+     * Scales an image up or down proportionally until it fits inside the square bounding area
+     * specified by maxDimension. The image is scaled based on its largest dimension.
+     * For example, a landscape image will be scaled so that its with matches maxDimension.
+     * A portrait image will be scaled so that its height matches maxDimension.
+     * A square image will be scaled until both width and height equals maxDimension.
+     * <p>
+     * <b>Note:</b> If the makeSquare parameter is true, the resulting image will be expanded
+     * as needed (with transparency) so that the returned image is centered within a
+     * perfectly square image. If your image is portrait, for example, there will be horizontal
+     * transparent padding added to the left and right such that the returned image's width
+     * and height are equal, but without distorting the image itself.
+     * </p>
+     *
+     * @param image        The image to scale.
+     * @param maxDimension The desired largest dimension of the scaled image.
+     * @param makeSquare   If true, will apply transparent padding if needed so the returned image is square.
+     * @return The scaled image.
+     */
+    public static BufferedImage scaleImageToFitSquareBounds(BufferedImage image, int maxDimension, boolean makeSquare) {
         int originalWidth = image.getWidth();
         int originalHeight = image.getHeight();
 
@@ -492,6 +584,52 @@ public final class ImageUtil {
         g.drawImage(image, 0, 0, newWidth, newHeight, null);
         g.dispose();
 
+        // If returning a square image, center the scaled image within a transparent square:
+        if (makeSquare) {
+            BufferedImage squareImage = new BufferedImage(maxDimension, maxDimension, BufferedImage.TYPE_INT_ARGB);
+            g = squareImage.createGraphics();
+            g.setColor(new Color(0, 0, 0, 0));
+            g.fillRect(0, 0, maxDimension, maxDimension);
+            if (newWidth == newHeight) {
+                g.drawImage(scaledImage, 0, 0, null);
+            }
+            else if (newWidth > newHeight) {
+                g.drawImage(scaledImage, 0, (maxDimension - newHeight) / 2, null);
+            }
+            else {
+                g.drawImage(scaledImage, (maxDimension - newWidth) / 2, 0, null);
+            }
+            g.dispose();
+            scaledImage = squareImage;
+        }
+
         return scaledImage;
+    }
+
+    /**
+     * Very quick and cheesy way of determining if a file is of a supported image type.
+     */
+    public static boolean isImageFile(File f) {
+        if (f == null || !f.isFile()) { return false; }
+        String name = f.getName().toLowerCase();
+        return name.endsWith(".jpg") || name.endsWith(".jpeg") ||
+                name.endsWith(".png") || name.endsWith(".gif") ||
+                name.endsWith(".bmp");
+    }
+
+    /**
+     * A FileFilter implementation that can be used with file choosers to limit the
+     * selection to acceptable image files.
+     */
+    public static class ImageFileFilter extends FileFilter {
+        @Override
+        public boolean accept(File f) {
+            return f.isDirectory() || isImageFile(f);
+        }
+
+        @Override
+        public String getDescription() {
+            return "Image files (png, jpg, bmp, gif)";
+        }
     }
 }

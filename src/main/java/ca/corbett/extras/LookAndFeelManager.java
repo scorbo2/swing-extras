@@ -246,7 +246,7 @@ public class LookAndFeelManager {
 
     private static void fireChangedEvent() {
         ChangeEvent event = new ChangeEvent("LookAndFeelManager");
-        for (ChangeListener listener : changeListeners) {
+        for (ChangeListener listener : new ArrayList<>(changeListeners)) {
             listener.stateChanged(event);
         }
     }

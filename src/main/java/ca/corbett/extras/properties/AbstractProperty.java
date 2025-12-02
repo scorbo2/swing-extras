@@ -66,7 +66,8 @@ public abstract class AbstractProperty {
     protected boolean isInitiallyVisible;
     protected final Map<String, Object> extraAttributes;
 
-    private final List<PropertyFormFieldChangeListener> changeListeners = new ArrayList<>();
+    private final List<PropertyFormFieldChangeListener> formFieldChangeListeners = new ArrayList<>();
+    private final List<FormFieldGenerationListener> formFieldGenerationListeners = new ArrayList<>();
 
     /**
      * Each property has a fully qualified name that can optionally specify a
@@ -464,6 +465,13 @@ public abstract class AbstractProperty {
         field.setHelpText(helpText);
         field.setAllExtraAttributes(extraAttributes);
 
+        // Notify listeners about this FormField and give them a chance to tweak it:
+        fireFormFieldGeneratedEvent(field);
+
+        // Explicitly overwrite any change our listeners made to the identifier field:
+        // (we need this identifier to load ourselves from this FormField later)
+        field.setIdentifier(fullyQualifiedName);
+
         // Listen for changes on this field so we can notify our own listeners, if any:
         field.addValueChangedListener(f -> {
             fireFormFieldChangedEvent(formPanel, f, null);
@@ -509,28 +517,57 @@ public abstract class AbstractProperty {
         return Objects.equals(this.fullyQualifiedName, other.fullyQualifiedName);
     }
 
+    /**
+     * Register to receive a change notification when a generated FormField's value is changed
+     * by the user. This hook provides context about where the change happened (that is, which
+     * FormPanel contains the FormField in question, and of course the FormField itself).
+     */
     public AbstractProperty addFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
-        changeListeners.add(listener);
+        formFieldChangeListeners.add(listener);
         return this;
     }
 
     public void removeFormFieldChangeListener(PropertyFormFieldChangeListener listener) {
-        changeListeners.remove(listener);
+        formFieldChangeListeners.remove(listener);
     }
 
-    public void removeAllListeners() {
-        changeListeners.clear();
+    public void removeAllFormFieldChangeListeners() {
+        formFieldChangeListeners.clear();
     }
 
     protected void fireFormFieldChangedEvent(FormPanel formPanel, FormField field, ActionEvent changeEvent) {
-        if (changeListeners.isEmpty()) {
+        if (formFieldChangeListeners.isEmpty()) {
             return;
         }
 
         PropertyFormFieldValueChangedEvent evt = new PropertyFormFieldValueChangedEvent(this, changeEvent, formPanel,
                                                                                         field);
-        for (PropertyFormFieldChangeListener listener : changeListeners) {
+        for (PropertyFormFieldChangeListener listener : new ArrayList<>(formFieldChangeListeners)) {
             listener.valueChanged(evt);
+        }
+    }
+
+    /**
+     * Register to receive a notification when this AbstractProperty instance generates a FormField.
+     * You can use this hook to tweak the generated FormField, if needed, before it is added to whatever FormPanel
+     * requested the field.
+     */
+    public AbstractProperty addFormFieldGenerationListener(FormFieldGenerationListener listener) {
+        formFieldGenerationListeners.add(listener);
+        return this;
+    }
+
+    public void removeFormFieldGenerationListener(FormFieldGenerationListener listener) {
+        formFieldGenerationListeners.remove(listener);
+    }
+
+    public void removeAllFormFieldGenerationListeners() {
+        formFieldGenerationListeners.clear();
+    }
+
+    protected void fireFormFieldGeneratedEvent(FormField formField) {
+        for (FormFieldGenerationListener listener : new ArrayList<>(formFieldGenerationListeners)) {
+            listener.formFieldGenerated(this, formField);
         }
     }
 }

@@ -18,6 +18,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -87,6 +88,15 @@ public class ExtensionManagerTest {
         extManager.addExtension(ext1, true);
         extManager.addExtension(ext2, false);
         assertEquals(1, extManager.getEnabledLoadedExtensions().size());
+    }
+
+    @Test
+    public void testFindExtensionByName() {
+        extManager.addExtension(ext1, true);
+        extManager.addExtension(ext2, false);
+        assertNotNull(extManager.findExtensionByName("test1"));
+        assertNotNull(extManager.findExtensionByName("test2"));
+        assertNull(extManager.findExtensionByName("test3"));
     }
 
     @Test
@@ -290,7 +300,7 @@ public class ExtensionManagerTest {
 
         @Override
         public AppExtensionInfo getInfo() {
-            return new AppExtensionInfo.Builder("Test")
+            return new AppExtensionInfo.Builder(name)
                     .setAuthor("me")
                     .setVersion("1.0")
                     .setTargetAppName("Test app")
@@ -299,6 +309,10 @@ public class ExtensionManagerTest {
                     .setLongDescription("Just a test of AppExtension")
                     .setReleaseNotes("v1.0 - initial release")
                     .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
         }
 
         @Override
@@ -321,7 +335,7 @@ public class ExtensionManagerTest {
 
         @Override
         public AppExtensionInfo getInfo() {
-            return new AppExtensionInfo.Builder("Test2")
+            return new AppExtensionInfo.Builder(name)
                     .setAuthor("me2")
                     .setVersion("1.1")
                     .setTargetAppName("Test app")
@@ -330,6 +344,10 @@ public class ExtensionManagerTest {
                     .setLongDescription("Just a test of AppExtension2")
                     .setReleaseNotes("v1.1 - initial release")
                     .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
         }
 
         @Override
@@ -354,7 +372,7 @@ public class ExtensionManagerTest {
 
         @Override
         public AppExtensionInfo getInfo() {
-            return new AppExtensionInfo.Builder("Test2 with duplicate config property")
+            return new AppExtensionInfo.Builder(name)
                     .setAuthor("me2")
                     .setVersion("1.1")
                     .setTargetAppName("Test app")
@@ -363,6 +381,10 @@ public class ExtensionManagerTest {
                     .setLongDescription("Just a test of AppExtension2 with duplicate config property")
                     .setReleaseNotes("v1.1 - initial release")
                     .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
         }
 
         @Override

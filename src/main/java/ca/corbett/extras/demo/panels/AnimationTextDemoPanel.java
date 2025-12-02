@@ -1,18 +1,16 @@
 package ca.corbett.extras.demo.panels;
 
-import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.animation.AnimatedTextRenderer;
-import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FontField;
-import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -21,7 +19,6 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 public class AnimationTextDemoPanel extends PanelBuilder {
-    private FormPanel formPanel;
     private final BufferedImage image;
     private AnimationThread worker;
     private static final int IMG_WIDTH = 360;
@@ -31,8 +28,6 @@ public class AnimationTextDemoPanel extends PanelBuilder {
     private ImagePanel imagePanel;
 
     public AnimationTextDemoPanel() {
-        formPanel = new FormPanel(Alignment.TOP_LEFT);
-        formPanel.setBorderMargin(24);
         image = new BufferedImage(IMG_WIDTH,IMG_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
         g.setColor(Color.BLACK);
@@ -46,41 +41,38 @@ public class AnimationTextDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("AnimatedTextRenderer demo", 20, 0, 8);
-        headerLabel.getMargins().setBottom(24);
-        headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(headerLabel);
+        FormPanel formPanel = buildFormPanel("AnimatedTextRenderer demo");
 
+        // Let's add a simple FontField for picking font (with color/bg options as well):
         fontField = new FontField("Text style:", new Font(Font.MONOSPACED, Font.PLAIN, 16), Color.GREEN, Color.BLACK);
         formPanel.add(fontField);
 
+        // A simple NumberField will allow choosing the animation speed:
         speedField = new NumberField("Chars/second:", 8, 1, 15, 1);
         formPanel.add(speedField);
 
-        PanelField panelField = new PanelField();
-        JPanel panel = panelField.getPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+        // We can use PanelField to wrap an ImagePanel for displaying the animation:
+        PanelField panelField = new PanelField(new FlowLayout(FlowLayout.LEFT));
         imagePanel = new ImagePanel(ImagePanelConfig.createSimpleReadOnlyProperties());
         imagePanel.setPreferredSize(new Dimension(IMG_WIDTH, IMG_HEIGHT));
         imagePanel.setImage(image);
-        panel.add(imagePanel);
+        panelField.getPanel().add(imagePanel);
         formPanel.add(panelField);
 
-        panelField = new PanelField();
-        panel = panelField.getPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+        // And another PanelField can hold the button for restarting the animation:
+        panelField = new PanelField(new FlowLayout(FlowLayout.LEFT));
         JButton button = new JButton("Restart animation");
         button.addActionListener(e -> go());
-        panel.add(button);
+        panelField.getPanel().add(button);
         formPanel.add(panelField);
 
         return formPanel;
     }
 
+    /**
+     * Invoked when the user clicks the animation button. Will start the AnimationThread (and stop
+     * the old one if one was running already).
+     */
     private void go() {
         if (worker != null) {
             worker.stop();
@@ -90,6 +82,15 @@ public class AnimationTextDemoPanel extends PanelBuilder {
         new Thread(worker).start();
     }
 
+    /**
+     * A very simple worker thread to drive our AnimatedTextRenderer.
+     * We can simply invoke updateTextAnimation() at regular intervals, and the
+     * AnimatedTextRenderer class is smart enough to figure out how many characters
+     * to draw based on elapsed time since it was started (this maps to our
+     * characters per second input parameter).
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
     private static class AnimationThread implements Runnable {
 
         private static final String TEXT = "This is a demo of the animated text renderer. "
@@ -118,12 +119,23 @@ public class AnimationTextDemoPanel extends PanelBuilder {
 
             while (isRunning) {
                 textRenderer.updateTextAnimation();
-                imagePanel.setImage(textRenderer.getBuffer());
+
+                // Marshal the UI update to the Swing Event Dispatch Thread - important!
+                //   Don't try to update Swing UI components from a worker thread directly!
+                SwingUtilities.invokeLater(() -> imagePanel.setImage(textRenderer.getBuffer()));
+
                 try {
+                    // 10fps of animation won't overload the cpu
+                    // Note that AnimatedTextRenderer is smart enough to figure out characters per second
+                    // regardless of how frequently we invoke it! We don't have to do the math here
+                    // and run a traditional animation loop with an fps counter. We can just update
+                    // at whatever interval, and the text will output at the selected speed automagically.
                     Thread.sleep(100);
                 }
                 catch (InterruptedException ignored) {
                 }
+
+                // Check for animation completion so we can terminate this worker thread.
                 if (textRenderer.isAnimationComplete()) {
                     isRunning = false;
                 }

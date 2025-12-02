@@ -403,7 +403,7 @@ public final class LogConsoleTheme extends AbstractProperty implements ChangeLis
      * so they can update as needed.
      */
     private void fireChangeEvent() {
-        for (ChangeListener listener : changeListeners) {
+        for (ChangeListener listener : new ArrayList<>(changeListeners)) {
             ChangeEvent event = new ChangeEvent(this);
             listener.stateChanged(event);
         }

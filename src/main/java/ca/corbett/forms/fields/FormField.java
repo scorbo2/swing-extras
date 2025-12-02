@@ -139,8 +139,9 @@ public abstract class FormField {
         return fieldLabel;
     }
 
-    public void setFieldLabelFont(Font font) {
+    public FormField setFieldLabelFont(Font font) {
         fieldLabel.setFont(font);
+        return this;
     }
 
     /**
@@ -247,7 +248,7 @@ public abstract class FormField {
      *
      * @param visible Whether to show or hide.
      */
-    public void setVisible(boolean visible) {
+    public FormField setVisible(boolean visible) {
         isVisible = visible;
         fieldLabel.setVisible(visible);
         if (fieldComponent != null) {
@@ -255,6 +256,7 @@ public abstract class FormField {
         }
         validationLabel.setVisible(visible);
         helpLabel.setVisible(visible);
+        return this;
     }
 
     /**
@@ -269,7 +271,7 @@ public abstract class FormField {
      *
      * @param enabled whether to enable or disable the components.
      */
-    public void setEnabled(boolean enabled) {
+    public FormField setEnabled(boolean enabled) {
         isEnabled = enabled;
         fieldLabel.setEnabled(enabled);
         if (fieldComponent != null) {
@@ -277,6 +279,7 @@ public abstract class FormField {
         }
         validationLabel.setEnabled(enabled);
         helpLabel.setEnabled(enabled);
+        return this;
     }
 
     public boolean isEnabled() {
@@ -395,14 +398,18 @@ public abstract class FormField {
      * FormField visible automatically and will set its icon as appropriate. Tooltip text
      * will be available in the case of a failed validation, to explain why the field is invalid.
      * </p>
+     * <p>
+     *     <b>Note:</b> If this FormField is currently disabled or currently invisible, then
+     *     validation is skipped and this method does nothing.
+     * </p>
      *
      * @return True if the field value is valid according to all our validators, false otherwise.
      */
     public boolean validate() {
         boolean isValid = true;
 
-        // If the field is not currently enabled, don't bother validating:
-        if (!isEnabled) {
+        // If the field is not currently enabled or not visible, don't bother validating:
+        if (!isEnabled || !isVisible) {
             return isValid;
         }
 
@@ -462,7 +469,7 @@ public abstract class FormField {
      * value in your field has changed.
      */
     protected void fireValueChangedEvent() {
-        for (ValueChangedListener listener : valueChangedListeners) {
+        for (ValueChangedListener listener : new ArrayList<>(valueChangedListeners)) {
             listener.formFieldValueChanged(this);
         }
     }

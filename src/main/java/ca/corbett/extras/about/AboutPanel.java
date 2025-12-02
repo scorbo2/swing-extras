@@ -13,6 +13,7 @@ import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
+import ca.corbett.updates.VersionManifest;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -132,7 +133,7 @@ public final class AboutPanel extends JPanel {
         String labelText = info.applicationName + " " + info.applicationVersion;
         LabelField labelField = new LabelField(labelText);
         labelField.setFont(FormField.getDefaultFont().deriveFont(Font.BOLD, 24));
-        labelField.getMargins().setLeft(12);
+        labelField.getMargins().setLeft(12).setBottom(8);
         formPanel.add(labelField);
 
         if (info.shortDescription != null && !info.shortDescription.isBlank()) {
@@ -140,14 +141,32 @@ public final class AboutPanel extends JPanel {
                     ? info.shortDescription.substring(0, 60) + "..."
                     : info.shortDescription;
             labelField = new LabelField("\"" + desc + "\"");
-            labelField.getMargins().setLeft(12).setBottom(2);
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(labelField);
         }
 
         if (info.copyright != null && !info.copyright.isBlank()) {
             labelField = new LabelField(info.copyright);
-            labelField.getMargins().setLeft(12).setBottom(2);
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(labelField);
+        }
+
+        // Check for latest version if we have an update manager:
+        if (info.updateManager != null && info.updateManager.getVersionManifest() != null) {
+            VersionManifest.ApplicationVersion latestVersion = info.updateManager
+                    .getVersionManifest()
+                    .findLatestApplicationVersion();
+            if (latestVersion != null) {
+                labelField = new LabelField("");
+                labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
+                formPanel.add(labelField);
+                if (!latestVersion.getVersion().equals(info.applicationVersion)) {
+                    labelField.setText("A newer version (" + latestVersion.getVersion() + ") is available!");
+                }
+                else {
+                    labelField.setText("This version (" + info.applicationVersion + ") is the latest available.");
+                }
+            }
         }
 
         if (info.projectUrl != null && !info.projectUrl.isBlank()) {
@@ -160,7 +179,7 @@ public final class AboutPanel extends JPanel {
                     logger.warning("Project URL is not well-formed.");
                 }
             }
-            labelField.getMargins().setLeft(12).setBottom(2);
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(labelField);
         }
 
@@ -174,17 +193,25 @@ public final class AboutPanel extends JPanel {
                     logger.warning("License URL is not well-formed.");
                 }
             }
-            labelField.getMargins().setLeft(12).setBottom(2);
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
+            formPanel.add(labelField);
+        }
+
+        // Add a warning about snapshot builds if appropriate:
+        if (info.applicationVersion != null && info.applicationVersion.toLowerCase().contains("snapshot")) {
+            labelField = new LabelField("This is a snapshot build and is subject to change.");
+            labelField.setFont(LabelField.getDefaultFont().deriveFont(Font.BOLD));
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(labelField);
         }
 
         memoryUsageField = new LabelField(getMemoryStats());
-        memoryUsageField.getMargins().setLeft(12).setBottom(2);
+        memoryUsageField.getMargins().setLeft(12).setTop(1).setBottom(1);
         formPanel.add(memoryUsageField);
 
         for (String customField : info.getCustomFieldNames()) {
             labelField = new LabelField(customField, info.getCustomFieldValue(customField));
-            labelField.getMargins().setLeft(12).setBottom(2);
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(labelField);
             customFields.put(customField, labelField);
         }

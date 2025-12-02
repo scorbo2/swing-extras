@@ -1,107 +1,162 @@
 package ca.corbett.forms.demo;
 
-import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
+import ca.corbett.extras.demo.SnippetAction;
 import ca.corbett.extras.demo.panels.PanelBuilder;
-import ca.corbett.extras.gradient.ColorSelectionType;
-import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
-import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
-import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
+import ca.corbett.forms.fields.PasswordField;
 import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.AbstractAction;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Builds a FormPanel that contains an example of each of the basic form field types.
+ * Builds a FormPanel that contains examples of "basic" FormFields. These are the
+ * ones that are most commonly used, like text input, checkboxes, comboboxes,
+ * static labels, and such.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2029-11-25
  */
 public class BasicFormPanel extends PanelBuilder {
+
+    private FormPanel formPanel;
+
     @Override
     public String getTitle() {
-        return "Forms: The basics";
+        return "Forms: basic fields";
     }
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
-        formPanel.setBorderMargin(24);
+        formPanel = buildFormPanel("Basic form components");
 
-        LabelField headerLabel = LabelField.createBoldHeaderLabel("Looking for basic Swing components? No problem!",
-                                                                  20, 0, 8);
-        headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE));
-        LookAndFeelManager.addChangeListener(
-                e -> headerLabel.setColor(LookAndFeelManager.getLafColor("textHighlight", Color.BLUE)));
-        formPanel.add(headerLabel);
-
-        formPanel.add(new ShortTextField("Single-line text:", 15));
-        LongTextField textField = LongTextField.ofFixedSizeMultiLine("Multi-line text:", 4, 18);
+        // Let's add some basic text input fields with various options:
+        formPanel.add(LabelField.createBoldHeaderLabel("Text input"));
+        formPanel.add(new ShortTextField("Single-line text:", 16).setText("Hello!"));
+        formPanel.add(new PasswordField("Password entry:", 12).setPassword("password"));
+        formPanel.add(LongTextField.ofFixedSizeMultiLine("Multi-line text:", 3, 21)
+                                   .setText("Text fields are great for long text entry."));
+        LongTextField textField = LongTextField.ofFixedSizeMultiLine("With pop-out edit:", 3, 21);
         textField.setAllowPopoutEditing(true);
-        textField.getMargins().setBottom(12);
+        textField.setText("You can hit the \"Pop out\" button to edit this text in a resizable popup window.");
         formPanel.add(textField);
+        LabelField snippetLabel = createSnippetLabel(new TextFieldSnippetAction());
+        snippetLabel.getMargins().setTop(0);
+        formPanel.add(snippetLabel);
+
+        // Now we can show miscellaneous stuff that every form can use:
+        formPanel.add(LabelField.createBoldHeaderLabel("General input components"));
         formPanel.add(new CheckBoxField("Checkboxes", true));
         formPanel.add(buildComboField());
-        formPanel.add(new ColorField("Color chooser:", ColorSelectionType.SOLID).setColor(Color.BLUE));
-
-        LabelField labelField = LabelField.createPlainHeaderLabel(
-                "Header fields help to organize the form.");
-        labelField.setFont(new Font("SansSerif", Font.BOLD, 18));
-        labelField.getMargins().setTop(24).setBottom(18);
-        formPanel.add(labelField);
-
-        formPanel.add(new FileField("File chooser:", null, 15, FileField.SelectionType.ExistingFile));
-        formPanel.add(
-                new FileField("Directory chooser:", null, 15, FileField.SelectionType.ExistingDirectory));
-
-        LabelField linkField = new LabelField("Hyperlink:", "Yes, you can add hyperlinks to your forms!");
-        linkField.getMargins().setTop(10).setBottom(10);
-        linkField.setHyperlink(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(DemoApp.getInstance(), "You clicked the link! Hooray!");
-            }
-        });
-        formPanel.add(linkField);
-
+        formPanel.add(new LabelField("Hyperlink:", "Yes, you can add hyperlinks to your forms!")
+                              .setHyperlink(new ExampleHyperlinkAction()));
         formPanel.add(new NumberField("Number chooser:", 0, 0, 100, 1));
+        formPanel.add(createSnippetLabel(new GeneralFieldSnippetAction()));
 
-        ListField<String> listField1 = new ListField<>("Simple list:",
-                                                       List.of("One", "Two", "Three", "Four", "Five", "Six"));
-        listField1.setFixedCellWidth(80);
-        listField1.setVisibleRowCount(3);
-        formPanel.add(listField1);
-
-        ListField<String> listField2 = new ListField<>("Wide list:",
-                                                       List.of("One", "Two", "Three", "Four", "Five", "Six"));
-        listField2.setLayoutOrientation(JList.VERTICAL_WRAP);
-        listField2.setFixedCellWidth(80);
-        listField2.setVisibleRowCount(3);
-        formPanel.add(listField2);
+        // And finally, we can show what's possible with static labels:
+        formPanel.add(LabelField.createBoldHeaderLabel("Static labels"));
+        formPanel.add(new LabelField(
+                "<html>Static labels are great for showing information to the user<br>"
+                        + "or for providing context around form input.<br><br>"
+                        + "For example, note that this form panel uses header labels to divide<br>"
+                        + "the form into sections, which is visually helpful.<br><br>"
+                        + "Also note that static labels can be multi-line when needed!</html>"));
+        LabelField styledLabel = new LabelField("LabelFields can have custom styling!");
+        styledLabel.setFont(new Font(Font.MONOSPACED, Font.ITALIC, 14));
+        styledLabel.setColor(Color.MAGENTA);
+        formPanel.add(styledLabel);
 
         return formPanel;
     }
 
     private ComboField<String> buildComboField() {
-        List<String> options = new ArrayList<>();
-        options.add("Option 1");
-        options.add("Option 2");
-        options.add("Option 3");
+        List<String> options = List.of(
+                "Option 1",
+                "Option 2",
+                "Option 3");
         return new ComboField<>("Comboboxes:", options, 0, false);
+    }
+
+    /**
+     * A label hyperlink can be wired up to any AbstractAction to do whatever you need it to do.
+     * For this demo app, let's just show a message dialog when the link is clicked.
+     */
+    private static class ExampleHyperlinkAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JOptionPane.showMessageDialog(DemoApp.getInstance(), "You clicked the link! Hooray!");
+        }
+    }
+
+    /**
+     * Shows a code snippet for creating simple text input fields.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    private static class TextFieldSnippetAction extends SnippetAction {
+        @Override
+        protected String getSnippet() {
+            return """
+                    // Start with a blank FormPanel:
+                    FormPanel formPanel = new FormPanel();
+                    
+                    // Add a simple one-line text entry field:
+                    formPanel.add(new ShortTextField("Single-line text:", 16).setText("Hello!"));
+                    
+                    // Add a password entry field:
+                    formPanel.add(new PasswordField("Password entry:", 12).setPassword("password"));
+                    
+                    // Add a multi-line text entry field:
+                    formPanel.add(LongTextField.ofFixedSizeMultiLine("Multi-line text:", 3, 21)
+                                               .setText("Text fields are great for long text entry."));
+                    
+                    // Add a multi-line text entry field with popout editing enabled:
+                    LongTextField textField = LongTextField.ofFixedSizeMultiLine("With pop-out edit:", 3, 21);
+                    textField.setAllowPopoutEditing(true);
+                    textField.setText("You can hit the \\"Pop out\\" button to edit this text in a resizable popup window.");
+                    """;
+        }
+    }
+
+    /**
+     * Shows a code snippet for creating general form components.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    private static class GeneralFieldSnippetAction extends SnippetAction {
+        @Override
+        protected String getSnippet() {
+            return """
+                    // Start with a blank FormPanel:
+                    FormPanel formPanel = new FormPanel();
+                    
+                    // Checkboxes are very easy:
+                    formPanel.add(new CheckBoxField("Checkboxes", true));
+                    
+                    // Comboboxes require a list of stuff to display:
+                    List<String> options = List.of(
+                        "Option 1",
+                        "Option 2",
+                        "Option 3");
+                    formPanel.add(new ComboField<>("Comboboxes:", options, 0, false));
+                    
+                    // Hyperlinks can be added by setting a hyperlink action on a regular LabelField:
+                    formPanel.add(new LabelField("Hyperlink:", "Yes, you can add hyperlinks to your forms!")
+                                                  .setHyperlink(new ExampleHyperlinkAction()));
+                    
+                    // NumberFields require an acceptable range and some initial value:
+                    formPanel.add(new NumberField("Number chooser:", 0, 0, 100, 1));
+                    """;
+        }
     }
 }
