@@ -103,7 +103,7 @@ public final class LogConsole extends JFrame implements ChangeListener {
         super("Log console");
         textPane = new JTextPane();
         textPane.setEditable(false);
-        setSize(new Dimension(500, 400));
+        setSize(new Dimension(640, 480));
         setMinimumSize(new Dimension(200, 100));
         setResizable(true);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);

@@ -2,7 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.6.0 [TODO date here] - Maintenance release
-  TODO - Update release notes for 2.6.0 release
+  #173 - Fix minor bug when launching LogConsole from AboutDialog
 
 Version 2.5.0 [2025-12-01] - Dynamic extension discovery
   #171 - UpdateSources: prune local sources automatically
