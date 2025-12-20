@@ -16,10 +16,12 @@ import ca.corbett.forms.fields.PanelField;
 import ca.corbett.updates.VersionManifest;
 
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -95,13 +97,7 @@ public final class AboutPanel extends JPanel {
 
             if (info.showLogConsole) {
                 imageLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                imageLabel.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        LogConsole.getInstance().setVisible(true);
-                    }
-
-                });
+                imageLabel.addMouseListener(new LogoImageMouseListener(this));
             }
         }
         else {
@@ -119,13 +115,7 @@ public final class AboutPanel extends JPanel {
 
             if (info.showLogConsole) {
                 imgPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                imgPanel.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        LogConsole.getInstance().setVisible(true);
-                    }
-
-                });
+                imgPanel.addMouseListener(new LogoImageMouseListener(this));
             }
         }
         formPanel.add(logoPanel);
@@ -356,5 +346,36 @@ public final class AboutPanel extends JPanel {
         config.setFontByFamilyName("Sans-Serif");
         config.setAutoSize(true);
         return LogoGenerator.generateImage(name, config);
+    }
+
+    /**
+     * A MouseListener that can be optionally added to the application logo image to launch
+     * the LogConsole when clicked. If this AboutPanel is embedded on an AboutDialog,
+     * the AboutDialog will be disposed so that the LogConsole can take focus.
+     * See <a href="https://github.com/scorbo2/swing-extras/issues/173">Issue 173</a> for details.
+     *
+     * @since swing-extras 2.6
+     */
+    private static class LogoImageMouseListener extends MouseAdapter {
+
+        private final AboutPanel aboutPanel;
+
+        public LogoImageMouseListener(AboutPanel aboutPanel) {
+            this.aboutPanel = aboutPanel;
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            // We can't do this in the constructor because we haven't been added to a dialog yet.
+            // So, we have to do it here:
+            JDialog parentDialog = (JDialog)SwingUtilities.getAncestorOfClass(JDialog.class, aboutPanel);
+            AboutDialog aboutDialog = (parentDialog instanceof AboutDialog) ? (AboutDialog)parentDialog : null;
+            if (aboutDialog != null) {
+                LogConsole.getInstance().setLocationRelativeTo(aboutDialog);
+                aboutDialog.dispose();
+            }
+
+            LogConsole.getInstance().setVisible(true);
+        }
     }
 }

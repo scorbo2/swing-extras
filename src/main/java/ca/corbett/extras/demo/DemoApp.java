@@ -2,6 +2,7 @@ package ca.corbett.extras.demo;
 
 import ca.corbett.extensions.demo.ExtensionsOverviewPanel;
 import ca.corbett.extras.Version;
+import ca.corbett.extras.about.AboutDialog;
 import ca.corbett.extras.demo.panels.AboutDemoPanel;
 import ca.corbett.extras.demo.panels.AnimationTextDemoPanel;
 import ca.corbett.extras.demo.panels.AudioDemoPanel;
@@ -136,6 +137,11 @@ public class DemoApp extends JFrame {
         addDemoPanel(new LogConsolePanel());
         addDemoPanel(new AboutDemoPanel());
         cardList.setSelectedIndex(0);
+
+        // TODO TEMP CODE - REMOVE ME
+        Version.aboutInfo.showLogConsole = true;
+        AboutDialog aboutDialog = new AboutDialog(this, Version.aboutInfo);
+        aboutDialog.setVisible(true);
     }
 
     /**
