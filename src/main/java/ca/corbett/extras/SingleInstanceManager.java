@@ -108,10 +108,10 @@ public class SingleInstanceManager {
     }
 
     // Default provider - creates a normal ServerSocket
-    private static ServerSocketProvider serverSocketProvider = ServerSocket::new;
+    private static volatile ServerSocketProvider serverSocketProvider = ServerSocket::new;
 
     // Package-private setter for tests; passing null restores default behavior
-    static void setServerSocketProvider(ServerSocketProvider provider) {
+    static synchronized void setServerSocketProvider(ServerSocketProvider provider) {
         serverSocketProvider = (provider == null) ? ServerSocket::new : provider;
     }
 
