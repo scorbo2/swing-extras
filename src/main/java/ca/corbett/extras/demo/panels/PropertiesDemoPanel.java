@@ -5,6 +5,7 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
+import ca.corbett.extras.properties.CollapsiblePanelProperty;
 import ca.corbett.extras.properties.ColorProperty;
 import ca.corbett.extras.properties.ComboProperty;
 import ca.corbett.extras.properties.DirectoryProperty;
@@ -14,6 +15,7 @@ import ca.corbett.extras.properties.FontProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.extras.properties.LongTextProperty;
+import ca.corbett.extras.properties.PanelProperty;
 import ca.corbett.extras.properties.PasswordProperty;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesDialog;
@@ -23,14 +25,17 @@ import ca.corbett.extras.properties.SliderProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.CheckBoxField;
+import ca.corbett.forms.fields.CollapsiblePanelField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.SliderField;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -275,6 +280,39 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new SliderProperty("Sliders.General.slider5", "Label + value:", 0, 100, 50)
                           .setColorStops(List.of(Color.RED, Color.YELLOW, Color.GREEN))
                           .setLabels(List.of("Bad", "Meh", "Okay", "Good", "Great!", "FANTASTIC!"), true));
+
+        // New in swing-extras 2.6, let's show off PanelProperty:
+        PanelProperty panelProp = new PanelProperty("Panels.General.panelProp", new BorderLayout());
+        panelProp.addFormFieldGenerationListener((property, formField) -> {
+            PanelField panelField = (PanelField)formField;
+            panelField.setShouldExpand(true);
+            panelField.getPanel().setBorder(BorderFactory.createLoweredBevelBorder());
+
+            FormPanel subForm = new FormPanel(Alignment.TOP_LEFT);
+            subForm.setBorderMargin(12);
+            subForm.add(new LabelField("This is a PanelProperty. You can add whatever static components you like."));
+            subForm.add(new LabelField("Images, help text, whatever."));
+            subForm.add(new LabelField("Just be aware that nothing here gets saved to properties."));
+            panelField.getPanel().add(subForm, BorderLayout.CENTER);
+        });
+        props.add(panelProp);
+
+        // New in swing-extras 2.6, let's show off CollapsiblePanelProperty:
+        CollapsiblePanelProperty collapsiblePanelProp =
+                new CollapsiblePanelProperty("Panels.General.collapsiblePanelProp",
+                                             "Collapsible panel example",
+                                             new BorderLayout());
+        collapsiblePanelProp.addFormFieldGenerationListener((prop, formField) -> {
+            CollapsiblePanelField panelField = (CollapsiblePanelField)formField;
+            panelField.setShouldExpandHorizontally(true);
+
+            FormPanel subForm = new FormPanel(Alignment.TOP_LEFT);
+            subForm.setBorderMargin(12);
+            subForm.add(new LabelField("You can also add collapsible panels as properties!"));
+            subForm.add(new LabelField("Same rules as for regular panel properties."));
+            panelField.getPanel().add(subForm, BorderLayout.CENTER);
+        });
+        props.add(collapsiblePanelProp);
 
         // And finally, we can show off EnumProperty, which is a handy way of generating combo boxes from enums:
         props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));

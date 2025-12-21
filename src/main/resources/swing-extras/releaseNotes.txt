@@ -3,6 +3,7 @@ Author: Steve Corbett
 
 Version 2.6.0 [TODO date here] - Maintenance release
   #183 - Absorb SingleInstanceManager class from MusicPlayer
+  #180 - Add Property wrappers for panel fields
   #179 - ImageListPanel: fix minor drag-and-drop bug
   #175 - ExtensionManagerDialog: cache downloaded screenshots
   #174 - Improved logging in UpdateManager
