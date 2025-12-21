@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,7 +77,7 @@ public class AvailableExtensionsPanel extends JPanel {
 
     // Screenshot cache infrastructure
     protected final File screenshotCacheDir;
-    protected final Map<String, File> screenshotCache;
+    protected final ConcurrentHashMap<String, File> screenshotCache;
 
     public AvailableExtensionsPanel(Window owner, ExtensionManager<?> extManager, UpdateManager updateManager, String appName, String appVersion) {
         this.owner = owner;
@@ -88,7 +89,7 @@ public class AvailableExtensionsPanel extends JPanel {
         this.isRestartRequired = false;
         this.currentUpdateSource = null;
         detailsPanelMap = new HashMap<>();
-        screenshotCache = new HashMap<>();
+        screenshotCache = new ConcurrentHashMap<>();
         screenshotCacheDir = createScreenshotCacheDirectory();
         extensionListPanel = new ListPanel<>(List.of(new RefreshAction()));
         extensionListPanel.setPreferredSize(new Dimension(200, 200));
@@ -697,6 +698,11 @@ public class AvailableExtensionsPanel extends JPanel {
         catch (Exception e) {
             log.log(Level.WARNING, "Error cleaning up screenshot cache: " + e.getMessage(), e);
         }
+        finally {
+            if (screenshotCache != null) {
+                screenshotCache.clear();
+            }
+        }
     }
 
     /**
@@ -706,9 +712,8 @@ public class AvailableExtensionsPanel extends JPanel {
         if (url == null) {
             return null;
         }
-        // Use the URL path with special characters replaced to create a valid filename
-        String path = url.getPath();
-        return path.replaceAll("[^a-zA-Z0-9._-]", "_");
+        // Use the hash of the entire URL as part of the cache key to avoid collisions:
+        return Integer.toHexString(url.toString().hashCode());
     }
 
     /**
@@ -743,6 +748,10 @@ public class AvailableExtensionsPanel extends JPanel {
                 }
 
                 String cacheKey = getCacheKeyForUrl(screenshotUrl);
+                if (cacheKey == null) {
+                    allCached = false;
+                    break;
+                }
                 File cachedFile = screenshotCache.get(cacheKey);
 
                 if (cachedFile != null && cachedFile.exists()) {
@@ -808,11 +817,14 @@ public class AvailableExtensionsPanel extends JPanel {
                     // Cache the downloaded file if caching is enabled
                     if (screenshotCacheDir != null && screenshotUrl != null) {
                         String cacheKey = getCacheKeyForUrl(screenshotUrl);
-                        String extension = DownloadManager.getFileExtension(screenshotFile.getName());
-                        File cachedFile = new File(screenshotCacheDir, cacheKey + extension);
-                        Files.copy(screenshotFile.toPath(), cachedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        screenshotCache.put(cacheKey, cachedFile);
-                        log.fine("Cached screenshot: " + cacheKey);
+                        if (cacheKey != null) {
+                            String extension = DownloadManager.getFileExtension(screenshotFile.getName());
+                            File cachedFile = new File(screenshotCacheDir, cacheKey + extension);
+                            Files.copy(screenshotFile.toPath(), cachedFile.toPath(),
+                                       StandardCopyOption.REPLACE_EXISTING);
+                            screenshotCache.put(cacheKey, cachedFile);
+                            log.fine("Cached screenshot: " + cacheKey);
+                        }
                     }
 
                     // Do I/O on the worker thread:
