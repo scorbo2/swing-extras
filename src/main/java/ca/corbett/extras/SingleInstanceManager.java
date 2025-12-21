@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,13 +19,14 @@ import java.util.logging.Logger;
  * adding right-click support in your OS's file manager, because then
  * the user can quickly add new files to the already-running instance
  * instead of launching multiple instances of the application.
- * If enabled, it will also bring the main window of the primary instance
+ * If this option is enabled, it will also bring the main window of the primary instance
  * to the front if you select your application's icon from the system menu,
  * instead of starting a new instance.
  * <p>
  * <b>USAGE:</b> Start by invoking the tryAcquireLock(...)  method. This will return
  * true if the lock was acquired - that means that this instance will be considered
  * the "primary" instance. You can optionally specify a port number to use.
+ * (Locks are acquired by binding a server socket to a specific TCP port on localhost).
  * You should supply an implementation of the ArgsListener interface to receive
  * any command-line arguments sent from new instances and process them. If
  * tryAcquireLock(...) returns false, then another instance is already running,
@@ -33,12 +35,15 @@ import java.util.logging.Logger;
  * </p>
  * <pre>
  * // In your application startup:
- * if (SingleInstanceManager.tryAcquireLock(args -&gt; handleStartArgs(args))) {
+ * SingleInstanceManager instanceManager = SingleInstanceManager.getInstance();
+ * if (instanceManager.tryAcquireLock(args -&gt; handleStartArgs(args))) {
  *     // This is the primary instance - continue your usual startup
  * }
  * else {
  *     // Another instance is already running - send args and exit
- *     SingleInstanceManager.sendArgsToRunningInstance(args);
+ *     instanceManager.sendArgsToRunningInstance(args);
+ *     // If sendArgsToRunningInstance fails, an error dialog will be shown.
+ *     // Otherwise, it might not be obvious to the user what just happened.
  *     System.exit(0);
  * }
  * </pre>
@@ -62,7 +67,7 @@ import java.util.logging.Logger;
 public class SingleInstanceManager {
 
     private static final Logger log = Logger.getLogger(SingleInstanceManager.class.getName());
-    private boolean showErrorDialogOnArgSendFailure = true;
+    private volatile boolean showErrorDialogOnArgSendFailure = true;
     private volatile MessageUtil messageUtil;
 
     // Use the initialization-on-demand holder idiom for a lazy, thread-safe singleton
@@ -98,6 +103,8 @@ public class SingleInstanceManager {
     private volatile int port = DEFAULT_PORT; // Store the actual port being used
     private volatile ServerSocket serverSocket;
     private volatile ArgsListener argsListener;
+    private final AtomicInteger listenerThreadCounter = new AtomicInteger(0);
+    private final AtomicInteger clientThreadCounter = new AtomicInteger(0);
 
     /**
      * Package-private functional provider used for tests to inject ServerSocket creation.
@@ -251,7 +258,7 @@ public class SingleInstanceManager {
                     }
                 }
             }
-        }, "SingleInstanceManager-ListenerThread-" + Thread.currentThread().getId());
+        }, "SingleInstanceManager-ListenerThread-" + listenerThreadCounter.incrementAndGet());
         listenerThread.start();
     }
 
@@ -287,7 +294,7 @@ public class SingleInstanceManager {
                     log.log(Level.SEVERE, "Error closing client socket: " + e.getMessage(), e);
                 }
             }
-        }, "SingleInstanceManager-clientHandler-" + Thread.currentThread().getId()).start();
+        }, "SingleInstanceManager-clientHandler-" + clientThreadCounter.incrementAndGet()).start();
     }
 
     /**

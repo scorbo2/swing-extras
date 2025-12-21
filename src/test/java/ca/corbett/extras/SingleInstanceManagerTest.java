@@ -37,37 +37,36 @@ class SingleInstanceManagerTest {
 
     @Test
     void tryAcquireLock_withPreboundServerSocket_receivesArgs() throws Exception {
-        ServerSocket prebound = new ServerSocket(55555);
-        int port = prebound.getLocalPort();
+        try (ServerSocket prebound = new ServerSocket(55555)) {
+            int port = prebound.getLocalPort();
 
-        // Inject provider that returns our pre-bound ServerSocket for the requested port
-        SingleInstanceManager.setServerSocketProvider(requestedPort -> {
-            if (requestedPort != port) {
-                throw new IOException("unexpected port: " + requestedPort);
-            }
-            return prebound;
-        });
+            // Inject provider that returns our pre-bound ServerSocket for the requested port
+            SingleInstanceManager.setServerSocketProvider(requestedPort -> {
+                if (requestedPort != port) {
+                    throw new IOException("unexpected port: " + requestedPort);
+                }
+                return prebound;
+            });
 
-        CountDownLatch latch = new CountDownLatch(1);
-        List<String> received = Collections.synchronizedList(new ArrayList<>());
+            CountDownLatch latch = new CountDownLatch(1);
+            List<String> received = Collections.synchronizedList(new ArrayList<>());
 
-        boolean primary = SingleInstanceManager.getInstance().tryAcquireLock(args -> {
-            received.addAll(args);
-            latch.countDown();
-        }, port);
+            boolean primary = SingleInstanceManager.getInstance().tryAcquireLock(args -> {
+                received.addAll(args);
+                latch.countDown();
+            }, port);
 
-        assertTrue(primary, "Should become primary when provider supplies a ServerSocket");
-        assertTrue(SingleInstanceManager.getInstance().isListening());
-        assertEquals(port, SingleInstanceManager.getInstance().getListeningPort());
+            assertTrue(primary, "Should become primary when provider supplies a ServerSocket");
+            assertTrue(SingleInstanceManager.getInstance().isListening());
+            assertEquals(port, SingleInstanceManager.getInstance().getListeningPort());
 
-        String[] toSend = new String[] { "one", "two" };
-        SingleInstanceManager.getInstance().sendArgsToRunningInstance(toSend);
+            String[] toSend = new String[]{"one", "two"};
+            SingleInstanceManager.getInstance().sendArgsToRunningInstance(toSend);
 
-        boolean got = latch.await(2, TimeUnit.SECONDS);
-        assertTrue(got, "Listener should be invoked");
-        assertEquals(Arrays.asList(toSend), received);
-
-        prebound.close();
+            boolean got = latch.await(2, TimeUnit.SECONDS);
+            assertTrue(got, "Listener should be invoked");
+            assertEquals(Arrays.asList(toSend), received);
+        }
     }
 
     @Test
@@ -83,22 +82,22 @@ class SingleInstanceManagerTest {
         // use the default port defined in SingleInstanceManager.
         int defaultPort = SingleInstanceManager.DEFAULT_PORT;
 
-        ServerSocket prebound = new ServerSocket(defaultPort);
-        int port = prebound.getLocalPort();
+        try (ServerSocket prebound = new ServerSocket(defaultPort)) {
+            int port = prebound.getLocalPort();
 
-        // Inject provider that returns our pre-bound ServerSocket for the requested port
-        SingleInstanceManager.setServerSocketProvider(requestedPort -> {
-            if (requestedPort != port) {
-                throw new IOException("unexpected port: " + requestedPort);
-            }
-            return prebound;
-        });
+            // Inject provider that returns our pre-bound ServerSocket for the requested port
+            SingleInstanceManager.setServerSocketProvider(requestedPort -> {
+                if (requestedPort != port) {
+                    throw new IOException("unexpected port: " + requestedPort);
+                }
+                return prebound;
+            });
 
-        boolean isPrimaryInstance = SingleInstanceManager.getInstance().tryAcquireLock(null);
-        assertTrue(isPrimaryInstance, "Should acquire lock on default port " + defaultPort);
-        assertTrue(SingleInstanceManager.getInstance().isListening());
-        assertEquals(defaultPort, SingleInstanceManager.getInstance().getListeningPort());
-        prebound.close();
+            boolean isPrimaryInstance = SingleInstanceManager.getInstance().tryAcquireLock(null);
+            assertTrue(isPrimaryInstance, "Should acquire lock on default port " + defaultPort);
+            assertTrue(SingleInstanceManager.getInstance().isListening());
+            assertEquals(defaultPort, SingleInstanceManager.getInstance().getListeningPort());
+        }
     }
 
     @Test
