@@ -68,6 +68,7 @@ public class SingleInstanceManager {
 
     private static final Logger log = Logger.getLogger(SingleInstanceManager.class.getName());
     private volatile boolean showErrorDialogOnArgSendFailure = true;
+    private Thread shutdownHook;
     private volatile MessageUtil messageUtil;
 
     // Use the initialization-on-demand holder idiom for a lazy, thread-safe singleton
@@ -161,6 +162,13 @@ public class SingleInstanceManager {
 
             // Successfully bound to port - we're the primary instance
             startListening();
+
+            // Register shutdown hook to release lock on exit if release() not called explicitly
+            if (shutdownHook == null) {
+                shutdownHook = new Thread(this::release, "SingleInstanceManager-ShutdownHook");
+                Runtime.getRuntime().addShutdownHook(shutdownHook);
+            }
+
             log.info("SingleInstanceManager listening on port " + port);
             return true;
         } catch (IOException e) {
@@ -259,6 +267,7 @@ public class SingleInstanceManager {
                 }
             }
         }, "SingleInstanceManager-ListenerThread-" + listenerThreadCounter.incrementAndGet());
+        listenerThread.setDaemon(true); // Daemon thread so it doesn't block JVM exit if release() isn't called
         listenerThread.start();
     }
 
@@ -266,7 +275,7 @@ public class SingleInstanceManager {
      * Handle incoming command-line arguments from new instances.
      */
     private void handleClient(Socket clientSocket) {
-        new Thread(() -> {
+        Thread clientThread = new Thread(() -> {
             try (BufferedReader in = new BufferedReader(
                     new InputStreamReader(clientSocket.getInputStream()))) {
 
@@ -294,7 +303,10 @@ public class SingleInstanceManager {
                     log.log(Level.SEVERE, "Error closing client socket: " + e.getMessage(), e);
                 }
             }
-        }, "SingleInstanceManager-clientHandler-" + clientThreadCounter.incrementAndGet()).start();
+        }, "SingleInstanceManager-clientHandler-" + clientThreadCounter.incrementAndGet());
+
+        clientThread.setDaemon(true); // Don't block JVM exit if this thread is still running
+        clientThread.start();
     }
 
     /**
@@ -309,6 +321,17 @@ public class SingleInstanceManager {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
                 log.info("SingleInstanceManager on port " + port + " has been shut down.");
+            }
+
+            // If we had a shutdown hook registered, we no longer need it:
+            if (shutdownHook != null) {
+                try {
+                    Runtime.getRuntime().removeShutdownHook(shutdownHook);
+                }
+                catch (IllegalStateException ignored) {
+                    // JVM is already shutting down, ignore
+                }
+                shutdownHook = null;
             }
         } catch (IOException e) {
             log.log(Level.SEVERE, "Error closing server socket: " + e.getMessage(), e);
