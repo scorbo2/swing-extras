@@ -64,7 +64,7 @@ public class PanelProperty extends AbstractProperty {
 
     @Override
     public void loadFromProps(Properties props) {
-        // Nothing to do here as we don't story any data here
+        // Nothing to do here as we don't store any data here
     }
 
     @Override

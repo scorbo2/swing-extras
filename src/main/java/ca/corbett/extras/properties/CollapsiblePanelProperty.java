@@ -38,7 +38,6 @@ import java.awt.LayoutManager;
  */
 public class CollapsiblePanelProperty extends AbstractProperty {
 
-    private String fieldLabel;
     private LayoutManager layoutManager;
     private boolean isInitiallyExpanded = true;
 
@@ -49,7 +48,6 @@ public class CollapsiblePanelProperty extends AbstractProperty {
     public CollapsiblePanelProperty(String id, String fieldLabel, LayoutManager layoutManager) {
         super(id, fieldLabel);
         this.layoutManager = layoutManager;
-        this.fieldLabel = fieldLabel;
     }
 
     public LayoutManager getLayoutManager() {
@@ -58,15 +56,6 @@ public class CollapsiblePanelProperty extends AbstractProperty {
 
     public CollapsiblePanelProperty setLayoutManager(LayoutManager layoutManager) {
         this.layoutManager = layoutManager;
-        return this;
-    }
-
-    public String getFieldLabel() {
-        return fieldLabel;
-    }
-
-    public CollapsiblePanelProperty setFieldLabel(String fieldLabel) {
-        this.fieldLabel = fieldLabel;
         return this;
     }
 
@@ -92,8 +81,8 @@ public class CollapsiblePanelProperty extends AbstractProperty {
     @Override
     protected FormField generateFormFieldImpl() {
         return layoutManager == null
-            ? new CollapsiblePanelField(fieldLabel, isInitiallyExpanded)
-            : new CollapsiblePanelField(fieldLabel, isInitiallyExpanded, layoutManager);
+            ? new CollapsiblePanelField(propertyLabel, isInitiallyExpanded)
+            : new CollapsiblePanelField(propertyLabel, isInitiallyExpanded, layoutManager);
     }
 
     @Override
