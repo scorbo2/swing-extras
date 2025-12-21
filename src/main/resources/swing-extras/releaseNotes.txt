@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.6.0 [TODO date here] - Maintenance release
+  #175 - ExtensionManagerDialog: cache downloaded screenshots
   #174 - Improved logging in UpdateManager
   #173 - Fix minor bug when launching LogConsole from AboutDialog
 

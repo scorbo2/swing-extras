@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,6 +75,10 @@ public class AvailableExtensionsPanel extends JPanel {
     protected final String applicationName;
     protected final String applicationVersion;
 
+    // Screenshot cache infrastructure
+    protected final File screenshotCacheDir;
+    protected final ConcurrentHashMap<String, File> screenshotCache;
+
     public AvailableExtensionsPanel(Window owner, ExtensionManager<?> extManager, UpdateManager updateManager, String appName, String appVersion) {
         this.owner = owner;
         this.updateManager = updateManager;
@@ -84,6 +89,8 @@ public class AvailableExtensionsPanel extends JPanel {
         this.isRestartRequired = false;
         this.currentUpdateSource = null;
         detailsPanelMap = new HashMap<>();
+        screenshotCache = new ConcurrentHashMap<>();
+        screenshotCacheDir = createScreenshotCacheDirectory();
         extensionListPanel = new ListPanel<>(List.of(new RefreshAction()));
         extensionListPanel.setPreferredSize(new Dimension(200, 200));
         extensionListPanel.setMinimumSize(new Dimension(200, 1));
@@ -640,11 +647,81 @@ public class AvailableExtensionsPanel extends JPanel {
     }
 
     /**
+     * Creates a temporary directory for caching screenshot images during this panel's lifetime.
+     * Returns null if creation fails.
+     */
+    protected File createScreenshotCacheDirectory() {
+        try {
+            File tempDir = new File(System.getProperty("java.io.tmpdir"));
+            File cacheDir = new File(tempDir, "ext-screenshots-" + System.currentTimeMillis());
+            if (cacheDir.mkdir()) {
+                log.info("Created screenshot cache directory: " + cacheDir.getAbsolutePath());
+                return cacheDir;
+            }
+            else {
+                log.warning("Failed to create screenshot cache directory");
+                return null;
+            }
+        }
+        catch (Exception e) {
+            log.log(Level.WARNING, "Error creating screenshot cache directory: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Cleans up the temporary screenshot cache directory. We rely on the caller to invoke
+     * this, as we don't know when the panel is no longer needed. This is typically invoked
+     * from the ExtensionManagerDialog when it is closed.
+     */
+    public void cleanupScreenshotCache() {
+        if (screenshotCacheDir == null || !screenshotCacheDir.exists()) {
+            return;
+        }
+
+        try {
+            File[] files = screenshotCacheDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (!file.delete()) {
+                        log.warning("Failed to delete cached screenshot: " + file.getName());
+                    }
+                }
+            }
+            if (!screenshotCacheDir.delete()) {
+                log.warning("Failed to delete screenshot cache directory");
+            }
+            else {
+                log.info("Cleaned up screenshot cache directory");
+            }
+        }
+        catch (Exception e) {
+            log.log(Level.WARNING, "Error cleaning up screenshot cache: " + e.getMessage(), e);
+        }
+        finally {
+            if (screenshotCache != null) {
+                screenshotCache.clear();
+            }
+        }
+    }
+
+    /**
+     * Generates a cache key from a URL to use as filename.
+     */
+    protected String getCacheKeyForUrl(URL url) {
+        if (url == null) {
+            return null;
+        }
+        // Use the hash of the entire URL as part of the cache key to avoid collisions:
+        return Integer.toHexString(url.toString().hashCode());
+    }
+
+    /**
      * Internal helper class to grab all the screenshots for the given extension version
      * and load them into the given ExtensionDetailsPanel.
      * <p>
-     * Currently, there's no caching. So, every time you visit an extension in the
-     * left menu, the screenshots for it get re-downloaded. That's wasteful.
+     * Screenshots are cached in a temporary directory to avoid re-downloading them
+     * when the same extension is selected multiple times.
      * </p>
      */
     private class ScreenshotDownloader {
@@ -658,6 +735,43 @@ public class AvailableExtensionsPanel extends JPanel {
         }
 
         public void start() {
+            // Check if we already have all screenshots cached
+            List<String> screenshotUrls = extVersion.getScreenshots();
+            List<File> cachedFiles = new ArrayList<>();
+            boolean allCached = true;
+
+            for (String screenshotPath : screenshotUrls) {
+                URL screenshotUrl = UpdateManager.resolveUrl(currentUpdateSource.getBaseUrl(), screenshotPath);
+                if (screenshotUrl == null) {
+                    allCached = false;
+                    break;
+                }
+
+                String cacheKey = getCacheKeyForUrl(screenshotUrl);
+                if (cacheKey == null) {
+                    allCached = false;
+                    break;
+                }
+                File cachedFile = screenshotCache.get(cacheKey);
+
+                if (cachedFile != null && cachedFile.exists()) {
+                    cachedFiles.add(cachedFile);
+                }
+                else {
+                    allCached = false;
+                    break;
+                }
+            }
+
+            // If all screenshots are cached, load them directly without downloading
+            if (allCached && !cachedFiles.isEmpty()) {
+                log.info("Loading " + cachedFiles.size() + " cached screenshots for extension: " + extVersion
+                        .getExtInfo().getName());
+                loadCachedScreenshots(cachedFiles);
+                return;
+            }
+
+            // Otherwise, proceed with downloading
             MultiProgressDialog progressDialog = new MultiProgressDialog(owner, "Downloading...");
             ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager,
                                                                          currentUpdateSource,
@@ -678,9 +792,41 @@ public class AvailableExtensionsPanel extends JPanel {
             progressDialog.runWorker(worker, true);
         }
 
-        public void processResults(DownloadedExtension extensionFiles) {
-            for (File screenshotFile : extensionFiles.getScreenshots()) {
+        private void loadCachedScreenshots(List<File> cachedFiles) {
+            for (File cachedFile : cachedFiles) {
                 try {
+                    BufferedImage image = ImageUtil.loadImage(cachedFile);
+                    SwingUtilities.invokeLater(() -> extDetailsPanel.addScreenshot(image, false));
+                }
+                catch (IOException ioe) {
+                    log.log(Level.SEVERE, "Problem loading cached screenshot: " + ioe.getMessage(), ioe);
+                }
+            }
+        }
+
+        public void processResults(DownloadedExtension extensionFiles) {
+            List<String> screenshotUrls = extVersion.getScreenshots();
+            List<File> downloadedFiles = extensionFiles.getScreenshots();
+
+            for (int i = 0; i < downloadedFiles.size() && i < screenshotUrls.size(); i++) {
+                File screenshotFile = downloadedFiles.get(i);
+                String screenshotPath = screenshotUrls.get(i);
+                URL screenshotUrl = UpdateManager.resolveUrl(currentUpdateSource.getBaseUrl(), screenshotPath);
+
+                try {
+                    // Cache the downloaded file if caching is enabled
+                    if (screenshotCacheDir != null && screenshotUrl != null) {
+                        String cacheKey = getCacheKeyForUrl(screenshotUrl);
+                        if (cacheKey != null) {
+                            String extension = DownloadManager.getFileExtension(screenshotFile.getName());
+                            File cachedFile = new File(screenshotCacheDir, cacheKey + extension);
+                            Files.copy(screenshotFile.toPath(), cachedFile.toPath(),
+                                       StandardCopyOption.REPLACE_EXISTING);
+                            screenshotCache.put(cacheKey, cachedFile);
+                            log.fine("Cached screenshot: " + cacheKey);
+                        }
+                    }
+
                     // Do I/O on the worker thread:
                     BufferedImage image = ImageUtil.loadImage(screenshotFile);
 
