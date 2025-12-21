@@ -54,11 +54,10 @@ import java.util.logging.Logger;
  * update your UI from there.
  * </p>
  * <p>
- * <b>Cleanup:</b> you should call the release() method when your application
- * is shutting down to release the lock and close the server socket. If you
- * are using the swing-extras UpdateManager, you can register a shutdown hook
- * with the UpdateManager to ensure that the release() method is called when
- * the application is restarted by the UpdateManager.
+ * <b>Cleanup:</b> This class registers a JVM shutdown hook to invoke release()
+ * automatically when the JVM shuts down. Callers also have the option of
+ * invoking release() manually to explicitly release the lock and close the server socket.
+ * The release() method is idempotent and thread safe, so it is safe to call it multiple times.
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a> (with copilot/claude)
