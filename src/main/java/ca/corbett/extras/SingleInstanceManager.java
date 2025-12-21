@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 public class SingleInstanceManager {
 
     private static final Logger log = Logger.getLogger(SingleInstanceManager.class.getName());
+    private boolean showErrorDialogOnArgSendFailure = true;
     private volatile MessageUtil messageUtil;
 
     // Use the initialization-on-demand holder idiom for a lazy, thread-safe singleton
@@ -178,9 +179,14 @@ public class SingleInstanceManager {
             out.println(ARGUMENT_END_SIGNAL);
 
         } catch (IOException e) {
-            getMessageUtil().error("SingleInstanceManager error",
-                                   "Failed to connect to running instance on port " + targetPort + ": " + e.getMessage(),
-                                   e);
+            if (showErrorDialogOnArgSendFailure) {
+                getMessageUtil().error("SingleInstanceManager error",
+                                       "Failed to connect to running instance on port " + targetPort + ": " + e.getMessage(),
+                                       e);
+            }
+            else {
+                log.log(Level.SEVERE, "Error sending args to running instance: " + e.getMessage(), e);
+            }
         }
     }
 
@@ -198,6 +204,25 @@ public class SingleInstanceManager {
      */
     public int getListeningPort() {
         return port;
+    }
+
+    /**
+     * Reports whether an error dialog should be shown
+     * if sending arguments to the running instance fails.
+     */
+    public boolean isShowErrorDialogOnArgSendFailure() {
+        return showErrorDialogOnArgSendFailure;
+    }
+
+    /**
+     * Controls whether or not an error dialog is shown in the case
+     * where sending arguments to the running instance fails.
+     * The default value is true, because otherwise it may not be obvious
+     * to the user what went wrong if the second instance fails to send its args.
+     * This is here largely for unit testing purposes, so tests can disable the dialog.
+     */
+    public void setShowErrorDialogOnArgSendFailure(boolean showErrorDialogOnArgSendFailure) {
+        this.showErrorDialogOnArgSendFailure = showErrorDialogOnArgSendFailure;
     }
 
     /**

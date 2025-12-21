@@ -1,6 +1,7 @@
 package ca.corbett.extras;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -17,6 +18,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SingleInstanceManagerTest {
+
+    @BeforeAll
+    static void setup() {
+        // Ensure each test starts with a fresh instance
+        SingleInstanceManager.getInstance().release();
+
+        // Don't show error dialogs in unit tests!
+        SingleInstanceManager.getInstance().setShowErrorDialogOnArgSendFailure(false);
+    }
 
     @AfterEach
     void tearDown() {
@@ -112,5 +122,42 @@ class SingleInstanceManagerTest {
         // Should not throw any exceptions
         SingleInstanceManager.getInstance().release();
         assertFalse(SingleInstanceManager.getInstance().isListening());
+    }
+
+    @Test
+    void release_shouldAllowReacquire() throws Exception {
+        boolean isPrimary = SingleInstanceManager.getInstance().tryAcquireLock(null);
+        assertTrue(isPrimary, "Should become primary instance");
+
+        SingleInstanceManager.getInstance().release();
+        assertFalse(SingleInstanceManager.getInstance().isListening(), "Should no longer be listening after release");
+
+        boolean isPrimaryAgain = SingleInstanceManager.getInstance().tryAcquireLock(null);
+        assertTrue(isPrimaryAgain, "Should be able to reacquire lock after release");
+    }
+
+    @Test
+    void sendArgsToRunningInstance_whenNotListening_doesNothing() {
+        // Should not throw any exceptions
+        SingleInstanceManager.getInstance().sendArgsToRunningInstance(new String[]{"arg1", "arg2"});
+    }
+
+    @Test
+    void sendArgsToRunningInstance_withNoArgs_sendsEmpty() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        List<String> received = Collections.synchronizedList(new ArrayList<>());
+
+        boolean primary = SingleInstanceManager.getInstance().tryAcquireLock(args -> {
+            received.addAll(args);
+            latch.countDown();
+        });
+
+        assertTrue(primary, "Should become primary instance");
+
+        SingleInstanceManager.getInstance().sendArgsToRunningInstance(new String[]{});
+
+        boolean got = latch.await(2, TimeUnit.SECONDS);
+        assertTrue(got, "Listener should be invoked");
+        assertEquals(Collections.emptyList(), received);
     }
 }
