@@ -12,6 +12,7 @@ import ca.corbett.extras.properties.DirectoryProperty;
 import ca.corbett.extras.properties.EnumProperty;
 import ca.corbett.extras.properties.FileProperty;
 import ca.corbett.extras.properties.FontProperty;
+import ca.corbett.extras.properties.HtmlLabelProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.extras.properties.LongTextProperty;
@@ -32,8 +33,10 @@ import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.SliderField;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -163,6 +166,14 @@ public class PropertiesDemoPanel extends PanelBuilder {
         testLabel.setFont(new Font("Monospaced", Font.ITALIC, 14));
         testLabel.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
         props.add(testLabel);
+
+        // New in swing-extras 2.6: let's show off HtmlLabelProperty:
+        HtmlLabelProperty htmlLabel = new HtmlLabelProperty("Intro.Labels.htmlLabel1",
+                                                            "<html>Labels can have hyperlinks: "
+                                                                    + "<a href='link1'>link 1</a> "
+                                                                    + "<a href='link2'>link 2</a></html>",
+                                                            new HyperlinkActionHandler());
+        props.add(htmlLabel);
 
         // Now add some dummy labels to force a scroll bar to appear:
         for (int i = 0; i < 10; i++) {
@@ -330,6 +341,24 @@ public class PropertiesDemoPanel extends PanelBuilder {
                           .setExtraMargins(8, 0));
 
         return props;
+    }
+
+    private static class HyperlinkActionHandler extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+            String message;
+            if ("link1".equals(command)) {
+                message = "You clicked link 1!";
+            }
+            else if ("link2".equals(command)) {
+                message = "You clicked link 2!";
+            }
+            else {
+                message = "Unknown link clicked: " + command;
+            }
+            JOptionPane.showMessageDialog(DemoApp.getInstance(), message);
+        }
     }
 
     /**
