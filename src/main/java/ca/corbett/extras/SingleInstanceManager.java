@@ -21,6 +21,40 @@ import java.util.logging.Logger;
  * If enabled, it will also bring the main window of the primary instance
  * to the front if you select your application's icon from the system menu,
  * instead of starting a new instance.
+ * <p>
+ * <b>USAGE:</b> Start by invoking the tryAcquireLock(...)  method. This will return
+ * true if the lock was acquired - that means that this instance will be considered
+ * the "primary" instance. You can optionally specify a port number to use.
+ * You should supply an implementation of the ArgsListener interface to receive
+ * any command-line arguments sent from new instances and process them. If
+ * tryAcquireLock(...) returns false, then another instance is already running,
+ * and you should send your arguments to it using the sendArgsToRunningInstance(...)
+ * method, and then immediately exit. For example:
+ * </p>
+ * <pre>
+ * // In your application startup:
+ * if (SingleInstanceManager.tryAcquireLock(args -&gt; handleStartArgs(args))) {
+ *     // This is the primary instance - continue your usual startup
+ * }
+ * else {
+ *     // Another instance is already running - send args and exit
+ *     SingleInstanceManager.sendArgsToRunningInstance(args);
+ *     System.exit(0);
+ * }
+ * </pre>
+ * <p>
+ * In your primary instance, implement the handleStartArgs(...) method to
+ * process any arguments received from new instances. Note that this method
+ * will be invoked on the Swing Event Dispatch Thread (EDT), so you can safely
+ * update your UI from there.
+ * </p>
+ * <p>
+ * <b>Cleanup:</b> you should call the release() method when your application
+ * is shutting down to release the lock and close the server socket. If you
+ * are using the swing-extras UpdateManager, you can register a shutdown hook
+ * with the UpdateManager to ensure that the release() method is called when
+ * the application is restarted by the UpdateManager.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a> (with copilot/claude)
  * @since swing-extras 2.6
@@ -28,7 +62,7 @@ import java.util.logging.Logger;
 public class SingleInstanceManager {
 
     private static final Logger log = Logger.getLogger(SingleInstanceManager.class.getName());
-    private MessageUtil messageUtil;
+    private volatile MessageUtil messageUtil;
 
     // Use the initialization-on-demand holder idiom for a lazy, thread-safe singleton
     private SingleInstanceManager() {
@@ -53,16 +87,16 @@ public class SingleInstanceManager {
      * with any other application. Just pick a random high number.
      * Callers can override this default by calling tryAcquireLock with a different port.
      */
-    private static final int DEFAULT_PORT = 44787;
+    public static final int DEFAULT_PORT = 44787;
 
     /**
      * Used to signal the end of arguments when sending to the primary instance.
      */
     private static final String ARGUMENT_END_SIGNAL = "-END-";
 
-    private int port = DEFAULT_PORT; // Store the actual port being used
-    private ServerSocket serverSocket;
-    private ArgsListener argsListener;
+    private volatile int port = DEFAULT_PORT; // Store the actual port being used
+    private volatile ServerSocket serverSocket;
+    private volatile ArgsListener argsListener;
 
     /**
      * Package-private functional provider used for tests to inject ServerSocket creation.
@@ -133,7 +167,8 @@ public class SingleInstanceManager {
      * Will log an exception if unable to connect.
      */
     public void sendArgsToRunningInstance(String[] args) {
-        try (Socket socket = new Socket("localhost", port);
+        int targetPort = port;
+        try (Socket socket = new Socket("localhost", targetPort);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
             // Send each argument
@@ -144,9 +179,25 @@ public class SingleInstanceManager {
 
         } catch (IOException e) {
             getMessageUtil().error("SingleInstanceManager error",
-                                   "Failed to connect to running instance on port " + port + ": " + e.getMessage(),
+                                   "Failed to connect to running instance on port " + targetPort + ": " + e.getMessage(),
                                    e);
         }
+    }
+
+    /**
+     * Reports whether this instance is currently the primary instance
+     * and is currently listening for new instance connections.
+     */
+    public boolean isListening() {
+        return serverSocket != null && !serverSocket.isClosed();
+    }
+
+    /**
+     * Returns the port number this instance is listening on.
+     * Useful for logging or diagnostics.
+     */
+    public int getListeningPort() {
+        return port;
     }
 
     /**
@@ -171,13 +222,11 @@ public class SingleInstanceManager {
                         log.log(Level.SEVERE, "Error accepting connection: " + e.getMessage(), e);
                     }
                     else {
-                        serverSocket = null;
                         break; // Server socket closed, exit loop
                     }
                 }
             }
-        }, "SingleInstanceManager-ListenerThread-" + System.currentTimeMillis());
-        listenerThread.setDaemon(true);
+        }, "SingleInstanceManager-ListenerThread-" + Thread.currentThread().getId());
         listenerThread.start();
     }
 
@@ -213,7 +262,7 @@ public class SingleInstanceManager {
                     log.log(Level.SEVERE, "Error closing client socket: " + e.getMessage(), e);
                 }
             }
-        }, "SingleInstanceManager-clientHandler-" + System.currentTimeMillis()).start();
+        }, "SingleInstanceManager-clientHandler-" + Thread.currentThread().getId()).start();
     }
 
     /**
@@ -223,7 +272,7 @@ public class SingleInstanceManager {
      * as a shutdownHook with the UpdateManager so that it runs when
      * the UpdateManager initiates an application restart.
      */
-    public void release() {
+    public synchronized void release() {
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
@@ -236,7 +285,11 @@ public class SingleInstanceManager {
 
     private MessageUtil getMessageUtil() {
         if (messageUtil == null) {
-            messageUtil = new MessageUtil(null, log);
+            synchronized(this) {
+                if (messageUtil == null) {
+                    messageUtil = new MessageUtil(null, log);
+                }
+            }
         }
         return messageUtil;
     }
