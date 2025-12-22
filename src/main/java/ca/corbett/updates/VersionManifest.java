@@ -284,6 +284,7 @@ public class VersionManifest {
          */
         public Optional<ExtensionVersion> getHighestVersion() {
             return this.versions.stream()
+                                .filter(ev -> ev.getExtInfo() != null && ev.getExtInfo().getVersion() != null)
                                 .max(Comparator.comparing(ev -> ev.getExtInfo().getVersion(),
                                                           new VersionStringComparator()));
         }

@@ -273,8 +273,8 @@ public class AvailableExtensionsPanel extends JPanel {
         // determining if an extension is compatible. The versioning convention that applications must
         // follow is to release a minor version if there are no extension-breaking changes, and a major version
         // if there are extension-breaking changes. So, an extension will be considered compatible if
-        // its major version matches the application's major version. So, we will grab the highest version
-        // of each extension that matches this application's major version.
+        // its target application major version matches the application's major version. So, we will grab the
+        // highest version of each extension that matches this application's major version.
         int appMajorVersion = AppExtensionInfo.extractMajorVersion(applicationVersion);
         if (appMajorVersion != 0) {
             // There may be a streams way to do this, but it's a bit beyond me, so let's do it imperatively:
@@ -319,11 +319,12 @@ public class AvailableExtensionsPanel extends JPanel {
                 }
             }
 
-            // Step 3 - for each extension found, add its highest version:
-            for (Map.Entry<String, VersionManifest.Extension> entry : extMap.entrySet()) {
-                VersionManifest.Extension extensions = extMap.get(entry.getKey());
-                extensionListPanel.addItem(new ExtensionPlaceholder(extensions, isInstalled(extensions)));
-            }
+            // Step 3 - for each extension found, add its highest version, sorted by name for consistent ordering:
+            extMap.entrySet().stream()
+                  .sorted(Map.Entry.comparingByKey())
+                  .map(Map.Entry::getValue)
+                  .forEach(extension -> extensionListPanel.addItem(
+                          new ExtensionPlaceholder(extension, isInstalled(extension))));
         }
 
         // If we can't extract the major version from the application version, then fall back to exact matching:
