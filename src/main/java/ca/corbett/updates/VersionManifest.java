@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 /**
@@ -215,6 +216,14 @@ public class VersionManifest {
             return version;
         }
 
+        /**
+         * Extracts just the major version number from the version string, if possible.
+         * Will return 0 if it cannot be determined.
+         */
+        public int getMajorVersion() {
+            return AppExtensionInfo.extractMajorVersion(version);
+        }
+
         public void setVersion(String version) {
             this.version = version;
         }
@@ -268,6 +277,15 @@ public class VersionManifest {
 
         public List<ExtensionVersion> getVersions() {
             return new ArrayList<>(versions);
+        }
+
+        /**
+         * Find and return the highest ExtensionVersion for this extension.
+         */
+        public Optional<ExtensionVersion> getHighestVersion() {
+            return this.versions.stream()
+                                .max(Comparator.comparing(ev -> ev.getExtInfo().getVersion(),
+                                                          new VersionStringComparator()));
         }
 
         public void addVersion(ExtensionVersion newVersion) {

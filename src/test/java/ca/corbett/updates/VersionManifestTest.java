@@ -153,4 +153,59 @@ class VersionManifestTest {
         assertNotNull(appVersion);
         assertEquals("9.9", appVersion.getVersion());
     }
+
+    @Test
+    public void findHighestExtensionVersion_shouldFindHighestVersion() throws Exception {
+        // GIVEN an extension with multiple versions:
+        final String extensionJson = """
+                {
+                  "manifestGenerated": "2025-11-30T05:12:44.276439348Z",
+                  "applicationName": "Test",
+                  "applicationVersions": [
+                    {
+                      "version": "1.0",
+                      "extensions": [
+                      {
+                        "name": "ExtensionTest",
+                        "versions": [
+                          {
+                            "extInfo": {
+                              "name": "ExtensionTest",
+                              "version": "2.0",
+                              "targetAppName": "Test",
+                              "targetAppVersion": "1.0"
+                            },
+                            "downloadPath": "extensions/1.0/Test-2.0.jar",
+                            "signaturePath": "extensions/1.0/Test-2.0.sig",
+                            "screenshots": []
+                          },
+                          {
+                            "extInfo": {
+                              "name": "ExtensionTest",
+                              "version": "10.0",
+                              "targetAppName": "Test",
+                              "targetAppVersion": "1.0"
+                            },
+                            "downloadPath": "extensions/1.0/Test-10.0.jar",
+                            "signaturePath": "extensions/1.0/Test-10.0.sig",
+                            "screenshots": []
+                          }
+                        ]
+                      }
+                      ]
+                    }
+                  ]
+                }
+                """;
+        VersionManifest manifest = VersionManifest.fromJson(extensionJson);
+        VersionManifest.ApplicationVersion appVersion = manifest.getApplicationVersions().get(0);
+        VersionManifest.Extension extension = appVersion.getExtensions().get(0);
+
+        // WHEN we ask for the highest extension version:
+        VersionManifest.ExtensionVersion extVersion = extension.getHighestVersion().orElse(null);
+
+        // THEN we should see the highest one:
+        assertNotNull(extVersion);
+        assertEquals("10.0", extVersion.getExtInfo().getVersion());
+    }
 }

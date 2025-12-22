@@ -95,4 +95,13 @@ public class AppExtensionInfoTest {
         assertNotNull(info2);
         assertEquals(info, info2);
     }
+
+    @Test
+    public void getMajorVersion_shouldExtractMajorVersion() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("2.5.1")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(2, majorVersion);
+    }
 }

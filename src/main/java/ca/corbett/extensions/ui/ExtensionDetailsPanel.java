@@ -269,11 +269,12 @@ public class ExtensionDetailsPanel extends JPanel {
      * adds a LabelField to show this.
      */
     protected void addVersionRequiredField() {
-        if (extInfo != null && extInfo.getTargetAppName() != null && extInfo.getTargetAppVersion() != null) {
+        if (extInfo != null && extInfo.getTargetAppName() != null && extInfo.getTargetAppMajorVersion() != 0) {
             String requires = ExtensionManagerDialog.trimString(extInfo.getTargetAppName()
-                                                                        + " "
-                                                                        + extInfo.getTargetAppVersion());
-            formPanel.add(new LabelField("Requires:", requires));
+                                                                        + " v"
+                                                                        + extInfo.getTargetAppMajorVersion()
+                                                                        + ".x");
+            formPanel.add(new LabelField("Compatible with " + requires));
         }
     }
 
