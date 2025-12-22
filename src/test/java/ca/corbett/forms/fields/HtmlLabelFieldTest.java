@@ -121,6 +121,60 @@ class HtmlLabelFieldTest extends FormFieldBaseTests {
         assertEquals(0, receivedCommands.size());
     }
 
+    @Test
+    public void setText_shouldReplaceExistingTextAndAction() throws Exception {
+        List<String> receivedCommands = new ArrayList<>();
+
+        Action firstAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                receivedCommands.add("first:" + e.getActionCommand());
+            }
+        };
+
+        String firstHtml = "<html><a href='firstLink'>First Link</a></html>";
+        HtmlLabelField field = new HtmlLabelField(firstHtml, firstAction);
+        JEditorPane pane = (JEditorPane)field.getFieldComponent();
+        HyperlinkListener firstListener = pane.getHyperlinkListeners()[0];
+
+        // Simulate clicking the first link
+        HyperlinkEvent firstEvent = createHyperlinkEvent(pane, "firstLink");
+        firstListener.hyperlinkUpdate(firstEvent);
+
+        // Now set new text and action
+        Action secondAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                receivedCommands.add("second:" + e.getActionCommand());
+            }
+        };
+
+        String secondHtml = "<html><a href='secondLink'>Second Link</a></html>";
+        field.setText(secondHtml, secondAction);
+
+        // Get the new listener
+        HyperlinkListener secondListener = pane.getHyperlinkListeners()[0];
+
+        // Simulate clicking the second link
+        HyperlinkEvent secondEvent = createHyperlinkEvent(pane, "secondLink");
+        secondListener.hyperlinkUpdate(secondEvent);
+
+        // Verify both actions were invoked correctly
+        assertEquals(2, receivedCommands.size());
+        assertEquals("first:firstLink", receivedCommands.get(0));
+        assertEquals("second:secondLink", receivedCommands.get(1));
+    }
+
+    @Test
+    public void setText_withNullAction_shouldDoNothingWhenLinksClicked() throws Exception {
+        HtmlLabelField field = new HtmlLabelField("<html>Initial Text</html>", null);
+
+        // When the supplied action is null, there should be no hyperlink listeners registered:
+        JEditorPane pane = (JEditorPane)field.getFieldComponent();
+        HyperlinkListener[] listeners = pane.getHyperlinkListeners();
+        assertEquals(0, listeners.length);
+    }
+
     /**
      * Helper method to create a HyperlinkEvent for testing
      */

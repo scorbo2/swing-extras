@@ -22,8 +22,23 @@ import java.awt.event.ActionEvent;
  * For example:
  * </p>
  * <pre>
- * final String html = "&lt;html&gt;Would you like to &lt;a href='proceed'&gt;proceed&lt?&lt;/html&gt;";
- * HtmlLabelField labelField = new HtmlLabelField(html);
+ * final String html = "&lt;html&gt;Would you like to &lt;a href='proceed'&gt;proceed&lt;a&gt;?&lt;/html&gt;";
+ * HtmlLabelField labelField = new HtmlLabelField(html, myCustomAction);
+ * </pre>
+ * <p>
+ * The Action that you supply will receive an actionPerformed() call when the link is clicked,
+ * and the action command will be "proceed" in this example. Here's what the Action might look like:
+ * </p>
+ * <pre>
+ *     Action myCustomAction = new AbstractAction() {
+ *         &#64;Override
+ *         public void actionPerformed(ActionEvent e) {
+ *             String command = e.getActionCommand();
+ *             if ("proceed".equals(command)) {
+ *                 // Do whatever you need to do when the link is clicked
+ *             }
+ *         }
+ *     };
  * </pre>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -85,6 +100,13 @@ public class HtmlLabelField extends FormField {
     }
 
     /**
+     * Returns the Action that is triggered when links are clicked.
+     */
+    public Action getLinkAction() {
+        return linkAction;
+    }
+
+    /**
      * Sets new label text in html format, and wires it up with the given Action.
      * This will replace any previously assigned Action and label text.
      *
@@ -99,7 +121,7 @@ public class HtmlLabelField extends FormField {
 
     /**
      * Sets the font to use for the label text.
-     * This is shorthand for ((JLabel)getFieldComponent()).setFont()
+     * This is shorthand for ((JEditorPane)getFieldComponent()).setFont()
      *
      * @param font The new Font to use.
      */
@@ -111,6 +133,9 @@ public class HtmlLabelField extends FormField {
         return this;
     }
 
+    /**
+     * Returns the current Font used for the label text.
+     */
     public Font getFont() {
         return label.getFont();
     }

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HtmlLabelPropertyTest extends AbstractPropertyBaseTests {
 
@@ -32,10 +33,32 @@ class HtmlLabelPropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
-    public void testGenerateFormFieldImpl() {
+    public void testGenerateFormField_shouldGenerateFormFieldOfCorrectType() {
         HtmlLabelProperty htmlLabelProperty = new HtmlLabelProperty("Category.Subcategory.Property", "Label", "<html>Test HTML</html>", null);
         assertNotNull(htmlLabelProperty.generateFormFieldImpl());
         assertInstanceOf(HtmlLabelField.class, htmlLabelProperty.generateFormField());
+    }
+
+    @Test
+    public void generateFormField_withTextAndActionSet_shouldGenerateFieldWithTextAndAction() {
+        javax.swing.AbstractAction testAction = new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                // Do nothing
+            }
+        };
+        HtmlLabelProperty htmlLabelProperty = new HtmlLabelProperty("Category.Subcategory.Property", "Label",
+                                                                    "<html>Test HTML</html>", testAction);
+        HtmlLabelField field = (HtmlLabelField)htmlLabelProperty.generateFormField();
+
+        // JEditorPane modifies the html that we send in, so we can't assert it exactly.
+        // But, it should at least contain what we gave it, in pieces:
+        assertTrue(field.getText().contains("<html>"));
+        assertTrue(field.getText().contains("Test HTML"));
+        assertTrue(field.getText().contains("</html>"));
+
+        // Our action should be set correctly:
+        assertEquals(testAction, field.getLinkAction());
     }
 
     @Test
@@ -51,4 +74,12 @@ class HtmlLabelPropertyTest extends AbstractPropertyBaseTests {
         assertEquals(0, props.getPropertyNames().size());
     }
 
+    @Test
+    public void testLoadFromFormField_shouldDoNothing() {
+        HtmlLabelProperty prop = (HtmlLabelProperty)actual;
+        HtmlLabelField field = new HtmlLabelField("<html>Some label</html>", null);
+
+        // Just ensure no exceptions are thrown
+        prop.loadFromFormField(field);
+    }
 }
