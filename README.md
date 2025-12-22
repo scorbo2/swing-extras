@@ -13,9 +13,20 @@ You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
 - The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
 
-## TODO release date here - swing extras 2.6 relese is here!
+## NEWS! December 31, 2025 - swing extras 2.6 release is here!
+
+Happy New Year! The 2.6 release of swing-extras is now available.
 This release offers a few minor new features and several bug fixes and improvements.
-TODO details here when 2.6 is ready.
+Most notably, ExtensionManager no longer insists on an exact version match when loading extensions,
+instead just looking at the major version. So, no more mandatory re-releases of extensions for minor
+application updates!
+
+Other notable additions in swing-extras 2.6:
+- new FormField: HtmlLabelField
+- new property wrappers for PanelField and CollapsiblePanelField
+- and a few minor bug fixes.
+
+Refer to the [release notes](src/main/resources/swing-extras/releaseNotes.txt) for a complete list.
 
 ## NEWS! December 1, 2025 - swing-extras 2.5 release is here!
 
