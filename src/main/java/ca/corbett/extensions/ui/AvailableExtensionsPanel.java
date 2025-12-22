@@ -1,6 +1,7 @@
 package ca.corbett.extensions.ui;
 
 import ca.corbett.extensions.AppExtension;
+import ca.corbett.extensions.AppExtensionInfo;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.ListPanel;
 import ca.corbett.extras.MessageUtil;
@@ -268,13 +269,73 @@ public class AvailableExtensionsPanel extends JPanel {
         extensionListPanel.clear();
         detailsPanelMap.clear();
 
-        // Find all extensions for our version of the application, sort them, and add them to the list:
-        manifest.getApplicationVersions().stream()
-                .filter(version -> applicationVersion.equals(version.getVersion()))
-                .flatMap(version -> version.getExtensions().stream())
-                .sorted(Comparator.comparing(VersionManifest.Extension::getName))
-                .map(extension -> new ExtensionPlaceholder(extension, isInstalled(extension)))
-                .forEach(extensionListPanel::addItem);
+        // Starting in swing-extras 2.6, we now only consider the application's major version when
+        // determining if an extension is compatible. The versioning convention that applications must
+        // follow is to release a minor version if there are no extension-breaking changes, and a major version
+        // if there are extension-breaking changes. So, an extension will be considered compatible if
+        // its target application major version matches the application's major version. So, we will grab the
+        // highest version of each extension that matches this application's major version.
+        int appMajorVersion = AppExtensionInfo.extractMajorVersion(applicationVersion);
+        if (appMajorVersion != 0) {
+            // There may be a streams way to do this, but it's a bit beyond me, so let's do it imperatively:
+            // What we want to end up with is the highest (newest) ExtensionVersion for each Extension
+            // that matches any minor version of our target major application version. So, for example,
+            // if our application is version 2.3, we want to consider all extensions that are compatible
+            // with any application version in the entire 2.x series, and for each of those extensions,
+            // we specifically only want the highest (newest) version of that extension.
+
+            // Step 1 - get a list of all the minor application versions that match our target major version:
+            List<VersionManifest.ApplicationVersion> matchingAppVersions = new ArrayList<>();
+            for (VersionManifest.ApplicationVersion candidate : manifest.getApplicationVersions()) {
+                if (candidate.getMajorVersion() == appMajorVersion) {
+                    matchingAppVersions.add(candidate);
+                }
+            }
+
+            // Step 2 - build up a map of all extensions (by name), mapping to the Extension object
+            //          that contains the highest-version (newest) version of that extension:
+            Map<String, VersionManifest.Extension> extMap = new HashMap<>();
+            for (VersionManifest.ApplicationVersion appVersion : matchingAppVersions) {
+                for (VersionManifest.Extension candidate : appVersion.getExtensions()) {
+                    VersionManifest.Extension extension = extMap.get(candidate.getName());
+
+                    // If we haven't seen this extension name before, just add it:
+                    if (extension == null) {
+                        extMap.put(candidate.getName(), candidate);
+                    }
+
+                    // Otherwise, check to see if the candidate has a newer version than our current one:
+                    else {
+                        VersionManifest.ExtensionVersion highestSoFar = extension.getHighestVersion().orElse(null);
+                        VersionManifest.ExtensionVersion candidateHighest = candidate.getHighestVersion().orElse(null);
+                        if (highestSoFar != null && candidateHighest != null) {
+                            if (VersionStringComparator.isOlderThan(highestSoFar.getExtInfo().getVersion(),
+                                                                    candidateHighest.getExtInfo().getVersion())) {
+                                // Candidate is newer, so replace:
+                                extMap.put(candidate.getName(), candidate);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Step 3 - for each extension found, add its highest version, sorted by name for consistent ordering:
+            extMap.entrySet().stream()
+                  .sorted(Map.Entry.comparingByKey())
+                  .map(Map.Entry::getValue)
+                  .forEach(extension -> extensionListPanel.addItem(
+                          new ExtensionPlaceholder(extension, isInstalled(extension))));
+        }
+
+        // If we can't extract the major version from the application version, then fall back to exact matching:
+        else {
+            manifest.getApplicationVersions().stream()
+                    .filter(version -> applicationVersion.equals(version.getVersion()))
+                    .flatMap(version -> version.getExtensions().stream())
+                    .sorted(Comparator.comparing(VersionManifest.Extension::getName))
+                    .map(extension -> new ExtensionPlaceholder(extension, isInstalled(extension)))
+                    .forEach(extensionListPanel::addItem);
+        }
 
         if (!extensionListPanel.isEmpty()) {
             extensionListPanel.selectItem(0); // select 1st

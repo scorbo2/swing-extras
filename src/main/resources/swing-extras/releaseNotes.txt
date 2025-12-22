@@ -7,6 +7,7 @@ Version 2.6.0 [TODO date here] - Maintenance release
   #179 - ImageListPanel: fix minor drag-and-drop bug
   #178 - New FormField: HtmlLabelField
   #177 - Add "built with swing-extras" option to AboutPanel
+  #176 - ExtensionManager: loosen up extension version matching
   #175 - ExtensionManagerDialog: cache downloaded screenshots
   #174 - Improved logging in UpdateManager
   #173 - Fix minor bug when launching LogConsole from AboutDialog

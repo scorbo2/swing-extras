@@ -278,6 +278,42 @@ public class ExtensionManagerTest {
     }
 
     @Test
+    public void testJarFileMeetsRequirements_withMismatchedAppName_shouldFail() {
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testAppName")
+                .setVersion("2.0")
+                .setTargetAppName("TestApp")
+                .setTargetAppVersion("2.0")
+                .build();
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), extInfo, "DifferentApp", "2.0");
+        assertFalse(actual);
+    }
+
+    @Test
+    public void testJarFileMeetsRequirements_withNullAppName_shouldFail() {
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testNullAppName")
+                .setVersion("2.0")
+                .setTargetAppVersion("2.0")
+                .build();
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), extInfo, "Hello", "2.0");
+        assertFalse(actual);
+    }
+
+    @Test
+    public void testJarFileMeetsRequirements_withWrongMinorVersion_shouldStillMatch() {
+        // Starting in swing-extras 2.6, an extension with a different minor target app version
+        // but the same major version should still be considered compatible.
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testMinor")
+                .setVersion("2.1")
+                .setTargetAppName("Test")
+                .setTargetAppVersion("2.1")
+                .build();
+
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), extInfo, "Test", "2.5");
+
+        assertTrue(actual);
+    }
+
+    @Test
     public void testJarFileMeetsRequirements_withMatchingVersions_shouldSucceed() {
         AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testEqual")
                 .setVersion("3.0")

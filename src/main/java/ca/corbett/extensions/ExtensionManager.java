@@ -434,11 +434,25 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * Generally, this is the better entry point, but if you have a specific jar file that
      * you want to scan and load from, those other methods can be used instead.
      * </p>
+     * <p>
+     * A note about versioning: In swing-extras 2.5 and previous releases, the extension's
+     * target application version must match the application's version exactly in order
+     * for the extension to be considered a match. This was found to be too restrictive,
+     * because each time an application releases a new version, all existing extensions
+     * must be re-released even if they are perfectly compatible with the new version.
+     * Starting in the 2.6 release of swing-extras, an extension will be considered compatible
+     * if its target application version matches the major version of the application.
+     * This requires applications to adopt a versioning convention where they release
+     * a minor version only if there are no extension-breaking changes, otherwise they
+     * must release a new major version. For example, if an application is at version 3.2, then
+     * extensions targeting version 3.0, 3.1, 3.5, etc. will be considered compatible,
+     * but extensions targeting version 2.x or 4.x will not be considered compatible.
+     * </p>
      *
      * @param directory      The directory to scan.
      * @param extClass       The implementation class to look for.
      * @param appName        The application name to match against.
-     * @param requiredVersion The required application version that the extension must target.
+     * @param requiredVersion The required application version that the extension must target. (only major version is considered)
      * @return The count of extensions that were loaded by this operation.
      */
     public int loadExtensions(File directory, Class<T> extClass, String appName, String requiredVersion) {
@@ -520,7 +534,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * @param jarFile        The jar file in question.
      * @param extInfo        The extension info that was extracted from that jar via extractExtInfo
      * @param appName        The name of the application to check for.
-     * @param requiredVersion The app version that the extension must target.
+     * @param requiredVersion The app version that the extension must target. (Only the major version is considered)
      * @return true if the jar file looks good, false otherwise.
      */
     public boolean jarFileMeetsRequirements(File jarFile, AppExtensionInfo extInfo, String appName, String requiredVersion) {
@@ -535,43 +549,55 @@ public abstract class ExtensionManager<T extends AppExtension> {
             return false;
         }
 
-        // Check minimum app version if one was given:
-        if (requiredVersion != null) {
-            try {
-                float theVersion = Float.parseFloat(requiredVersion);
-                float extRequires = extInfo.getTargetAppVersion() == null ? -1 : Float.parseFloat(
-                        extInfo.getTargetAppVersion());
-                if (extRequires < theVersion) {
-                    addStartupError(jarFile, "jarFileMeetsRequirements: Jar file "
-                            + jarFile.getAbsolutePath()
-                            + " contains an older extension with version "
-                            + extInfo.getTargetAppVersion()
-                            + ", below the required version of "
-                            + requiredVersion
-                            + "; skipping.");
-                    return false;
-                }
-                else if (extRequires > theVersion) {
-                    addStartupError(jarFile, "jarFileMeetsRequirements: Jar file "
-                            + jarFile.getAbsolutePath()
-                            + " contains a newer extension with version "
-                            + extInfo.getTargetAppVersion()
-                            + ", above the required version of "
-                            + requiredVersion
-                            + "; skipping.");
-                    return false;
-                }
-            }
-            catch (NumberFormatException nfe) {
-                addStartupError(jarFile, "jarFileMeetsRequirements: unable to parse version information for jar file "
-                        + jarFile.getAbsolutePath()
-                        + ": App version: "
-                        + requiredVersion
-                        + ", extension targets version "
+        // Version compatibility check:
+        // Starting in swing-extras 2.6, we only check major version compatibility.
+        // The versioning convention that applications must follow is that minor version
+        // changes do not break extensions, only major version changes do.
+        // So, if the extension's major version matches the application's major version,
+        // then the extension is considered compatible.
+        // We will only do this check here if we were given a requiredVersion that we can parse:
+        int targetMajorVersion = AppExtensionInfo.extractMajorVersion(requiredVersion);
+        if (targetMajorVersion != 0) { // 0 means we couldn't parse it, so skip the check
+
+            // Extract the major version from the extension's target app version:
+            int extMajorVersion = AppExtensionInfo.extractMajorVersion(extInfo.getTargetAppVersion());
+            if (extMajorVersion == 0) {
+                addStartupError(jarFile, "jarFileMeetsRequirements: unable to parse extension's target app version \""
                         + extInfo.getTargetAppVersion()
-                        + ".");
+                        + "\" in jar file "
+                        + jarFile.getAbsolutePath()
+                        + "; skipping.");
                 return false;
             }
+
+            // At this point, we have both major versions, so compare them:
+            if (extMajorVersion < targetMajorVersion) {
+                addStartupError(jarFile, "jarFileMeetsRequirements: Jar file "
+                        + jarFile.getAbsolutePath()
+                        + " contains an older extension targeting app major version "
+                        + extMajorVersion
+                        + ", below the required major version of "
+                        + targetMajorVersion
+                        + "; skipping.");
+                return false;
+            }
+            else if (extMajorVersion > targetMajorVersion) {
+                addStartupError(jarFile, "jarFileMeetsRequirements: Jar file "
+                        + jarFile.getAbsolutePath()
+                        + " contains a newer extension targeting app major version "
+                        + extMajorVersion
+                        + ", above the required major version of "
+                        + targetMajorVersion
+                        + "; skipping.");
+                return false;
+            }
+
+            // If we get here, the major versions match, but there's no guarantee the extension will actually load.
+            // It could be that the application did not follow our versioning convention and introduced breaking changes
+            // in a minor version change. In that case, we will rely on our error handling in the
+            // loadExtensionFromJar() method to catch any problems.
+            // A common example would be a ClassNotFoundException or NoSuchMethodException when trying to
+            // load the extension class. Those errors will be trapped and logged appropriately.
         }
 
         return true;
