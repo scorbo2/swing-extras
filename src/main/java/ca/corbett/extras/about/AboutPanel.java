@@ -1,6 +1,7 @@
 package ca.corbett.extras.about;
 
 import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
@@ -191,6 +192,27 @@ public final class AboutPanel extends JPanel {
         if (info.applicationVersion != null && info.applicationVersion.toLowerCase().contains("snapshot")) {
             labelField = new LabelField("This is a snapshot build and is subject to change.");
             labelField.setFont(LabelField.getDefaultFont().deriveFont(Font.BOLD));
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
+            formPanel.add(labelField);
+        }
+
+        // Include swing-extras info if desired:
+        if (info.includeSwingExtrasVersion) {
+            // Version:
+            labelField = new LabelField("Built with swing-extras v" + Version.VERSION);
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
+            formPanel.add(labelField);
+
+            // Link to project page:
+            labelField = new LabelField(Version.PROJECT_URL);
+            if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(Version.PROJECT_URL)) {
+                try {
+                    labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(Version.PROJECT_URL)));
+                }
+                catch (IllegalArgumentException e) {
+                    logger.warning("swing-extras project URL is not well-formed.");
+                }
+            }
             labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(labelField);
         }
