@@ -8,7 +8,7 @@
 - **Language**: Java 17
 - **Size**: ~189 source files, ~65 test files
 - **Main Output**: JAR library + runnable demo application
-- **Version**: 2.5.0
+- **Version**: 2.5.0 is in production, 2.6.0 is in development
 - **License**: MIT
 
 ## Key Dependencies and Frameworks
