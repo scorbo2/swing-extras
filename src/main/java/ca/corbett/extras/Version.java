@@ -30,5 +30,10 @@ public final class Version {
         aboutInfo.logoImageLocation = "/swing-extras/images/swing-extras-logo.jpg";
         aboutInfo.applicationName = Version.NAME;
         aboutInfo.applicationVersion = Version.VERSION;
+
+        // Applications can optionally show "built with swing-extras X.Y" in their about box
+        // along with a link to the swing-extras product page, but we will disable that
+        // here as it makes no sense to show it in the swing-extras demo app about box.
+        aboutInfo.includeSwingExtrasVersion = false;
     }
 }

@@ -1,6 +1,7 @@
 package ca.corbett.extras.about;
 
 import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
@@ -161,28 +162,14 @@ public final class AboutPanel extends JPanel {
 
         if (info.projectUrl != null && !info.projectUrl.isBlank()) {
             labelField = new LabelField(info.projectUrl);
-            if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.projectUrl)) {
-                try {
-                    labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.projectUrl)));
-                }
-                catch (IllegalArgumentException e) {
-                    logger.warning("Project URL is not well-formed.");
-                }
-            }
+            addHyperlinkIfPossible(labelField, info.projectUrl);
             labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(labelField);
         }
 
         if (info.license != null && !info.license.isBlank()) {
             labelField = new LabelField(info.license);
-            if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(info.license)) {
-                try {
-                    labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(info.license)));
-                }
-                catch (IllegalArgumentException e) {
-                    logger.warning("License URL is not well-formed.");
-                }
-            }
+            addHyperlinkIfPossible(labelField, info.license);
             labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(labelField);
         }
@@ -191,6 +178,20 @@ public final class AboutPanel extends JPanel {
         if (info.applicationVersion != null && info.applicationVersion.toLowerCase().contains("snapshot")) {
             labelField = new LabelField("This is a snapshot build and is subject to change.");
             labelField.setFont(LabelField.getDefaultFont().deriveFont(Font.BOLD));
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
+            formPanel.add(labelField);
+        }
+
+        // Include swing-extras info if desired:
+        if (info.includeSwingExtrasVersion) {
+            // Version:
+            labelField = new LabelField("Built with swing-extras v" + Version.VERSION);
+            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
+            formPanel.add(labelField);
+
+            // Link to project page:
+            labelField = new LabelField(Version.PROJECT_URL);
+            addHyperlinkIfPossible(labelField, Version.PROJECT_URL);
             labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(labelField);
         }
@@ -265,6 +266,23 @@ public final class AboutPanel extends JPanel {
         LabelField labelField = customFields.get(name);
         if (labelField != null) {
             labelField.setText(value);
+        }
+    }
+
+    /**
+     * Will make a best attempt to add a hyperlink to the given labelField
+     * if the given urlString appears to be a valid URL, and if browsing is supported
+     * by the current platform. A warning is logged if the given URL is invalid,
+     * and no link will be added. Likewise, no link is added if browsing is not supported.
+     */
+    private void addHyperlinkIfPossible(LabelField labelField, String urlString) {
+        if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(urlString)) {
+            try {
+                labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(urlString)));
+            }
+            catch (IllegalArgumentException e) {
+                logger.warning("URL is not well-formed: " + urlString);
+            }
         }
     }
 
