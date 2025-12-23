@@ -238,7 +238,10 @@ public class VersionManifest {
             highestVersion.ifPresent(highestVersions::add);
         }
 
-        // Sort by extension name and return:
+        // Filter out any entries missing required metadata, then sort by extension name and return:
+        highestVersions.removeIf(ev -> ev == null
+                || ev.getExtInfo() == null
+                || ev.getExtInfo().getName() == null);
         highestVersions.sort(Comparator.comparing(ev -> ev.getExtInfo().getName(), String.CASE_INSENSITIVE_ORDER));
         return highestVersions;
     }
