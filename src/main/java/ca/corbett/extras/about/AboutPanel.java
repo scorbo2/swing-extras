@@ -23,6 +23,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -38,6 +39,9 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -195,7 +199,7 @@ public final class AboutPanel extends JPanel {
                     + "'>swing-extras</a> v"
                     + Version.VERSION
                     + "</html>";
-            HtmlLabelField htmlLabelField = new HtmlLabelField(linkHtml, new OpenProjectUrlAction());
+            HtmlLabelField htmlLabelField = new HtmlLabelField(linkHtml, new OpenProjectUrlAction(this));
             htmlLabelField.getMargins().setLeft(12).setTop(1).setBottom(1);
             formPanel.add(htmlLabelField);
         }
@@ -404,21 +408,52 @@ public final class AboutPanel extends JPanel {
     /**
      * An Action that opens the swing-extras project URL in the user's default browser.
      * This is used by the HtmlLabelField in the AboutPanel to handle hyperlink clicks.
+     * If browsing is not supported, the URL is copied to the clipboard as a fallback.
      *
      * @since swing-extras 2.6
      */
     private static class OpenProjectUrlAction extends AbstractAction {
 
+        private final AboutPanel aboutPanel;
+
+        public OpenProjectUrlAction(AboutPanel aboutPanel) {
+            this.aboutPanel = aboutPanel;
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(Version.PROJECT_URL)) {
-                try {
-                    URI uri = URI.create(Version.PROJECT_URL);
-                    Desktop.getDesktop().browse(uri);
-                }
-                catch (IOException ioe) {
-                    logger.warning("Unable to browse project URL: " + ioe.getMessage());
-                }
+            Window ownerWindow = SwingUtilities.getWindowAncestor(aboutPanel);
+
+            // Check if browsing is supported, otherwise copy to clipboard
+            if (!DemoApp.isBrowsingSupported()) {
+                Toolkit.getDefaultToolkit().getSystemClipboard()
+                        .setContents(new StringSelection(Version.PROJECT_URL), null);
+                JOptionPane.showMessageDialog(ownerWindow,
+                        "Browsing is disabled in this JRE - Project link copied to clipboard.");
+                return;
+            }
+
+            // Validate the URL
+            if (!DemoApp.isUrl(Version.PROJECT_URL)) {
+                JOptionPane.showMessageDialog(ownerWindow,
+                        "Invalid project URL: " + Version.PROJECT_URL,
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Try to open the URL in the default browser
+            try {
+                URI uri = URI.create(Version.PROJECT_URL);
+                Desktop.getDesktop().browse(uri);
+            }
+            catch (IOException ioe) {
+                String errorMsg = "Unable to browse project URL: " + ioe.getMessage();
+                logger.warning(errorMsg);
+                JOptionPane.showMessageDialog(ownerWindow,
+                        errorMsg,
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
