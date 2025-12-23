@@ -411,7 +411,7 @@ public final class AboutPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (DemoApp.isBrowsingSupported()) {
+            if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(Version.PROJECT_URL)) {
                 try {
                     URI uri = URI.create(Version.PROJECT_URL);
                     Desktop.getDesktop().browse(uri);
