@@ -274,7 +274,7 @@ public class ExtensionDetailsPanel extends JPanel {
                                                                         + " v"
                                                                         + extInfo.getTargetAppMajorVersion()
                                                                         + ".x");
-            formPanel.add(new LabelField("Compatible with " + requires));
+            formPanel.add(new LabelField("Compatibility:", "Works with " + requires));
         }
     }
 

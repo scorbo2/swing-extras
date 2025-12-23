@@ -15,6 +15,7 @@ import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.updates.VersionManifest;
+import ca.corbett.updates.VersionStringComparator;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -151,11 +152,11 @@ public final class AboutPanel extends JPanel {
                 labelField = new LabelField("");
                 labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
                 formPanel.add(labelField);
-                if (!latestVersion.getVersion().equals(info.applicationVersion)) {
+                if (VersionStringComparator.isOlderThan(info.applicationVersion, latestVersion.getVersion())) {
                     labelField.setText("A newer version (" + latestVersion.getVersion() + ") is available!");
                 }
                 else {
-                    labelField.setText("This version (" + info.applicationVersion + ") is the latest available.");
+                    labelField.setText("This version (" + info.applicationVersion + ") is up to date.");
                 }
             }
         }
