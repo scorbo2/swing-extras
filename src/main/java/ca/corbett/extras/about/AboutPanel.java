@@ -412,7 +412,7 @@ public final class AboutPanel extends JPanel {
      *
      * @since swing-extras 2.6
      */
-    private static class OpenProjectUrlAction extends AbstractAction {
+    private class OpenProjectUrlAction extends AbstractAction {
 
         private final AboutPanel aboutPanel;
 
@@ -429,7 +429,7 @@ public final class AboutPanel extends JPanel {
                 Toolkit.getDefaultToolkit().getSystemClipboard()
                         .setContents(new StringSelection(Version.PROJECT_URL), null);
                 JOptionPane.showMessageDialog(ownerWindow,
-                        "Browsing is disabled in this JRE - Project link copied to clipboard.");
+                        "Browsing is not supported in this JRE - Project link copied to clipboard.");
                 return;
             }
 
@@ -447,8 +447,8 @@ public final class AboutPanel extends JPanel {
                 URI uri = URI.create(Version.PROJECT_URL);
                 Desktop.getDesktop().browse(uri);
             }
-            catch (IOException ioe) {
-                String errorMsg = "Unable to browse project URL: " + ioe.getMessage();
+            catch (IllegalArgumentException | IOException ex) {
+                String errorMsg = "Unable to browse project URL: " + ex.getMessage();
                 logger.warning(errorMsg);
                 JOptionPane.showMessageDialog(ownerWindow,
                         errorMsg,
