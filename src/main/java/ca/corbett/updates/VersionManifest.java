@@ -184,7 +184,7 @@ public class VersionManifest {
     }
 
     /**
-     * Returns the highest ExtensionVersions for the given extension name, across all application versions.
+     * Returns the highest ExtensionVersion for the given extension name, across all application versions.
      */
     public Optional<ExtensionVersion> getHighestVersionForExtension(String extensionName) {
         List<ExtensionVersion> versions = new ArrayList<>();
