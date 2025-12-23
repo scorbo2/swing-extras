@@ -211,7 +211,9 @@ public class VersionManifest {
                 for (Extension extension : appVersion.getExtensions()) {
                     if (extension.getName().equalsIgnoreCase(extensionName)) {
                         Optional<ExtensionVersion> highestVersion = extension.getHighestVersion();
-                        if (highestVersion.isPresent() && highestVersion.get().getExtInfo() != null) {
+                        if (highestVersion.isPresent()
+                                && highestVersion.get().getExtInfo() != null
+                                && highestVersion.get().getExtInfo().getVersion() != null) {
                             versions.add(highestVersion.get());
                         }
                     }
