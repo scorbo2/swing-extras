@@ -195,6 +195,7 @@ public class VersionManifest {
                 }
             }
         }
+        versions.removeIf(ev -> ev.getExtInfo() == null);
         versions.sort(Comparator.comparing(ev -> ev.getExtInfo().getVersion(), new VersionStringComparator()));
         return versions.isEmpty() ? Optional.empty() : Optional.of(versions.get(versions.size() - 1));
     }
