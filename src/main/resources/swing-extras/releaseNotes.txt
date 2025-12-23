@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.6.0 [2025-12-31] - Maintenance release
+  #195 - AboutPanel: use HtmlLabelField for swing-extras attribution
   #183 - Absorb SingleInstanceManager class from MusicPlayer
   #180 - Add Property wrappers for panel fields
   #179 - ImageListPanel: fix minor drag-and-drop bug

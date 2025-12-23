@@ -12,14 +12,18 @@ import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
+import ca.corbett.forms.fields.HtmlLabelField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.updates.VersionManifest;
 import ca.corbett.updates.VersionStringComparator;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -29,11 +33,16 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -185,16 +194,14 @@ public final class AboutPanel extends JPanel {
 
         // Include swing-extras info if desired:
         if (info.includeSwingExtrasVersion) {
-            // Version:
-            labelField = new LabelField("Built with swing-extras v" + Version.VERSION);
-            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
-            formPanel.add(labelField);
-
-            // Link to project page:
-            labelField = new LabelField(Version.PROJECT_URL);
-            addHyperlinkIfPossible(labelField, Version.PROJECT_URL);
-            labelField.getMargins().setLeft(12).setTop(1).setBottom(1);
-            formPanel.add(labelField);
+            String linkHtml = "<html>Built with <a href='"
+                    + Version.PROJECT_URL
+                    + "'>swing-extras</a> v"
+                    + Version.VERSION
+                    + "</html>";
+            HtmlLabelField htmlLabelField = new HtmlLabelField(linkHtml, new OpenProjectUrlAction(this));
+            htmlLabelField.getMargins().setLeft(12).setTop(1).setBottom(1);
+            formPanel.add(htmlLabelField);
         }
 
         memoryUsageField = new LabelField(getMemoryStats());
@@ -395,6 +402,59 @@ public final class AboutPanel extends JPanel {
             }
 
             LogConsole.getInstance().setVisible(true);
+        }
+    }
+
+    /**
+     * An Action that opens the swing-extras project URL in the user's default browser.
+     * This is used by the HtmlLabelField in the AboutPanel to handle hyperlink clicks.
+     * If browsing is not supported, the URL is copied to the clipboard as a fallback.
+     *
+     * @since swing-extras 2.6
+     */
+    private static class OpenProjectUrlAction extends AbstractAction {
+
+        private final AboutPanel aboutPanel;
+
+        public OpenProjectUrlAction(AboutPanel aboutPanel) {
+            this.aboutPanel = aboutPanel;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Window ownerWindow = SwingUtilities.getWindowAncestor(aboutPanel);
+
+            // Check if browsing is supported, otherwise copy to clipboard
+            if (!DemoApp.isBrowsingSupported()) {
+                Toolkit.getDefaultToolkit().getSystemClipboard()
+                        .setContents(new StringSelection(Version.PROJECT_URL), null);
+                JOptionPane.showMessageDialog(ownerWindow,
+                        "Browsing is not supported in this JRE - Project link copied to clipboard.");
+                return;
+            }
+
+            // Validate the URL
+            if (!DemoApp.isUrl(Version.PROJECT_URL)) {
+                JOptionPane.showMessageDialog(ownerWindow,
+                        "Invalid project URL: " + Version.PROJECT_URL,
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Try to open the URL in the default browser
+            try {
+                URI uri = URI.create(Version.PROJECT_URL);
+                Desktop.getDesktop().browse(uri);
+            }
+            catch (IllegalArgumentException | IOException ex) {
+                String errorMsg = "Unable to browse project URL: " + ex.getMessage();
+                logger.warning(errorMsg);
+                JOptionPane.showMessageDialog(ownerWindow,
+                        errorMsg,
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 }
