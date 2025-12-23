@@ -412,7 +412,7 @@ public final class AboutPanel extends JPanel {
      *
      * @since swing-extras 2.6
      */
-    private class OpenProjectUrlAction extends AbstractAction {
+    private static class OpenProjectUrlAction extends AbstractAction {
 
         private final AboutPanel aboutPanel;
 
