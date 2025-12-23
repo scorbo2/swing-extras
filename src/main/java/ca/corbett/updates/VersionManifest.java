@@ -140,8 +140,121 @@ public class VersionManifest {
         this.applicationName = applicationName;
     }
 
+    /**
+     * Returns a list of all ApplicationVersions for this Application.
+     */
     public List<ApplicationVersion> getApplicationVersions() {
         return new ArrayList<>(applicationVersions);
+    }
+
+    /**
+     * Returns a list of all ApplicationVersions for the given major version number of this Application.
+     */
+    public List<ApplicationVersion> getApplicationVersionsForMajorVersion(int majorVersion) {
+        return applicationVersions.stream()
+                                  .filter(av -> av.getMajorVersion() == majorVersion)
+                                  .sorted(Comparator.comparing(ApplicationVersion::getVersion,
+                                                               new VersionStringComparator()))
+                                  .toList();
+    }
+
+    /**
+     * Returns a list of all unique extension names across all application versions for this Application.
+     */
+    public List<String> getUniqueExtensionNames() {
+        return applicationVersions.stream()
+                                  .flatMap(av -> av.getExtensions().stream())
+                                  .map(Extension::getName)
+                                  .distinct()
+                                  .sorted(String.CASE_INSENSITIVE_ORDER)
+                                  .toList();
+    }
+
+    /**
+     * Returns a list of all unique extension names for the given major version number of this Application.
+     */
+    public List<String> getUniqueExtensionNamesForMajorVersion(int majorVersion) {
+        return applicationVersions.stream()
+                                  .filter(av -> av.getMajorVersion() == majorVersion)
+                                  .flatMap(av -> av.getExtensions().stream())
+                                  .map(Extension::getName)
+                                  .distinct()
+                                  .sorted(String.CASE_INSENSITIVE_ORDER)
+                                  .toList();
+    }
+
+    /**
+     * Returns the highest ExtensionVersions for the given extension name, across all application versions.
+     */
+    public Optional<ExtensionVersion> getHighestVersionForExtension(String extensionName) {
+        List<ExtensionVersion> versions = new ArrayList<>();
+        for (ApplicationVersion appVersion : applicationVersions) {
+            for (Extension extension : appVersion.getExtensions()) {
+                if (extension.getName().equalsIgnoreCase(extensionName)) {
+                    versions.addAll(extension.getVersions());
+                }
+            }
+        }
+        versions.sort(Comparator.comparing(ev -> ev.getExtInfo().getVersion(), new VersionStringComparator()));
+        return versions.isEmpty() ? Optional.empty() : Optional.of(versions.get(versions.size() - 1));
+    }
+
+    /**
+     * Returns the highest ExtensionVersion for the given extension name, across all application versions
+     * that match the given major version number.
+     */
+    public Optional<ExtensionVersion> getHighestVersionForExtensionInMajorAppVersion(String extensionName, int majorAppVersion) {
+        List<ExtensionVersion> versions = new ArrayList<>();
+        for (ApplicationVersion appVersion : applicationVersions) {
+            if (appVersion.getMajorVersion() == majorAppVersion) {
+                for (Extension extension : appVersion.getExtensions()) {
+                    if (extension.getName().equalsIgnoreCase(extensionName)) {
+                        Optional<ExtensionVersion> highestVersion = extension.getHighestVersion();
+                        if (highestVersion.isPresent() && highestVersion.get().getExtInfo() != null) {
+                            versions.add(highestVersion.get());
+                        }
+                    }
+                }
+            }
+        }
+        versions.sort(Comparator.comparing(ev -> ev.getExtInfo().getVersion(), new VersionStringComparator()));
+        return versions.isEmpty() ? Optional.empty() : Optional.of(versions.get(versions.size() - 1));
+    }
+
+    /**
+     * Returns a sorted list of the highest-version ExtensionVersion for each Extension that is available
+     * for the specified major version of this Application. The list is sorted by extension name.
+     */
+    public List<ExtensionVersion> getHighestExtensionVersionsForMajorAppVersion(int majorAppVersion) {
+        // What extensions are available for this major version?
+        List<String> extensionNames = getUniqueExtensionNamesForMajorVersion(majorAppVersion);
+
+        // For each one, find its highest version:
+        List<ExtensionVersion> highestVersions = new ArrayList<>();
+        for (String extensionName : extensionNames) {
+            Optional<ExtensionVersion> highestVersion = getHighestVersionForExtensionInMajorAppVersion(extensionName,
+                                                                                                       majorAppVersion);
+            highestVersion.ifPresent(highestVersions::add);
+        }
+
+        // Sort by extension name and return:
+        highestVersions.sort(Comparator.comparing(ev -> ev.getExtInfo().getName(), String.CASE_INSENSITIVE_ORDER));
+        return highestVersions;
+    }
+
+    /**
+     * This is a bit wonky, but because ExtensionVersion does not know about the Extension that contains it,
+     * I have to have this lookup function to find the Extension for a given ExtensionVersion.
+     */
+    public Optional<Extension> findExtensionForExtensionVersion(ExtensionVersion extVersion) {
+        for (ApplicationVersion appVersion : applicationVersions) {
+            for (Extension extension : appVersion.getExtensions()) {
+                if (extension.getVersions().contains(extVersion)) {
+                    return Optional.of(extension);
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     public void addApplicationVersion(ApplicationVersion version) {
@@ -184,24 +297,6 @@ public class VersionManifest {
     }
 
     /**
-     * Given an Extension, find and return its highest ExtensionVersion.
-     * Will return null if there are no versions specified.
-     */
-    public static VersionManifest.ExtensionVersion findLatestExtVersion(VersionManifest.Extension extension) {
-        if (extension == null || extension.getVersions() == null || extension.getVersions().isEmpty()) {
-            return null;
-        }
-
-        // Stream all versions of this extension, sort them by version and find the highest one:
-        return extension
-                .getVersions()
-                .stream()
-                .filter(ev -> ev.getExtInfo() != null)
-                .max(Comparator.comparing(ev -> ev.getExtInfo().getVersion(), new VersionStringComparator()))
-                .orElse(null);
-    }
-
-    /**
      * Represents a single version of the application in question, along with all of its
      * compatible extensions.
      *
@@ -228,8 +323,23 @@ public class VersionManifest {
             this.version = version;
         }
 
+        /**
+         * Returns a copy of the list of all extensions for this application version.
+         */
         public List<Extension> getExtensions() {
             return new ArrayList<>(extensions);
+        }
+
+        /**
+         * For each Extension in this application version, find and return its highest ExtensionVersion.
+         */
+        public List<ExtensionVersion> getHighestExtensionVersions() {
+            return extensions.stream()
+                             .sorted(Comparator.comparing(Extension::getName, String.CASE_INSENSITIVE_ORDER))
+                             .map(Extension::getHighestVersion)
+                             .filter(Optional::isPresent)
+                             .map(Optional::get)
+                             .toList();
         }
 
         public void addExtension(Extension extension) {

@@ -143,8 +143,9 @@ public class AvailableExtensionsPanel extends JPanel {
         headerPanel.removeAll();
         detailsPanel.removeAll();
         final ExtensionPlaceholder placeholder = extensionListPanel.getSelected();
-        final VersionManifest.ExtensionVersion latestVersion =
-                placeholder == null ? null : VersionManifest.findLatestExtVersion(placeholder.getExtension());
+        final VersionManifest.ExtensionVersion latestVersion = placeholder == null
+                ? null
+                : placeholder.getExtension().getHighestVersion().orElse(null);
         if (placeholder == null || latestVersion == null) {
             headerPanel.add(new ExtensionTitleBar(null));
             detailsPanel.add(emptyPanel);
@@ -277,58 +278,28 @@ public class AvailableExtensionsPanel extends JPanel {
         // highest version of each extension that matches this application's major version.
         int appMajorVersion = AppExtensionInfo.extractMajorVersion(applicationVersion);
         if (appMajorVersion != 0) {
-            // There may be a streams way to do this, but it's a bit beyond me, so let's do it imperatively:
-            // What we want to end up with is the highest (newest) ExtensionVersion for each Extension
-            // that matches any minor version of our target major application version. So, for example,
-            // if our application is version 2.3, we want to consider all extensions that are compatible
-            // with any application version in the entire 2.x series, and for each of those extensions,
-            // we specifically only want the highest (newest) version of that extension.
+            // Get a list of the highest version of each extension that matches our application's major version:
+            // (this list will be returned to us sorted by extension name in ascending order)
+            for (VersionManifest.ExtensionVersion highestVersion :
+                    manifest.getHighestExtensionVersionsForMajorAppVersion(appMajorVersion)) {
 
-            // Step 1 - get a list of all the minor application versions that match our target major version:
-            List<VersionManifest.ApplicationVersion> matchingAppVersions = new ArrayList<>();
-            for (VersionManifest.ApplicationVersion candidate : manifest.getApplicationVersions()) {
-                if (candidate.getMajorVersion() == appMajorVersion) {
-                    matchingAppVersions.add(candidate);
-                }
+                // Grab its containing Extension and add it to our list:
+                manifest.findExtensionForExtensionVersion(highestVersion)
+                        .ifPresent(e -> extensionListPanel.addItem(new ExtensionPlaceholder(e, isInstalled(e))));
             }
-
-            // Step 2 - build up a map of all extensions (by name), mapping to the Extension object
-            //          that contains the highest-version (newest) version of that extension:
-            Map<String, VersionManifest.Extension> extMap = new HashMap<>();
-            for (VersionManifest.ApplicationVersion appVersion : matchingAppVersions) {
-                for (VersionManifest.Extension candidate : appVersion.getExtensions()) {
-                    VersionManifest.Extension extension = extMap.get(candidate.getName());
-
-                    // If we haven't seen this extension name before, just add it:
-                    if (extension == null) {
-                        extMap.put(candidate.getName(), candidate);
-                    }
-
-                    // Otherwise, check to see if the candidate has a newer version than our current one:
-                    else {
-                        VersionManifest.ExtensionVersion highestSoFar = extension.getHighestVersion().orElse(null);
-                        VersionManifest.ExtensionVersion candidateHighest = candidate.getHighestVersion().orElse(null);
-                        if (highestSoFar != null && candidateHighest != null) {
-                            if (VersionStringComparator.isOlderThan(highestSoFar.getExtInfo().getVersion(),
-                                                                    candidateHighest.getExtInfo().getVersion())) {
-                                // Candidate is newer, so replace:
-                                extMap.put(candidate.getName(), candidate);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Step 3 - for each extension found, add its highest version, sorted by name for consistent ordering:
-            extMap.entrySet().stream()
-                  .sorted(Map.Entry.comparingByKey())
-                  .map(Map.Entry::getValue)
-                  .forEach(extension -> extensionListPanel.addItem(
-                          new ExtensionPlaceholder(extension, isInstalled(extension))));
         }
 
         // If we can't extract the major version from the application version, then fall back to exact matching:
+        // TODO this code path will almost certainly never be hit... I'm tempted to just remove it entirely.
+        //      But it's nice to have some kind of fallback for wonky error conditions (malformed version strings).
         else {
+            // Scold the user about their poor versioning practices:
+            log.warning("Unable to extract major version from application version: "
+                                + applicationVersion
+                                + " - falling back to exact version matching for extensions."
+                                + " Application versions should be in X.Y format!");
+
+            // Now let's hope there are extensions that target this exact application version:
             manifest.getApplicationVersions().stream()
                     .filter(version -> applicationVersion.equals(version.getVersion()))
                     .flatMap(version -> version.getExtensions().stream())
@@ -559,12 +530,18 @@ public class AvailableExtensionsPanel extends JPanel {
                 getMessageUtil().info("There is no update source selected.");
                 return;
             }
+            VersionManifest.ExtensionVersion latestVersion = extension.getExtension().getHighestVersion().orElse(null);
+            if (latestVersion == null) {
+                getMessageUtil().info("Unable to determine latest version of extension "
+                                              + extension.extension.getName()
+                                              + " - cannot proceed with install.");
+                return;
+            }
             MultiProgressDialog progressDialog = new MultiProgressDialog(owner, "Downloading...");
             progressDialog.setInitialShowDelayMS(500);
             final ExtensionDownloadThread workerThread = new ExtensionDownloadThread(downloadManager,
                                                                                      currentUpdateSource,
-                                                                                     VersionManifest.findLatestExtVersion(
-                                                                                             extension.getExtension()));
+                                                                                     latestVersion);
             workerThread.setDownloadOptions(ExtensionDownloadThread.Options.JarAndSignature);
             workerThread.addProgressListener(new SimpleProgressAdapter() {
                 @Override
@@ -576,13 +553,11 @@ public class AvailableExtensionsPanel extends JPanel {
                     }
                     SwingUtilities.invokeLater(() -> {
                         if (extensionInstallCallback(workerThread.getDownloadedExtension())) {
-                            VersionManifest.ExtensionVersion latestVersion = VersionManifest
-                                    .findLatestExtVersion(extension.extension);
-                            String version = latestVersion == null
-                                    ? "(latest)"
-                                    : latestVersion.getExtInfo().getVersion();
-                            log.info(
-                                    "Successfully installed extension " + extension.extension.getName() + " version " + version);
+                            String version = latestVersion.getExtInfo().getVersion();
+                            log.info("Successfully installed extension "
+                                             + extension.extension.getName()
+                                             + " version "
+                                             + version);
 
                             // Execute any additional completion listeners we have before we prompt for restart:
                             for (ActionListener listener : completionListeners) {
@@ -620,9 +595,14 @@ public class AvailableExtensionsPanel extends JPanel {
                 return;
             }
             final File jarFile = extensionManager.findExtensionJarByExtensionName(extension.extension.getName());
-            VersionManifest.ExtensionVersion latestVersion = VersionManifest
-                    .findLatestExtVersion(extension.getExtension());
-            String latestVersionStr = latestVersion == null ? "(latest)" : latestVersion.getExtInfo().getVersion();
+            VersionManifest.ExtensionVersion latestVersion = extension.getExtension().getHighestVersion().orElse(null);
+            if (latestVersion == null) {
+                getMessageUtil().info("Unable to determine latest version of extension "
+                                              + extension.extension.getName()
+                                              + " - cannot proceed with update.");
+                return;
+            }
+            String latestVersionStr = latestVersion.getExtInfo().getVersion();
             if (jarFile == null) {
                 getMessageUtil().info("The extension \"" + extension.getExtension().getName()
                                               + "\" is a built-in extension.\n"
