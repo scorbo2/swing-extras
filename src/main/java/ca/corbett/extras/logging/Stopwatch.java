@@ -93,7 +93,9 @@ public abstract class Stopwatch {
     }
 
     /**
-     * Stops all timers, and returns a count of how many timers were affected.
+     * Stops all timers that were running at the moment this method was invoked.
+     * Note: Due to the concurrent nature of this class, timers started by other
+     * threads during the execution of this method will not be stopped.
      *
      * @return How many timers were stopped by this call.
      */
@@ -139,20 +141,20 @@ public abstract class Stopwatch {
      * @return A count of milliseconds for the given timer, as described above.
      */
     public static long report(String id) {
-        long elapsedTime = 0;
+        // First check RESULTS (stopped timers)
+        // (this helps avoid race conditions that might happen if we check TIMERS first)
+        Long result = RESULTS.get(id);
+        if (result != null) {
+            return result;
+        }
 
+        // Then check TIMERS (running timers)
         Long startTime = TIMERS.get(id);
         if (startTime != null) {
-            elapsedTime = System.currentTimeMillis() - startTime;
-        }
-        else {
-            Long res = RESULTS.get(id);
-            if (res != null) {
-                elapsedTime = res;
-            }
+            return System.currentTimeMillis() - startTime;
         }
 
-        return elapsedTime;
+        return 0;
     }
 
     /**

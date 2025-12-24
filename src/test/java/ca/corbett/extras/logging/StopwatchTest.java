@@ -166,7 +166,7 @@ public class StopwatchTest {
         assertEquals(total, stopped);
         assertEquals(0, Stopwatch.getTimerCount());
 
-        svc.shutdownNow();
+        svc.shutdown();
     }
 
 }
