@@ -6,6 +6,7 @@ import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.DefaultCaret;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -22,12 +23,16 @@ import java.awt.event.ActionEvent;
  * For example:
  * </p>
  * <pre>
- * final String html = "&lt;html&gt;Would you like to &lt;a href='proceed'&gt;proceed&lt;a&gt;?&lt;/html&gt;";
+ * final String html = "&lt;html&gt;Would you like to "
+ *                     + "&lt;a href='proceed'&gt;proceed&lt;a&gt;"
+ *                     + " or &lt;a href='cancel'&gt;cancel&lt;a&gt;"
+ *                     + "?&lt;/html&gt;";
  * HtmlLabelField labelField = new HtmlLabelField(html, myCustomAction);
  * </pre>
  * <p>
  * The Action that you supply will receive an actionPerformed() call when the link is clicked,
- * and the action command will be "proceed" in this example. Here's what the Action might look like:
+ * and the action command will be "proceed" or "cancel" in this example.
+ * Here's what the Action might look like:
  * </p>
  * <pre>
  *     Action myCustomAction = new AbstractAction() {
@@ -35,7 +40,10 @@ import java.awt.event.ActionEvent;
  *         public void actionPerformed(ActionEvent e) {
  *             String command = e.getActionCommand();
  *             if ("proceed".equals(command)) {
- *                 // Do whatever you need to do when the link is clicked
+ *                 // Do whatever you need to do when the proceed link is clicked
+ *             }
+ *             else if ("cancel".equals(command)) {
+ *                 // Do whatever you need to do when the cancel link is clicked
  *             }
  *         }
  *     };
@@ -71,6 +79,8 @@ public class HtmlLabelField extends FormField {
         label.setEditable(false);
         label.setOpaque(false); // Make it look like a JLabel!
         label.setBorder(null);  // Make it look like a JLabel!
+        label.setCaret(new DoNothingCaret()); // Prevent the caret from showing
+        label.setHighlighter(null);  // Also remove the highlighter to prevent selection
         label.setFont(getDefaultFont());
         label.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
         fieldLabel.setText(fieldLabelText == null ? "" : fieldLabelText);
@@ -170,5 +180,26 @@ public class HtmlLabelField extends FormField {
 
         // Register it:
         label.addHyperlinkListener(linkListener);
+    }
+
+    /**
+     * A caret implementation that does nothing, to prevent the caret from showing
+     * in the JEditorPane used for our label.
+     */
+    private static class DoNothingCaret extends DefaultCaret {
+        @Override
+        public void setVisible(boolean visible) {
+            // Do nothing
+        }
+
+        @Override
+        public boolean isVisible() {
+            return false;
+        }
+
+        @Override
+        public void setSelectionVisible(boolean visible) {
+            // Do nothing
+        }
     }
 }
