@@ -101,6 +101,11 @@ public class TextFileDetector {
             startIndex = 2;
         }
 
+        // If file contains only a BOM with no content, treat as text:
+        if (startIndex >= bytesRead) {
+            return true;
+        }
+
         // Check for null bytes - strong indicator of binary content
         for (int i = startIndex; i < bytesRead; i++) {
             if (buffer[i] == 0) {
