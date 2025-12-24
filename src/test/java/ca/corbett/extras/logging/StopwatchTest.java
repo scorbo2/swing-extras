@@ -123,7 +123,7 @@ public class StopwatchTest {
             f.get();
         }
 
-        svc.shutdownNow();
+        svc.shutdown();
 
         // all timers should be stopped
         assertEquals(0, Stopwatch.getTimerCount());
