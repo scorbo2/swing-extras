@@ -221,4 +221,45 @@ class TextFileDetectorTest {
         // AND we should see that it is detected as a text file:
         assertTrue(isText);
     }
+
+    @Test
+    public void detectTextFile_withBOMMarkerAndNothingElse_shouldDetectAsText() throws Exception {
+        // GIVEN a file that contains only a UTF-8 BOM and no other content:
+        File tempFile = File.createTempFile("detectTextFile", ".txt");
+        tempFile.deleteOnExit();
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+            // Write UTF-8 BOM
+            outputStream.write(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF});
+        }
+
+        // WHEN we try to detect if it's a text file:
+        boolean isText = TextFileDetector.isTextFile(tempFile);
+
+        // THEN we should see that it is detected as a text file:
+        // (this is debatable, but our implementation treats empty files - and effectively empty files - as text)
+        assertTrue(isText);
+    }
+
+    @Test
+    public void builder_withConfigParameters_shouldApplySettings() throws Exception {
+        // GIVEN a file with some binary characters:
+        File tempFile = File.createTempFile("detectTextFile", ".bin");
+        tempFile.deleteOnExit();
+        try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(tempFile))) {
+            // Write some text, then some binary chars
+            outputStream.write("Hello there!".getBytes());
+            outputStream.write(new byte[]{0x01, 0x02, 0x03, 0x04, 0x05}); // 5 binary chars
+            outputStream.write(" How are you?".getBytes());
+        }
+
+        // WHEN we use the builder to create a detector with specific settings:
+        boolean isText = new TextFileDetector.Builder()
+                .sampleSize(1024)
+                .threshold(0.1) // 10% threshold
+                .detect(tempFile);
+
+        // THEN we should see that it applies those settings correctly:
+        // With 5 binary chars out of ~30 total chars, it's above 10% threshold, so should be detected as binary
+        assertFalse(isText);
+    }
 }
