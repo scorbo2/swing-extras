@@ -3,6 +3,7 @@ Author: Steve Corbett
 
 Version 2.6.0 [2025-12-31] - Maintenance release
   #204 - PopupTextDialog: hide Cancel button in read-only mode
+  #203 - New FormField: ButtonField / ButtonProperty
   #199 - Cosmetic fix for HtmlLabelField
   #198 - New utility class: TextFileDetector
   #197 - Make Stopwatch utility class thread safe
@@ -10,7 +11,7 @@ Version 2.6.0 [2025-12-31] - Maintenance release
   #183 - Absorb SingleInstanceManager class from MusicPlayer
   #180 - Add Property wrappers for panel fields
   #179 - ImageListPanel: fix minor drag-and-drop bug
-  #178 - New FormField: HtmlLabelField
+  #178 - New FormField: HtmlLabelField / HtmlLabelProperty
   #177 - Add "built with swing-extras" option to AboutPanel
   #176 - ExtensionManager: loosen up extension version matching
   #175 - ExtensionManagerDialog: cache downloaded screenshots

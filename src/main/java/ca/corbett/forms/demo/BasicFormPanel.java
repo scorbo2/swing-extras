@@ -4,6 +4,7 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.SnippetAction;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.HtmlLabelField;
@@ -14,9 +15,11 @@ import ca.corbett.forms.fields.PasswordField;
 import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.List;
@@ -62,6 +65,7 @@ public class BasicFormPanel extends PanelBuilder {
         formPanel.add(new LabelField("Hyperlink:", "Yes, you can add hyperlinks to your forms!")
                               .setHyperlink(new ExampleHyperlinkAction()));
         formPanel.add(buildHtmlLabelField()); // New in swing-extras 2.6!
+        formPanel.add(buildButtonField()); // New in swing-extras 2.6!
         formPanel.add(new NumberField("Number chooser:", 0, 0, 100, 1));
         formPanel.add(createSnippetLabel(new GeneralFieldSnippetAction()));
 
@@ -87,6 +91,24 @@ public class BasicFormPanel extends PanelBuilder {
                 "Option 2",
                 "Option 3");
         return new ComboField<>("Comboboxes:", options, 0, false);
+    }
+
+    private ButtonField buildButtonField() {
+        ButtonField buttonField = new ButtonField();
+        buttonField.addButton(buildExampleAction("Button1"));
+        buttonField.addButton(buildExampleAction("Button2"));
+        buttonField.setButtonPreferredSize(new Dimension(90, 25));
+        buttonField.getFieldLabel().setText("Button field:");
+        return buttonField;
+    }
+
+    private Action buildExampleAction(String name) {
+        return new AbstractAction(name) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(DemoApp.getInstance(), "You clicked " + name + "!");
+            }
+        };
     }
 
     private HtmlLabelField buildHtmlLabelField() {
