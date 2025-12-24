@@ -25,6 +25,24 @@ import java.io.IOException;
  *   <li>Classifies as text if non-printable ratio is below threshold</li>
  * </ul>
  * </p>
+ * <p>
+ *     <b>USAGE:</b> There are three ways to use this class:
+ *     <ol>
+ *         <li>Use the static isTextFile(File) method with default settings.</li
+ *         <li>Use the static isTextFile(File, int, double) method with custom sample size
+ *         and threshold.</li>
+ *         <li>Use the Builder class to configure and perform detection.</li>
+ *     </ol>
+ * </p>
+ * <p>
+ *     <b>Example usage of the Builder class:</b>
+ * </p>
+ * <pre>
+ *   boolean isTextFile = new TextFileDetector.Builder()
+ *              .sampleSize(16384) // set sample size to 16KB
+ *              .threshold(0.03)   // set non-printable threshold to 3%
+ *              .detect(testFile); // run the detection and report result
+ * </pre>
  *
  * @author claude.ai
  * @since swing-extras 2.6
@@ -162,24 +180,4 @@ public class TextFileDetector {
             return isTextFile(file, sampleSize, threshold);
         }
     }
-
-    // Example usage
-//    public static void main(String[] args) throws IOException {
-//        File testFile = new File("example.txt");
-//
-//        // Simple usage with defaults
-//        boolean isText = TextFileDetector.isTextFile(testFile);
-//        System.out.println("Is text file (default): " + isText);
-//
-//        // Custom parameters
-//        boolean isTextCustom = TextFileDetector.isTextFile(testFile, 4096, 0.01);
-//        System.out.println("Is text file (custom): " + isTextCustom);
-//
-//        // Using builder
-//        boolean isTextBuilder = new TextFileDetector.Builder()
-//                .sampleSize(16384)
-//                .threshold(0.03)
-//                .detect(testFile);
-//        System.out.println("Is text file (builder): " + isTextBuilder);
-//    }
 }
