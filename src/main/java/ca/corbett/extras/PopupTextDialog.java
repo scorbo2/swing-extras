@@ -117,7 +117,7 @@ public class PopupTextDialog extends JDialog {
      * Returns the Cancel button component for testing purposes.
      * @return the Cancel button
      */
-    public JButton getCancelButton() {
+    JButton getCancelButton() {
         return cancelButton;
     }
 
