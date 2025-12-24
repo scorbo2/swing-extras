@@ -71,8 +71,9 @@ public class ButtonProperty extends AbstractProperty {
     /**
      * The vertical gap between buttons.
      */
-    public void setVgap(int vgap) {
+    public ButtonProperty setVgap(int vgap) {
         this.vgap = vgap;
+        return this;
     }
 
     /**
