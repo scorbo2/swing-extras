@@ -97,14 +97,16 @@ public class ButtonField extends FormField {
     }
 
     /**
-     * One of FlowLayout's alignment options: LEFT, CENTER, or RIGHT from the FlowLayout class.
+     * One of FlowLayout's alignment options: LEFT, CENTER, RIGHT, LEADING, or TRAILING
+     * from the FlowLayout class.
      */
     public int getAlignment() {
         return layout.getAlignment();
     }
 
     /**
-     * One of FlowLayout's alignment options: LEFT, CENTER, or RIGHT from the FlowLayout class.
+     * One of FlowLayout's alignment options: LEFT, CENTER, RIGHT, LEADING, or TRAILING
+     * from the FlowLayout class.
      */
     public ButtonField setAlignment(int alignment) {
         layout.setAlignment(alignment);
