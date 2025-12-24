@@ -45,6 +45,7 @@ public class PopupTextDialog extends JDialog {
     protected final Window ownerWindow;
     protected JTextArea textArea;
     protected JButton copyButton;
+    protected JButton cancelButton;
     protected boolean wasOkayed;
 
     public PopupTextDialog(Window owner, String title, String text, boolean isModal) {
@@ -101,9 +102,11 @@ public class PopupTextDialog extends JDialog {
 
     /**
      * Allows or disallows editing in the text field.
+     * In read-only mode, the Cancel button is hidden as it serves no purpose.
      */
     public void setReadOnly(boolean isReadOnly) {
         textArea.setEditable(!isReadOnly);
+        updateCancelButtonVisibility();
     }
 
     public boolean isClipboardEnabled() {
@@ -137,6 +140,16 @@ public class PopupTextDialog extends JDialog {
     protected void buttonHandler(boolean isOk) {
         wasOkayed = isOk;
         dispose();
+    }
+
+    /**
+     * Updates the visibility of the Cancel button based on whether the dialog is in read-only mode.
+     * In read-only mode, the Cancel button is hidden since editing is not possible.
+     */
+    protected void updateCancelButtonVisibility() {
+        if (cancelButton != null) {
+            cancelButton.setVisible(!isReadOnly());
+        }
     }
 
     protected void initComponents(String text) {
@@ -190,10 +203,10 @@ public class PopupTextDialog extends JDialog {
         button.setPreferredSize(new Dimension(90, 23));
         button.addActionListener(e -> buttonHandler(true));
         rightPanel.add(button);
-        button = new JButton("Cancel");
-        button.setPreferredSize(new Dimension(90, 23));
-        button.addActionListener(e -> buttonHandler(false));
-        rightPanel.add(button);
+        cancelButton = new JButton("Cancel");
+        cancelButton.setPreferredSize(new Dimension(90, 23));
+        cancelButton.addActionListener(e -> buttonHandler(false));
+        rightPanel.add(cancelButton);
 
         panel.add(leftPanel, BorderLayout.WEST);
         panel.add(rightPanel, BorderLayout.EAST);
