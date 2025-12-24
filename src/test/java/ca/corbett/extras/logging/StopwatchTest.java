@@ -3,6 +3,14 @@ package ca.corbett.extras.logging;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -71,6 +79,94 @@ public class StopwatchTest {
         assertEquals("1h0m0s", Stopwatch.formatTimeValue(3600000));
         assertEquals("59m59s", Stopwatch.formatTimeValue(3599999));
         assertEquals("27h45m44s", Stopwatch.formatTimeValue(99944422));
+    }
+
+    @Test
+    public void testConcurrentStartStopSameId() throws Exception {
+        // ensure clean state
+        Stopwatch.stopAll();
+
+        final String id = "concurrentSameId";
+        final int threads = 20;
+        final int iterations = 100;
+
+        ExecutorService svc = Executors.newFixedThreadPool(threads);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<Future<Void>> futures = new ArrayList<>();
+
+        for (int t = 0; t < threads; t++) {
+            Callable<Void> task = () -> {
+                startLatch.await();
+                for (int i = 0; i < iterations; i++) {
+                    Stopwatch.start(id);
+                    try {
+                        Thread.sleep(1); // small pause to allow overlapping start/stop
+                    }
+                    catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    long elapsed = Stopwatch.stop(id);
+                    if (elapsed < 0) {
+                        throw new AssertionError("elapsed time negative");
+                    }
+                }
+                return null;
+            };
+            futures.add(svc.submit(task));
+        }
+
+        // release all threads at once
+        startLatch.countDown();
+
+        // propagate any exceptions thrown in worker threads
+        for (Future<Void> f : futures) {
+            f.get();
+        }
+
+        svc.shutdownNow();
+
+        // all timers should be stopped
+        assertEquals(0, Stopwatch.getTimerCount());
+    }
+
+    @Test
+    public void testConcurrentStartManyIds() throws Exception {
+        // ensure clean state
+        Stopwatch.stopAll();
+
+        final int total = 200;
+        final int poolSize = 50;
+
+        ExecutorService svc = Executors.newFixedThreadPool(poolSize);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        List<Future<String>> futures = new ArrayList<>();
+
+        // submit tasks that will start unique ids when released
+        for (int i = 0; i < total; i++) {
+            final String id = "many-" + i + "-" + System.nanoTime();
+            Callable<String> task = () -> {
+                startLatch.await();
+                Stopwatch.start(id);
+                return id;
+            };
+            futures.add(svc.submit(task));
+        }
+
+        // release and wait for all starts to complete
+        startLatch.countDown();
+        for (Future<String> f : futures) {
+            f.get();
+        }
+
+        // all timers should be present
+        assertEquals(total, Stopwatch.getTimerCount());
+
+        // stop all and verify count
+        int stopped = Stopwatch.stopAll();
+        assertEquals(total, stopped);
+        assertEquals(0, Stopwatch.getTimerCount());
+
+        svc.shutdownNow();
     }
 
 }

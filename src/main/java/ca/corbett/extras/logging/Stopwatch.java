@@ -1,9 +1,9 @@
 package ca.corbett.extras.logging;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides static utility methods for tracking how long operations take, for logging
@@ -50,15 +50,13 @@ public abstract class Stopwatch {
      * When a timer is stopped, its id is moved from this map to the RESULTS map,
      * and the value is changed from the start time to the elapsed time.
      */
-    private static final Map<String, Long> TIMERS = new HashMap<>();
+    private static final Map<String, Long> TIMERS = new ConcurrentHashMap<>();
 
     /**
      * Tracks timing results for timers that have been stopped. This maps a String
      * identifier to a number of milliseconds that the timer was running.
-     * When a timer is stopped, its identifier is removed from TIMERS and added
-     * to this map.
      */
-    private static final Map<String, Long> RESULTS = new HashMap<>();
+    private static final Map<String, Long> RESULTS = new ConcurrentHashMap<>();
 
     /**
      * Starts a timer with the given identifier. If a timer with that identifier is
@@ -85,10 +83,10 @@ public abstract class Stopwatch {
      */
     public static long stop(String id) {
         long elapsedTime = 0;
-        if (TIMERS.get(id) != null) {
-            long startTime = TIMERS.get(id);
+        // atomically remove the start time (if any)
+        Long startTime = TIMERS.remove(id);
+        if (startTime != null) {
             elapsedTime = System.currentTimeMillis() - startTime;
-            TIMERS.remove(id);
             RESULTS.put(id, elapsedTime);
         }
         return elapsedTime;
@@ -100,8 +98,7 @@ public abstract class Stopwatch {
      * @return How many timers were stopped by this call.
      */
     public static int stopAll() {
-        List<String> timerIds = new ArrayList<>();
-        timerIds.addAll(TIMERS.keySet());
+        List<String> timerIds = new ArrayList<>(TIMERS.keySet());
         int timerCount = 0;
         for (String id : timerIds) {
             stop(id);
@@ -126,7 +123,7 @@ public abstract class Stopwatch {
      * @return true if the named timer exists and is running.
      */
     public static boolean isRunning(String id) {
-        return TIMERS.get(id) != null;
+        return TIMERS.containsKey(id);
     }
 
     /**
@@ -144,12 +141,15 @@ public abstract class Stopwatch {
     public static long report(String id) {
         long elapsedTime = 0;
 
-        if (TIMERS.get(id) != null) {
-            long startTime = TIMERS.get(id);
+        Long startTime = TIMERS.get(id);
+        if (startTime != null) {
             elapsedTime = System.currentTimeMillis() - startTime;
         }
-        else if (RESULTS.get(id) != null) {
-            elapsedTime = RESULTS.get(id);
+        else {
+            Long res = RESULTS.get(id);
+            if (res != null) {
+                elapsedTime = res;
+            }
         }
 
         return elapsedTime;
