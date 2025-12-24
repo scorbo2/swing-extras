@@ -24,9 +24,8 @@ import java.awt.event.ActionEvent;
  * </p>
  * <pre>
  * final String html = "&lt;html&gt;Would you like to "
- *                     + "&lt;a href='proceed'&gt;proceed&lt;a&gt;"
- *                     + " or &lt;a href='cancel'&gt;cancel&lt;a&gt;"
- *                     + "?&lt;/html&gt;";
+ *                     + "&lt;a href='proceed'&gt;proceed&lt;/a&gt;"
+ *                     + " or &lt;a href='cancel'&gt;cancel&lt;/a&gt;?&lt;/html&gt;";
  * HtmlLabelField labelField = new HtmlLabelField(html, myCustomAction);
  * </pre>
  * <p>
