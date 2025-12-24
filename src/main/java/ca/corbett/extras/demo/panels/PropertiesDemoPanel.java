@@ -5,6 +5,7 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
+import ca.corbett.extras.properties.ButtonProperty;
 import ca.corbett.extras.properties.CollapsiblePanelProperty;
 import ca.corbett.extras.properties.ColorProperty;
 import ca.corbett.extras.properties.ComboProperty;
@@ -12,6 +13,7 @@ import ca.corbett.extras.properties.DirectoryProperty;
 import ca.corbett.extras.properties.EnumProperty;
 import ca.corbett.extras.properties.FileProperty;
 import ca.corbett.extras.properties.FontProperty;
+import ca.corbett.extras.properties.FormFieldGenerationListener;
 import ca.corbett.extras.properties.HtmlLabelProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
@@ -25,10 +27,12 @@ import ca.corbett.extras.properties.ShortTextProperty;
 import ca.corbett.extras.properties.SliderProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.CollapsiblePanelField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FileField;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.SliderField;
@@ -157,6 +161,13 @@ public class PropertiesDemoPanel extends PanelBuilder {
                                       List.of("Option 1", "Option 2 (default)", "Option 3"),
                                       1,
                                       false));
+
+        // New in swing-extras 2.6: let's show off ButtonProperty:
+        ButtonProperty buttonProperty = new ButtonProperty("Intro.Property types.buttonProp",
+                                                           "Button fields:");
+        buttonProperty.addFormFieldGenerationListener(new ButtonPropertyFieldListener());
+        props.add(buttonProperty);
+
 
         // Show some label capabilities:
         props.add(new LabelProperty("Intro.Labels.someLabelProperty",
@@ -382,6 +393,28 @@ public class PropertiesDemoPanel extends PanelBuilder {
             if (dialog.wasOkayed()) {
                 propsManager.save();
             }
+        }
+    }
+
+    /**
+     * A FormFieldGenerationListener for our ButtonProperty demo.
+     */
+    private static class ButtonPropertyFieldListener implements FormFieldGenerationListener {
+        @Override
+        public void formFieldGenerated(AbstractProperty property, FormField formField) {
+            ButtonField buttonField = (ButtonField)formField;
+            buttonField.addButton(new AbstractAction("Button1") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JOptionPane.showMessageDialog(DemoApp.getInstance(), "You clicked Button1!");
+                }
+            });
+            buttonField.addButton(new AbstractAction("Button2") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JOptionPane.showMessageDialog(DemoApp.getInstance(), "You clicked Button2!");
+                }
+            });
         }
     }
 }
