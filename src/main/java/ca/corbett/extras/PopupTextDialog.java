@@ -114,7 +114,15 @@ public class PopupTextDialog extends JDialog {
     }
 
     /**
-     * Shows or hides the "copy to clipbard" button.
+     * Returns the Cancel button component for testing purposes.
+     * @return the Cancel button
+     */
+    public JButton getCancelButton() {
+        return cancelButton;
+    }
+
+    /**
+     * Shows or hides the "copy to clipboard" button.
      */
     public void setClipboardEnabled(boolean isEnabled) {
         copyButton.setVisible(isEnabled);

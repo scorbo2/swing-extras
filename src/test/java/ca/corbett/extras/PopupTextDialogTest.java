@@ -16,7 +16,7 @@ class PopupTextDialogTest {
         PopupTextDialog dialog = new PopupTextDialog(frame, "Test", "Some text", false);
 
         // THEN the cancel button should be visible:
-        assertTrue(dialog.cancelButton.isVisible());
+        assertTrue(dialog.getCancelButton().isVisible());
     }
 
     @Test
@@ -27,7 +27,7 @@ class PopupTextDialogTest {
         dialog.setReadOnly(true);
 
         // THEN the cancel button should be hidden:
-        assertFalse(dialog.cancelButton.isVisible());
+        assertFalse(dialog.getCancelButton().isVisible());
     }
 
     @Test
@@ -41,7 +41,7 @@ class PopupTextDialogTest {
         dialog.setReadOnly(false);
 
         // THEN the cancel button should be visible again:
-        assertTrue(dialog.cancelButton.isVisible());
+        assertTrue(dialog.getCancelButton().isVisible());
     }
 
     @Test
