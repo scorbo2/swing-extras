@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.6.0 [2025-12-31] - Maintenance release
+  #204 - PopupTextDialog: hide Cancel button in read-only mode
   #199 - Cosmetic fix for HtmlLabelField
   #198 - New utility class: TextFileDetector
   #197 - Make Stopwatch utility class thread safe
