@@ -17,6 +17,7 @@ Version 2.6.0 [2025-12-31] - Maintenance release
   #175 - ExtensionManagerDialog: cache downloaded screenshots
   #174 - Improved logging in UpdateManager
   #173 - Fix minor bug when launching LogConsole from AboutDialog
+  #112 - New FormField: ListSubsetField / ListSubsetProperty
 
 Version 2.5.0 [2025-12-01] - Dynamic extension discovery
   #171 - UpdateSources: prune local sources automatically

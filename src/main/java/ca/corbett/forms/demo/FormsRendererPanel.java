@@ -11,6 +11,7 @@ import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.ListField;
+import ca.corbett.forms.fields.ListSubsetField;
 
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -39,7 +40,7 @@ public class FormsRendererPanel extends PanelBuilder {
     public JPanel build() {
         FormPanel formPanel = buildFormPanel("Custom cell renderers");
 
-        String sb = "<html>Some fields, like ListField and ComboField, support<br/>"
+        String sb = "<html>Some fields, like ListField, ListSubsetField, and ComboField, support<br/>"
                 + "custom cell renderers, so you can get creative with item display!</html>";
         LabelField introLabel = LabelField.createPlainHeaderLabel(sb, 14);
         introLabel.getMargins().setBottom(18);
@@ -59,6 +60,12 @@ public class FormsRendererPanel extends PanelBuilder {
 
         formPanel.add(new ComboField<>("Combo box:", items, 0)
                               .setCellRenderer(new Renderer(140, 25)));
+
+        formPanel.add(new ListSubsetField<>("List subset:",
+                                            List.of("Item 1", "Item 2", "Item 3", "Item 4"),
+                                            List.of("Item 5", "Item 6", "Item 7", "Item 8", "Item 9"))
+                              .setCellRenderer(new Renderer(90, 25))
+                              .setVisibleRowCount(5));
 
         // Sarcasm is the lowest form of wit, or so I'm told.
         LabelField label = new LabelField("Isn't it beautiful? :)");
