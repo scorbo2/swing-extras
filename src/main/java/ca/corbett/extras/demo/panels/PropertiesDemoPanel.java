@@ -17,6 +17,8 @@ import ca.corbett.extras.properties.FormFieldGenerationListener;
 import ca.corbett.extras.properties.HtmlLabelProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
+import ca.corbett.extras.properties.ListProperty;
+import ca.corbett.extras.properties.ListSubsetProperty;
 import ca.corbett.extras.properties.LongTextProperty;
 import ca.corbett.extras.properties.PanelProperty;
 import ca.corbett.extras.properties.PasswordProperty;
@@ -284,6 +286,20 @@ public class PropertiesDemoPanel extends PanelBuilder {
                                       "hiddenProp",
                                       77)
                           .setExposed(false));
+
+        // Let's show off the list fields!
+        List<String> listItems = List.of("Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6", "Item 7",
+                                         "Item 8");
+        props.add(new ListProperty<String>("Lists.General.listField", "List field:")
+                          .setItems(listItems)
+                          .setVisibleRowCount(6)
+                          .setFixedCellWidth(120));
+        props.add(new ListSubsetProperty<>("Lists.General.listSubsetField",
+                                           "List subset field:",
+                                           listItems,
+                                           new int[]{5, 6, 7})
+                          .setVisibleRowCount(6)
+                          .setFixedCellWidth(120));
 
         // Now let's show off sliders!
         // The SliderField in swing-forms is extremely customizable, much more so than a standard JSlider:
