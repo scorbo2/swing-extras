@@ -63,6 +63,9 @@ public class ListSubsetField<T> extends FormField {
     private Comparator<T> itemComparator = null;
     private boolean shouldExpand = false;
 
+    /**
+     * Creates an empty ListSubsetField with the given field label.
+     */
     public ListSubsetField(String label) {
         fieldLabel.setText(label);
         availableListModel = new DefaultListModel<>();
@@ -86,6 +89,10 @@ public class ListSubsetField<T> extends FormField {
         initLayout();
     }
 
+    /**
+     * Creates a ListSubsetField with the given label and list of available items.
+     * Nothing is selected by default.
+     */
     public ListSubsetField(String label, List<T> availableItems) {
         this(label);
         for (T item : availableItems) {
@@ -94,6 +101,13 @@ public class ListSubsetField<T> extends FormField {
         sortListModel(availableListModel);
     }
 
+    /**
+     * Creates a ListSubsetField with the given label, list of available items,
+     * and list of selected items. The selected items will be removed from the available items,
+     * if present. The list of selected items may be empty, and may also reference items
+     * that are not present in the available items list. The field's list of items is always
+     * the union of the available items and the selected items.
+     */
     public ListSubsetField(String label, List<T> availableItems, List<T> selectedItems) {
         this(label, availableItems);
         for (T item : selectedItems) {
@@ -121,10 +135,13 @@ public class ListSubsetField<T> extends FormField {
 
     /**
      * Programmatically select the items with the given indexes. The indexes
-     * are relative to the complete list of available items - that is, all
+     * are relative to the combine list of ALL items - that is, all
      * the items that would be in the (sorted) available list if nothing was selected.
-     * This replaces any existing selection! This is "set these indexes" and not
+     * This is true even if some of those items are currently selected.
+     * <p>
+     * <B>Note:</B> This replaces any existing selection! This is "set these indexes" and not
      * "add these indexes".
+     * </p>
      */
     public ListSubsetField<T> selectIndexes(int[] indexes) {
         // First clear any existing selection by moving all items back to the available list:
@@ -151,8 +168,9 @@ public class ListSubsetField<T> extends FormField {
 
     /**
      * Returns the indexes of the currently selected items. The indexes are relative
-     * to the complete list of available items - that is, all the items that would be in the
-     * (sorted) available list if nothing was selected.
+     * to the combined list of ALL items - that is, all the items that would be in the
+     * (sorted) available list if nothing was selected. This is true even if some of those items
+     * are currently selected.
      */
     public int[] getSelectedIndexes() {
         // Gather all items into one list:
@@ -178,6 +196,7 @@ public class ListSubsetField<T> extends FormField {
 
     /**
      * Allow callers to programmatically move an item right (select it).
+     * Does nothing if the given item is not present in the available items list.
      */
     public ListSubsetField<T> moveItemRight(T item) {
         if (availableListModel.removeElement(item)) {
@@ -189,6 +208,7 @@ public class ListSubsetField<T> extends FormField {
 
     /**
      * Allow callers to programmatically move an item left (unselect it).
+     * Does nothing if the given item is not present in the selected items list.
      */
     public ListSubsetField<T> moveItemLeft(T item) {
         if (selectedListModel.removeElement(item)) {
@@ -257,7 +277,7 @@ public class ListSubsetField<T> extends FormField {
 
     /**
      * Returns the comparator used to sort items when they are added to either list.
-     * If null, the natural ordering of the items is used.
+     * If null, the natural ordering of the items is used. The default value is null.
      */
     public Comparator<T> getItemComparator() {
         return itemComparator;
@@ -278,6 +298,7 @@ public class ListSubsetField<T> extends FormField {
      * based on the width of the longest item in the list.
      * Internally, we return the fixed cell width for the available list,
      * but the two lists are kept in sync, so both lists have the same fixed cell width.
+     * The default value is -1.
      */
     public int getFixedCellWidth() {
         return availableList.getFixedCellWidth();
@@ -298,8 +319,9 @@ public class ListSubsetField<T> extends FormField {
     }
 
     /**
-     * ListFields occupy more than one form row (generally - you can of course set
-     * a visibleRowCount of 1, but why would you do that).
+     * ListSubsetFields occupy more than one form row (at least, generally speaking,
+     * that statement is true - you could of course set a visibleRowCount of 1,
+     * but why would you do that).
      */
     @Override
     public boolean isMultiLine() {

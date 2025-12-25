@@ -288,7 +288,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
                           .setExposed(false));
 
         // Let's show off the list fields!
-        List<String> listItems = List.of("Item 1", "Item 2", "Item 3", "Item 4", "Item 5");
+        List<String> listItems = List.of("Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6", "Item 7",
+                                         "Item 8");
         props.add(new ListProperty<String>("Lists.General.listField", "List field:")
                           .setItems(listItems)
                           .setVisibleRowCount(6)
@@ -296,7 +297,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(new ListSubsetProperty<>("Lists.General.listSubsetField",
                                            "List subset field:",
                                            listItems,
-                                           List.of("Item 6", "Item 7", "Item 8"))
+                                           new int[]{5, 6, 7})
                           .setVisibleRowCount(6)
                           .setFixedCellWidth(120));
 

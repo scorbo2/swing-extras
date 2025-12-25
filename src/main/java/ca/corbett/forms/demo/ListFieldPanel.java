@@ -107,8 +107,8 @@ public class ListFieldPanel extends PanelBuilder {
 
         // New in swing-extras 2.6, let's show the ListSubsetField:
         formPanel.add(new ListSubsetField<>("List subset:",
-                                            List.of("Apple", "Banana", "Date", "Elderberry",
-                                                    "Grape", "Honeydew", "Kiwi"),
+                                            List.of("Apple", "Banana", "Cherry", "Date", "Elderberry",
+                                                    "Fig", "Grape", "Honeydew", "Kiwi"),
                                             List.of("Cherry", "Fig", "Lemon")).setFixedCellWidth(120));
 
         // And a new addition in swing-extras 2.5, let's add an ImageListField:
