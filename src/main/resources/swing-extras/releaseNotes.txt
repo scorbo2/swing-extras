@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.6.0 [2025-12-31] - Maintenance release
+  #213 - New utility method: FileSystemUtil.sanitizeFileName()
   #210 - Allow CheckBoxField to get/set checkbox text
   #208 - New FieldValidator: ListEmptySelectionValidator
   #204 - PopupTextDialog: hide Cancel button in read-only mode

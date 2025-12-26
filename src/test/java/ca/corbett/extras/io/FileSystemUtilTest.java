@@ -319,6 +319,66 @@ public class FileSystemUtilTest {
         }
     }
 
+    @Test
+    public void sanitizeFilename_withInvalidCharacters_shouldSucceed() {
+        String input = "ThisIsA\\/:*?\"<>|Test";
+        String expected = "ThisIsA_________Test";
+        String actual = FileSystemUtil.sanitizeFilename(input);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void sanitizeFilename_withNullOrEmptyInput_shouldReturnDefaultName() {
+        assertEquals("unnamed", FileSystemUtil.sanitizeFilename(""));
+        assertEquals("unnamed", FileSystemUtil.sanitizeFilename(null));
+        assertEquals("unnamed", FileSystemUtil.sanitizeFilename("     "));
+
+        final String defaultName = "ThisIsTheDefaultFilename.txt";
+        assertEquals(defaultName, FileSystemUtil.sanitizeFilename("", defaultName));
+        assertEquals(defaultName, FileSystemUtil.sanitizeFilename(null, defaultName));
+        assertEquals(defaultName, FileSystemUtil.sanitizeFilename("    ", defaultName));
+    }
+
+    @Test
+    public void sanitizeFilename_withReservedWindowsFilenames_shouldReturnDefaultName() {
+        String[] reservedNames = {
+                "CON", "PRN", "AUX", "NUL",
+                "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+                "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+        };
+        for (String reservedName : reservedNames) {
+            assertEquals("_" + reservedName, FileSystemUtil.sanitizeFilename(reservedName));
+            assertEquals("_" + reservedName + ".txt", FileSystemUtil.sanitizeFilename(reservedName + ".txt"));
+        }
+    }
+
+    @Test
+    public void sanitizeFilename_withNewlines_shouldReplaceWithUnderscores() {
+        String input = "This_is_a_test\nwith+some\rnewlines\r\nin_it.";
+        String expected = "This_is_a_test_with_some_newlines__in_it.";
+        String actual = FileSystemUtil.sanitizeFilename(input);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void sanitizeFilename_withLeadingDots_shouldRemove() {
+        String input = "......NotAllowed.txt";
+        String expected = "NotAllowed.txt";
+        String actual = FileSystemUtil.sanitizeFilename(input);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void sanitizeFilename_withVeryLongFilename_shouldTruncate() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 300; i++) {
+            sb.append("a");
+        }
+        String input = sb + ".txt";
+        String actual = FileSystemUtil.sanitizeFilename(input);
+        assertTrue(actual.length() == 200, "Filename was not truncated properly!");
+    }
+
     private static void createNestedTestDir(File rootDir, int dirCount1, int dirCount2, int dirCount3, boolean createFiles)
             throws IOException {
         rootDir.mkdir();
