@@ -34,6 +34,21 @@ public final class CheckBoxField extends FormField {
         return !fieldValidators.isEmpty();
     }
 
+    /**
+     * Exposes the text from the underlying JCheckBox.
+     */
+    public String getCheckBoxText() {
+        return ((JCheckBox)fieldComponent).getText();
+    }
+
+    /**
+     * Allows updating the label text in the underlying JCheckBox.
+     */
+    public CheckBoxField setCheckBoxText(String text) {
+        ((JCheckBox)fieldComponent).setText(text);
+        return this;
+    }
+
     public boolean isChecked() {
         return ((JCheckBox)fieldComponent).isSelected();
     }
