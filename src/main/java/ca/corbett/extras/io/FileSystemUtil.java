@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 /**
  * Provides a way to scan, organize, and search through a given file system, looking for
@@ -25,6 +26,13 @@ import java.util.jar.JarFile;
  * @since 2012-07-28 (originally written for ICE, later generalized for ca.corbett.util)
  */
 public final class FileSystemUtil {
+
+    private static final Pattern INVALID_CHARS = Pattern.compile("[^a-zA-Z0-9.-]");
+    private static final Pattern LEADING_DOTS = Pattern.compile("^\\.+");
+    private static final Pattern WINDOWS_RESERVED = Pattern.compile(
+            "^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\\..*)?$",
+            Pattern.CASE_INSENSITIVE
+    );
 
     /**
      * Utility classes have no public constructor.
@@ -528,10 +536,20 @@ public final class FileSystemUtil {
         return String.format("%.1f %s", value, units[unitIndex]);
     }
 
+    /**
+     * Looks for a small text file of the given name within the given Jar file, and returns its contents
+     * as a String if found. If not found, returns null. If the file appears to be binary data, an exception
+     * is thrown.
+     */
     public static String extractTextFileFromJar(String targetFilename, File jarFile) throws Exception {
         return extractTextFileFromJar(targetFilename, jarFile, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Looks for a small text file of the given name within the given Jar file, and returns its contents
+     * as a String if found. If not found, returns null. If the file appears to be binary data, an exception
+     * is thrown.
+     */
     public static String extractTextFileFromJar(String targetFilename, File jarFile, Charset charset) throws Exception {
         if (jarFile == null || !jarFile.exists() || !jarFile.isFile() || !jarFile.canRead()) {
             throw new Exception("Input jar file does not exist or can't be read!");
@@ -568,5 +586,50 @@ public final class FileSystemUtil {
 
         // If we get here, we didn't find anything:
         return null;
+    }
+
+    /**
+     * Given any arbitrary String, returns a sanitized version that is safe to use as a filename
+     * on any operating system. If the given input is null or empty, or if the resulting sanitized
+     * filename is empty, "unnamed" will be returned.
+     * <p>
+     * The only allowable characters are alphanumeric characters, dots (.), hyphens (-), and underscores (_).
+     * All other characters are replaced with underscores. Leading dots are removed. On Windows,
+     * reserved filenames such as "CON" or "AUX" are prefixed with an underscore. The resulting filename
+     * is truncated to a maximum of 200 characters.
+     * </p>
+     */
+    public static String sanitizeFilename(String input) {
+        return sanitizeFilename(input, "unnamed");
+    }
+
+    /**
+     * Given any arbitrary String, returns a sanitized version that is safe to use as a filename
+     * on any operating system. If the given input is null or empty, or if the resulting sanitized
+     * filename is empty, the given defaultName will be returned.
+     * <p>
+     * The only allowable characters are alphanumeric characters, dots (.), hyphens (-), and underscores (_).
+     * All other characters are replaced with underscores. Leading dots are removed. On Windows,
+     * reserved filenames such as "CON" or "AUX" are prefixed with an underscore. The resulting filename
+     * is truncated to a maximum of 200 characters.
+     * </p>
+     */
+    public static String sanitizeFilename(String input, String defaultName) {
+        if (input == null || input.trim().isEmpty()) {
+            return defaultName;
+        }
+
+        String sanitized = INVALID_CHARS.matcher(input).replaceAll("_");
+        sanitized = LEADING_DOTS.matcher(sanitized).replaceFirst("");
+
+        if (WINDOWS_RESERVED.matcher(sanitized).matches()) {
+            sanitized = "_" + sanitized;
+        }
+
+        if (sanitized.length() > 200) {
+            sanitized = sanitized.substring(0, 200);
+        }
+
+        return sanitized.isEmpty() ? defaultName : sanitized;
     }
 }

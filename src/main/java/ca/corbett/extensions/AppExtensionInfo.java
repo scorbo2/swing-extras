@@ -121,6 +121,25 @@ public class AppExtensionInfo {
         return null;
     }
 
+    /**
+     * Extracts and returns the major version number from the given version string.
+     * Ignores any non-numeric characters. If no major version can be determined,
+     * returns 0.
+     */
+    public static int extractMajorVersion(String version) {
+        if (version != null && !version.isBlank()) {
+            String[] parts = version.split("\\.");
+            if (parts.length > 0) {
+                try {
+                    return Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                }
+                catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return 0;
+    }
+
     public String getName() {
         return name;
     }
@@ -141,12 +160,20 @@ public class AppExtensionInfo {
         return version;
     }
 
+    public int getMajorVersion() {
+        return extractMajorVersion(version);
+    }
+
     public String getTargetAppName() {
         return targetAppName;
     }
 
     public String getTargetAppVersion() {
         return targetAppVersion;
+    }
+
+    public int getTargetAppMajorVersion() {
+        return extractMajorVersion(targetAppVersion);
     }
 
     public String getShortDescription() {

@@ -188,6 +188,20 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
             }
         }
 
+        if (availableExtensionsPanel != null) {
+            availableExtensionsPanel.cleanupScreenshotCache();
+        }
+        dispose();
+    }
+
+    /**
+     * Invoked internally when the dialog is canceled.
+     */
+    private void cancel() {
+        wasOkayed = false;
+        if (availableExtensionsPanel != null) {
+            availableExtensionsPanel.cleanupScreenshotCache();
+        }
         dispose();
     }
 
@@ -264,7 +278,7 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         panel.add(button);
         button = new JButton("Cancel");
         button.setPreferredSize(new Dimension(90, 24));
-        button.addActionListener(e -> dispose());
+        button.addActionListener(e -> cancel());
         panel.add(button);
         panel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
         return panel;

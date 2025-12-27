@@ -39,7 +39,10 @@ import java.util.Objects;
  * <p>Hyperlinks</p><br>
  * Hyperlinked labels are supported by using the setHyperlink() method and providing some Action to be invoked
  * when the link is clicked. This will change the color of the label to blue and change the mouse pointer
- * when the cursor is over the label, to indicate that the label is clickable.
+ * when the cursor is over the label, to indicate that the label is clickable. Note that with LabelField,
+ * this is all-or-nothing: the entire label will be converted to a single hyperlink. If you only want to change
+ * part of the label text to a hyperlink, or if you wish to have multiple hyperlinks in a single label,
+ * you should use the HtmlLabelField class instead.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-26
@@ -403,6 +406,12 @@ public final class LabelField extends FormField {
     /**
      * Sets the colour for the label text.
      * This is shorthand for ((JLabel)getFieldComponent()).setForeground();
+     * Be careful setting specific colors, as it may not play well with
+     * different Look and Feels! Consider using LookAndFeelManager.getLafColor()
+     * to pick a color that is appropriate for the current Look and Feel.
+     * For example, LookAndFeelManager.getLafColor("Component.linkColor", Color.BLUE);
+     * will return the standard link color for the current LaF, or blue if
+     * no specific color is defined for this LaF.
      *
      * @param c The new text colour.
      */

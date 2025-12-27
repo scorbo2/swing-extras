@@ -76,6 +76,14 @@ class CheckBoxFieldTest extends FormFieldBaseTests {
     }
 
     @Test
+    public void setCheckBoxText() {
+        CheckBoxField actualField = (CheckBoxField)actual;
+        assertEquals("test", actualField.getCheckBoxText());
+        actualField.setCheckBoxText("new text");
+        assertEquals("new text", actualField.getCheckBoxText());
+    }
+
+    @Test
     public void validate_invalidScenario() {
         CheckBoxField actualField = (CheckBoxField)actual;
         actual.addFieldValidator(new TestValidator());

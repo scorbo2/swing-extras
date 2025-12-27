@@ -465,6 +465,7 @@ public class ImageListPanel extends JPanel {
                     }
                     catch (UnsupportedFlavorException | IOException e) {
                         log.warning("ImageListField: drag-and-drop supports images only.");
+                        dtde.dropComplete(false);
                     }
                 }
                 else {

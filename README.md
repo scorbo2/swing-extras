@@ -5,12 +5,28 @@ applications. The library includes a demo application so you can try out the var
 utilities within swing-extras:
 
 ![DemoApp](demo-app.png "Demo app")
+TODO update screenshot for 2.6 release
 
 ## Documentation
 
 You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
 - The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
+
+## NEWS! December 31, 2025 - swing extras 2.6 release is here!
+
+Happy New Year! The 2.6 release of swing-extras is now available.
+This release offers a few minor new features and several bug fixes and improvements.
+Most notably, ExtensionManager no longer insists on an exact version match when loading extensions,
+instead just looking at the major version. So, no more mandatory re-releases of extensions for minor
+application updates!
+
+Other notable additions in swing-extras 2.6:
+- new FormField: HtmlLabelField
+- new property wrappers for PanelField and CollapsiblePanelField
+- and a few minor bug fixes.
+
+Refer to the [release notes](src/main/resources/swing-extras/releaseNotes.txt) for a complete list.
 
 ## NEWS! December 1, 2025 - swing-extras 2.5 release is here!
 
@@ -38,7 +54,7 @@ Refer to the [release notes](src/main/resources/swing-extras/releaseNotes.txt) f
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>2.5.0</version>
+    <version>2.6.0</version>
   </dependency>
 </dependencies>
 ```
@@ -52,7 +68,7 @@ cd swing-extras
 mvn package
 
 # Run the built-in demo app:
-java -jar target/swing-extras-2.5.0-jar-with-dependencies.jar 
+java -jar target/swing-extras-2.6.0-jar-with-dependencies.jar 
 ```
 
 ## License

@@ -13,6 +13,7 @@ target/
 .idea/tasks/
 .idea/httpRequests/
 out/
+.idea/copilot.*
 
 # Ignore logs and caches
 .idea/dataSources/

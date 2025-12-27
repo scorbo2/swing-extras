@@ -5,15 +5,22 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.BooleanProperty;
+import ca.corbett.extras.properties.ButtonProperty;
+import ca.corbett.extras.properties.CollapsiblePanelProperty;
 import ca.corbett.extras.properties.ColorProperty;
 import ca.corbett.extras.properties.ComboProperty;
 import ca.corbett.extras.properties.DirectoryProperty;
 import ca.corbett.extras.properties.EnumProperty;
 import ca.corbett.extras.properties.FileProperty;
 import ca.corbett.extras.properties.FontProperty;
+import ca.corbett.extras.properties.FormFieldGenerationListener;
+import ca.corbett.extras.properties.HtmlLabelProperty;
 import ca.corbett.extras.properties.IntegerProperty;
 import ca.corbett.extras.properties.LabelProperty;
+import ca.corbett.extras.properties.ListProperty;
+import ca.corbett.extras.properties.ListSubsetProperty;
 import ca.corbett.extras.properties.LongTextProperty;
+import ca.corbett.extras.properties.PanelProperty;
 import ca.corbett.extras.properties.PasswordProperty;
 import ca.corbett.extras.properties.Properties;
 import ca.corbett.extras.properties.PropertiesDialog;
@@ -22,15 +29,22 @@ import ca.corbett.extras.properties.ShortTextProperty;
 import ca.corbett.extras.properties.SliderProperty;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
+import ca.corbett.forms.fields.CollapsiblePanelField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FileField;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.SliderField;
 
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -150,6 +164,13 @@ public class PropertiesDemoPanel extends PanelBuilder {
                                       1,
                                       false));
 
+        // New in swing-extras 2.6: let's show off ButtonProperty:
+        ButtonProperty buttonProperty = new ButtonProperty("Intro.Property types.buttonProp",
+                                                           "Button fields:");
+        buttonProperty.addFormFieldGenerationListener(new ButtonPropertyFieldListener());
+        props.add(buttonProperty);
+
+
         // Show some label capabilities:
         props.add(new LabelProperty("Intro.Labels.someLabelProperty",
                                     "Labels can be used to show static text."));
@@ -158,6 +179,14 @@ public class PropertiesDemoPanel extends PanelBuilder {
         testLabel.setFont(new Font("Monospaced", Font.ITALIC, 14));
         testLabel.setColor(LookAndFeelManager.getLafColor("text.highlight", Color.BLUE));
         props.add(testLabel);
+
+        // New in swing-extras 2.6: let's show off HtmlLabelProperty:
+        HtmlLabelProperty htmlLabel = new HtmlLabelProperty("Intro.Labels.htmlLabel1",
+                                                            "<html>Labels can have hyperlinks: "
+                                                                    + "<a href='link1'>link 1</a> "
+                                                                    + "<a href='link2'>link 2</a></html>",
+                                                            new HyperlinkActionHandler());
+        props.add(htmlLabel);
 
         // Now add some dummy labels to force a scroll bar to appear:
         for (int i = 0; i < 10; i++) {
@@ -258,6 +287,20 @@ public class PropertiesDemoPanel extends PanelBuilder {
                                       77)
                           .setExposed(false));
 
+        // Let's show off the list fields!
+        List<String> listItems = List.of("Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6", "Item 7",
+                                         "Item 8");
+        props.add(new ListProperty<String>("Lists.General.listField", "List field:")
+                          .setItems(listItems)
+                          .setVisibleRowCount(6)
+                          .setFixedCellWidth(120));
+        props.add(new ListSubsetProperty<>("Lists.General.listSubsetField",
+                                           "List subset field:",
+                                           listItems,
+                                           new int[]{5, 6, 7})
+                          .setVisibleRowCount(6)
+                          .setFixedCellWidth(120));
+
         // Now let's show off sliders!
         // The SliderField in swing-forms is extremely customizable, much more so than a standard JSlider:
         SliderField.setIsDefaultBorderEnabled(false);
@@ -276,6 +319,39 @@ public class PropertiesDemoPanel extends PanelBuilder {
                           .setColorStops(List.of(Color.RED, Color.YELLOW, Color.GREEN))
                           .setLabels(List.of("Bad", "Meh", "Okay", "Good", "Great!", "FANTASTIC!"), true));
 
+        // New in swing-extras 2.6, let's show off PanelProperty:
+        PanelProperty panelProp = new PanelProperty("Panels.General.panelProp", new BorderLayout());
+        panelProp.addFormFieldGenerationListener((property, formField) -> {
+            PanelField panelField = (PanelField)formField;
+            panelField.setShouldExpand(true);
+            panelField.getPanel().setBorder(BorderFactory.createLoweredBevelBorder());
+
+            FormPanel subForm = new FormPanel(Alignment.TOP_LEFT);
+            subForm.setBorderMargin(12);
+            subForm.add(new LabelField("This is a PanelProperty. You can add whatever static components you like."));
+            subForm.add(new LabelField("Images, help text, whatever."));
+            subForm.add(new LabelField("Just be aware that nothing here gets saved to properties."));
+            panelField.getPanel().add(subForm, BorderLayout.CENTER);
+        });
+        props.add(panelProp);
+
+        // New in swing-extras 2.6, let's show off CollapsiblePanelProperty:
+        CollapsiblePanelProperty collapsiblePanelProp =
+                new CollapsiblePanelProperty("Panels.General.collapsiblePanelProp",
+                                             "Collapsible panel example",
+                                             new BorderLayout());
+        collapsiblePanelProp.addFormFieldGenerationListener((prop, formField) -> {
+            CollapsiblePanelField panelField = (CollapsiblePanelField)formField;
+            panelField.setShouldExpandHorizontally(true);
+
+            FormPanel subForm = new FormPanel(Alignment.TOP_LEFT);
+            subForm.setBorderMargin(12);
+            subForm.add(new LabelField("You can also add collapsible panels as properties!"));
+            subForm.add(new LabelField("Same rules as for regular panel properties."));
+            panelField.getPanel().add(subForm, BorderLayout.CENTER);
+        });
+        props.add(collapsiblePanelProp);
+
         // And finally, we can show off EnumProperty, which is a handy way of generating combo boxes from enums:
         props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));
         props.add(new EnumProperty<>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
@@ -292,6 +368,24 @@ public class PropertiesDemoPanel extends PanelBuilder {
                           .setExtraMargins(8, 0));
 
         return props;
+    }
+
+    private static class HyperlinkActionHandler extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+            String message;
+            if ("link1".equals(command)) {
+                message = "You clicked link 1!";
+            }
+            else if ("link2".equals(command)) {
+                message = "You clicked link 2!";
+            }
+            else {
+                message = "Unknown link clicked: " + command;
+            }
+            JOptionPane.showMessageDialog(DemoApp.getInstance(), message);
+        }
     }
 
     /**
@@ -315,6 +409,28 @@ public class PropertiesDemoPanel extends PanelBuilder {
             if (dialog.wasOkayed()) {
                 propsManager.save();
             }
+        }
+    }
+
+    /**
+     * A FormFieldGenerationListener for our ButtonProperty demo.
+     */
+    private static class ButtonPropertyFieldListener implements FormFieldGenerationListener {
+        @Override
+        public void formFieldGenerated(AbstractProperty property, FormField formField) {
+            ButtonField buttonField = (ButtonField)formField;
+            buttonField.addButton(new AbstractAction("Button1") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JOptionPane.showMessageDialog(DemoApp.getInstance(), "You clicked Button1!");
+                }
+            });
+            buttonField.addButton(new AbstractAction("Button2") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JOptionPane.showMessageDialog(DemoApp.getInstance(), "You clicked Button2!");
+                }
+            });
         }
     }
 }

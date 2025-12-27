@@ -35,6 +35,10 @@ public final class Resources {
     private static final String COPY = PREFIX + "/images/formfield-copy.png";
     private static final String HIDDEN = PREFIX + "/images/formfield-hidden.png";
     private static final String REVEALED = PREFIX + "/images/formfield-revealed.png";
+    private static final String MOVE_LEFT = PREFIX + "/images/icon-move-left.png";
+    private static final String MOVE_RIGHT = PREFIX + "/images/icon-move-right.png";
+    private static final String MOVE_ALL_LEFT = PREFIX + "/images/icon-move-all-left.png";
+    private static final String MOVE_ALL_RIGHT = PREFIX + "/images/icon-move-all-right.png";
 
     private final ImageIcon validIcon;
     private final ImageIcon invalidIcon;
@@ -47,6 +51,10 @@ public final class Resources {
     private final ImageIcon copyIcon;
     private final ImageIcon hiddenIcon;
     private final ImageIcon revealedIcon;
+    private final ImageIcon moveLeftIcon;
+    private final ImageIcon moveRightIcon;
+    private final ImageIcon moveAllLeftIcon;
+    private final ImageIcon moveAllRightIcon;
 
     private Resources() {
         ClassLoader classLoader = Resources.class.getClassLoader();
@@ -61,6 +69,10 @@ public final class Resources {
         copyIcon = loadIcon(COPY, classLoader.getResource(COPY), Color.BLUE, 22);
         hiddenIcon = loadIcon(HIDDEN, classLoader.getResource(HIDDEN), Color.DARK_GRAY, 22);
         revealedIcon = loadIcon(REVEALED, classLoader.getResource(REVEALED), Color.LIGHT_GRAY, 22);
+        moveLeftIcon = loadIcon(MOVE_LEFT, classLoader.getResource(MOVE_LEFT), Color.BLACK, 16);
+        moveRightIcon = loadIcon(MOVE_RIGHT, classLoader.getResource(MOVE_RIGHT), Color.BLACK, 16);
+        moveAllLeftIcon = loadIcon(MOVE_ALL_LEFT, classLoader.getResource(MOVE_ALL_LEFT), Color.BLACK, 16);
+        moveAllRightIcon = loadIcon(MOVE_ALL_RIGHT, classLoader.getResource(MOVE_ALL_RIGHT), Color.BLACK, 16);
     }
 
     private ImageIcon loadIcon(String path, URL url, Color defaultColor) {
@@ -173,6 +185,34 @@ public final class Resources {
      */
     public static ImageIcon getRevealedIcon() {
         return getInstance().revealedIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent moving an item to the left.
+     */
+    public static ImageIcon getMoveLeftIcon() {
+        return getInstance().moveLeftIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent moving an item to the right.
+     */
+    public static ImageIcon getMoveRightIcon() {
+        return getInstance().moveRightIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent moving all items to the left.
+     */
+    public static ImageIcon getMoveAllLeftIcon() {
+        return getInstance().moveAllLeftIcon;
+    }
+
+    /**
+     * Returns an ImageIcon to represent moving all items to the right.
+     */
+    public static ImageIcon getMoveAllRightIcon() {
+        return getInstance().moveAllRightIcon;
     }
 
     /**

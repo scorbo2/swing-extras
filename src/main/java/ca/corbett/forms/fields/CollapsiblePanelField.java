@@ -44,8 +44,8 @@ public class CollapsiblePanelField extends FormField {
      * Use getPanel() to retrieve the panel and add your custom
      * components to it.
      */
-    public CollapsiblePanelField(String fieldLabel, boolean isInitiallyExpanded) {
-        this(fieldLabel, isInitiallyExpanded, new FlowLayout());
+    public CollapsiblePanelField(String labelText, boolean isInitiallyExpanded) {
+        this(labelText, isInitiallyExpanded, new FlowLayout());
     }
 
     /**
@@ -64,9 +64,10 @@ public class CollapsiblePanelField extends FormField {
 
         JPanel labelWrapperPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel label = new JLabel(labelText);
+        fieldLabel.setText(labelText); // this is a bit of a psych-out... see hasFieldLabel() override below
         labelWrapperPanel.add(label);
 
-        buttonWrapperPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonWrapperPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
         expandCollapseButton = new JButton(isInitiallyExpanded ? Resources.getMinusIcon() : Resources.getPlusIcon());
         expandCollapseButton.addActionListener(e -> setIsExpanded(! isExpanded));
         expandCollapseButton.setBorder(null);
@@ -108,6 +109,13 @@ public class CollapsiblePanelField extends FormField {
     }
 
     /**
+     * Reports whether the panel is currently expanded or collapsed.
+     */
+    public boolean isExpanded() {
+        return isExpanded;
+    }
+
+    /**
      * You can set the expand/collapse button on the left side (default) or on the right side of the form field.
      */
     public CollapsiblePanelField setButtonPosition(ButtonPosition position) {
@@ -136,6 +144,19 @@ public class CollapsiblePanelField extends FormField {
     public CollapsiblePanelField setBorder(Border border) {
         getFieldComponent().setBorder(border); // the wrapper panel, not the wrapped panel
         return this;
+    }
+
+    /**
+     * We need to override and return false unconditionally here, otherwise the rendering of this
+     * component within FormPanel will get wonky. The CollapsiblePanelField maintains its own
+     * header with label and expand/collapse button, so we don't want FormField to add another label
+     * beside it. So, we pretend we have no field label even though we sort of do.
+     * Callers can still invoke getFieldLabel().getText() to retrieve our field label text,
+     * but this method will pretend that we have no field label so we can handle our own rendering of it.
+     */
+    @Override
+    public boolean hasFieldLabel() {
+        return false;
     }
 
     /**

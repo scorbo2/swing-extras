@@ -108,6 +108,13 @@ public final class AboutInfo {
     public UpdateManager updateManager;
 
     /**
+     * Indicates whether to include the swing-extras version
+     * and a link to the swing-extras project page in the AboutPanel.
+     * Defaults to true.
+     */
+    public boolean includeSwingExtrasVersion = true;
+
+    /**
      * Custom fields can be specified and will be displayed in a name:value fashion.
      */
     private final Map<String, String> customFieldData;

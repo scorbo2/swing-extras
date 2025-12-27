@@ -4,8 +4,10 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.SnippetAction;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.HtmlLabelField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
@@ -13,9 +15,11 @@ import ca.corbett.forms.fields.PasswordField;
 import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.List;
@@ -60,6 +64,8 @@ public class BasicFormPanel extends PanelBuilder {
         formPanel.add(buildComboField());
         formPanel.add(new LabelField("Hyperlink:", "Yes, you can add hyperlinks to your forms!")
                               .setHyperlink(new ExampleHyperlinkAction()));
+        formPanel.add(buildHtmlLabelField()); // New in swing-extras 2.6!
+        formPanel.add(buildButtonField()); // New in swing-extras 2.6!
         formPanel.add(new NumberField("Number chooser:", 0, 0, 100, 1));
         formPanel.add(createSnippetLabel(new GeneralFieldSnippetAction()));
 
@@ -85,6 +91,47 @@ public class BasicFormPanel extends PanelBuilder {
                 "Option 2",
                 "Option 3");
         return new ComboField<>("Comboboxes:", options, 0, false);
+    }
+
+    private ButtonField buildButtonField() {
+        ButtonField buttonField = new ButtonField();
+        buttonField.addButton(buildExampleAction("Button1"));
+        buttonField.addButton(buildExampleAction("Button2"));
+        buttonField.setButtonPreferredSize(new Dimension(90, 25));
+        buttonField.getFieldLabel().setText("Button field:");
+        return buttonField;
+    }
+
+    private Action buildExampleAction(String name) {
+        return new AbstractAction(name) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(DemoApp.getInstance(), "You clicked " + name + "!");
+            }
+        };
+    }
+
+    private HtmlLabelField buildHtmlLabelField() {
+        final String html = "<html>Would you like to "
+                + "<a href='link1'>proceed</a> or "
+                + "<a href='link2'>cancel</a>?</html>";
+        return new HtmlLabelField("Multiple links:", html, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String command = e.getActionCommand();
+                String message;
+                if ("link1".equals(command)) {
+                    message = "You clicked the proceed link!";
+                }
+                else if ("link2".equals(command)) {
+                    message = "You clicked the cancel link!";
+                }
+                else {
+                    message = "Unknown link clicked: " + command;
+                }
+                JOptionPane.showMessageDialog(DemoApp.getInstance(), message);
+            }
+        });
     }
 
     /**
@@ -153,6 +200,18 @@ public class BasicFormPanel extends PanelBuilder {
                     // Hyperlinks can be added by setting a hyperlink action on a regular LabelField:
                     formPanel.add(new LabelField("Hyperlink:", "Yes, you can add hyperlinks to your forms!")
                                                   .setHyperlink(new ExampleHyperlinkAction()));
+                    
+                    // Or you can use HtmlLabelField for multiple links in one label:
+                    final String html = "<html>Would you like to "
+                                        + "<a href='link1'>proceed</a> or "
+                                        + "<a href='link2'>cancel</a>?</html>";
+                    formPanel.add(new HtmlLabelField("Multiple links:", html, new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            String command = e.getActionCommand();
+                            // Handle link clicks here... (command will be 'link1' or 'link2' in this example)
+                        }
+                    }));
                     
                     // NumberFields require an acceptable range and some initial value:
                     formPanel.add(new NumberField("Number chooser:", 0, 0, 100, 1));
