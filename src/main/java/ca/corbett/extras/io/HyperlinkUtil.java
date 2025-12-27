@@ -254,7 +254,12 @@ public class HyperlinkUtil {
             if (e != null) {
                 message += "\n\nError details: " + e.getMessage();
             }
-            JOptionPane.showMessageDialog(owner, message, title, JOptionPane.ERROR_MESSAGE);
+            int dialogEventType = switch (level.getName()) {
+                case "SEVERE" -> JOptionPane.ERROR_MESSAGE;
+                case "WARNING" -> JOptionPane.WARNING_MESSAGE;
+                default -> JOptionPane.INFORMATION_MESSAGE;
+            };
+            JOptionPane.showMessageDialog(owner, message, title, dialogEventType);
         }
     }
 
