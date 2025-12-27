@@ -2,7 +2,7 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
-import ca.corbett.extras.demo.DemoApp;
+import ca.corbett.extras.io.HyperlinkUtil;
 import ca.corbett.extras.properties.LookAndFeelProperty;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ComboField;
@@ -10,7 +10,6 @@ import ca.corbett.forms.fields.LabelField;
 
 import javax.swing.JPanel;
 import java.awt.Font;
-import java.net.URI;
 import java.util.logging.Logger;
 
 /**
@@ -23,6 +22,7 @@ import java.util.logging.Logger;
 public class IntroPanel extends PanelBuilder {
 
     private static final Logger logger = Logger.getLogger(IntroPanel.class.getName());
+    private FormPanel introPanel;
 
     @Override
     public String getTitle() {
@@ -31,7 +31,7 @@ public class IntroPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel introPanel = buildFormPanel("Welcome to swing-extras!");
+        introPanel = buildFormPanel("Welcome to swing-extras!");
 
         // Multi-line labels are quite easy to generate by wrapping the text in html tags:
         String txt = "<html>This is a library of components and add-ons for Java Swing applications.<br>" +
@@ -106,13 +106,8 @@ public class IntroPanel extends PanelBuilder {
      * given String URL is well-formed, and if browsing is supported in the current JRE.
      */
     private void addHyperlinkIfUrlIsValid(LabelField labelField, String url) {
-        if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(url)) {
-            try {
-                labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(url)));
-            }
-            catch (IllegalArgumentException e) {
-                logger.warning("Unable to hyperlink: URL is not well-formed: " + url);
-            }
+        if (HyperlinkUtil.isBrowsingSupported() && HyperlinkUtil.isValidUrl(url)) {
+            labelField.setHyperlink(HyperlinkUtil.BrowseHyperlinkAction.of(url, introPanel));
         }
         else {
             logger.warning("Unable to set label hyperlink - the current JRE does not support browsing.");
