@@ -2,12 +2,12 @@ package ca.corbett.extras.about;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.Version;
-import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.extras.image.LogoProperty;
+import ca.corbett.extras.io.HyperlinkUtil;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
@@ -19,7 +19,6 @@ import ca.corbett.updates.VersionManifest;
 import ca.corbett.updates.VersionStringComparator;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -284,13 +283,8 @@ public final class AboutPanel extends JPanel {
      * and no link will be added. Likewise, no link is added if browsing is not supported.
      */
     private void addHyperlinkIfPossible(LabelField labelField, String urlString) {
-        if (DemoApp.isBrowsingSupported() && DemoApp.isUrl(urlString)) {
-            try {
-                labelField.setHyperlink(new DemoApp.BrowseAction(URI.create(urlString)));
-            }
-            catch (IllegalArgumentException e) {
-                logger.warning("URL is not well-formed: " + urlString);
-            }
+        if (HyperlinkUtil.isBrowsingSupported() && HyperlinkUtil.isValidUrl(urlString)) {
+            labelField.setHyperlink(HyperlinkUtil.BrowseHyperlinkAction.of(urlString, this));
         }
     }
 
@@ -425,7 +419,7 @@ public final class AboutPanel extends JPanel {
             Window ownerWindow = SwingUtilities.getWindowAncestor(aboutPanel);
 
             // Check if browsing is supported, otherwise copy to clipboard
-            if (!DemoApp.isBrowsingSupported()) {
+            if (!HyperlinkUtil.isBrowsingSupported()) {
                 Toolkit.getDefaultToolkit().getSystemClipboard()
                         .setContents(new StringSelection(Version.PROJECT_URL), null);
                 JOptionPane.showMessageDialog(ownerWindow,
@@ -434,7 +428,7 @@ public final class AboutPanel extends JPanel {
             }
 
             // Validate the URL
-            if (!DemoApp.isUrl(Version.PROJECT_URL)) {
+            if (!HyperlinkUtil.isValidUrl(Version.PROJECT_URL)) {
                 JOptionPane.showMessageDialog(ownerWindow,
                         "Invalid project URL: " + Version.PROJECT_URL,
                         "Error",
