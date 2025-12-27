@@ -16,24 +16,20 @@ import java.io.IOException;
  * null bytes. For more comprehensive encoding detection, consider using a library like
  * Apache Tika or ICU4J.
  * </p>
- * <p>
- * The detection algorithm:
+ * <p>The detection algorithm:</p>
  * <ul>
- *   <li>Reads a sample of bytes from the beginning of the file</li>
- *   <li>Immediately rejects files containing null bytes (0x00)</li>
- *   <li>Counts non-printable control characters (excluding common whitespace)</li>
- *   <li>Classifies as text if non-printable ratio is below threshold</li>
+ *   <li>Reads a sample of bytes from the beginning of the file
+ *   <li>Immediately rejects files containing null bytes (0x00)
+ *   <li>Counts non-printable control characters (excluding common whitespace)
+ *   <li>Classifies as text if non-printable ratio is below threshold
  * </ul>
- * </p>
- * <p>
- *     <b>USAGE:</b> There are three ways to use this class:
+ * <p><b>USAGE:</b> There are three ways to use this class:</p>
  *     <ol>
- *         <li>Use the static isTextFile(File) method with default settings.</li
+ *         <li>Use the static isTextFile(File) method with default settings.
  *         <li>Use the static isTextFile(File, int, double) method with custom sample size
- *         and threshold.</li>
- *         <li>Use the Builder class to configure and perform detection.</li>
+ *         and threshold.
+ *         <li>Use the Builder class to configure and perform detection.
  *     </ol>
- * </p>
  * <p>
  *     <b>Example usage of the Builder class:</b>
  * </p>
