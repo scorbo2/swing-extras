@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.6.0 [2025-12-31] - Maintenance release
+  #215 - Fix minor bug in SingleInstanceManagerTest
   #213 - New utility method: FileSystemUtil.sanitizeFilename()
   #210 - Allow CheckBoxField to get/set checkbox text
   #208 - New FieldValidator: ListEmptySelectionValidator

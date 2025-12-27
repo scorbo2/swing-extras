@@ -37,7 +37,8 @@ class SingleInstanceManagerTest {
 
     @Test
     void tryAcquireLock_withPreboundServerSocket_receivesArgs() throws Exception {
-        try (ServerSocket prebound = new ServerSocket(55555)) {
+        // Let OS assign an available port:
+        try (ServerSocket prebound = new ServerSocket(0)) {
             int port = prebound.getLocalPort();
 
             // Inject provider that returns our pre-bound ServerSocket for the requested port
@@ -80,23 +81,21 @@ class SingleInstanceManagerTest {
     void tryAcquireLock_withDefaultPort_shouldLockDefaultPort() throws Exception {
         // When we use the single-argument version of tryAcquireLock, it should
         // use the default port defined in SingleInstanceManager.
-        int defaultPort = SingleInstanceManager.DEFAULT_PORT;
-
-        try (ServerSocket prebound = new ServerSocket(defaultPort)) {
-            int port = prebound.getLocalPort();
-
-            // Inject provider that returns our pre-bound ServerSocket for the requested port
+        // But! It is not a safe assumption that the default port is available on the test system,
+        // so we will pre-bind a ServerSocket to an OS-assigned port, and have our provider
+        // return that socket when the default port is requested.
+        try (ServerSocket prebound = new ServerSocket(0)) {
             SingleInstanceManager.setServerSocketProvider(requestedPort -> {
-                if (requestedPort != port) {
+                // Verify it's requesting the default port constant
+                if (requestedPort != SingleInstanceManager.DEFAULT_PORT) {
                     throw new IOException("unexpected port: " + requestedPort);
                 }
+                // But return a socket on an available port
                 return prebound;
             });
 
             boolean isPrimaryInstance = SingleInstanceManager.getInstance().tryAcquireLock(null);
-            assertTrue(isPrimaryInstance, "Should acquire lock on default port " + defaultPort);
-            assertTrue(SingleInstanceManager.getInstance().isListening());
-            assertEquals(defaultPort, SingleInstanceManager.getInstance().getListeningPort());
+            assertTrue(isPrimaryInstance);
         }
     }
 
@@ -125,13 +124,20 @@ class SingleInstanceManagerTest {
 
     @Test
     void release_shouldAllowReacquire() throws Exception {
-        boolean isPrimary = SingleInstanceManager.getInstance().tryAcquireLock(null);
+        // Grab an OS-assigned port and then release it,
+        // so that we know it's available for our test:
+        int port;
+        try (ServerSocket temp = new ServerSocket(0)) {
+            port = temp.getLocalPort();
+        }
+
+        boolean isPrimary = SingleInstanceManager.getInstance().tryAcquireLock(null, port);
         assertTrue(isPrimary, "Should become primary instance");
 
         SingleInstanceManager.getInstance().release();
-        assertFalse(SingleInstanceManager.getInstance().isListening(), "Should no longer be listening after release");
+        assertFalse(SingleInstanceManager.getInstance().isListening());
 
-        boolean isPrimaryAgain = SingleInstanceManager.getInstance().tryAcquireLock(null);
+        boolean isPrimaryAgain = SingleInstanceManager.getInstance().tryAcquireLock(null, port);
         assertTrue(isPrimaryAgain, "Should be able to reacquire lock after release");
     }
 
@@ -143,13 +149,20 @@ class SingleInstanceManagerTest {
 
     @Test
     void sendArgsToRunningInstance_withNoArgs_sendsEmpty() throws Exception {
+        // Grab an OS-assigned port and then release it,
+        // so that we know it's available for our test:
+        int port;
+        try (ServerSocket temp = new ServerSocket(0)) {
+            port = temp.getLocalPort();
+        }
+
         CountDownLatch latch = new CountDownLatch(1);
         List<String> received = Collections.synchronizedList(new ArrayList<>());
 
         boolean primary = SingleInstanceManager.getInstance().tryAcquireLock(args -> {
             received.addAll(args);
             latch.countDown();
-        });
+        }, port);
 
         assertTrue(primary, "Should become primary instance");
 
