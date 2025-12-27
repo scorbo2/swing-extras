@@ -68,6 +68,10 @@ public class HyperlinkUtil {
      * on failure, use the overload that accepts an owner Component.
      */
     public static void openHyperlink(URL url) {
+        if (url == null) {
+            report("Error", "Cannot open null URL.", Level.WARNING, null, null);
+            return;
+        }
         openHyperlink(url.toString(), null);
     }
 
@@ -90,6 +94,10 @@ public class HyperlinkUtil {
      * the user that the link was copied to the clipboard.
      */
     public static void openHyperlink(String link, Component owner) {
+        if (link == null) {
+            report("Error", "Cannot open null link.", Level.WARNING, null, owner);
+            return;
+        }
         try {
             openHyperlink(new URL(link).toURI(), owner);
         }
@@ -106,12 +114,15 @@ public class HyperlinkUtil {
      * the user that the link was copied to the clipboard.
      */
     public static void openHyperlink(URL url, Component owner) {
+        if (url == null) {
+            report("Error", "Cannot open null URL.", Level.WARNING, null, owner);
+            return;
+        }
         try {
             openHyperlink(url.toURI(), owner);
         }
         catch (Exception e) {
-            String urlString = url == null ? "null" : url.toString();
-            report("Malformed URL", "Unable to browse URL: "+urlString, Level.WARNING, e, owner);
+            report("Malformed URL", "Unable to browse URL: " + url.toString(), Level.WARNING, e, owner);
         }
     }
 
@@ -299,6 +310,9 @@ public class HyperlinkUtil {
         public void browse(URI uri) throws IOException {
             if (desktop != null) {
                 desktop.browse(uri);
+            }
+            else {
+                throw new IOException("Desktop browsing not supported on this JRE.");
             }
         }
     }
