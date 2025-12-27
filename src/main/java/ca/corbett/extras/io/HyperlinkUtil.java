@@ -8,6 +8,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.logging.Level;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 public class HyperlinkUtil {
 
     private static final Logger log = Logger.getLogger(HyperlinkUtil.class.getName());
-    private static final Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+    private static DesktopBrowser desktopBrowser = new SystemDesktopBrowser();
 
     private HyperlinkUtil() {
         // Utility class - prevent instantiation
@@ -32,7 +33,7 @@ public class HyperlinkUtil {
      * Some JREs don't allow launching a hyperlink to open the browser.
      */
     public static boolean isBrowsingSupported() {
-        return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);
+        return desktopBrowser.isBrowsingSupported();
     }
 
     /**
@@ -90,7 +91,7 @@ public class HyperlinkUtil {
      */
     public static void openHyperlink(String link, Component owner) {
         try {
-            openHyperlink(new URL(link).toURI());
+            openHyperlink(new URL(link).toURI(), owner);
         }
         catch (Exception e) {
             report("Malformed URL", "Unable to browse URL: "+link, Level.WARNING, e, owner);
@@ -124,7 +125,7 @@ public class HyperlinkUtil {
     public static void openHyperlink(URI uri, Component owner) {
         if (isBrowsingSupported()) {
             try {
-                desktop.browse(uri);
+                desktopBrowser.browse(uri);
             }
             catch (Exception e) {
                 String uriString = uri == null ? "null" : uri.toString();
@@ -149,10 +150,10 @@ public class HyperlinkUtil {
      * with buttons, menu items, etc.
      */
     public static class BrowseHyperlinkAction extends AbstractAction {
-        private final URI uri;
-        private final URL url;
-        private final String urlString;
-        private final Component owner;
+        final URI uri;
+        final URL url;
+        final String urlString;
+        final Component owner;
 
         private BrowseHyperlinkAction(URI uri, URL url, String urlString, Component owner) {
             this.uri = uri;
@@ -251,5 +252,61 @@ public class HyperlinkUtil {
             }
             JOptionPane.showMessageDialog(owner, message, title, JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    /**
+     * Interface for abstracting Desktop operations to allow for testing.
+     */
+    interface DesktopBrowser {
+        /**
+         * Returns true if browsing is supported in the current environment.
+         */
+        boolean isBrowsingSupported();
+
+        /**
+         * Opens the given URI in the default browser.
+         *
+         * @throws IOException if the browser launch fails
+         */
+        void browse(URI uri) throws IOException;
+    }
+
+    /**
+     * Default implementation that delegates to the system Desktop.
+     */
+    static class SystemDesktopBrowser implements DesktopBrowser {
+        private final Desktop desktop;
+
+        SystemDesktopBrowser() {
+            this.desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        }
+
+        @Override
+        public boolean isBrowsingSupported() {
+            return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);
+        }
+
+        @Override
+        public void browse(URI uri) throws IOException {
+            if (desktop != null) {
+                desktop.browse(uri);
+            }
+        }
+    }
+
+    /**
+     * Sets a custom DesktopBrowser implementation. This is exclusively intended for testing.
+     *
+     * @param browser the DesktopBrowser implementation to use (mock or otherwise)
+     */
+    static void setDesktopBrowser(DesktopBrowser browser) {
+        desktopBrowser = browser;
+    }
+
+    /**
+     * Resets the DesktopBrowser to the default system implementation.
+     */
+    static void resetDesktopBrowser() {
+        desktopBrowser = new SystemDesktopBrowser();
     }
 }
