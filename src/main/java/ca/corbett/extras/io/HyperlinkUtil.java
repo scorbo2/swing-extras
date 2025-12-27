@@ -123,13 +123,17 @@ public class HyperlinkUtil {
      * the user that the link was copied to the clipboard.
      */
     public static void openHyperlink(URI uri, Component owner) {
+        if (uri == null) {
+            report("Error", "Cannot open null URI.", Level.WARNING, null, owner);
+            return;
+        }
+
         if (isBrowsingSupported()) {
             try {
                 desktopBrowser.browse(uri);
             }
             catch (Exception e) {
-                String uriString = uri == null ? "null" : uri.toString();
-                report("Error", "Unable to browse URI: "+uriString, Level.WARNING, e, owner);
+                report("Error", "Unable to browse URI: " + uri, Level.WARNING, e, owner);
             }
         }
         else {
