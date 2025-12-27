@@ -376,7 +376,7 @@ public class FileSystemUtilTest {
         }
         String input = sb + ".txt";
         String actual = FileSystemUtil.sanitizeFilename(input);
-        assertTrue(actual.length() == 200, "Filename was not truncated properly!");
+        assertEquals(200, actual.length(), "Filename was not truncated properly!");
     }
 
     private static void createNestedTestDir(File rootDir, int dirCount1, int dirCount2, int dirCount3, boolean createFiles)
