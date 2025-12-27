@@ -161,7 +161,7 @@ public class HyperlinkUtil {
     /**
      * If the current JRE supports browsing, this action will open the given URI
      * in the user's default browser. This is equivalent to invoking
-     * browseHyperlink(uri), but in a convenient Action form for use
+     * one of the openHyperlink methods, but in a convenient Action form for use
      * with buttons, menu items, etc.
      */
     public static class BrowseHyperlinkAction extends AbstractAction {
