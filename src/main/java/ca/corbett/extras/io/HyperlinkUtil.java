@@ -200,28 +200,39 @@ public class HyperlinkUtil {
         }
 
         /**
-         * Creates a new BrowseHyperlinkAction for the given URI and with no popup dialog.
+         * Returns the name of this action.
+         */
+        public String getName() {
+            Object obj = getValue(NAME);
+            if (obj == null) {
+                return "(null)";
+            }
+            return obj instanceof String ? (String)getValue(NAME) : obj.toString();
+        }
+
+        /**
+         * Creates a new BrowseAction for the given URI and with no popup dialog.
          */
         public static BrowseAction of(URI uri) {
             return new BrowseAction(uri, null, null, null);
         }
 
         /**
-         * Creates a new BrowseHyperlinkAction for the given URL and with no popup dialog.
+         * Creates a new BrowseAction for the given URL and with no popup dialog.
          */
         public static BrowseAction of(URL url) {
             return new BrowseAction(null, url, null, null);
         }
 
         /**
-         * Creates a new BrowseHyperlinkAction for the given URL string and with no popup dialog.
+         * Creates a new BrowseAction for the given URL string and with no popup dialog.
          */
         public static BrowseAction of(String urlString) {
             return new BrowseAction(null, null, urlString, null);
         }
 
         /**
-         * Creates a new BrowseHyperlinkAction for the given URI and the given owner
+         * Creates a new BrowseAction for the given URI and the given owner
          * Component for showing popup dialogs.
          */
         public static BrowseAction of(URI uri, Component owner) {
@@ -229,7 +240,7 @@ public class HyperlinkUtil {
         }
 
         /**
-         * Creates a new BrowseHyperlinkAction for the given URL and the given owner
+         * Creates a new BrowseAction for the given URL and the given owner
          * Component for showing popup dialogs.
          */
         public static BrowseAction of(URL url, Component owner) {
@@ -237,7 +248,7 @@ public class HyperlinkUtil {
         }
 
         /**
-         * Creates a new BrowseHyperlinkAction for the given URL string and the given owner
+         * Creates a new BrowseAction for the given URL string and the given owner
          * Component for showing popup dialogs.
          */
         public static BrowseAction of(String urlString, Component owner) {

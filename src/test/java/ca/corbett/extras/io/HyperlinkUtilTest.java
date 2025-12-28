@@ -307,5 +307,30 @@ class HyperlinkUtilTest {
         HyperlinkUtil.SystemDesktopBrowser browser = new HyperlinkUtil.SystemDesktopBrowser();
         assertDoesNotThrow(browser::isBrowsingSupported);
     }
+
+    @Test
+    void of_shouldSetNameCorrectly() throws Exception {
+        final String expected = "https://example.com";
+        assertEquals(expected, HyperlinkUtil.BrowseAction.of(expected).getName());
+        assertEquals(expected, HyperlinkUtil.BrowseAction.of(new URL(expected)).getName());
+        assertEquals(expected, HyperlinkUtil.BrowseAction.of(URI.create(expected)).getName());
+    }
+
+    @Test
+    void setName_shouldChangeName() throws Exception {
+        final String expected = "https://example.com";
+        HyperlinkUtil.BrowseAction action1 = HyperlinkUtil.BrowseAction.of(expected);
+        HyperlinkUtil.BrowseAction action2 = HyperlinkUtil.BrowseAction.of(new URL(expected));
+        HyperlinkUtil.BrowseAction action3 = HyperlinkUtil.BrowseAction.of(URI.create(expected));
+        assertEquals(expected, action1.getName());
+        assertEquals(expected, action2.getName());
+        assertEquals(expected, action3.getName());
+        action1.setName("Action1");
+        action2.setName("Action2");
+        action3.setName("Action3");
+        assertEquals("Action1", action1.getName());
+        assertEquals("Action2", action2.getName());
+        assertEquals("Action3", action3.getName());
+    }
 }
 
