@@ -107,7 +107,7 @@ public class IntroPanel extends PanelBuilder {
      */
     private void addHyperlinkIfUrlIsValid(LabelField labelField, String url) {
         if (HyperlinkUtil.isBrowsingSupported() && HyperlinkUtil.isValidUrl(url)) {
-            labelField.setHyperlink(HyperlinkUtil.BrowseHyperlinkAction.of(url, introPanel));
+            labelField.setHyperlink(HyperlinkUtil.BrowseAction.of(url, introPanel));
         }
         else {
             logger.warning("Unable to set label hyperlink - the current JRE does not support browsing.");

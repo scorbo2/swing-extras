@@ -132,13 +132,13 @@ class SingleInstanceManagerTest {
         }
 
         boolean isPrimary = SingleInstanceManager.getInstance().tryAcquireLock(null, port);
-        assertTrue(isPrimary, "Should become primary instance");
+        assertTrue(isPrimary, "Should become primary instance on port " + port);
 
         SingleInstanceManager.getInstance().release();
         assertFalse(SingleInstanceManager.getInstance().isListening());
 
         boolean isPrimaryAgain = SingleInstanceManager.getInstance().tryAcquireLock(null, port);
-        assertTrue(isPrimaryAgain, "Should be able to reacquire lock after release");
+        assertTrue(isPrimaryAgain, "Should be able to reacquire lock on port " + port + " after release");
     }
 
     @Test
