@@ -163,14 +163,28 @@ public class HyperlinkUtil {
      * in the user's default browser. This is equivalent to invoking
      * one of the openHyperlink methods, but in a convenient Action form for use
      * with buttons, menu items, etc.
+     * <p>
+     *     By default, the name of this action is set to the String representation
+     *     of the given URI. You can change the name later by calling setName().
+     *     For example:
+     * </p>
+     * <pre>
+     * // Creates an action with a name equal to the URI string:
+     * HyperlinkUtil.BrowseAction browseAction =
+     *       HyperlinkUtil.BrowseAction.of(new URI("http://www.example.com"));
+     *
+     * // Update the name to something more user-friendly:
+     * browseAction.setName("Visit Example.com");
+     * </pre>
      */
-    public static class BrowseHyperlinkAction extends AbstractAction {
+    public static class BrowseAction extends AbstractAction {
         final URI uri;
         final URL url;
         final String urlString;
         final Component owner;
 
-        private BrowseHyperlinkAction(URI uri, URL url, String urlString, Component owner) {
+        private BrowseAction(URI uri, URL url, String urlString, Component owner) {
+            super(uri != null ? uri.toString() : (url != null ? url.toString() : urlString));
             this.uri = uri;
             this.url = url;
             this.urlString = urlString;
@@ -178,48 +192,56 @@ public class HyperlinkUtil {
         }
 
         /**
+         * Allows modifying the name of this action after creation.
+         */
+        public BrowseAction setName(String name) {
+            putValue(NAME, name);
+            return this;
+        }
+
+        /**
          * Creates a new BrowseHyperlinkAction for the given URI and with no popup dialog.
          */
-        public static BrowseHyperlinkAction of(URI uri) {
-            return new BrowseHyperlinkAction(uri, null, null, null);
+        public static BrowseAction of(URI uri) {
+            return new BrowseAction(uri, null, null, null);
         }
 
         /**
          * Creates a new BrowseHyperlinkAction for the given URL and with no popup dialog.
          */
-        public static BrowseHyperlinkAction of(URL url) {
-            return new BrowseHyperlinkAction(null, url, null, null);
+        public static BrowseAction of(URL url) {
+            return new BrowseAction(null, url, null, null);
         }
 
         /**
          * Creates a new BrowseHyperlinkAction for the given URL string and with no popup dialog.
          */
-        public static BrowseHyperlinkAction of(String urlString) {
-            return new BrowseHyperlinkAction(null, null, urlString, null);
+        public static BrowseAction of(String urlString) {
+            return new BrowseAction(null, null, urlString, null);
         }
 
         /**
          * Creates a new BrowseHyperlinkAction for the given URI and the given owner
          * Component for showing popup dialogs.
          */
-        public static BrowseHyperlinkAction of(URI uri, Component owner) {
-            return new BrowseHyperlinkAction(uri, null, null, owner);
+        public static BrowseAction of(URI uri, Component owner) {
+            return new BrowseAction(uri, null, null, owner);
         }
 
         /**
          * Creates a new BrowseHyperlinkAction for the given URL and the given owner
          * Component for showing popup dialogs.
          */
-        public static BrowseHyperlinkAction of(URL url, Component owner) {
-            return new BrowseHyperlinkAction(null, url, null, owner);
+        public static BrowseAction of(URL url, Component owner) {
+            return new BrowseAction(null, url, null, owner);
         }
 
         /**
          * Creates a new BrowseHyperlinkAction for the given URL string and the given owner
          * Component for showing popup dialogs.
          */
-        public static BrowseHyperlinkAction of(String urlString, Component owner) {
-            return new BrowseHyperlinkAction(null, null, urlString, owner);
+        public static BrowseAction of(String urlString, Component owner) {
+            return new BrowseAction(null, null, urlString, owner);
         }
 
         /**

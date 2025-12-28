@@ -189,7 +189,7 @@ class HyperlinkUtilTest {
     @Test
     void testBrowseHyperlinkAction_ofURI_createsAction() {
         URI testUri = URI.create("https://example.com");
-        HyperlinkUtil.BrowseHyperlinkAction action = HyperlinkUtil.BrowseHyperlinkAction.of(testUri);
+        HyperlinkUtil.BrowseAction action = HyperlinkUtil.BrowseAction.of(testUri);
         assertNotNull(action);
         assertEquals(testUri, action.uri);
         assertNull(action.url);
@@ -200,7 +200,7 @@ class HyperlinkUtilTest {
     @Test
     void testBrowseHyperlinkAction_ofURL_createsAction() throws Exception {
         URL testUrl = new URL("https://example.com");
-        HyperlinkUtil.BrowseHyperlinkAction action = HyperlinkUtil.BrowseHyperlinkAction.of(testUrl);
+        HyperlinkUtil.BrowseAction action = HyperlinkUtil.BrowseAction.of(testUrl);
         assertNotNull(action);
         assertNull(action.uri);
         assertEquals(testUrl, action.url);
@@ -210,7 +210,7 @@ class HyperlinkUtilTest {
 
     @Test
     void testBrowseHyperlinkAction_ofString_createsAction() {
-        HyperlinkUtil.BrowseHyperlinkAction action = HyperlinkUtil.BrowseHyperlinkAction.of("https://example.com");
+        HyperlinkUtil.BrowseAction action = HyperlinkUtil.BrowseAction.of("https://example.com");
         assertNotNull(action);
         assertNull(action.uri);
         assertNull(action.url);
@@ -222,7 +222,7 @@ class HyperlinkUtilTest {
     void testBrowseHyperlinkAction_ofURI_withOwner_createsAction() {
         URI testUri = URI.create("https://example.com");
         Component owner = Mockito.mock(Component.class);
-        HyperlinkUtil.BrowseHyperlinkAction action = HyperlinkUtil.BrowseHyperlinkAction.of(testUri, owner);
+        HyperlinkUtil.BrowseAction action = HyperlinkUtil.BrowseAction.of(testUri, owner);
         assertNotNull(action);
         assertEquals(testUri, action.uri);
         assertNull(action.url);
@@ -234,7 +234,7 @@ class HyperlinkUtilTest {
     void testBrowseHyperlinkAction_ofURL_withOwner_createsAction() throws Exception {
         URL testUrl = new URL("https://example.com");
         Component owner = Mockito.mock(Component.class);
-        HyperlinkUtil.BrowseHyperlinkAction action = HyperlinkUtil.BrowseHyperlinkAction.of(testUrl, owner);
+        HyperlinkUtil.BrowseAction action = HyperlinkUtil.BrowseAction.of(testUrl, owner);
         assertNotNull(action);
         assertNull(action.uri);
         assertEquals(testUrl, action.url);
@@ -245,7 +245,7 @@ class HyperlinkUtilTest {
     @Test
     void testBrowseHyperlinkAction_ofString_withOwner_createsAction() {
         Component owner = Mockito.mock(Component.class);
-        HyperlinkUtil.BrowseHyperlinkAction action = HyperlinkUtil.BrowseHyperlinkAction.of("https://example.com", owner);
+        HyperlinkUtil.BrowseAction action = HyperlinkUtil.BrowseAction.of("https://example.com", owner);
         assertNotNull(action);
         assertNull(action.uri);
         assertNull(action.url);
@@ -257,7 +257,7 @@ class HyperlinkUtilTest {
     void testBrowseHyperlinkAction_actionPerformed_withURI_callsBrowse() throws IOException {
         when(mockBrowser.isBrowsingSupported()).thenReturn(true);
         URI testUri = URI.create("https://example.com");
-        HyperlinkUtil.BrowseHyperlinkAction action = HyperlinkUtil.BrowseHyperlinkAction.of(testUri);
+        HyperlinkUtil.BrowseAction action = HyperlinkUtil.BrowseAction.of(testUri);
 
         action.actionPerformed(null);
 
@@ -268,7 +268,7 @@ class HyperlinkUtilTest {
     void testBrowseHyperlinkAction_actionPerformed_withURL_callsBrowse() throws Exception {
         when(mockBrowser.isBrowsingSupported()).thenReturn(true);
         URL testUrl = new URL("https://example.com");
-        HyperlinkUtil.BrowseHyperlinkAction action = HyperlinkUtil.BrowseHyperlinkAction.of(testUrl);
+        HyperlinkUtil.BrowseAction action = HyperlinkUtil.BrowseAction.of(testUrl);
 
         action.actionPerformed(null);
 
@@ -279,7 +279,7 @@ class HyperlinkUtilTest {
     void testBrowseHyperlinkAction_actionPerformed_withString_callsBrowse() throws Exception {
         when(mockBrowser.isBrowsingSupported()).thenReturn(true);
         String testUrlString = "https://example.com";
-        HyperlinkUtil.BrowseHyperlinkAction action = HyperlinkUtil.BrowseHyperlinkAction.of(testUrlString);
+        HyperlinkUtil.BrowseAction action = HyperlinkUtil.BrowseAction.of(testUrlString);
 
         action.actionPerformed(null);
 

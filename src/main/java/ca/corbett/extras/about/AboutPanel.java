@@ -284,7 +284,7 @@ public final class AboutPanel extends JPanel {
      */
     private void addHyperlinkIfPossible(LabelField labelField, String urlString) {
         if (HyperlinkUtil.isBrowsingSupported() && HyperlinkUtil.isValidUrl(urlString)) {
-            labelField.setHyperlink(HyperlinkUtil.BrowseHyperlinkAction.of(urlString, this));
+            labelField.setHyperlink(HyperlinkUtil.BrowseAction.of(urlString, this));
         }
     }
 
