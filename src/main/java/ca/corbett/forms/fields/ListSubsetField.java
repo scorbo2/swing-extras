@@ -142,10 +142,9 @@ public class ListSubsetField<T> extends FormField {
 
     /**
      * Programmatically select the items with the given indexes. The indexes
-     * are relative to the combine list of ALL items - that is, all
-     * the items that would be in the available list if nothing was selected
-     * (and sorted if auto-sorting is enabled).
-     * This is true even if some of those items are currently selected.
+     * are relative to the combined list of ALL items sorted in their natural order
+     * (or using the custom comparator if set). This provides a consistent reference
+     * frame for index-based selection, regardless of the auto-sorting setting.
      * <p>
      * <B>Note:</B> This replaces any existing selection! This is "set these indexes" and not
      * "add these indexes".
@@ -155,8 +154,9 @@ public class ListSubsetField<T> extends FormField {
         // First clear any existing selection by moving all items back to the available list:
         moveAllLeft();
 
-        // Make a copy of the available items, since we will need to iterate over them:
+        // Make a copy and sort it to create a consistent reference frame:
         List<T> allAvailableItems = Collections.list(availableListModel.elements());
+        allAvailableItems.sort(itemComparator);
 
         // Now, move all the specified indexes to the selected list:
         for (int index : indexes) {
@@ -178,9 +178,9 @@ public class ListSubsetField<T> extends FormField {
 
     /**
      * Returns the indexes of the currently selected items. The indexes are relative
-     * to the combined list of ALL items - that is, all the items that would be in the
-     * available list if nothing was selected (and sorted if auto-sorting is enabled).
-     * This is true even if some of those items are currently selected.
+     * to the combined list of ALL items sorted in their natural order (or using the
+     * custom comparator if set). This provides a consistent reference frame for
+     * index-based selection, regardless of the auto-sorting setting.
      */
     public int[] getSelectedIndexes() {
         // Gather all items into one list:
@@ -188,10 +188,8 @@ public class ListSubsetField<T> extends FormField {
         allItems.addAll(Collections.list(availableListModel.elements()));
         allItems.addAll(Collections.list(selectedListModel.elements()));
 
-        // Sort this list if auto-sorting is enabled - IMPORTANT! Otherwise, our indexes will make no sense:
-        if (autoSortingEnabled) {
-            allItems.sort(itemComparator);
-        }
+        // Always sort this list for consistent index calculation:
+        allItems.sort(itemComparator);
 
         // Now, find the indexes of the selected items:
         List<Integer> selectedIndexes = new ArrayList<>();

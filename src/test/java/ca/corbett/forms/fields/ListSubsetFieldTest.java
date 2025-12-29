@@ -194,15 +194,14 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
         subsetField.moveItemRight("Item 1"); // Select "Item 1"
 
         // and WHEN we invoke selectIndexes(), the previous selection should be discarded and replaced:
-        // After moveAllLeft() (called internally), items are: ["Item 2", "Item 3", "Item 4", "Item 1"]
-        // Then selectIndexes([2, 3]) selects items at positions 2 and 3 from that list
-        subsetField.selectIndexes(new int[]{2, 3}); // This selects "Item 4" and "Item 1"
+        // selectIndexes uses a sorted reference frame, so indexes [2, 3] refer to "Item 3" and "Item 4"
+        subsetField.selectIndexes(new int[]{2, 3}); // Select "Item 3" and "Item 4"
 
         // THEN only the newly selected items should be selected:
         List<String> selectedItems = subsetField.getSelectedItems();
         assertEquals(2, selectedItems.size());
-        assertEquals("Item 4", selectedItems.get(0));
-        assertEquals("Item 1", selectedItems.get(1));
+        assertEquals("Item 3", selectedItems.get(0));
+        assertEquals("Item 4", selectedItems.get(1));
     }
 
     @Test
@@ -247,12 +246,9 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
 
         int[] selectedIndexes = subsetField.getSelectedIndexes();
         assertEquals(2, selectedIndexes.length);
-        // Without sorting, the indexes are based on the original order
-        // Item 2 is at index 1, Item 4 is at index 3 in the original list
-        // But since they're now in the selected list in the order they were added,
-        // the indexes returned are the positions in a combined list that maintains order
-        assertEquals(2, selectedIndexes[0]); // Index of "Item 2" after "Item 1" and "Item 3"
-        assertEquals(3, selectedIndexes[1]); // Index of "Item 4"
+        // getSelectedIndexes uses a sorted reference frame, so "Item 2" is at index 1 and "Item 4" at index 3
+        assertEquals(1, selectedIndexes[0]); // Index of "Item 2" in sorted list
+        assertEquals(3, selectedIndexes[1]); // Index of "Item 4" in sorted list
     }
 
     @Test
@@ -304,15 +300,43 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void selectIndexes_withAutoSortingDisabled_shouldMaintainOrder() {
+    public void selectIndexes_withAutoSortingDisabled_shouldUseIndexesFromSortedReference() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("One", "Two", "Three", "Four", "Five", "Six"));
         
-        // Select indexes 0 and 1 (One and Two)
-        subsetField.selectIndexes(new int[]{0, 1});
+        // Even with auto-sorting disabled, selectIndexes uses a sorted reference frame
+        // Sorted list: ["Five", "Four", "One", "Six", "Three", "Two"]
+        // Indexes 4 and 5 refer to "Three" and "Two" in the sorted list
+        subsetField.selectIndexes(new int[]{4, 5});
         
         List<String> availableItems = subsetField.getAvailableItems();
         assertEquals(4, availableItems.size());
+        // Without auto-sorting, available items maintain their insertion order
+        assertEquals("One", availableItems.get(0));
+        assertEquals("Four", availableItems.get(1));
+        assertEquals("Five", availableItems.get(2));
+        assertEquals("Six", availableItems.get(3));
+        
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        // Without auto-sorting, selected items maintain their insertion order
+        assertEquals("Three", selectedItems.get(0));
+        assertEquals("Two", selectedItems.get(1));
+    }
+
+    @Test
+    public void moveItemRight_withAutoSortingDisabled_shouldPreserveInsertionOrder() {
+        // This demonstrates the preferred way to select specific items when auto-sorting is disabled
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("One", "Two", "Three", "Four", "Five", "Six"));
+        
+        // Move specific items to the right (select them)
+        subsetField.moveItemRight("One");
+        subsetField.moveItemRight("Two");
+        
+        List<String> availableItems = subsetField.getAvailableItems();
+        assertEquals(4, availableItems.size());
+        // Available items maintain their original order (minus the selected ones)
         assertEquals("Three", availableItems.get(0));
         assertEquals("Four", availableItems.get(1));
         assertEquals("Five", availableItems.get(2));
@@ -320,6 +344,7 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
         
         List<String> selectedItems = subsetField.getSelectedItems();
         assertEquals(2, selectedItems.size());
+        // Selected items are in the order they were moved
         assertEquals("One", selectedItems.get(0));
         assertEquals("Two", selectedItems.get(1));
     }
