@@ -570,7 +570,7 @@ public class ListSubsetField<T> extends FormField {
                 return null;
             }
             String sourceId = (sourceList == availableList) ? "available" : "selected";
-            return new ListItemsTransferable(selectedValues, localObjectFlavor, sourceId);
+            return new ListItemsTransferable<>(selectedValues, localObjectFlavor, sourceId);
         }
 
         @Override
@@ -621,7 +621,7 @@ public class ListSubsetField<T> extends FormField {
                 // Get the items being transferred
                 Transferable t = support.getTransferable();
                 @SuppressWarnings("unchecked")
-                TransferData transferData = (TransferData)t.getTransferData(localObjectFlavor);
+                TransferData<T> transferData = (TransferData<T>)t.getTransferData(localObjectFlavor);
 
                 List<T> items = transferData.items;
                 String dragSourceId = transferData.sourceListId;
