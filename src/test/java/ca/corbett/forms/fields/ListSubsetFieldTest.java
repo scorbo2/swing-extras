@@ -100,7 +100,7 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
         assertEquals(0, subsetField.getSelectedItems().size());
         assertEquals("Item 1", subsetField.getAvailableItems().get(0));
         assertEquals("Item 3", subsetField.getAvailableItems().get(1));
-        // When moving back without sorting, Item 2 is appended to the end
+        // When auto-sorting is disabled, moved items are appended to the end of the list
         assertEquals("Item 2", subsetField.getAvailableItems().get(2));
     }
 
@@ -351,20 +351,17 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
 
     @Test
     public void constructor_withAutoSortingEnabled_shouldSortLists() {
-        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field");
+        // Create a field with auto-sorting enabled
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"));
         subsetField.setAutoSortingEnabled(true);
         
-        // Now create a new field with auto-sorting enabled
-        ListSubsetField<String> subsetField2 = new ListSubsetField<>("Test Subset Field",
-                java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"));
-        subsetField2.setAutoSortingEnabled(true);
-        
         // Enable sorting and move items to trigger sorting
-        subsetField2.moveItemRight("Item 1");
-        subsetField2.moveItemLeft("Item 1");
+        subsetField.moveItemRight("Item 1");
+        subsetField.moveItemLeft("Item 1");
         
         // After moving, the available list should be sorted
-        List<String> availableItems = subsetField2.getAvailableItems();
+        List<String> availableItems = subsetField.getAvailableItems();
         assertEquals(4, availableItems.size());
         assertEquals("Item 1", availableItems.get(0));
         assertEquals("Item 2", availableItems.get(1));
