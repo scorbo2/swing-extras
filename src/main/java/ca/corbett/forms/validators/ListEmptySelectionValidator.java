@@ -33,7 +33,7 @@ public class ListEmptySelectionValidator implements FieldValidator<FormField> {
         // Validate ListSubsetField:
         else if (fieldToValidate instanceof ListSubsetField) {
             ListSubsetField<?> listSubsetField = (ListSubsetField<?>) fieldToValidate;
-            if (listSubsetField.getSelectedIndexes().length == 0) {
+            if (listSubsetField.getSelectedItems().size() == 0) {
                 return ValidationResult.invalid(MESSAGE);
             }
         }

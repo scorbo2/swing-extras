@@ -109,7 +109,9 @@ public class ListFieldPanel extends PanelBuilder {
         formPanel.add(new ListSubsetField<>("List subset:",
                                             List.of("Apple", "Banana", "Cherry", "Date", "Elderberry",
                                                     "Fig", "Grape", "Honeydew", "Kiwi"),
-                                            List.of("Cherry", "Fig", "Lemon")).setFixedCellWidth(120));
+                                            List.of("Cherry", "Fig", "Lemon"))
+                              .setAutoSortingEnabled(true) // optionally keep both lists sorted
+                              .setFixedCellWidth(120));
 
         // And a new addition in swing-extras 2.5, let's add an ImageListField:
         ImageListField imageListField = new ImageListField("Image list:", 5, 75);

@@ -15,7 +15,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -26,10 +25,12 @@ import java.util.List;
  * with the selected subset. Controls are provided such that users
  * can move items between the two lists.
  * <p>
- * <b>Sorting</b>: by default, items in both lists are sorted in their natural order
- * (assuming T implements Comparable). You can provide a custom Comparator
- * by calling setItemComparator(). When items are moved between lists,
- * they will be inserted in sorted order according to the comparator.
+ * <b>Sorting</b>: by default, items in both lists maintain their original order
+ * as provided in the constructor. You can enable automatic sorting by calling
+ * setAutoSortingEnabled(true). When auto-sorting is enabled, items will be sorted
+ * in their natural order (assuming T implements Comparable) when items are moved
+ * between lists. You can provide a custom Comparator by calling setItemComparator()
+ * to control the sort order.
  * </p>
  * <p>
  * <b>Controlling list size</b>: you can control how many rows are visible
@@ -62,6 +63,7 @@ public class ListSubsetField<T> extends FormField {
     private final JButton moveAllRightButton;
     private Comparator<T> itemComparator = null;
     private boolean shouldExpand = false;
+    private boolean autoSortingEnabled = false;
 
     /**
      * Creates an empty ListSubsetField with the given field label.
@@ -98,7 +100,9 @@ public class ListSubsetField<T> extends FormField {
         for (T item : availableItems) {
             availableListModel.addElement(item);
         }
-        sortListModel(availableListModel);
+        if (autoSortingEnabled) {
+            sortListModel(availableListModel);
+        }
     }
 
     /**
@@ -114,106 +118,82 @@ public class ListSubsetField<T> extends FormField {
             selectedListModel.addElement(item);
             availableListModel.removeElement(item);
         }
-        sortListModel(selectedListModel);
+        if (autoSortingEnabled) {
+            sortListModel(selectedListModel);
+        }
     }
 
     /**
-     * Gets the list of currently available items - this is, items that are still
-     * present in the left list. If empty, all items are selected.
+     * Gets the list of currently available items - that is, items that are still
+     * present in the left list. If the returned list is empty, then all items are selected.
      */
     public List<T> getAvailableItems() {
         return Collections.list(availableListModel.elements());
     }
 
     /**
-     * Gets the list of currently selected items - this is, items that are present
-     * in the right list. If empty, no items are selected.
+     * Gets the list of currently selected items - that is, items that are present
+     * in the right list. If the returned list is empty, then no items are selected.
      */
     public List<T> getSelectedItems() {
         return Collections.list(selectedListModel.elements());
     }
 
     /**
-     * Programmatically select the items with the given indexes. The indexes
-     * are relative to the combine list of ALL items - that is, all
-     * the items that would be in the (sorted) available list if nothing was selected.
-     * This is true even if some of those items are currently selected.
-     * <p>
-     * <B>Note:</B> This replaces any existing selection! This is "set these indexes" and not
-     * "add these indexes".
-     * </p>
+     * Programmatically select the given items. This will only select items
+     * that were not already selected. Any items not present in the available items
+     * list will be ignored.
      */
-    public ListSubsetField<T> selectIndexes(int[] indexes) {
-        // First clear any existing selection by moving all items back to the available list:
-        moveAllLeft();
-
-        // Make a copy of the available items, since we will need to iterate over them:
-        List<T> allAvailableItems = Collections.list(availableListModel.elements());
-
-        // Now, move all the specified indexes to the selected list:
-        for (int index : indexes) {
-            if (index < 0 || index >= allAvailableItems.size()) {
-                continue; // ignore indexes out of bounds
-            }
-            T item = allAvailableItems.get(index);
-            selectedListModel.addElement(item);
-            availableListModel.removeElement(item);
-        }
-
-        // Now sort the selected list:
-        sortListModel(selectedListModel);
-
-        return this;
-    }
-
-    /**
-     * Returns the indexes of the currently selected items. The indexes are relative
-     * to the combined list of ALL items - that is, all the items that would be in the
-     * (sorted) available list if nothing was selected. This is true even if some of those items
-     * are currently selected.
-     */
-    public int[] getSelectedIndexes() {
-        // Gather all items into one list:
-        List<T> allItems = new ArrayList<>(availableListModel.getSize() + selectedListModel.getSize());
-        allItems.addAll(Collections.list(availableListModel.elements()));
-        allItems.addAll(Collections.list(selectedListModel.elements()));
-
-        // Sort this list - IMPORTANT! Otherwise, our indexes will make no sense:
-        allItems.sort(itemComparator);
-
-        // Now, find the indexes of the selected items:
-        List<Integer> selectedIndexes = new ArrayList<>();
-        for (int i = 0; i < allItems.size(); i++) {
-            T item = allItems.get(i);
-            if (selectedListModel.contains(item)) {
-                selectedIndexes.add(i);
+    public ListSubsetField<T> selectItems(List<T> itemsToSelect) {
+        // Move the specified items to the selected list:
+        // (note we don't just invoke selectItem() on each item because we only
+        //  want to do the sorting once at the end, if needed, instead of after every item)
+        for (T item : itemsToSelect) {
+            if (availableListModel.removeElement(item)) {
+                selectedListModel.addElement(item);
             }
         }
 
-        // Convert to int array:
-        return selectedIndexes.stream().mapToInt(Integer::intValue).toArray();
-    }
-
-    /**
-     * Allow callers to programmatically move an item right (select it).
-     * Does nothing if the given item is not present in the available items list.
-     */
-    public ListSubsetField<T> moveItemRight(T item) {
-        if (availableListModel.removeElement(item)) {
-            selectedListModel.addElement(item);
+        // Now sort the selected list if auto-sorting is enabled:
+        if (autoSortingEnabled) {
             sortListModel(selectedListModel);
         }
+
         return this;
     }
 
     /**
-     * Allow callers to programmatically move an item left (unselect it).
+     * Clears the current selection - this is equivalent to calling unselectAllItems().
+     */
+    public ListSubsetField<T> clearSelection() {
+        unselectAllItems();
+        return this;
+    }
+
+    /**
+     * Allow callers to programmatically move an item to the right list (select it).
+     * Does nothing if the given item is not present in the available items list.
+     */
+    public ListSubsetField<T> selectItem(T item) {
+        if (availableListModel.removeElement(item)) {
+            selectedListModel.addElement(item);
+            if (autoSortingEnabled) {
+                sortListModel(selectedListModel);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Allow callers to programmatically move an item to the left list (unselect it).
      * Does nothing if the given item is not present in the selected items list.
      */
-    public ListSubsetField<T> moveItemLeft(T item) {
+    public ListSubsetField<T> unselectItem(T item) {
         if (selectedListModel.removeElement(item)) {
             availableListModel.addElement(item);
-            sortListModel(availableListModel);
+            if (autoSortingEnabled) {
+                sortListModel(availableListModel);
+            }
         }
         return this;
     }
@@ -221,7 +201,7 @@ public class ListSubsetField<T> extends FormField {
     /**
      * Allow callers to programmatically move all items right (select all).
      */
-    public ListSubsetField<T> moveAllItemsRight() {
+    public ListSubsetField<T> selectAllItems() {
         moveAllRight();
         return this;
     }
@@ -229,7 +209,7 @@ public class ListSubsetField<T> extends FormField {
     /**
      * Allow callers to programmatically move all items left (unselect all).
      */
-    public ListSubsetField<T> moveAllItemsLeft() {
+    public ListSubsetField<T> unselectAllItems() {
         moveAllLeft();
         return this;
     }
@@ -289,6 +269,35 @@ public class ListSubsetField<T> extends FormField {
      */
     public ListSubsetField<T> setItemComparator(Comparator<T> comparator) {
         this.itemComparator = comparator;
+        return this;
+    }
+
+    /**
+     * Returns whether auto-sorting is enabled for both lists.
+     * When enabled, items are sorted when moved between lists.
+     * When disabled (default), items maintain their original order.
+     */
+    public boolean isAutoSortingEnabled() {
+        return autoSortingEnabled;
+    }
+
+    /**
+     * Sets whether auto-sorting is enabled for both lists.
+     * When enabled, items are sorted when moved between lists.
+     * When disabled (default), items maintain their original order.
+     * <p>
+     * Note: Enabling auto-sorting will immediately sort both lists.
+     * Disabling auto-sorting will not change the current ordering of items.
+     * </p>
+     */
+    public ListSubsetField<T> setAutoSortingEnabled(boolean enabled) {
+        this.autoSortingEnabled = enabled;
+        // When enabling auto-sort, immediately sort both lists
+        if (enabled) {
+            sortListModel(availableListModel);
+            sortListModel(selectedListModel);
+        }
+        // When disabling, do nothing - keep current order
         return this;
     }
 
@@ -353,7 +362,9 @@ public class ListSubsetField<T> extends FormField {
             availableListModel.removeElement(value);
             selectedListModel.addElement(value);
         }
-        sortListModel(selectedListModel);
+        if (autoSortingEnabled) {
+            sortListModel(selectedListModel);
+        }
     }
 
     private void moveSelectedLeft() {
@@ -362,7 +373,9 @@ public class ListSubsetField<T> extends FormField {
             selectedListModel.removeElement(value);
             availableListModel.addElement(value);
         }
-        sortListModel(availableListModel);
+        if (autoSortingEnabled) {
+            sortListModel(availableListModel);
+        }
     }
 
     private void moveAllRight() {
@@ -372,7 +385,9 @@ public class ListSubsetField<T> extends FormField {
             availableListModel.removeElementAt(0);
             selectedListModel.addElement(value);
         }
-        sortListModel(selectedListModel);
+        if (autoSortingEnabled) {
+            sortListModel(selectedListModel);
+        }
     }
 
     private void moveAllLeft() {
@@ -382,7 +397,9 @@ public class ListSubsetField<T> extends FormField {
             selectedListModel.removeElementAt(0);
             availableListModel.addElement(value);
         }
-        sortListModel(availableListModel);
+        if (autoSortingEnabled) {
+            sortListModel(availableListModel);
+        }
     }
 
     private void sortListModel(DefaultListModel<T> model) {

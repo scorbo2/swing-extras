@@ -37,19 +37,19 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void constructor_withAvailableItems_shouldCreateFieldAndSort() {
+    public void constructor_withAvailableItems_shouldMaintainOrder() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"));
         assertNotNull(subsetField.getAvailableItems());
         assertEquals(4, subsetField.getAvailableItems().size());
         assertEquals("Item 1", subsetField.getAvailableItems().get(0));
-        assertEquals("Item 2", subsetField.getAvailableItems().get(1));
-        assertEquals("Item 3", subsetField.getAvailableItems().get(2));
-        assertEquals("Item 9", subsetField.getAvailableItems().get(3));
+        assertEquals("Item 9", subsetField.getAvailableItems().get(1));
+        assertEquals("Item 2", subsetField.getAvailableItems().get(2));
+        assertEquals("Item 3", subsetField.getAvailableItems().get(3));
     }
 
     @Test
-    public void constructor_withAvailableAndSelectedItems_shouldCreateFieldAndSort() {
+    public void constructor_withAvailableAndSelectedItems_shouldMaintainOrder() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"),
                 java.util.List.of("Item 2", "Item 3"));
@@ -65,54 +65,55 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void moveItemRight_withNonExistingItem_shouldDoNothing() {
+    public void selectItem_withNonExistingItem_shouldDoNothing() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3"));
-        subsetField.moveItemRight("Item 4"); // Item 4 does not exist
+        subsetField.selectItem("Item 4"); // Item 4 does not exist
         assertEquals(3, subsetField.getAvailableItems().size());
         assertEquals(0, subsetField.getSelectedItems().size());
     }
 
     @Test
-    public void moveItemLeft_withNonExistingItem_shouldDoNothing() {
+    public void unselectItem_withNonExistingItem_shouldDoNothing() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3"),
                 java.util.List.of("Item 4")); // Item 4 is selected
-        subsetField.moveItemLeft("Item 5"); // Item 5 does not exist
+        subsetField.unselectItem("Item 5"); // Item 5 does not exist
         assertEquals(3, subsetField.getAvailableItems().size());
         assertEquals(1, subsetField.getSelectedItems().size());
     }
 
     @Test
-    public void moveItemRight_andMoveItemLeft_shouldUpdateListsCorrectly() {
+    public void selectItem_and_unselectItem_shouldUpdateListsCorrectly() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3"));
 
-        subsetField.moveItemRight("Item 2");
+        subsetField.selectItem("Item 2");
         assertEquals(2, subsetField.getAvailableItems().size());
         assertEquals(1, subsetField.getSelectedItems().size());
         assertEquals("Item 1", subsetField.getAvailableItems().get(0));
         assertEquals("Item 3", subsetField.getAvailableItems().get(1));
         assertEquals("Item 2", subsetField.getSelectedItems().get(0));
 
-        subsetField.moveItemLeft("Item 2");
+        subsetField.unselectItem("Item 2");
         assertEquals(3, subsetField.getAvailableItems().size());
         assertEquals(0, subsetField.getSelectedItems().size());
         assertEquals("Item 1", subsetField.getAvailableItems().get(0));
-        assertEquals("Item 2", subsetField.getAvailableItems().get(1));
-        assertEquals("Item 3", subsetField.getAvailableItems().get(2));
+        assertEquals("Item 3", subsetField.getAvailableItems().get(1));
+        // When auto-sorting is disabled, moved items are appended to the end of the list
+        assertEquals("Item 2", subsetField.getAvailableItems().get(2));
     }
 
     @Test
-    public void moveAllItemsRight_andMoveAllItemsLeft_shouldUpdateListsCorrectly() {
+    public void selectAllItems_and_unselectAllItems_shouldUpdateListsCorrectly() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3"));
 
-        subsetField.moveAllItemsRight();
+        subsetField.selectAllItems();
         assertEquals(0, subsetField.getAvailableItems().size());
         assertEquals(3, subsetField.getSelectedItems().size());
 
-        subsetField.moveAllItemsLeft();
+        subsetField.unselectAllItems();
         assertEquals(3, subsetField.getAvailableItems().size());
         assertEquals(0, subsetField.getSelectedItems().size());
     }
@@ -171,11 +172,11 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void selectIndexes_withValidIndexes_shouldSelectCorrectItems() {
+    public void selectItems_withValidItems_shouldSelectCorrectItems() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3", "Item 4"));
 
-        subsetField.selectIndexes(new int[]{1, 3}); // Select "Item 2" and "Item 4"
+        subsetField.selectItems(List.of("Item 2", "Item 4"));
 
         List<String> selectedItems = subsetField.getSelectedItems();
         assertEquals(2, selectedItems.size());
@@ -184,22 +185,23 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void selectIndexes_withSomeItemsAlreadySelected_shouldUpdateSelectionCorrectly() {
+    public void selectItems_withSomeItemsAlreadySelected_shouldUpdateSelectionCorrectly() {
         // GIVEN a list with some available items:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3", "Item 4"));
 
         // WHEN we move one item to the right...
-        subsetField.moveItemRight("Item 1"); // Select "Item 1"
+        subsetField.selectItem("Item 1");
 
-        // and WHEN we invoke selectIndexes(), the previous selection should be discarded and replaced:
-        subsetField.selectIndexes(new int[]{2, 3}); // Now select "Item 3" and "Item 4"
+        // and WHEN we invoke selectItems(), the previous selection should be updated and NOT replaced:
+        subsetField.selectItems(List.of("Item 3", "Item 4")); // adds to existing selection!
 
-        // THEN only the newly selected items should be selected:
+        // THEN all items that have been selected should be in the right list:
         List<String> selectedItems = subsetField.getSelectedItems();
-        assertEquals(2, selectedItems.size());
-        assertEquals("Item 3", selectedItems.get(0));
-        assertEquals("Item 4", selectedItems.get(1));
+        assertEquals(3, selectedItems.size());
+        assertEquals("Item 1", selectedItems.get(0));
+        assertEquals("Item 3", selectedItems.get(1));
+        assertEquals("Item 4", selectedItems.get(2));
     }
 
     @Test
@@ -213,12 +215,14 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void selectIndexes_withInvalidIndexes_shouldIgnoreInvalidIndexes() {
+    public void selectItems_withInvalidItems_shouldIgnoreInvalidItems() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3", "Item 4"));
 
-        subsetField.selectIndexes(new int[]{0, 5, -1, 2}); // Only indexes 0 and 2 are valid
+        // WHEN we select items, including some that don't exist:
+        subsetField.selectItems(List.of("Hello", "There", "Item 1", "Item 3")); // Only two of these exist
 
+        // THEN only the valid items should be selected:
         List<String> selectedItems = subsetField.getSelectedItems();
         assertEquals(2, selectedItems.size());
         assertEquals("Item 1", selectedItems.get(0));
@@ -226,26 +230,26 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void getSelectedIndexes_withNothingSelected_shouldReturnEmptyArray() {
+    public void getSelectedItems_withNothingSelected_shouldReturnEmptyList() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3"));
 
-        int[] selectedIndexes = subsetField.getSelectedIndexes();
-        assertEquals(0, selectedIndexes.length);
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(0, selectedItems.size());
     }
 
     @Test
-    public void getSelectedIndexes_withSelection_shouldReturnSelectedIndexes() {
+    public void getSelectedItems_withSelection_shouldReturnSelectedItems() {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3", "Item 4"));
 
-        subsetField.moveItemRight("Item 2"); // Select "Item 2"
-        subsetField.moveItemRight("Item 4"); // Select "Item 4"
+        subsetField.selectItem("Item 2");
+        subsetField.selectItem("Item 4");
 
-        int[] selectedIndexes = subsetField.getSelectedIndexes();
-        assertEquals(2, selectedIndexes.length);
-        assertEquals(1, selectedIndexes[0]); // Index of "Item 2"
-        assertEquals(3, selectedIndexes[1]); // Index of "Item 4"
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        assertEquals("Item 2", selectedItems.get(0));
+        assertEquals("Item 4", selectedItems.get(1));
     }
 
     @Test
@@ -253,9 +257,170 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 2", "Item 3"));
         subsetField.addFieldValidator(new TestValidator());
-        subsetField.moveItemRight("Item 2"); // Select an item
+        subsetField.selectItem("Item 2"); // Select an item
         assertTrue(subsetField.isValid());
         assertNull(subsetField.getValidationLabel().getToolTipText());
+    }
+
+    @Test
+    public void autoSortingEnabled_defaultShouldBeFalse() {
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"));
+        assertFalse(subsetField.isAutoSortingEnabled());
+    }
+
+    @Test
+    public void autoSortingEnabled_shouldSortWhenEnabled() {
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"));
+        subsetField.setAutoSortingEnabled(true);
+        
+        // Move item to the right - should be sorted
+        subsetField.selectItem("Item 9");
+        subsetField.selectItem("Item 2");
+        
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        assertEquals("Item 2", selectedItems.get(0));
+        assertEquals("Item 9", selectedItems.get(1));
+    }
+
+    @Test
+    public void autoSortingDisabled_shouldMaintainOrderWhenMoving() {
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"));
+        
+        // Move items to the right - should maintain order added
+        subsetField.selectItem("Item 9");
+        subsetField.selectItem("Item 2");
+        
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        assertEquals("Item 9", selectedItems.get(0));
+        assertEquals("Item 2", selectedItems.get(1));
+    }
+
+    @Test
+    public void selectItems_withAutoSortingDisabled_shouldMaintainInputOrder() {
+        // GIVEN an input list with auto-sorting disabled and items in some arbitrary order:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("One", "Two", "Three", "Four", "Five", "Six"));
+
+        // WHEN we move specific items to the right (select them) in a specific order:
+        subsetField.selectItem("Three");
+        subsetField.selectItem("Two");
+
+        // THEN we should see that order maintained in both lists:
+        List<String> availableItems = subsetField.getAvailableItems();
+        assertEquals(4, availableItems.size());
+        // Without auto-sorting, available items maintain their insertion order
+        assertEquals("One", availableItems.get(0));
+        assertEquals("Four", availableItems.get(1));
+        assertEquals("Five", availableItems.get(2));
+        assertEquals("Six", availableItems.get(3));
+        
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        // Without auto-sorting, selected items maintain their insertion order
+        assertEquals("Three", selectedItems.get(0));
+        assertEquals("Two", selectedItems.get(1));
+    }
+
+    @Test
+    public void selectItem_withAutoSortingDisabled_shouldPreserveInsertionOrder() {
+        // This demonstrates the preferred way to select specific items when auto-sorting is disabled
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("One", "Two", "Three", "Four", "Five", "Six"));
+        
+        // Move specific items to the right (select them)
+        subsetField.selectItem("One");
+        subsetField.selectItem("Two");
+        
+        List<String> availableItems = subsetField.getAvailableItems();
+        assertEquals(4, availableItems.size());
+        // Available items maintain their original order (minus the selected ones)
+        assertEquals("Three", availableItems.get(0));
+        assertEquals("Four", availableItems.get(1));
+        assertEquals("Five", availableItems.get(2));
+        assertEquals("Six", availableItems.get(3));
+        
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        // Selected items are in the order they were moved
+        assertEquals("One", selectedItems.get(0));
+        assertEquals("Two", selectedItems.get(1));
+    }
+
+    @Test
+    public void constructor_withAutoSortingEnabled_shouldSortLists() {
+        // Create a field with items in non-sorted order
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"));
+        
+        // Enabling auto-sort should immediately sort both lists
+        subsetField.setAutoSortingEnabled(true);
+        
+        // The available list should now be sorted
+        List<String> availableItems = subsetField.getAvailableItems();
+        assertEquals(4, availableItems.size());
+        assertEquals("Item 1", availableItems.get(0));
+        assertEquals("Item 2", availableItems.get(1));
+        assertEquals("Item 3", availableItems.get(2));
+        assertEquals("Item 9", availableItems.get(3));
+    }
+
+    @Test
+    public void setAutoSortingEnabled_whenEnabled_shouldSortBothLists() {
+        // Create a field with items in both lists, unsorted
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Zebra", "Apple", "Mango", "Banana"));
+        
+        // Move some items without auto-sorting
+        subsetField.selectItem("Mango");
+        subsetField.selectItem("Apple");
+        
+        // At this point, lists are unsorted:
+        // Available: [Zebra, Banana], Selected: [Mango, Apple]
+        
+        // Now enable auto-sorting - this should sort both lists immediately
+        subsetField.setAutoSortingEnabled(true);
+        
+        // Verify both lists are now sorted
+        List<String> availableItems = subsetField.getAvailableItems();
+        assertEquals(2, availableItems.size());
+        assertEquals("Banana", availableItems.get(0));
+        assertEquals("Zebra", availableItems.get(1));
+        
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        assertEquals("Apple", selectedItems.get(0));
+        assertEquals("Mango", selectedItems.get(1));
+    }
+
+    @Test
+    public void setAutoSortingEnabled_whenDisabled_shouldNotChangeOrder() {
+        // Create a field with auto-sorting enabled and sorted items
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"));
+        subsetField.setAutoSortingEnabled(true);
+        
+        // Move some items to create a specific order
+        subsetField.selectItem("Item 2");
+        subsetField.selectItem("Item 9");
+        
+        // Now disable auto-sorting - this should NOT change the current order
+        subsetField.setAutoSortingEnabled(false);
+        
+        // Verify the order remains unchanged
+        List<String> availableItems = subsetField.getAvailableItems();
+        assertEquals(2, availableItems.size());
+        assertEquals("Item 1", availableItems.get(0));
+        assertEquals("Item 3", availableItems.get(1));
+        
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        assertEquals("Item 2", selectedItems.get(0));
+        assertEquals("Item 9", selectedItems.get(1));
     }
 
     private static class TestValidator implements FieldValidator<ListSubsetField<String>> {
