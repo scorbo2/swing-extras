@@ -77,15 +77,16 @@ class ListSubsetPropertyTest extends AbstractPropertyBaseTests {
         ListSubsetField<String> listSubsetField = (ListSubsetField<String>) formField;
 
         // WHEN we modify the FormField's selected items and load back into the property:
-        listSubsetField.selectIndexes(new int[]{1, 2}); // Select "B" and "C", replace previous selection
+        listSubsetField.selectItems(List.of("B", "C")); // Select "B" and "C", adds to previous selection
         listSubsetField.setVisibleRowCount(5);
         listSubsetField.setFixedCellWidth(120);
         listSubsetProperty.loadFromFormField(listSubsetField);
 
         // THEN the property should reflect the updated selected items:
-        Assertions.assertEquals(2, listSubsetProperty.getSelectedItems().size());
+        Assertions.assertEquals(3, listSubsetProperty.getSelectedItems().size());
         Assertions.assertTrue(listSubsetProperty.getSelectedItems().contains("B"));
         Assertions.assertTrue(listSubsetProperty.getSelectedItems().contains("C"));
+        Assertions.assertTrue(listSubsetProperty.getSelectedItems().contains("D"));
         Assertions.assertEquals(5, listSubsetProperty.getVisibleRowCount());
         Assertions.assertEquals(120, listSubsetProperty.getFixedCellWidth());
     }

@@ -12,6 +12,14 @@ import java.util.stream.Collectors;
 
 /**
  * Represents an AbstractProperty wrapper around the ListSubset form field.
+ * <p>
+ *     <B>Note:</B> to avoid persisting the list of T items, this class simply
+ *     persists the indexes of which item(s) are selected, relative to the list
+ *     of all items that is supplied at construction time or via setAllItems().
+ *     Callers can still easily determine which item(s) are selected
+ *     via the getSelectedItems() method, which returns a List&lt;T&gt; of the
+ *     currently selected items.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.6
@@ -117,7 +125,13 @@ public class ListSubsetProperty<T> extends AbstractProperty {
         ListSubsetField<T> field = new ListSubsetField<>(propertyLabel, allItems);
         field.setVisibleRowCount(visibleRowCount);
         field.setFixedCellWidth(fixedCellWidth);
-        field.selectIndexes(selectedIndexes);
+        List<T> itemsToSelect = new ArrayList<>();
+        for (int index : selectedIndexes) {
+            if (index >= 0 && index < allItems.size()) {
+                itemsToSelect.add(allItems.get(index));
+            }
+        }
+        field.selectItems(itemsToSelect);
         return field;
     }
 
@@ -132,7 +146,15 @@ public class ListSubsetProperty<T> extends AbstractProperty {
         }
 
         ListSubsetField<T> listSubsetField = (ListSubsetField<T>) field;
-        this.selectedIndexes = listSubsetField.getSelectedIndexes();
+        List<T> selectedItems = listSubsetField.getSelectedItems();
+        List<Integer> selectedIndexesList = new ArrayList<>();
+        for (T item : selectedItems) {
+            int index = allItems.indexOf(item);
+            if (index != -1) {
+                selectedIndexesList.add(index);
+            }
+        }
+        selectedIndexes = selectedIndexesList.stream().mapToInt(i -> i).toArray();
         this.visibleRowCount = listSubsetField.getVisibleRowCount();
         this.fixedCellWidth = listSubsetField.getFixedCellWidth();
     }

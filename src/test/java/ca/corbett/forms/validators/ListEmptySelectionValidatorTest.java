@@ -59,7 +59,7 @@ class ListEmptySelectionValidatorTest {
     public void validate_withNonEmptyListSubsetField_shouldValidate() {
         // GIVEN a ListSubsetField with an item selected:
         ListSubsetField<String> testField = new ListSubsetField<>("test", List.of("One", "Two", "Three"));
-        testField.selectIndexes(new int[]{1}); // Select "Two"
+        testField.selectItem("Two");
         testField.addFieldValidator(new ListEmptySelectionValidator());
 
         // WHEN we validate it:

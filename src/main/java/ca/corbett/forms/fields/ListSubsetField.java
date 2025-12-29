@@ -15,7 +15,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -125,47 +124,34 @@ public class ListSubsetField<T> extends FormField {
     }
 
     /**
-     * Gets the list of currently available items - this is, items that are still
-     * present in the left list. If empty, all items are selected.
+     * Gets the list of currently available items - that is, items that are still
+     * present in the left list. If the returned list is empty, then all items are selected.
      */
     public List<T> getAvailableItems() {
         return Collections.list(availableListModel.elements());
     }
 
     /**
-     * Gets the list of currently selected items - this is, items that are present
-     * in the right list. If empty, no items are selected.
+     * Gets the list of currently selected items - that is, items that are present
+     * in the right list. If the returned list is empty, then no items are selected.
      */
     public List<T> getSelectedItems() {
         return Collections.list(selectedListModel.elements());
     }
 
     /**
-     * Programmatically select the items with the given indexes. The indexes
-     * are relative to the combined list of ALL items sorted in their natural order
-     * (or using the custom comparator if set). This provides a consistent reference
-     * frame for index-based selection, regardless of the auto-sorting setting.
-     * <p>
-     * <B>Note:</B> This replaces any existing selection! This is "set these indexes" and not
-     * "add these indexes".
-     * </p>
+     * Programmatically select the given items. This will only select items
+     * that were not already selected. Any items not present in the available items
+     * list will be ignored.
      */
-    public ListSubsetField<T> selectIndexes(int[] indexes) {
-        // First clear any existing selection by moving all items back to the available list:
-        moveAllLeft();
-
-        // Make a copy and sort it to create a consistent reference frame:
-        List<T> allAvailableItems = Collections.list(availableListModel.elements());
-        allAvailableItems.sort(itemComparator);
-
-        // Now, move all the specified indexes to the selected list:
-        for (int index : indexes) {
-            if (index < 0 || index >= allAvailableItems.size()) {
-                continue; // ignore indexes out of bounds
+    public ListSubsetField<T> selectItems(List<T> itemsToSelect) {
+        // Move the specified items to the selected list:
+        // (note we don't just invoke selectItem() on each item because we only
+        //  want to do the sorting once at the end, if needed, instead of after every item)
+        for (T item : itemsToSelect) {
+            if (availableListModel.removeElement(item)) {
+                selectedListModel.addElement(item);
             }
-            T item = allAvailableItems.get(index);
-            selectedListModel.addElement(item);
-            availableListModel.removeElement(item);
         }
 
         // Now sort the selected list if auto-sorting is enabled:
@@ -177,38 +163,18 @@ public class ListSubsetField<T> extends FormField {
     }
 
     /**
-     * Returns the indexes of the currently selected items. The indexes are relative
-     * to the combined list of ALL items sorted in their natural order (or using the
-     * custom comparator if set). This provides a consistent reference frame for
-     * index-based selection, regardless of the auto-sorting setting.
+     * Clears the current selection - this is equivalent to calling unselectAllItems().
      */
-    public int[] getSelectedIndexes() {
-        // Gather all items into one list:
-        List<T> allItems = new ArrayList<>(availableListModel.getSize() + selectedListModel.getSize());
-        allItems.addAll(Collections.list(availableListModel.elements()));
-        allItems.addAll(Collections.list(selectedListModel.elements()));
-
-        // Always sort this list for consistent index calculation:
-        allItems.sort(itemComparator);
-
-        // Now, find the indexes of the selected items:
-        List<Integer> selectedIndexes = new ArrayList<>();
-        for (int i = 0; i < allItems.size(); i++) {
-            T item = allItems.get(i);
-            if (selectedListModel.contains(item)) {
-                selectedIndexes.add(i);
-            }
-        }
-
-        // Convert to int array:
-        return selectedIndexes.stream().mapToInt(Integer::intValue).toArray();
+    public ListSubsetField<T> clearSelection() {
+        unselectAllItems();
+        return this;
     }
 
     /**
-     * Allow callers to programmatically move an item right (select it).
+     * Allow callers to programmatically move an item to the right list (select it).
      * Does nothing if the given item is not present in the available items list.
      */
-    public ListSubsetField<T> moveItemRight(T item) {
+    public ListSubsetField<T> selectItem(T item) {
         if (availableListModel.removeElement(item)) {
             selectedListModel.addElement(item);
             if (autoSortingEnabled) {
@@ -219,10 +185,10 @@ public class ListSubsetField<T> extends FormField {
     }
 
     /**
-     * Allow callers to programmatically move an item left (unselect it).
+     * Allow callers to programmatically move an item to the left list (unselect it).
      * Does nothing if the given item is not present in the selected items list.
      */
-    public ListSubsetField<T> moveItemLeft(T item) {
+    public ListSubsetField<T> unselectItem(T item) {
         if (selectedListModel.removeElement(item)) {
             availableListModel.addElement(item);
             if (autoSortingEnabled) {
@@ -235,7 +201,7 @@ public class ListSubsetField<T> extends FormField {
     /**
      * Allow callers to programmatically move all items right (select all).
      */
-    public ListSubsetField<T> moveAllItemsRight() {
+    public ListSubsetField<T> selectAllItems() {
         moveAllRight();
         return this;
     }
@@ -243,7 +209,7 @@ public class ListSubsetField<T> extends FormField {
     /**
      * Allow callers to programmatically move all items left (unselect all).
      */
-    public ListSubsetField<T> moveAllItemsLeft() {
+    public ListSubsetField<T> unselectAllItems() {
         moveAllLeft();
         return this;
     }
