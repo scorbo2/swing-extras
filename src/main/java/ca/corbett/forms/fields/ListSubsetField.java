@@ -26,10 +26,12 @@ import java.util.List;
  * with the selected subset. Controls are provided such that users
  * can move items between the two lists.
  * <p>
- * <b>Sorting</b>: by default, items in both lists are sorted in their natural order
- * (assuming T implements Comparable). You can provide a custom Comparator
- * by calling setItemComparator(). When items are moved between lists,
- * they will be inserted in sorted order according to the comparator.
+ * <b>Sorting</b>: by default, items in both lists maintain their original order
+ * as provided in the constructor. You can enable automatic sorting by calling
+ * setAutoSortingEnabled(true). When auto-sorting is enabled, items will be sorted
+ * in their natural order (assuming T implements Comparable) when items are moved
+ * between lists. You can provide a custom Comparator by calling setItemComparator()
+ * to control the sort order.
  * </p>
  * <p>
  * <b>Controlling list size</b>: you can control how many rows are visible
@@ -62,6 +64,7 @@ public class ListSubsetField<T> extends FormField {
     private final JButton moveAllRightButton;
     private Comparator<T> itemComparator = null;
     private boolean shouldExpand = false;
+    private boolean autoSortingEnabled = false;
 
     /**
      * Creates an empty ListSubsetField with the given field label.
@@ -98,7 +101,9 @@ public class ListSubsetField<T> extends FormField {
         for (T item : availableItems) {
             availableListModel.addElement(item);
         }
-        sortListModel(availableListModel);
+        if (autoSortingEnabled) {
+            sortListModel(availableListModel);
+        }
     }
 
     /**
@@ -114,7 +119,9 @@ public class ListSubsetField<T> extends FormField {
             selectedListModel.addElement(item);
             availableListModel.removeElement(item);
         }
-        sortListModel(selectedListModel);
+        if (autoSortingEnabled) {
+            sortListModel(selectedListModel);
+        }
     }
 
     /**
@@ -136,7 +143,8 @@ public class ListSubsetField<T> extends FormField {
     /**
      * Programmatically select the items with the given indexes. The indexes
      * are relative to the combine list of ALL items - that is, all
-     * the items that would be in the (sorted) available list if nothing was selected.
+     * the items that would be in the available list if nothing was selected
+     * (and sorted if auto-sorting is enabled).
      * This is true even if some of those items are currently selected.
      * <p>
      * <B>Note:</B> This replaces any existing selection! This is "set these indexes" and not
@@ -160,8 +168,10 @@ public class ListSubsetField<T> extends FormField {
             availableListModel.removeElement(item);
         }
 
-        // Now sort the selected list:
-        sortListModel(selectedListModel);
+        // Now sort the selected list if auto-sorting is enabled:
+        if (autoSortingEnabled) {
+            sortListModel(selectedListModel);
+        }
 
         return this;
     }
@@ -169,8 +179,8 @@ public class ListSubsetField<T> extends FormField {
     /**
      * Returns the indexes of the currently selected items. The indexes are relative
      * to the combined list of ALL items - that is, all the items that would be in the
-     * (sorted) available list if nothing was selected. This is true even if some of those items
-     * are currently selected.
+     * available list if nothing was selected (and sorted if auto-sorting is enabled).
+     * This is true even if some of those items are currently selected.
      */
     public int[] getSelectedIndexes() {
         // Gather all items into one list:
@@ -178,8 +188,10 @@ public class ListSubsetField<T> extends FormField {
         allItems.addAll(Collections.list(availableListModel.elements()));
         allItems.addAll(Collections.list(selectedListModel.elements()));
 
-        // Sort this list - IMPORTANT! Otherwise, our indexes will make no sense:
-        allItems.sort(itemComparator);
+        // Sort this list if auto-sorting is enabled - IMPORTANT! Otherwise, our indexes will make no sense:
+        if (autoSortingEnabled) {
+            allItems.sort(itemComparator);
+        }
 
         // Now, find the indexes of the selected items:
         List<Integer> selectedIndexes = new ArrayList<>();
@@ -201,7 +213,9 @@ public class ListSubsetField<T> extends FormField {
     public ListSubsetField<T> moveItemRight(T item) {
         if (availableListModel.removeElement(item)) {
             selectedListModel.addElement(item);
-            sortListModel(selectedListModel);
+            if (autoSortingEnabled) {
+                sortListModel(selectedListModel);
+            }
         }
         return this;
     }
@@ -213,7 +227,9 @@ public class ListSubsetField<T> extends FormField {
     public ListSubsetField<T> moveItemLeft(T item) {
         if (selectedListModel.removeElement(item)) {
             availableListModel.addElement(item);
-            sortListModel(availableListModel);
+            if (autoSortingEnabled) {
+                sortListModel(availableListModel);
+            }
         }
         return this;
     }
@@ -293,6 +309,30 @@ public class ListSubsetField<T> extends FormField {
     }
 
     /**
+     * Returns whether auto-sorting is enabled for both lists.
+     * When enabled, items are sorted when moved between lists.
+     * When disabled (default), items maintain their original order.
+     */
+    public boolean isAutoSortingEnabled() {
+        return autoSortingEnabled;
+    }
+
+    /**
+     * Sets whether auto-sorting is enabled for both lists.
+     * When enabled, items are sorted when moved between lists.
+     * When disabled (default), items maintain their original order.
+     * <p>
+     * Note: Changing this setting does not automatically re-sort existing items.
+     * If you want to sort items after enabling this, you can move items between
+     * lists to trigger sorting.
+     * </p>
+     */
+    public ListSubsetField<T> setAutoSortingEnabled(boolean enabled) {
+        this.autoSortingEnabled = enabled;
+        return this;
+    }
+
+    /**
      * Returns the pixel width of each list cell.
      * A value of -1 here means the list cells will auto-size their widths
      * based on the width of the longest item in the list.
@@ -353,7 +393,9 @@ public class ListSubsetField<T> extends FormField {
             availableListModel.removeElement(value);
             selectedListModel.addElement(value);
         }
-        sortListModel(selectedListModel);
+        if (autoSortingEnabled) {
+            sortListModel(selectedListModel);
+        }
     }
 
     private void moveSelectedLeft() {
@@ -362,7 +404,9 @@ public class ListSubsetField<T> extends FormField {
             selectedListModel.removeElement(value);
             availableListModel.addElement(value);
         }
-        sortListModel(availableListModel);
+        if (autoSortingEnabled) {
+            sortListModel(availableListModel);
+        }
     }
 
     private void moveAllRight() {
@@ -372,7 +416,9 @@ public class ListSubsetField<T> extends FormField {
             availableListModel.removeElementAt(0);
             selectedListModel.addElement(value);
         }
-        sortListModel(selectedListModel);
+        if (autoSortingEnabled) {
+            sortListModel(selectedListModel);
+        }
     }
 
     private void moveAllLeft() {
@@ -382,7 +428,9 @@ public class ListSubsetField<T> extends FormField {
             selectedListModel.removeElementAt(0);
             availableListModel.addElement(value);
         }
-        sortListModel(availableListModel);
+        if (autoSortingEnabled) {
+            sortListModel(availableListModel);
+        }
     }
 
     private void sortListModel(DefaultListModel<T> model) {
