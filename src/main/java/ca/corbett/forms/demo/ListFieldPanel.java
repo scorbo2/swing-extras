@@ -105,21 +105,13 @@ public class ListFieldPanel extends PanelBuilder {
         listField2.setVisibleRowCount(3);
         formPanel.add(listField2);
 
-        // Create our list of items:
-        List<String> options = List.of("One", "Two", "Three", "Four", "Five", "Six");
-        ListSubsetField<String> subsetField = new ListSubsetField<>("Select items:", options);
-        subsetField.setFixedCellWidth(100); // Set each list to be 100 pixels wide
-
-        // We can pre-select a few items by their list index, if we want:
-        subsetField.selectItems(List.of("One", "Two"));
-
-        formPanel.add(subsetField);
-
         // New in swing-extras 2.6, let's show the ListSubsetField:
         formPanel.add(new ListSubsetField<>("List subset:",
                                             List.of("Apple", "Banana", "Cherry", "Date", "Elderberry",
                                                     "Fig", "Grape", "Honeydew", "Kiwi"),
-                                            List.of("Cherry", "Fig", "Lemon")).setFixedCellWidth(120));
+                                            List.of("Cherry", "Fig", "Lemon"))
+                              .setAutoSortingEnabled(true) // optionally keep both lists sorted
+                              .setFixedCellWidth(120));
 
         // And a new addition in swing-extras 2.5, let's add an ImageListField:
         ImageListField imageListField = new ImageListField("Image list:", 5, 75);
