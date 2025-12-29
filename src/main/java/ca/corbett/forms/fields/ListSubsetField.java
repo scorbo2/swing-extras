@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents a FormField that allows selection of a subset from a list.
@@ -62,6 +64,8 @@ import java.util.List;
  * @since swing-extras 2.6
  */
 public class ListSubsetField<T> extends FormField {
+
+    private static final Logger log = Logger.getLogger(ListSubsetField.class.getName());
 
     public static final int DEFAULT_VISIBLE_ROW_COUNT = 4;
     public static final int DEFAULT_FIXED_CELL_WIDTH = -1;
@@ -545,7 +549,10 @@ public class ListSubsetField<T> extends FormField {
             try {
                 this.localObjectFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Unable to create DataFlavor for drag and drop", e);
+                // According to the DataFlavor API documentation, the javaJVMLocalObjectMimeType constant
+                // should always be parseable, so this exception should never occur in practice.
+                // But, just in case, we handle it here:
+                throw new IllegalStateException("Unable to create DataFlavor for drag and drop", e);
             }
         }
 
@@ -568,7 +575,7 @@ public class ListSubsetField<T> extends FormField {
 
         @Override
         protected void exportDone(JComponent source, Transferable data, int action) {
-            // Items are removed during import, so nothing to do here
+            // Items are removed during importData, no cleanup needed here
         }
 
         @Override
@@ -581,8 +588,7 @@ public class ListSubsetField<T> extends FormField {
                 // Get the actual drag source from the transferable data
                 Transferable t = support.getTransferable();
                 @SuppressWarnings("unchecked")
-                ListItemsTransferable.TransferData transferData =
-                        (ListItemsTransferable.TransferData)t.getTransferData(localObjectFlavor);
+                TransferData transferData = (TransferData)t.getTransferData(localObjectFlavor);
 
                 String dragSourceId = transferData.sourceListId;
                 boolean isSameList = dragSourceId.equals(isSelectedList ? "selected" : "available");
@@ -594,7 +600,8 @@ public class ListSubsetField<T> extends FormField {
 
                 return true;
             }
-            catch (Exception e) {
+            catch (UnsupportedFlavorException | java.io.IOException e) {
+                log.log(Level.WARNING, "ListSubsetField.canImport: error checking data flavor", e);
                 return false;
             }
         }
@@ -614,8 +621,7 @@ public class ListSubsetField<T> extends FormField {
                 // Get the items being transferred
                 Transferable t = support.getTransferable();
                 @SuppressWarnings("unchecked")
-                ListItemsTransferable.TransferData transferData =
-                        (ListItemsTransferable.TransferData)t.getTransferData(localObjectFlavor);
+                TransferData transferData = (TransferData)t.getTransferData(localObjectFlavor);
 
                 List<T> items = transferData.items;
                 String dragSourceId = transferData.sourceListId;
@@ -683,7 +689,7 @@ public class ListSubsetField<T> extends FormField {
 
                 return true;
             } catch (UnsupportedFlavorException | java.io.IOException e) {
-                // Data flavor not supported or I/O error during transfer
+                log.log(Level.WARNING, "ListSubsetField.importData: error importing data", e);
                 return false;
             }
         }
@@ -692,7 +698,7 @@ public class ListSubsetField<T> extends FormField {
     /**
      * Transferable implementation for list items.
      */
-    private class ListItemsTransferable implements Transferable {
+    private static class ListItemsTransferable<T> implements Transferable {
         private final List<T> items;
         private final DataFlavor flavor;
         private final String sourceListId;
@@ -701,10 +707,6 @@ public class ListSubsetField<T> extends FormField {
             this.items = items;
             this.flavor = flavor;
             this.sourceListId = sourceListId;
-        }
-
-        public String getSourceListId() {
-            return sourceListId;
         }
 
         @Override
@@ -723,18 +725,17 @@ public class ListSubsetField<T> extends FormField {
                 throw new UnsupportedFlavorException(flavor);
             }
             // Return a wrapper object containing both items and source list
-            return new TransferData(items, sourceListId);
+            return new TransferData<>(items, sourceListId);
         }
+    }
 
-        // Inner class to hold both pieces of data
-        private class TransferData {
-            final List<T> items;
-            final String sourceListId; // "available" or "selected"
+    private static class TransferData<U> {
+        final List<U> items;
+        final String sourceListId; // "available" or "selected"
 
-            TransferData(List<T> items, String sourceListId) {
-                this.items = items;
-                this.sourceListId = sourceListId;
-            }
+        TransferData(List<U> items, String sourceListId) {
+            this.items = items;
+            this.sourceListId = sourceListId;
         }
     }
 }
