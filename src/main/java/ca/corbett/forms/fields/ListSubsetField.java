@@ -514,6 +514,7 @@ public class ListSubsetField<T> extends FormField {
         private final JList<T> targetList;
         private final DefaultListModel<T> targetModel;
         private final boolean isSelectedList;
+        private final DataFlavor localObjectFlavor;
 
         public ListSubsetTransferHandler(JList<T> sourceList, DefaultListModel<T> sourceModel,
                                           JList<T> targetList, DefaultListModel<T> targetModel,
@@ -523,6 +524,12 @@ public class ListSubsetField<T> extends FormField {
             this.targetList = targetList;
             this.targetModel = targetModel;
             this.isSelectedList = isSelectedList;
+            // Create a custom DataFlavor for transferring list items within the same JVM
+            try {
+                this.localObjectFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Unable to create DataFlavor for drag and drop", e);
+            }
         }
 
         @Override
@@ -538,7 +545,7 @@ public class ListSubsetField<T> extends FormField {
             if (selectedValues.isEmpty()) {
                 return null;
             }
-            return new ListItemsTransferable(selectedValues);
+            return new ListItemsTransferable(selectedValues, localObjectFlavor);
         }
 
         @Override
@@ -548,7 +555,7 @@ public class ListSubsetField<T> extends FormField {
 
         @Override
         public boolean canImport(TransferSupport support) {
-            if (!support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+            if (!support.isDataFlavorSupported(localObjectFlavor)) {
                 return false;
             }
 
@@ -581,7 +588,7 @@ public class ListSubsetField<T> extends FormField {
                 // Get the items being transferred
                 Transferable t = support.getTransferable();
                 @SuppressWarnings("unchecked")
-                List<T> items = (List<T>) t.getTransferData(DataFlavor.stringFlavor);
+                List<T> items = (List<T>) t.getTransferData(localObjectFlavor);
 
                 boolean isSameList = (dropList == sourceList);
                 DefaultListModel<T> dropModel = isSameList ? sourceModel : 
@@ -646,19 +653,21 @@ public class ListSubsetField<T> extends FormField {
      */
     private class ListItemsTransferable implements Transferable {
         private final List<T> items;
+        private final DataFlavor flavor;
 
-        public ListItemsTransferable(List<T> items) {
+        public ListItemsTransferable(List<T> items, DataFlavor flavor) {
             this.items = items;
+            this.flavor = flavor;
         }
 
         @Override
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{DataFlavor.stringFlavor};
+            return new DataFlavor[]{flavor};
         }
 
         @Override
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return DataFlavor.stringFlavor.equals(flavor);
+            return this.flavor.equals(flavor);
         }
 
         @Override
