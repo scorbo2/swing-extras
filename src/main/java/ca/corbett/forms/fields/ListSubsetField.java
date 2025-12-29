@@ -3,18 +3,25 @@ package ca.corbett.forms.fields;
 import ca.corbett.forms.Resources;
 
 import javax.swing.DefaultListModel;
+import javax.swing.DropMode;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
+import javax.swing.TransferHandler;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -89,6 +96,7 @@ public class ListSubsetField<T> extends FormField {
         moveAllRightButton.addActionListener(e -> moveAllRight());
         fieldComponent = wrapperPanel;
         initLayout();
+        initDragAndDrop();
     }
 
     /**
@@ -470,5 +478,195 @@ public class ListSubsetField<T> extends FormField {
         button.setIcon(icon);
         button.setFocusPainted(false);
         return button;
+    }
+
+    /**
+     * Initializes drag and drop support for both lists.
+     * Enables dragging items between lists and reordering within lists
+     * (when auto-sorting is disabled).
+     */
+    private void initDragAndDrop() {
+        // Create transfer handlers for both lists
+        ListSubsetTransferHandler availableHandler = new ListSubsetTransferHandler(
+                availableList, availableListModel, selectedList, selectedListModel, false);
+        ListSubsetTransferHandler selectedHandler = new ListSubsetTransferHandler(
+                selectedList, selectedListModel, availableList, availableListModel, true);
+
+        // Configure available list
+        availableList.setDragEnabled(true);
+        availableList.setDropMode(DropMode.INSERT);
+        availableList.setTransferHandler(availableHandler);
+
+        // Configure selected list
+        selectedList.setDragEnabled(true);
+        selectedList.setDropMode(DropMode.INSERT);
+        selectedList.setTransferHandler(selectedHandler);
+    }
+
+    /**
+     * Custom TransferHandler for handling drag and drop operations in ListSubsetField.
+     * Supports both inter-list transfers (between available and selected lists) and
+     * intra-list reordering (within the same list, only when auto-sort is disabled).
+     */
+    private class ListSubsetTransferHandler extends TransferHandler {
+        private final JList<T> sourceList;
+        private final DefaultListModel<T> sourceModel;
+        private final JList<T> targetList;
+        private final DefaultListModel<T> targetModel;
+        private final boolean isSelectedList;
+
+        public ListSubsetTransferHandler(JList<T> sourceList, DefaultListModel<T> sourceModel,
+                                          JList<T> targetList, DefaultListModel<T> targetModel,
+                                          boolean isSelectedList) {
+            this.sourceList = sourceList;
+            this.sourceModel = sourceModel;
+            this.targetList = targetList;
+            this.targetModel = targetModel;
+            this.isSelectedList = isSelectedList;
+        }
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return MOVE;
+        }
+
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            @SuppressWarnings("unchecked")
+            JList<T> list = (JList<T>) c;
+            List<T> selectedValues = list.getSelectedValuesList();
+            if (selectedValues.isEmpty()) {
+                return null;
+            }
+            return new ListItemsTransferable(selectedValues);
+        }
+
+        @Override
+        protected void exportDone(JComponent source, Transferable data, int action) {
+            // Items are removed during import, so nothing to do here
+        }
+
+        @Override
+        public boolean canImport(TransferSupport support) {
+            if (!support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                return false;
+            }
+
+            // Check if this is a drop within the same list
+            JList.DropLocation dl = (JList.DropLocation) support.getDropLocation();
+            @SuppressWarnings("unchecked")
+            JList<T> dropList = (JList<T>) support.getComponent();
+            boolean isSameList = (dropList == sourceList);
+
+            // If dropping within the same list, only allow if auto-sorting is disabled
+            if (isSameList && autoSortingEnabled) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public boolean importData(TransferSupport support) {
+            if (!canImport(support)) {
+                return false;
+            }
+
+            try {
+                @SuppressWarnings("unchecked")
+                JList<T> dropList = (JList<T>) support.getComponent();
+                JList.DropLocation dl = (JList.DropLocation) support.getDropLocation();
+                int dropIndex = dl.getIndex();
+
+                // Get the items being transferred
+                Transferable t = support.getTransferable();
+                @SuppressWarnings("unchecked")
+                List<T> items = (List<T>) t.getTransferData(DataFlavor.stringFlavor);
+
+                boolean isSameList = (dropList == sourceList);
+                DefaultListModel<T> dropModel = isSameList ? sourceModel : 
+                        (dropList == availableList ? availableListModel : selectedListModel);
+
+                if (isSameList) {
+                    // Reordering within the same list (only allowed when auto-sort is disabled)
+                    // Remove items from their current positions
+                    List<Integer> indicesToRemove = new ArrayList<>();
+                    for (T item : items) {
+                        int index = sourceModel.indexOf(item);
+                        if (index >= 0) {
+                            indicesToRemove.add(index);
+                        }
+                    }
+
+                    // Sort indices in descending order to avoid index shifting issues
+                    indicesToRemove.sort(Collections.reverseOrder());
+                    for (int index : indicesToRemove) {
+                        sourceModel.remove(index);
+                        // Adjust drop index if we removed items before the drop location
+                        if (index < dropIndex) {
+                            dropIndex--;
+                        }
+                    }
+
+                    // Insert items at the new position
+                    for (T item : items) {
+                        sourceModel.add(dropIndex++, item);
+                    }
+                } else {
+                    // Moving between lists
+                    // Remove items from source list
+                    for (T item : items) {
+                        sourceModel.removeElement(item);
+                    }
+
+                    // Add items to target list
+                    if (autoSortingEnabled) {
+                        // If auto-sorting is enabled, add items and then sort
+                        for (T item : items) {
+                            dropModel.addElement(item);
+                        }
+                        sortListModel(dropModel);
+                    } else {
+                        // If auto-sorting is disabled, insert at drop location
+                        for (T item : items) {
+                            dropModel.add(dropIndex++, item);
+                        }
+                    }
+                }
+
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Transferable implementation for list items.
+     */
+    private class ListItemsTransferable implements Transferable {
+        private final List<T> items;
+
+        public ListItemsTransferable(List<T> items) {
+            this.items = items;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{DataFlavor.stringFlavor};
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return DataFlavor.stringFlavor.equals(flavor);
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+            if (!isDataFlavorSupported(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }
+            return items;
+        }
     }
 }
