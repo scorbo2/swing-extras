@@ -95,4 +95,76 @@ public class AppExtensionInfoTest {
         assertNotNull(info2);
         assertEquals(info, info2);
     }
+
+    @Test
+    public void getMajorVersion_shouldExtractMajorVersion() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("2.5.1")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(2, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withInvalidVersion_shouldReturnZero() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("invalid.version")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(0, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withPartialVersionString_shouldStillSucceed() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("3")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(3, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withNullVersion_shouldReturnZero() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion(null)
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(0, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withEmptyVersion_shouldReturnZero() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(0, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withLeadingVInVersion_shouldSucceed() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("v4.2.0")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(4, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withNegativeVersion_shouldSucceed() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("-1.2.3") // it'll just get stripped out
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(1, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withCrazyLongVersionString_shouldSucceed() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("1.2.3.4.5.6.7.8.9.blahblahblah") // only first 3 digits matter
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(1, majorVersion);
+    }
 }

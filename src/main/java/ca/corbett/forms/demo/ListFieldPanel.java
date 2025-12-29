@@ -12,6 +12,7 @@ import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.ImageListField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.ListField;
+import ca.corbett.forms.fields.ListSubsetField;
 import ca.corbett.forms.fields.PanelField;
 
 import javax.swing.BoxLayout;
@@ -103,6 +104,14 @@ public class ListFieldPanel extends PanelBuilder {
         listField2.setFixedCellWidth(80);
         listField2.setVisibleRowCount(3);
         formPanel.add(listField2);
+
+        // New in swing-extras 2.6, let's show the ListSubsetField:
+        formPanel.add(new ListSubsetField<>("List subset:",
+                                            List.of("Apple", "Banana", "Cherry", "Date", "Elderberry",
+                                                    "Fig", "Grape", "Honeydew", "Kiwi"),
+                                            List.of("Cherry", "Fig", "Lemon"))
+                              .setAutoSortingEnabled(true) // optionally keep both lists sorted
+                              .setFixedCellWidth(120));
 
         // And a new addition in swing-extras 2.5, let's add an ImageListField:
         ImageListField imageListField = new ImageListField("Image list:", 5, 75);
