@@ -351,22 +351,74 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
 
     @Test
     public void constructor_withAutoSortingEnabled_shouldSortLists() {
-        // Create a field with auto-sorting enabled
+        // Create a field with items in non-sorted order
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
                 java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"));
+        
+        // Enabling auto-sort should immediately sort both lists
         subsetField.setAutoSortingEnabled(true);
         
-        // Enable sorting and move items to trigger sorting
-        subsetField.moveItemRight("Item 1");
-        subsetField.moveItemLeft("Item 1");
-        
-        // After moving, the available list should be sorted
+        // The available list should now be sorted
         List<String> availableItems = subsetField.getAvailableItems();
         assertEquals(4, availableItems.size());
         assertEquals("Item 1", availableItems.get(0));
         assertEquals("Item 2", availableItems.get(1));
         assertEquals("Item 3", availableItems.get(2));
         assertEquals("Item 9", availableItems.get(3));
+    }
+
+    @Test
+    public void setAutoSortingEnabled_whenEnabled_shouldSortBothLists() {
+        // Create a field with items in both lists, unsorted
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Zebra", "Apple", "Mango", "Banana"));
+        
+        // Move some items without auto-sorting
+        subsetField.moveItemRight("Mango");
+        subsetField.moveItemRight("Apple");
+        
+        // At this point, lists are unsorted:
+        // Available: [Zebra, Banana], Selected: [Mango, Apple]
+        
+        // Now enable auto-sorting - this should sort both lists immediately
+        subsetField.setAutoSortingEnabled(true);
+        
+        // Verify both lists are now sorted
+        List<String> availableItems = subsetField.getAvailableItems();
+        assertEquals(2, availableItems.size());
+        assertEquals("Banana", availableItems.get(0));
+        assertEquals("Zebra", availableItems.get(1));
+        
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        assertEquals("Apple", selectedItems.get(0));
+        assertEquals("Mango", selectedItems.get(1));
+    }
+
+    @Test
+    public void setAutoSortingEnabled_whenDisabled_shouldNotChangeOrder() {
+        // Create a field with auto-sorting enabled and sorted items
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 9", "Item 2", "Item 3"));
+        subsetField.setAutoSortingEnabled(true);
+        
+        // Move some items to create a specific order
+        subsetField.moveItemRight("Item 2");
+        subsetField.moveItemRight("Item 9");
+        
+        // Now disable auto-sorting - this should NOT change the current order
+        subsetField.setAutoSortingEnabled(false);
+        
+        // Verify the order remains unchanged
+        List<String> availableItems = subsetField.getAvailableItems();
+        assertEquals(2, availableItems.size());
+        assertEquals("Item 1", availableItems.get(0));
+        assertEquals("Item 3", availableItems.get(1));
+        
+        List<String> selectedItems = subsetField.getSelectedItems();
+        assertEquals(2, selectedItems.size());
+        assertEquals("Item 2", selectedItems.get(0));
+        assertEquals("Item 9", selectedItems.get(1));
     }
 
     private static class TestValidator implements FieldValidator<ListSubsetField<String>> {

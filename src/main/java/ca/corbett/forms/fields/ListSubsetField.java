@@ -320,13 +320,18 @@ public class ListSubsetField<T> extends FormField {
      * When enabled, items are sorted when moved between lists.
      * When disabled (default), items maintain their original order.
      * <p>
-     * Note: Changing this setting does not automatically re-sort existing items.
-     * If you want to sort items after enabling this, you can move items between
-     * lists to trigger sorting.
+     * Note: Enabling auto-sorting will immediately sort both lists.
+     * Disabling auto-sorting will not change the current ordering of items.
      * </p>
      */
     public ListSubsetField<T> setAutoSortingEnabled(boolean enabled) {
         this.autoSortingEnabled = enabled;
+        // When enabling auto-sort, immediately sort both lists
+        if (enabled) {
+            sortListModel(availableListModel);
+            sortListModel(selectedListModel);
+        }
+        // When disabling, do nothing - keep current order
         return this;
     }
 
