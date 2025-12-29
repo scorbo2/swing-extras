@@ -591,8 +591,12 @@ public class ListSubsetField<T> extends FormField {
                 List<T> items = (List<T>) t.getTransferData(localObjectFlavor);
 
                 boolean isSameList = (dropList == sourceList);
-                DefaultListModel<T> dropModel = isSameList ? sourceModel : 
-                        (dropList == availableList ? availableListModel : selectedListModel);
+                DefaultListModel<T> dropModel;
+                if (isSameList) {
+                    dropModel = sourceModel;
+                } else {
+                    dropModel = (dropList == availableList) ? availableListModel : selectedListModel;
+                }
 
                 if (isSameList) {
                     // Reordering within the same list (only allowed when auto-sort is disabled)
@@ -642,7 +646,8 @@ public class ListSubsetField<T> extends FormField {
                 }
 
                 return true;
-            } catch (Exception e) {
+            } catch (UnsupportedFlavorException | java.io.IOException e) {
+                // Data flavor not supported or I/O error during transfer
                 return false;
             }
         }
