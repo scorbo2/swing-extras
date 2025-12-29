@@ -110,7 +110,7 @@ public class ListFieldPanel extends PanelBuilder {
                                             List.of("Apple", "Banana", "Cherry", "Date", "Elderberry",
                                                     "Fig", "Grape", "Honeydew", "Kiwi"),
                                             List.of("Cherry", "Fig", "Lemon"))
-                              .setAutoSortingEnabled(true) // optionally keep both lists sorted
+                              .setAutoSortingEnabled(true) // optionally keep lists sorted (disables drag to reorder!)
                               .setFixedCellWidth(120));
 
         // And a new addition in swing-extras 2.5, let's add an ImageListField:

@@ -50,6 +50,13 @@ import java.util.List;
  * This defaults to false, meaning the field will be just wide enough to display
  * the two lists at their natural sizes.
  * </p>
+ * <p>
+ * <b>Drag and drop</b>: There are two uses of drag and drop within this component:
+ * </p>
+ * <ul>
+ *     <li>Users can drag items from one list to the other to move them between lists.</li>
+ *     <li>When auto-sorting is disabled, users can drag items within a list to reorder the items.</li>
+ * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.6
@@ -153,6 +160,10 @@ public class ListSubsetField<T> extends FormField {
      * list will be ignored.
      */
     public ListSubsetField<T> selectItems(List<T> itemsToSelect) {
+        if (itemsToSelect == null) {
+            return this;
+        }
+
         // Move the specified items to the selected list:
         // (note we don't just invoke selectItem() on each item because we only
         //  want to do the sorting once at the end, if needed, instead of after every item)
@@ -183,6 +194,9 @@ public class ListSubsetField<T> extends FormField {
      * Does nothing if the given item is not present in the available items list.
      */
     public ListSubsetField<T> selectItem(T item) {
+        if (item == null) {
+            return this;
+        }
         if (availableListModel.removeElement(item)) {
             selectedListModel.addElement(item);
             if (autoSortingEnabled) {
@@ -197,6 +211,9 @@ public class ListSubsetField<T> extends FormField {
      * Does nothing if the given item is not present in the selected items list.
      */
     public ListSubsetField<T> unselectItem(T item) {
+        if (item == null) {
+            return this;
+        }
         if (selectedListModel.removeElement(item)) {
             availableListModel.addElement(item);
             if (autoSortingEnabled) {
@@ -249,6 +266,9 @@ public class ListSubsetField<T> extends FormField {
      * Both the available list and the selected list will be set to use this renderer.
      */
     public ListSubsetField<T> setCellRenderer(ListCellRenderer<T> renderer) {
+        if (renderer == null) {
+            return this;
+        }
         availableList.setCellRenderer(renderer);
         selectedList.setCellRenderer(renderer);
         return this;
@@ -296,6 +316,11 @@ public class ListSubsetField<T> extends FormField {
      * <p>
      * Note: Enabling auto-sorting will immediately sort both lists.
      * Disabling auto-sorting will not change the current ordering of items.
+     * </p>
+     * <p>
+     * Note: Enabling auto-sorting will automatically disable the ability
+     * to drag items within a list to re-order the list. When auto-sorting
+     * is disabled, users can drag items within a list to change their order.
      * </p>
      */
     public ListSubsetField<T> setAutoSortingEnabled(boolean enabled) {
@@ -387,24 +412,16 @@ public class ListSubsetField<T> extends FormField {
     }
 
     private void moveAllRight() {
-        int size = availableListModel.getSize();
-        for (int i = 0; i < size; i++) {
-            T value = availableListModel.getElementAt(0);
-            availableListModel.removeElementAt(0);
-            selectedListModel.addElement(value);
-        }
+        selectedListModel.addAll(Collections.list(availableListModel.elements()));
+        availableListModel.clear();
         if (autoSortingEnabled) {
             sortListModel(selectedListModel);
         }
     }
 
     private void moveAllLeft() {
-        int size = selectedListModel.getSize();
-        for (int i = 0; i < size; i++) {
-            T value = selectedListModel.getElementAt(0);
-            selectedListModel.removeElementAt(0);
-            availableListModel.addElement(value);
-        }
+        availableListModel.addAll(Collections.list(selectedListModel.elements()));
+        selectedListModel.clear();
         if (autoSortingEnabled) {
             sortListModel(availableListModel);
         }
@@ -545,7 +562,8 @@ public class ListSubsetField<T> extends FormField {
             if (selectedValues.isEmpty()) {
                 return null;
             }
-            return new ListItemsTransferable(selectedValues, localObjectFlavor);
+            String sourceId = (sourceList == availableList) ? "available" : "selected";
+            return new ListItemsTransferable(selectedValues, localObjectFlavor, sourceId);
         }
 
         @Override
@@ -559,18 +577,26 @@ public class ListSubsetField<T> extends FormField {
                 return false;
             }
 
-            // Check if this is a drop within the same list
-            JList.DropLocation dl = (JList.DropLocation) support.getDropLocation();
-            @SuppressWarnings("unchecked")
-            JList<T> dropList = (JList<T>) support.getComponent();
-            boolean isSameList = (dropList == sourceList);
+            try {
+                // Get the actual drag source from the transferable data
+                Transferable t = support.getTransferable();
+                @SuppressWarnings("unchecked")
+                ListItemsTransferable.TransferData transferData =
+                        (ListItemsTransferable.TransferData)t.getTransferData(localObjectFlavor);
 
-            // If dropping within the same list, only allow if auto-sorting is disabled
-            if (isSameList && autoSortingEnabled) {
+                String dragSourceId = transferData.sourceListId;
+                boolean isSameList = dragSourceId.equals(isSelectedList ? "selected" : "available");
+
+                // If dropping within the same list, only allow if auto-sorting is disabled
+                if (isSameList && autoSortingEnabled) {
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception e) {
                 return false;
             }
-
-            return true;
         }
 
         @Override
@@ -588,14 +614,18 @@ public class ListSubsetField<T> extends FormField {
                 // Get the items being transferred
                 Transferable t = support.getTransferable();
                 @SuppressWarnings("unchecked")
-                List<T> items = (List<T>) t.getTransferData(localObjectFlavor);
+                ListItemsTransferable.TransferData transferData =
+                        (ListItemsTransferable.TransferData)t.getTransferData(localObjectFlavor);
 
-                boolean isSameList = (dropList == sourceList);
+                List<T> items = transferData.items;
+                String dragSourceId = transferData.sourceListId;
+                boolean isSameList = dragSourceId.equals(isSelectedList ? "selected" : "available");
+
                 DefaultListModel<T> dropModel;
                 if (isSameList) {
                     dropModel = sourceModel;
                 } else {
-                    dropModel = (dropList == availableList) ? availableListModel : selectedListModel;
+                    dropModel = isSelectedList ? selectedListModel : availableListModel;
                 }
 
                 if (isSameList) {
@@ -625,9 +655,15 @@ public class ListSubsetField<T> extends FormField {
                     }
                 } else {
                     // Moving between lists
-                    // Remove items from source list
+
+                    // Determine which model to use based on the source identifier
+                    DefaultListModel<T> dragSourceModel = dragSourceId.equals("available")
+                            ? availableListModel
+                            : selectedListModel;
+
+                    // Remove items from the actual source list
                     for (T item : items) {
-                        sourceModel.removeElement(item);
+                        dragSourceModel.removeElement(item);
                     }
 
                     // Add items to target list
@@ -659,10 +695,16 @@ public class ListSubsetField<T> extends FormField {
     private class ListItemsTransferable implements Transferable {
         private final List<T> items;
         private final DataFlavor flavor;
+        private final String sourceListId;
 
-        public ListItemsTransferable(List<T> items, DataFlavor flavor) {
+        public ListItemsTransferable(List<T> items, DataFlavor flavor, String sourceListId) {
             this.items = items;
             this.flavor = flavor;
+            this.sourceListId = sourceListId;
+        }
+
+        public String getSourceListId() {
+            return sourceListId;
         }
 
         @Override
@@ -680,7 +722,19 @@ public class ListSubsetField<T> extends FormField {
             if (!isDataFlavorSupported(flavor)) {
                 throw new UnsupportedFlavorException(flavor);
             }
-            return items;
+            // Return a wrapper object containing both items and source list
+            return new TransferData(items, sourceListId);
+        }
+
+        // Inner class to hold both pieces of data
+        private class TransferData {
+            final List<T> items;
+            final String sourceListId; // "available" or "selected"
+
+            TransferData(List<T> items, String sourceListId) {
+                this.items = items;
+                this.sourceListId = sourceListId;
+            }
         }
     }
 }
