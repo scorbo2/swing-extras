@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * Allows an extension to provide some basic metadata about itself.
@@ -21,13 +22,19 @@ import java.util.Objects;
  * an extInfo.json file as a resource into its jar file so that it can
  * be discovered and interrogated by ExtensionManager.
  * <p>
- * See ExtensionManager.extractExtInfo() for more.
+ * See ExtensionManager.extractExtInfo() for more details.
+ * </p>
+ * <p>
+ * Refer to the <a href="http://www.corbett.ca/swing-extras-book/">swing-extras documentation</a>
+ * for full documentation.
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public class AppExtensionInfo {
+
+    public static final int INVALID = -1; // used for validating version strings
 
     public static final String EXT_TYPE_BUILTIN = "Application built-in";
     public static final String EXT_TYPE_SYSTEM = "System extension";
@@ -124,7 +131,7 @@ public class AppExtensionInfo {
     /**
      * Extracts and returns the major version number from the given version string.
      * Ignores any non-numeric characters. If no major version can be determined,
-     * returns 0.
+     * returns INVALID.
      */
     public static int extractMajorVersion(String version) {
         if (version != null && !version.isBlank()) {
@@ -137,7 +144,7 @@ public class AppExtensionInfo {
                 }
             }
         }
-        return 0;
+        return INVALID;
     }
 
     public String getName() {
@@ -221,6 +228,56 @@ public class AppExtensionInfo {
     public int hashCode() {
         return Objects.hash(name, version, projectUrl, targetAppName, targetAppVersion, author, authorUrl,
                             releaseNotes, shortDescription, longDescription, customFields);
+    }
+
+    /**
+     * Validates this AppExtensionInfo to ensure that all required fields
+     * are present and well-formed. ExtensionManager will check this during extension load
+     * to ensure that the candidate extension has packaged a well-formed extInfo.json file.
+     * This method is final to prevent these checks from being relaxed or skipped.
+     */
+    public final boolean isValid() {
+        final Logger logger = Logger.getLogger(getClass().getName());
+
+        // Extension name is required:
+        if (name == null || name.isBlank()) {
+            logger.warning("AppExtensionInfo: missing name!");
+            return false;
+        }
+
+        // Target app name is required:
+        if (targetAppName == null || targetAppName.isBlank()) {
+            logger.warning("AppExtensionInfo: missing target application name!");
+            return false;
+        }
+
+        // Target app version is required:
+        if (targetAppVersion == null || targetAppVersion.isBlank()) {
+            logger.warning("AppExtensionInfo: missing target application version!");
+            return false;
+        }
+
+        // The target app version must be well-formed enough to extract a major version:
+        int majorVersion = extractMajorVersion(targetAppVersion);
+        if (majorVersion == INVALID) {
+            logger.warning("AppExtensionInfo: invalid target application version: " + targetAppVersion);
+            return false;
+        }
+
+        // The extension version is required:
+        if (version == null || version.isBlank()) {
+            logger.warning("AppExtensionInfo: missing version!");
+            return false;
+        }
+
+        // And while we're looking at the version, make sure it's well-formed enough to extract a major version:
+        majorVersion = extractMajorVersion(version);
+        if (majorVersion == INVALID) {
+            logger.warning("AppExtensionInfo: invalid version: " + version);
+            return false;
+        }
+
+        return true;
     }
 
     protected static Gson getGson() {

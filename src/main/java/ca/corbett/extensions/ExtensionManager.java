@@ -37,8 +37,13 @@ import java.util.logging.Logger;
  * version requirements in the candidate extension jar are met. See extractExtInfo
  * for more details.
  * </p>
+ * <p>
+ * Refer to the <a href="http://www.corbett.ca/swing-extras-book/">swing-extras documentation</a> for more information.
+ * </p>
  *
- * @param <T> Any class that implements AppExtension - this is the class we'll scan for.
+ * @param <T> Any class that implements AppExtension - this is the extension class we'll scan for.
+ *            Your application could theoretically support more than one extension class type, but you
+ *            would have to have a separate ExtensionManager derived class for each extension type.
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
@@ -78,10 +83,12 @@ public abstract class ExtensionManager<T extends AppExtension> {
     }
 
     /**
-     * Applications will typically have a single directory where they store extension jars,
-     * but this is not a hard requirements - this method returns the last directory that
+     * Applications will typically have a single directory where they store all extension jars,
+     * but this is not a hard requirement. This method returns the last directory that
      * was given to loadExtensions(), or whatever directory was last given to
-     * setExtensionsDirectory(), whichever occurred more recently.
+     * setExtensionsDirectory(), whichever occurred more recently. If your application supports
+     * scanning multiple extension directories, you should probably manage that in your
+     * application code rather than relying on this method.
      */
     public File getExtensionsDirectory() {
         return extensionsDirectory;
@@ -117,7 +124,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * Even if this method returns true, the extension might not be enabled!
      * Use isExtensionEnabled() to determine if the extension is actually enabled.
      *
-     * @param className The fully qualified name of the extension to look for.
+     * @param className The fully qualified class name of the extension to look for.
      * @return True if the named extension has been loaded by this manager.
      */
     public boolean isExtensionLoaded(String className) {
@@ -165,6 +172,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
             if (isEnabled && !wrapper.isEnabled) {
                 wrapper.isEnabled = true;
                 if (notify) {
+                    // Notify the extension that it has been enabled:
                     wrapper.extension.onActivate();
                 }
             }
@@ -173,6 +181,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
             if (!isEnabled && wrapper.isEnabled) {
                 wrapper.isEnabled = false;
                 if (notify) {
+                    // Notify the extension that it has been disabled:
                     wrapper.extension.onDeactivate();
                 }
             }
@@ -195,7 +204,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * Returns the extension instance for the given class name, if one exists.
      *
      * @param className the fully qualified class name of the extension in question.
-     * @return The extension.
+     * @return The extension instance, or null if not found.
      */
     public T getLoadedExtension(String className) {
         ExtensionWrapper wrapper = loadedExtensions.get(className);
@@ -205,6 +214,9 @@ public abstract class ExtensionManager<T extends AppExtension> {
     /**
      * Searches for any loaded extension with a matching name (case-sensitive) and returns
      * the first match. Will return null if no extensions are loaded or no match is found.
+     *
+     * @param name The extension name (as reported by {@code extension.getInfo().getName()}).
+     * @return The extension instance, or null if not found.
      */
     public T findExtensionByName(String name) {
         for (String key : loadedExtensions.keySet()) {
@@ -222,7 +234,14 @@ public abstract class ExtensionManager<T extends AppExtension> {
     /**
      * Similar to findExtensionByName, but will specifically return the Jar file from which
      * the given extension was loaded, assuming it was loaded from a jar file.
-     * Built-in extensions will return null. If the named extension is not found, also null.
+     * If the named extension is not found, null is returned.
+     * <p>
+     * <b>NOTE:</b> Built-in extensions will return null! This does not mean that the extension
+     * in question does not exist or was not found. We return null because
+     * built-in extensions were not loaded from a jar file, so there's nothing to return here.
+     * To test for the existence of an extension in this ExtensionManager, it is far safer
+     * to use isExtensionLoaded() or isExtensionEnabled() instead.
+     * </p>
      */
     public File findExtensionJarByExtensionName(String name) {
         for (String key : loadedExtensions.keySet()) {
@@ -241,8 +260,9 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * Returns a list of all loaded extensions - beware that this method will return
      * extensions even if they are marked as disabled! If you only want to get the
      * extensions that are currently enabled, use getEnabledLoadedExtensions() instead.
+     * The list is sorted by extension name (not by class name).
      *
-     * @return A List of zero or more extensions sorted by name.
+     * @return A List of zero or more extensions sorted by extension name.
      */
     public List<T> getAllLoadedExtensions() {
         List<ExtensionWrapper> wrapperList = getAllLoadedExtensionWrappers();
@@ -257,8 +277,9 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * Returns a list of all loaded extensions that are marked as enabled.
      * This list is computed each time this method is called as extensions can
      * be enabled and disabled at pretty much any point.
+     * The list is sorted by extension name (not by class name).
      *
-     * @return A List of zero or more enabled and loaded extensions.
+     * @return A List of zero or more enabled and loaded extensions sorted by extension name.
      */
     public List<T> getEnabledLoadedExtensions() {
         List<ExtensionWrapper> wrapperList = getAllLoadedExtensionWrappers();
@@ -273,7 +294,14 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
     /**
      * Invoke this to interrogate each enabled extension for their config properties, if any,
-     * and return them in a list.
+     * and return them in a list. The properties are grouped together into a single list
+     * that is ordered first by extension name (not class name), and then by the order
+     * in which the properties were defined within each extension.
+     * <p>
+     * <b>Note:</b> If two or more extensions define a property with the same fully-qualified
+     * name, only the first one found will be returned. This is to avoid conflicts
+     * that would arise from having multiple properties with the same name.
+     * </p>
      *
      * @return The combined list of properties of all enabled extensions.
      */
@@ -297,7 +325,8 @@ public abstract class ExtensionManager<T extends AppExtension> {
             }
         }
 
-        // Issue #39 - Weed out duplicates based on fully qualified name:
+        // Weed out duplicates based on fully qualified name:
+        // (see https://github.com/scorbo2/swing-extras/issues/39 for gruesome details)
         Set<String> nonDuplicateIds = new HashSet<>(propList.size());
         List<AbstractProperty> nonDuplicateProps = new ArrayList<>(propList.size());
         for (AbstractProperty prop : propList) {
@@ -321,15 +350,37 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * it's up to the application to decide which extension's version of it should be used.
      * By convention, the first loaded extension that supplies a given piece of functionality is
      * the one that will be used. You can use the ext-load-order.txt file in your extension
-     * jar directory to explicitly decide which extensions are loaded in which order.
+     * jar directory to explicitly decide which extensions are loaded in which order, but
+     * built-in extensions added through his mechanism bypass the ext-load-order check.
+     * So, consider carefully if your built-in extensions should be loaded BEFORE externally-loaded
+     * extensions (thereby giving them higher priority), or AFTER externally-loaded extensions
+     * (thereby giving them lower priority). There is no "default" behavior here... it's
+     * up to the application to decide whether to invoke addExtension() before
+     * or after loadExtensions().
      * <p>
-     * The extension will not receive an onActivate() notification from this method.
+     * Note: The supplied extension will not receive an onActivate() notification from this method.
      * Use activateAll() to start up extensions.
+     * </p>
+     * <p>
+     * Note: the same extension validation rules apply here as for externally-loaded extensions.
+     * Your extension must supply a well-formed AppExtensionInfo instance containing extension
+     * name, version, target app name, and target app version. If any of these are missing or invalid,
+     * the extension is rejected and NOT loaded.
+     * </p>
      *
-     * @param extension The extension class to be added.
+     * @param extension The extension instance to be added.
      * @param isEnabled Whether to enable this extension immediately or not.
+     * @return Whether the extension was successfully added.
      */
-    public void addExtension(T extension, boolean isEnabled) {
+    public boolean addExtension(T extension, boolean isEnabled) {
+        if (extension == null) {
+            logger.warning("addExtension: null extension supplied; unable to load.");
+            return false;
+        }
+        if (extension.getInfo() == null || !extension.getInfo().isValid()) {
+            logger.warning("addExtension: rejecting extension because it does not have well-formed extension info.");
+            return false;
+        }
         ExtensionWrapper wrapper = new ExtensionWrapper();
         wrapper.sourceJar = null;
         wrapper.isEnabled = isEnabled;
@@ -337,13 +388,9 @@ public abstract class ExtensionManager<T extends AppExtension> {
         List<AbstractProperty> configProperties = extension.createConfigProperties();
         extension.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
         loadedExtensions.put(extension.getClass().getName(), wrapper);
-        String extName = extension.getInfo().name == null || extension.getInfo().name.isBlank()
-                ? "Unnamed extension"
-                : extension.getInfo().name;
-        String extVersion = extension.getInfo().version == null || extension.getInfo().version.isBlank()
-                ? "Unknown version"
-                : "v" + extension.getInfo().version;
-        logger.info("Extension loaded internally: " + extName + " " + extVersion);
+        logger.info("Extension loaded internally: "
+                            + extension.getInfo().name + " " + extension.getInfo().version);
+        return true;
     }
 
     /**
@@ -382,7 +429,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * should use this with caution - if you have queried for configuration properties
      * from all extensions before invoking this, then you should once again invoke
      * getAllEnabledExtensionProperties() because the list of properties will
-     * likely decrease as extensions are unloaded, and your UI should remove the properties
+     * likely decrease as extensions are unloaded. Your UI should remove the properties
      * that no longer exist.
      *
      * @return The count of extensions that were actually removed as a result of this call.
@@ -404,10 +451,10 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * should use this with caution - if you have queried for configuration properties
      * from all extensions before invoking this, then you should once again invoke
      * getAllEnabledExtensionProperties() because the list of properties will
-     * likely decrease as extensions are unloaded, and your UI should remove the properties
+     * likely decrease as extensions are unloaded. Your UI should remove the properties
      * that no longer exist.
      *
-     * @param className The class of the extension to be unregistered.
+     * @param className The fully qualified class name of the extension to be unregistered.
      * @return true if an extension was actually removed as a result of this call.
      */
     public boolean unloadExtension(String className) {
@@ -449,13 +496,25 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * but extensions targeting version 2.x or 4.x will not be considered compatible.
      * </p>
      *
-     * @param directory      The directory to scan.
-     * @param extClass       The implementation class to look for.
-     * @param appName        The application name to match against.
-     * @param requiredVersion The required application version that the extension must target. (only major version is considered)
+     * @param directory      The directory to scan. Must not be null.
+     * @param extClass       The AppExtension implementation class to look for.
+     * @param appName        The application name to match against, or null to skip this check.
+     * @param requiredVersion The required app version that the extension must target.
+     *                        (Only the major version is considered here). May be null to skip this check.
      * @return The count of extensions that were loaded by this operation.
      */
     public int loadExtensions(File directory, Class<T> extClass, String appName, String requiredVersion) {
+        if (directory == null) {
+            logger.warning("ExtensionManager.loadExtensions: given directory is null, no extensions loaded.");
+            return 0;
+        }
+        if (!directory.exists() || !directory.isDirectory() || !directory.canRead()) {
+            logger.warning("ExtensionManager.loadExtensions: given directory "
+                                   + directory.getAbsolutePath()
+                                   + " does not exist, is not a directory, or can't be read. No extensions loaded.");
+            return 0;
+        }
+
         // Make a note of these for later:
         this.applicationName = appName;
         this.applicationVersion = requiredVersion;
@@ -476,13 +535,8 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 wrapper.isEnabled = true;
                 loadedExtensions.put(extension.getClass().getName(), wrapper);
                 extensionsLoaded++;
-                String extName = extension.getInfo().name == null || extension.getInfo().name.isBlank()
-                        ? "Unnamed extension"
-                        : extension.getInfo().name;
-                String extVersion = extension.getInfo().version == null || extension.getInfo().version.isBlank()
-                        ? "(Unknown version)"
-                        : "v" + extension.getInfo().version;
-                logger.info("Extension loaded externally: " + extName + " " + extVersion);
+                logger.info("Extension loaded externally: "
+                                    + extension.getInfo().name + " " + extension.getInfo().version);
             }
         }
         return extensionsLoaded;
@@ -507,6 +561,17 @@ public abstract class ExtensionManager<T extends AppExtension> {
      */
     public Map<File, AppExtensionInfo> findCandidateExtensionJars(File directory, String appName, String requiredVersion) {
         Map<File, AppExtensionInfo> map = new HashMap<>();
+        if (directory == null) {
+            logger.warning(
+                    "ExtensionManager.findCandidateExtensionJars: given directory is null, no candidates found.");
+            return map;
+        }
+        if (!directory.exists() || !directory.isDirectory() || !directory.canRead()) {
+            logger.warning("ExtensionManager.findCandidateExtensionJars: given directory "
+                                   + directory.getAbsolutePath()
+                                   + " either does not exist, is not a directory, or can't be read. No candidates found.");
+            return map;
+        }
 
         // Start by finding all jar files in the target directory:
         List<File> jarFiles = FileSystemUtil.findFiles(directory, true, "jar");
@@ -538,6 +603,12 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * @return true if the jar file looks good, false otherwise.
      */
     public boolean jarFileMeetsRequirements(File jarFile, AppExtensionInfo extInfo, String appName, String requiredVersion) {
+        // Basic sanity checks:
+        if (jarFile == null || extInfo == null) {
+            logger.warning("jarFileMeetsRequirements: jarFile or extInfo is null. Ignoring request.");
+            return false;
+        }
+
         // Check app name if one was given:
         if (appName != null && !appName.equals(extInfo.getTargetAppName())) {
             addStartupError(jarFile, "jarFileMeetsRequirements: skipping jar "
@@ -551,17 +622,22 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
         // Version compatibility check:
         // Starting in swing-extras 2.6, we only check major version compatibility.
-        // The versioning convention that applications must follow is that minor version
+        // The versioning convention that applications must follow is that minor application version
         // changes do not break extensions, only major version changes do.
-        // So, if the extension's major version matches the application's major version,
+        // So, if the extension's "target app version" major version matches the application's major version,
         // then the extension is considered compatible.
-        // We will only do this check here if we were given a requiredVersion that we can parse:
-        int targetMajorVersion = AppExtensionInfo.extractMajorVersion(requiredVersion);
-        if (targetMajorVersion != 0) { // 0 means we couldn't parse it, so skip the check
+        //
+        // Don't get confused! We don't care about the extension's version, and in fact we never check
+        // the extension's version at all. What we care about is the extension's target app version,
+        // which is the version of the application that the extension was built to work with.
+        //
+        // We will only do this compatibility check here if we were given a requiredVersion that we can parse:
+        int requiredMajorVersion = AppExtensionInfo.extractMajorVersion(requiredVersion);
+        if (requiredMajorVersion != AppExtensionInfo.INVALID) { // This is not an error - if invalid, just skip the check
 
             // Extract the major version from the extension's target app version:
-            int extMajorVersion = AppExtensionInfo.extractMajorVersion(extInfo.getTargetAppVersion());
-            if (extMajorVersion == 0) {
+            int targetMajorVersion = AppExtensionInfo.extractMajorVersion(extInfo.getTargetAppVersion());
+            if (targetMajorVersion == AppExtensionInfo.INVALID) { // This is an error - the extension was poorly assembled
                 addStartupError(jarFile, "jarFileMeetsRequirements: unable to parse extension's target app version \""
                         + extInfo.getTargetAppVersion()
                         + "\" in jar file "
@@ -571,23 +647,23 @@ public abstract class ExtensionManager<T extends AppExtension> {
             }
 
             // At this point, we have both major versions, so compare them:
-            if (extMajorVersion < targetMajorVersion) {
+            if (targetMajorVersion < requiredMajorVersion) {
                 addStartupError(jarFile, "jarFileMeetsRequirements: Jar file "
                         + jarFile.getAbsolutePath()
                         + " contains an older extension targeting app major version "
-                        + extMajorVersion
-                        + ", below the required major version of "
                         + targetMajorVersion
+                        + ", below the required major version of "
+                        + requiredMajorVersion
                         + "; skipping.");
                 return false;
             }
-            else if (extMajorVersion > targetMajorVersion) {
+            else if (targetMajorVersion > requiredMajorVersion) {
                 addStartupError(jarFile, "jarFileMeetsRequirements: Jar file "
                         + jarFile.getAbsolutePath()
                         + " contains a newer extension targeting app major version "
-                        + extMajorVersion
-                        + ", above the required major version of "
                         + targetMajorVersion
+                        + ", above the required major version of "
+                        + requiredMajorVersion
                         + "; skipping.");
                 return false;
             }
@@ -604,27 +680,47 @@ public abstract class ExtensionManager<T extends AppExtension> {
     }
 
     /**
-     * Scans the given jar file looking for any classes that matches T. The first matching
+     * Scans the given jar file looking for any classes that match extensionClass. The first matching
      * class found will be loaded as an extension of type T and returned. Multiple extension
-     * implementations in the same jar file is therefore not supported - package them into
-     * separate jar files instead.
+     * implementations in the same jar file are therefore not supported! If you have several
+     * extensions to provide for an application, package each one into its own jar file.
+     * (This is better practice anyway, as it allows you to independently version and release each one).
      *
      * @param jarFile        The jar file to scan.
      * @param extensionClass The implementing class to look for.
      * @return An implementation of T if one could be found and loaded, otherwise null.
      */
+    @SuppressWarnings("unchecked")
     public T loadExtensionFromJar(File jarFile, Class<T> extensionClass) {
+        if (jarFile == null) {
+            logger.warning("ExtensionManager.loadExtensionFromJar: given jarFile is null, cannot load extension.");
+            return null;
+        }
+        if (!jarFile.exists() || !jarFile.isFile() || !jarFile.canRead()) {
+            logger.warning("ExtensionManager.loadExtensionFromJar: given jarFile "
+                                   + jarFile.getAbsolutePath()
+                                   + " either does not exist or cannot be read, cannot load extension.");
+            return null;
+        }
+
         try {
             try (JarFile jar = new JarFile(jarFile.getAbsolutePath())) {
                 Enumeration<JarEntry> e = jar.entries();
                 URL[] urls = {new URL("jar:file:" + jarFile.getAbsolutePath() + "!/")};
 
                 // Note: try-with-resources means this class loader will be released immediately
-                //       after the extension is instantiated. This is a deliberate design decision
+                //       after the extension is instantiated! This is a deliberate design decision
                 //       to avoid resource leaks and open file handles. But it also means that
-                //       extensions have to be careful about loading jar resources...
-                //       see AppExtension.loadJarResources() for more info, and also see
-                //       swing-extras issues #126 and #133 for the thought process behind this.
+                //       extensions have to be careful about loading jar resources. If your extension
+                //       wishes to load resources from its own jar file, it MUST do so either in
+                //       its constructor, or in the loadJarResources() method. As soon as this method
+                //       returns, the class loader will be closed and any attempt to load resources
+                //       from the jar file after that will fail.
+                //
+                //       see AppExtension.loadJarResources() for more info, and also refer to these
+                //       issues for the thought process behind this decision:
+                //         https://github.com/scorbo2/swing-extras/issues/126
+                //         https://github.com/scorbo2/swing-extras/issues/133
                 try (URLClassLoader urlClassLoader = URLClassLoader.newInstance(urls)) {
 
                     T result = null;
@@ -667,20 +763,34 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
                         try {
                             Constructor<?> constructor = candidate.getDeclaredConstructor();
-                            //noinspection unchecked
                             result = (T)constructor.newInstance();
 
-                            // safe to invoke now - DON'T do this in the constructor, see issue 116
+                            // Validate the extension info:
+                            if (result.getInfo() == null || !result.getInfo().isValid()) {
+                                addStartupError(jarFile, "Extension class "
+                                        + className
+                                        + " does not have well-formed extension info - extension not loaded.");
+                                result = null;
+                                continue;
+                            }
+
+                            // Invoke createConfigProperties() and set the configProperties list for this extension:
+                            // (this was formerly invoked from the extension constructor, but that was BAD...
+                            //  see issue https://github.com/scorbo2/swing-extras/issues/116 for details.
+                            //  We can safely do it from here.)
                             List<AbstractProperty> configProperties = result.createConfigProperties();
                             result.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
 
-                            // We can also invoke this now while the class loader is still open:
+                            // We can also invoke loadJarResources now while the class loader is still open:
+                            // This is an extension class's last opportunity to load resources from its jar file,
+                            // because we're about to close the class loader that loaded it!
                             result.loadJarResources();
                         }
                         catch (NoSuchMethodException ignored) {
-                            addStartupError(jarFile, "Class"
+                            // Extensions must supply a no-argument constructor:
+                            addStartupError(jarFile, "Class "
                                     + candidate.getName()
-                                    + "has no default constructor - ignored.");
+                                    + " has no default constructor - ignored.");
                             continue;
                         }
                         catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
@@ -705,6 +815,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
                                            jarFile.getAbsolutePath()});
                     }
 
+                    // If we make it here, the extension is instantiated and ready to go!
                     if (result != null) {
                         return result;
                     }
@@ -712,6 +823,8 @@ public abstract class ExtensionManager<T extends AppExtension> {
             }
         }
         catch (Exception e) {
+            // Generic catch-all for any exception not explicitly caught above:
+            // We can't give a meaningful error message because we don't know what went wrong!
             addStartupError(jarFile, "Caught exception while loading extension from jar "
                                     + jarFile.getAbsolutePath()
                                     + ": "
@@ -721,6 +834,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
             return null;
         }
 
+        // If we make it here, we got through the entire jar file without finding a compatible class:
         addStartupError(jarFile, "Jar file "
                 + jarFile.getAbsolutePath()
                 + " contains no suitable extension class.");
@@ -740,14 +854,25 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * resources/fully/qualified/main/package/extInfo.json
      * </p>
      * <p>
-     * You can easily generate an extInfo.json by populating an AppExtensionInfo
-     * object and invoking toJson() on it.
+     * Tip: You can easily generate an extInfo.json by populating an AppExtensionInfo
+     * object in code and invoking toJson() on it, instead of writing the JSON by hand.
      * </p>
      *
-     * @param jarFile The jar file in question.
+     * @param jarFile The jar file in question. Must not be null.
      * @return An AppExtensionInfo, or null.
      */
     public AppExtensionInfo extractExtInfo(File jarFile) {
+        if (jarFile == null) {
+            logger.warning("ExtensionManager.extractExtInfo: given jarFile is null, cannot extract extInfo.");
+            return null;
+        }
+        if (!jarFile.exists() || !jarFile.isFile() || !jarFile.canRead()) {
+            logger.warning("ExtensionManager.extractExtInfo: given jarFile "
+                                   + jarFile.getAbsolutePath()
+                                   + " either does not exist or cannot be read, cannot extract extInfo.");
+            return null;
+        }
+
         logger.log(Level.FINE, "ExtensionManager.extractExtInfo({0})", jarFile.getAbsolutePath());
         try {
             try (JarFile jar = new JarFile(jarFile.getAbsolutePath())) {
@@ -778,9 +903,10 @@ public abstract class ExtensionManager<T extends AppExtension> {
             return null;
         }
 
+        // If we make it here, we got through the whole jar without finding an extInfo.json:
         addStartupError(jarFile, "extractExtInfo: jar file "
                 + jarFile.getAbsolutePath()
-                + "does not contain an extInfo.json file.");
+                + " does not contain an extInfo.json file.");
         return null;
     }
 
@@ -793,11 +919,22 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * <b>Formatting the load order file</b><br>
      * Blank lines and lines starting with a hash character are ignored. All other lines in the file are
      * assumed to be the name (without path) of a single jar file. The order in which those jars are listed
-     * in this file is the order that the extension jars will be loaded.
+     * in this file is the order that the extension jars will be loaded. An example file might look like this:
      * </p>
+     * <pre>
+     * # Extension load order for MyApplication:
+     *
+     * # Extension 7 is super important, so let's load it first:
+     * extension7-1.0.0.jar
+     *
+     * extension2-1.0.0.jar
+     *
+     * # Extension 1 is not so important, so let's load it last:
+     * extension1-1.0.0.jar
+     * </pre>
      * <p>
-     * <b>SPECIAL NOTE:</b> application built-in extensions are generally loaded first by convention!
-     * That can't be overridden in the load order control file.
+     * <b>SPECIAL NOTE:</b> the load order for application built-in extensions can't be overridden
+     * in this load order control file! Refer to the Javadocs for addExtension() for more information on this.
      * </p>
      *
      * @param directory The directory to scan
@@ -805,6 +942,21 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * @return A sorted List of jar files. This list.size() will always match the input Set's size.
      */
     protected List<File> sortExtensionJarSet(File directory, Set<File> jarSet) {
+        if (directory == null) {
+            logger.warning("ExtensionManager.sortExtensionJarSet: given directory is null, cannot sort jars.");
+            return new ArrayList<>();
+        }
+        if (!directory.exists() || !directory.isDirectory() || !directory.canRead()) {
+            logger.warning("ExtensionManager.sortExtensionJarSet: given directory "
+                                   + directory.getAbsolutePath()
+                                   + " either does not exist, is not a directory, or can't be read. Cannot sort jars.");
+            return new ArrayList<>();
+        }
+        if (jarSet == null || jarSet.isEmpty()) {
+            logger.fine("ExtensionManager.sortExtensionJarSet: given jarSet is null or empty, nothing to sort.");
+            return new ArrayList<>();
+        }
+
         List<File> unsortedJars = new ArrayList<>(jarSet);
         List<File> sortedJars = new ArrayList<>(jarSet.size());
 
@@ -835,7 +987,9 @@ public abstract class ExtensionManager<T extends AppExtension> {
                 }
             }
             catch (IOException ioe) {
-                logger.log(Level.WARNING, "ExtensionManager: Problem reading extension load order: " + ioe.getMessage()
+                // Something went wrong, so we'll fall back to filesystem order:
+                logger.log(Level.WARNING, "ExtensionManager: Problem reading extension load order: "
+                                   + ioe.getMessage()
                                    + " - extension load order will use jar file name sort order.",
                            ioe);
             }
@@ -852,7 +1006,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * Invoked internally to return a list of all loaded extension wrappers, sorted
      * by the extension name.
      *
-     * @return A List of ExtensionWrappers, sorted by extension name;
+     * @return A List of ExtensionWrappers, sorted by extension name (not by class name)
      */
     protected List<ExtensionWrapper> getAllLoadedExtensionWrappers() {
         List<ExtensionWrapper> wrapperList = new ArrayList<>(loadedExtensions.values());
@@ -872,6 +1026,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
 
         @Override
         public int compareTo(ExtensionWrapper o) {
+            // There are no null checks here because we validate extension info when loading extensions.
             return extension.getInfo().getName().compareTo(o.extension.getInfo().getName());
         }
     }

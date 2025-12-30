@@ -37,12 +37,16 @@ import java.util.logging.Logger;
  * once again show up in the PropertiesDialog.
  * <p>
  * <b>Loading and saving</b><br>
- * Unlike sc-util 1.8, there's nothing wonky that client apps need to do in order
- * to load AppProperties and Extensions. You can simply invoke load() in this class
- * and it will all just work. Any extensions that were disabled the last time you
- * invoked save() will be correctly loaded in a disabled state - this means that their
- * property values will be loaded correctly, but they won't show up in the PropertiesDialog
- * until the extension is enabled again.
+ * Unlike older releases of swing-extras (1.8 and prior), there's nothing wonky that
+ * client apps need to do in order to load AppProperties and Extensions. You can simply
+ * invoke load() in this class and it will all just work. Any extensions that were
+ * disabled the last time you invoked save() will be correctly loaded in a disabled state.
+ * This means that their property values will be loaded correctly, but they won't show
+ * up in the PropertiesDialog until the extension is enabled again.
+ * </p>
+ * <p>
+ * Refer to the <a href="http://www.corbett.ca/swing-extras-book/">swing-extras documentation</a> for more information.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2024-12-30
@@ -87,7 +91,7 @@ public abstract class AppProperties<T extends AppExtension> {
      * this because property values cannot be read until the AppProperties instance is fully initialized,
      * leading to a circular problem.
      * <p>
-     * If the value does not exist or an error occurs while reading the props file, empty string is returned.
+     * If the value does not exist or an error occurs while reading the props file, an empty string is returned.
      * </p>
      *
      * @param propsFile The properties file to read.
@@ -143,9 +147,23 @@ public abstract class AppProperties<T extends AppExtension> {
     }
 
     /**
-     * If you have specific properties you wish to set on save (window dimensions or other
+     * If you have specific extra properties you wish to set on save (window dimensions or other
      * variable stuff), you can override this method and invoke super save() AFTER you have
      * updated your property values.
+     * <p>
+     * But consider adding non-exposed properties for this purpose instead:
+     * </p>
+     * <pre>
+     * IntegerProperty windowWidth = new IntegerProperty("window.width", "Window width",800);
+     * IntegerProperty windowHeight = new IntegerProperty("window.height", "Window height",600);
+     * windowWidth.setExposed(false); // prevents showing in PropertiesDialog
+     * windowHeight.setExposed(false); // prevents showing in PropertiesDialog
+     * </pre>
+     * <p>
+     * That way, your non-exposed properties will be loaded and saved automatically
+     * via the normal mechanism, while still being hidden from the user in the PropertiesDialog.
+     * And, you would no longer need to override this method.
+     * </p>
      */
     public void save() {
         reconcileExtensionEnabledStatus();
@@ -199,8 +217,8 @@ public abstract class AppProperties<T extends AppExtension> {
      * Generates and shows an ExtensionManagerDialog to allow the user to view all
      * currently loaded extensions, and to enable or disable them.
      * <p>
-     *     Note: dynamic extension discovery and download will be disabled and hidden.
-     *     Use showExtensionDialog(Window, UpdateSources) instead if you want this feature.
+     * Note: dynamic extension discovery and download will be disabled and hidden.
+     * Use showExtensionDialog(Window, UpdateManager) instead if you want this feature.
      * </p>
      *
      * @param owner The owning Frame (so we can make the dialog modal to that Frame).
@@ -213,7 +231,7 @@ public abstract class AppProperties<T extends AppExtension> {
     /**
      * Generates and shows an ExtensionManagerDialog to allow the user to view
      * all currently loaded extensions, and to enable or disable them. Additionally,
-     * the given UpdateManager can be queried to find and show a list of extensions
+     * the given UpdateManager will be queried to find and show a list of extensions
      * available for download. The user can download new extensions or update
      * existing ones using the "available" tab on the dialog.
      */
@@ -247,7 +265,7 @@ public abstract class AppProperties<T extends AppExtension> {
      * that this method might have the side effect of enabling/disabling an extension here
      * in AppProperties if we check and find that ExtensionManager's answer doesn't match ours.
      *
-     * @param extName      The class name of the extension to check.
+     * @param extName      The fully qualified class name of the extension to check.
      * @param defaultValue A value to return if the status can't be found.
      * @return Whether the named extension is enabled.
      */
@@ -270,7 +288,7 @@ public abstract class AppProperties<T extends AppExtension> {
      * Enables or disables the specified extension. We will also update ExtensionManager,
      * if we have one.
      *
-     * @param extName The class name of the extension to enable/disable
+     * @param extName The fully qualified class name of the extension to enable/disable
      * @param value   The new enabled status for that extension.
      */
     public void setExtensionEnabled(String extName, boolean value) {
@@ -282,19 +300,19 @@ public abstract class AppProperties<T extends AppExtension> {
 
     /**
      * Override this to specify whatever properties your application needs. This method
-     * will be invoked automatically upon creation.
+     * will be invoked automatically upon creation, and whenever AppProperties is re-initialized.
      *
      * @return A List of zero or more AbstractProperty instances.
      */
     protected abstract List<AbstractProperty> createInternalProperties();
 
     /**
-     * Reinitializes the underlying PropertiesManager instance from scratch. This means
+     * Re-initializes the underlying PropertiesManager instance from scratch. This means
      * both invoking our abstract createInternalProperties() method and also interrogating
      * our ExtensionManager to get a list of all extension-supplied properties. This method
-     * is invoked automatically on initial creation, but you can invoke it again later
+     * is invoked automatically on initial creation. You can invoke it again later
      * if you have manually added, removed, enabled, or disabled extensions, so that the
-     * list of properties is fully reinitialized to reflect the new state of things.
+     * list of properties is fully re-initialized to reflect the new state of things.
      * <p>
      * For an example of why you might want to do this, consider an extension that
      * supplies a bunch of options, some of which may appear as selectable
@@ -314,8 +332,8 @@ public abstract class AppProperties<T extends AppExtension> {
      * throughout your app as a result of enabling or disabling extensions).
      * </p>
      * <p>
-     *     Note this method will end by invoking load() again to pick up
-     *     whatever values were previously persisted.
+     * Note this method will end by invoking load() again to pick up
+     * whatever values were previously persisted.
      * </p>
      */
     public void reinitialize() {

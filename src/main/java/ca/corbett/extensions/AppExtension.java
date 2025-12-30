@@ -10,12 +10,21 @@ import java.util.List;
  * Some basic hooks are provided here, but the intention is that
  * application-specific implementations will add their own hooks
  * to be invoked by the application in question.
+ * <p>
+ * Refer to the <a href="http://www.corbett.ca/swing-extras-book/">swing-extras documentation</a> for more information.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
 public abstract class AppExtension {
 
+    /**
+     * List of configuration properties for this extension.
+     * ExtensionManager will automatically populate this list for you, by invoking
+     * your implementation of createConfigProperties() when the extension
+     * is first instantiated.
+     */
     protected List<AbstractProperty> configProperties;
 
     /**
@@ -35,7 +44,7 @@ public abstract class AppExtension {
      * any number of times. It's therefore best if extensions refrain from
      * creating their config property list in the getConfigProperties() method.
      *
-     * @return A List of 0 or more configuration properties for this extension.
+     * @return A List of 0 or more configuration properties for this extension. Guaranteed not to be null.
      */
     public final List<AbstractProperty> getConfigProperties() {
         return new ArrayList<>(configProperties);

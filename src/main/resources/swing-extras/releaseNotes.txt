@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.6.0 [2025-12-31] - Maintenance release
+  #224 - Better extension error handling in ExtensionManager
   #222 - ListSubsetField: support drag and drop
   #220 - ListSubsetField: auto-sorting is optional (default: off)
   #218 - Slight adjustment to HyperlinkUtil.BrowseAction

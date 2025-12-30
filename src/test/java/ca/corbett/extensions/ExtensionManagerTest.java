@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,17 +42,21 @@ public class ExtensionManagerTest {
     @Test
     public void testGetExtensionCount() {
         assertEquals(0, extManager.getLoadedExtensionCount());
-        extManager.addExtension(ext1, true);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
         assertEquals(1, extManager.getLoadedExtensionCount());
-        extManager.addExtension(ext2, false);
+        success = extManager.addExtension(ext2, false);
+        assertTrue(success);
         assertEquals(2, extManager.getLoadedExtensionCount());
     }
 
     @Test
     public void testIsEnabled() {
         assertFalse(extManager.isExtensionEnabled("some.class.that.does.not.exist"));
-        extManager.addExtension(ext1, true);
-        extManager.addExtension(ext2, false);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
+        success = extManager.addExtension(ext2, false);
+        assertTrue(success);
         assertTrue(extManager.isExtensionEnabled(ext1.getClass().getName()));
         assertFalse(extManager.isExtensionEnabled(ext2.getClass().getName()));
     }
@@ -59,8 +64,10 @@ public class ExtensionManagerTest {
     @Test
     public void testGetSourceJar() {
         assertNull(extManager.getSourceJar("some.class.that.does.not.exist"));
-        extManager.addExtension(ext1, true);
-        extManager.addExtension(ext2, false);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
+        success = extManager.addExtension(ext2, false);
+        assertTrue(success);
         assertNull(extManager.getSourceJar(ext1.getClass().getName()));
         assertNull(extManager.getSourceJar(ext2.getClass().getName()));
     }
@@ -68,8 +75,10 @@ public class ExtensionManagerTest {
     @Test
     public void testGetExtension() {
         assertNull(extManager.getLoadedExtension("some.class.that.does.not.exist"));
-        extManager.addExtension(ext1, true);
-        extManager.addExtension(ext2, false);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
+        success = extManager.addExtension(ext2, false);
+        assertTrue(success);
         assertEquals(ext1, extManager.getLoadedExtension(ext1.getClass().getName()));
         assertEquals(ext2, extManager.getLoadedExtension(ext2.getClass().getName()));
     }
@@ -77,23 +86,29 @@ public class ExtensionManagerTest {
     @Test
     public void testGetAllExtensions() {
         assertEquals(0, extManager.getAllLoadedExtensions().size());
-        extManager.addExtension(ext1, true);
-        extManager.addExtension(ext2, false);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
+        success = extManager.addExtension(ext2, false);
+        assertTrue(success);
         assertEquals(2, extManager.getAllLoadedExtensions().size());
     }
 
     @Test
     public void testGetEnabledExtensions() {
         assertEquals(0, extManager.getEnabledLoadedExtensions().size());
-        extManager.addExtension(ext1, true);
-        extManager.addExtension(ext2, false);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
+        success = extManager.addExtension(ext2, false);
+        assertTrue(success);
         assertEquals(1, extManager.getEnabledLoadedExtensions().size());
     }
 
     @Test
     public void testFindExtensionByName() {
-        extManager.addExtension(ext1, true);
-        extManager.addExtension(ext2, false);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
+        success = extManager.addExtension(ext2, false);
+        assertTrue(success);
         assertNotNull(extManager.findExtensionByName("test1"));
         assertNotNull(extManager.findExtensionByName("test2"));
         assertNull(extManager.findExtensionByName("test3"));
@@ -102,16 +117,19 @@ public class ExtensionManagerTest {
     @Test
     public void testGetAllExtensionProperties() {
         assertEquals(0, extManager.getAllEnabledExtensionProperties().size());
-        extManager.addExtension(ext1, true);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
         assertEquals(0, extManager.getAllEnabledExtensionProperties().size()); // shouldn't change
-        extManager.addExtension(ext2, true);
+        success = extManager.addExtension(ext2, true);
+        assertTrue(success);
         assertEquals(1, extManager.getAllEnabledExtensionProperties().size()); // should change
     }
 
     @Test
     public void testAddDisabledExtensionGetProperties() {
         assertEquals(0, extManager.getAllEnabledExtensionProperties().size());
-        extManager.addExtension(ext2, false);
+        boolean success = extManager.addExtension(ext2, false);
+        assertTrue(success);
         assertEquals(0, extManager.getAllEnabledExtensionProperties().size()); // shouldn't change
     }
 
@@ -119,16 +137,20 @@ public class ExtensionManagerTest {
     public void testAddDuplicateProperties_shouldFilterDuplicates() {
         // Issue #39 - let's allow extensions to share configuration properties
         assertEquals(0, extManager.getAllEnabledExtensionProperties().size());
-        extManager.addExtension(ext2, true);
+        boolean success = extManager.addExtension(ext2, true);
+        assertTrue(success);
         assertEquals(1, extManager.getAllEnabledExtensionProperties().size());
-        extManager.addExtension(new AppExtensionImpl2WithDuplicateConfigProperty("dupe"), true);
+        success = extManager.addExtension(new AppExtensionImpl2WithDuplicateConfigProperty("dupe"), true);
+        assertTrue(success);
         assertEquals(1, extManager.getAllEnabledExtensionProperties().size()); // shouldn't change
     }
 
     @Test
     public void testUnloadExtension() {
-        extManager.addExtension(ext1, true);
-        extManager.addExtension(ext2, true);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
+        success = extManager.addExtension(ext2, true);
+        assertTrue(success);
         assertTrue(extManager.unloadExtension(ext1.getClass().getName()));
         assertFalse(extManager.unloadExtension(ext1.getClass().getName())); // shouldn't remove twice
         assertEquals(1, extManager.getAllLoadedExtensions().size());
@@ -138,8 +160,10 @@ public class ExtensionManagerTest {
 
     @Test
     public void testUnloadAllExtensions() {
-        extManager.addExtension(ext1, true);
-        extManager.addExtension(ext2, true);
+        boolean success = extManager.addExtension(ext1, true);
+        assertTrue(success);
+        success = extManager.addExtension(ext2, true);
+        assertTrue(success);
         assertEquals(2, extManager.unloadAllExtensions());
         assertEquals(0, extManager.getAllLoadedExtensions().size());
     }
@@ -326,6 +350,130 @@ public class ExtensionManagerTest {
         assertTrue(actual);
     }
 
+    @Test
+    public void jarFileMeetsRequirements_withNullExtensionInfo_shouldFail() {
+        boolean actual = extManager.jarFileMeetsRequirements(new File("test"), null, "Test", "1.0");
+        assertFalse(actual);
+    }
+
+    @Test
+    public void jarFileMeetsRequirements_withNullJarFile_shouldFail() {
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testNullJar")
+                .setVersion("1.0")
+                .setTargetAppName("Test")
+                .setTargetAppVersion("1.0")
+                .build();
+        boolean actual = extManager.jarFileMeetsRequirements(null, extInfo, "Test", "1.0");
+        assertFalse(actual);
+    }
+
+    @Test
+    public void loadExtensions_withNullDirectory_shouldReturnZero() throws Exception {
+        int loadedCount = extManager.loadExtensions(null, AppExtension.class, null, null);
+        assertEquals(0, loadedCount);
+    }
+
+    @Test
+    public void loadExtensions_withNonExistentDirectory_shouldReturnZero() throws Exception {
+        File nonExistentDir = new File("this_directory_should_not_exist_12345");
+        int loadedCount = extManager.loadExtensions(nonExistentDir, AppExtension.class, null, null);
+        assertEquals(0, loadedCount);
+    }
+
+    @Test
+    public void findCandidateExtensionJars_withNullDirectory_shouldReturnEmptySet() throws Exception {
+        Map<File, AppExtensionInfo> jarFiles = extManager.findCandidateExtensionJars(null, null, null);
+        assertNotNull(jarFiles);
+        assertEquals(0, jarFiles.size());
+    }
+
+    @Test
+    public void findCandidateExtensionJars_withNonExistentDirectory_shouldReturnEmptySet() throws Exception {
+        File nonExistentDir = new File("this_directory_should_not_exist_12345");
+        Map<File, AppExtensionInfo> jarFiles = extManager.findCandidateExtensionJars(nonExistentDir, null, null);
+        assertNotNull(jarFiles);
+        assertEquals(0, jarFiles.size());
+    }
+
+    @Test
+    public void loadExtensionFromJar_withNullJarFile_shouldReturnNull() throws Exception {
+        AppExtension ext = extManager.loadExtensionFromJar(null, AppExtension.class);
+        assertNull(ext);
+    }
+
+    @Test
+    public void loadExtensionFromJar_withNonExistentJarFile_shouldReturnNull() throws Exception {
+        File nonExistentJar = new File("this_jar_file_should_not_exist_12345.jar");
+        AppExtension ext = extManager.loadExtensionFromJar(nonExistentJar, AppExtension.class);
+        assertNull(ext);
+    }
+
+    @Test
+    public void extractExtInfo_withNullJarFile_shouldReturnNull() throws Exception {
+        AppExtensionInfo extInfo = extManager.extractExtInfo(null);
+        assertNull(extInfo);
+    }
+
+    @Test
+    public void extractExtInfo_withNonExistentJarFile_shouldReturnNull() throws Exception {
+        File nonExistentJar = new File("this_jar_file_should_not_exist_12345.jar");
+        AppExtensionInfo extInfo = extManager.extractExtInfo(nonExistentJar);
+        assertNull(extInfo);
+    }
+
+    @Test
+    public void sortExtensionJarSet_withNullDirectory_shouldReturnEmptyList() throws Exception {
+        List<File> sortedJars = extManager.sortExtensionJarSet(null, new HashSet<>());
+        assertNotNull(sortedJars);
+        assertEquals(0, sortedJars.size());
+    }
+
+    @Test
+    public void sortExtensionJarSet_withNonExistentDirectory_shouldReturnEmptyList() throws Exception {
+        File nonExistentDir = new File("this_directory_should_not_exist_12345");
+        List<File> sortedJars = extManager.sortExtensionJarSet(nonExistentDir, new HashSet<>());
+        assertNotNull(sortedJars);
+        assertEquals(0, sortedJars.size());
+    }
+
+    @Test
+    public void sortExtensionJarSet_withNullJarSet_shouldReturnEmptyList() throws Exception {
+        Path tmpDir = Files.createTempDirectory("testSortExtensionJars");
+        try {
+            List<File> sortedJars = extManager.sortExtensionJarSet(tmpDir.toFile(), null);
+            assertNotNull(sortedJars);
+            assertEquals(0, sortedJars.size());
+        }
+        finally {
+            deleteDirectory(tmpDir.toFile());
+        }
+    }
+
+    @Test
+    public void sortExtensionJarSet_withEmptyJarSet_shouldReturnEmptyList() throws Exception {
+        Path tmpDir = Files.createTempDirectory("testSortExtensionJars");
+        try {
+            List<File> sortedJars = extManager.sortExtensionJarSet(tmpDir.toFile(), new HashSet<>());
+            assertNotNull(sortedJars);
+            assertEquals(0, sortedJars.size());
+        }
+        finally {
+            deleteDirectory(tmpDir.toFile());
+        }
+    }
+
+    @Test
+    public void addExtension_withNullExtension_shouldReturnFalse() {
+        boolean result = extManager.addExtension(null, true);
+        assertFalse(result);
+    }
+
+    @Test
+    public void addExtension_withInvalidExtension_shouldReturnFalse() {
+        boolean result = extManager.addExtension(new AppExtensionImplWithInvalidExtInfo("test"), true);
+        assertFalse(result);
+    }
+
     public static class AppExtensionImpl1 extends AppExtension {
 
         private final String name;
@@ -428,6 +576,46 @@ public class ExtensionManagerTest {
             List<AbstractProperty> list = new ArrayList<>();
             list.add(new IntegerProperty("testProperty", "testProperty", 1));
             return list;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    /**
+     * This one will not load! It is deliberately missing target app name and target app version.
+     * This is for testing the failure case for addExtension().
+     */
+    public static class AppExtensionImplWithInvalidExtInfo extends AppExtension {
+
+        private final String name;
+        private final AppExtensionInfo extInfo;
+
+        public AppExtensionImplWithInvalidExtInfo(String name) {
+            this.name = name;
+            this.extInfo = new AppExtensionInfo.Builder(name)
+                    .setAuthor("me")
+                    .setVersion("1.0")
+                    // Missing target app name and version
+                    .setShortDescription("Just a test")
+                    .setLongDescription("Just a test of AppExtension with invalid ext info")
+                    .setReleaseNotes("v1.0 - initial release")
+                    .build();
+        }
+
+        @Override
+        public AppExtensionInfo getInfo() {
+            return extInfo;
+        }
+
+        @Override
+        protected void loadJarResources() {
+        }
+
+        @Override
+        protected List<AbstractProperty> createConfigProperties() {
+            return null;
         }
 
         public String getName() {

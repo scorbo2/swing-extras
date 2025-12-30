@@ -70,10 +70,10 @@ public class UpdateManager {
     /**
      * The process exit code that signals to our launcher script that we want to
      * restart the application (like after a new extension is installed).
-     * Don't change this value without also updating the launcher script!
-     * If they're not in sync, the application will exit and then not restart.
+     * <b>Don't change this value without also updating the launcher script!</b>
+     * If they're not in sync, the application will simply exit without restarting.
      */
-    public static final int APPLICATION_RESTART = 100;
+    public static final int APPLICATION_RESTART = 100; // arbitrary choice - nothing special about this number
 
     /**
      * Disable this to prevent the constructor from attempting to automatically
