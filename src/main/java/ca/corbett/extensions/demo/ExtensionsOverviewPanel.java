@@ -43,7 +43,7 @@ import java.util.List;
  * </p>
  * <ul>
  *     <li><b>MusicPlayer:</b> <a href="https://github.com/scorbo2/musicplayer">https://github.com/scorbo2/musicplayer/</a></li>
- *     <li><b>ImageViewer:</b> <a href="https://github.com/scorbo2/imageviewer/">https://github.com/scorbo2/imageviewer/</a></B></li>
+ *     <li><b>ImageViewer:</b> <a href="https://github.com/scorbo2/imageviewer/">https://github.com/scorbo2/imageviewer/</a></li>
  * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
