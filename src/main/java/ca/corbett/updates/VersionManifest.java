@@ -319,7 +319,7 @@ public class VersionManifest {
 
         /**
          * Extracts just the major version number from the version string, if possible.
-         * Will return 0 if it cannot be determined.
+         * Will return AppExtensionInfo.INVALID if it cannot be determined.
          */
         public int getMajorVersion() {
             return AppExtensionInfo.extractMajorVersion(version);

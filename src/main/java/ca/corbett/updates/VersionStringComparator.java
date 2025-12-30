@@ -17,21 +17,23 @@ public class VersionStringComparator implements Comparator<String> {
 
     /**
      * Given a version string in the format "x.y.z", return a String that is safe for
-     * use in string comparison operations. This involves removing the dots and zero-padding
+     * use in string comparison operations. This involves removing the dots and then zero-padding
      * each component number to three digits. So, "1.2" returns "001002000", and "1.21.5" returns "001021005".
      * <p>
      * The intention is to avoid weird sorting errors like "11.0" being sorted before "2.1",
      * which is what would happen without this method.
      * </p>
      * <p>
-     * Versions are normalized to 3 segments. Missing segments are treated as 0.
-     * Non-numeric characters are stripped from each segment (e.g., "v1.0" becomes "1.0").
+     * <b>Versions are normalized to 3 segments</b>. Missing segments are treated as 0.
+     * Non-numeric characters are stripped from each segment (e.g., the "v" in "v1.0" is removed).
      * So, "v1-SNAPSHOT" would return "001000000", because we implicitly read that as "1.0.0".
+     * Extra version numbers beyond Major.Minor.Patch are simply ignored. So, "1.0.0.1.0"
+     * would evaluate to "001000000".
      * </p>
      */
     public static String convertVersionToSafeCompareString(String version) {
         if (version == null || version.isBlank()) {
-            return "000000000";
+            return "000000000"; // you give me null, you get 0.0.0
         }
 
         String[] parts = version.split("\\.");

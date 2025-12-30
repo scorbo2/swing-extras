@@ -277,7 +277,7 @@ public class AvailableExtensionsPanel extends JPanel {
         // its target application major version matches the application's major version. So, we will grab the
         // highest version of each extension that matches this application's major version.
         int appMajorVersion = AppExtensionInfo.extractMajorVersion(applicationVersion);
-        if (appMajorVersion != 0) {
+        if (appMajorVersion != AppExtensionInfo.INVALID) {
             // Get a list of the highest version of each extension that matches our application's major version:
             // (this list will be returned to us sorted by extension name in ascending order)
             for (VersionManifest.ExtensionVersion highestVersion :

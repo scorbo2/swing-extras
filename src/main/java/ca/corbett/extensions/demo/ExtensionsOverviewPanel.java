@@ -4,6 +4,7 @@ import ca.corbett.extensions.AppExtension;
 import ca.corbett.extensions.AppExtensionInfo;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extensions.ui.ExtensionManagerDialog;
+import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.properties.AbstractProperty;
@@ -20,19 +21,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A demo panel to show off some of what ExtensionManager can do.
+ * A demo panel to show off ONLY SOME of what ExtensionManager can do.
  * This is a very difficult feature to demo! ExtensionManager, by design,
- * is extremely customizable, and through extensions, you can add almost
+ * is extremely customizable. Through extensions, you can add almost
  * any additional functionality to an existing application without changing
- * the application code itself.
+ * the application code itself!
  * <p>
  * This demo panel focuses mostly on the ExtensionManagerDialog, which
  * gives your application a free UI to show your extensions to the user,
  * and to allow them to be toggled on or off. For the purpose of this demo,
- * we create and present three "fake" extensions that don't actually do anything.
+ * we create and present three "fake" built-in extensions that don't actually do anything.
  * They only exist so that you can get a feel for what the ExtensionManagerDialog
  * might look like in your application.
  * </p>
+ * <p>
+ * One extremely cool feature of the ExtensionManagerDialog that is not shown
+ * here is the ability to discover and download new extensions from remote
+ * web hosts, and the ability to upgrade existing extensions when new versions
+ * are made available. For a complete working example of applications that
+ * make good use of this feature, I invite you to take a look at these projects:
+ * </p>
+ * <ul>
+ *     <li><b>MusicPlayer:</b> <a href="https://github.com/scorbo2/musicplayer">https://github.com/scorbo2/musicplayer/</a></li>
+ *     <li><b>ImageViewer:</b> <a href="https://github.com/scorbo2/imageviewer/">https://github.com/scorbo2/imageviewer/</a></B></li>
+ * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
@@ -99,7 +111,7 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
 
     /**
      * Normally, extensions are not defined as part of the application's codebase like this (although
-     * they can be... these are called "internal" or "built-in" extensions). Typically, an extension is a separate
+     * they can be... these are called "built-in" extensions). Typically, an extension is a separate
      * project in a separate repo and can be developed and maintained independently from the application.
      * They are deployed in jar format and the application loads them dynamically.
      * But for our demo purposes, a built-in extension is good enough to show off ExtensionManagerDialog.
@@ -123,6 +135,8 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
                                                 "This dialog and the ability to enable/disable extensions is " +
                                                 "provided out of the box and requires no UI code!")
                     .setReleaseNotes("example")
+                    .setTargetAppName("swing-extras demo")
+                    .setTargetAppVersion(Version.VERSION)
                     .build();
         }
 
@@ -140,7 +154,7 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
 
     /**
      * Normally, extensions are not defined as part of the application's codebase like this (although
-     * they can be... these are called "internal" or "built-in" extensions). Typically, an extension is a separate
+     * they can be... these are called "built-in" extensions). Typically, an extension is a separate
      * project in a separate repo and can be developed and maintained independently from the application.
      * They are deployed in jar format and the application loads them dynamically.
      * But for our demo purposes, a built-in extension is good enough to show off ExtensionManagerDialog.
@@ -157,6 +171,8 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
                                                 "based on the extensions that are found and loaded when " +
                                                 "your application starts up.")
                     .setReleaseNotes("example")
+                    .setTargetAppName("swing-extras demo")
+                    .setTargetAppVersion(Version.VERSION)
                     .build();
         }
 
@@ -174,7 +190,7 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
 
     /**
      * Normally, extensions are not defined as part of the application's codebase like this (although
-     * they can be... these are called "internal" or "built-in" extensions). Typically, an extension is a separate
+     * they can be... these are called "built-in" extensions). Typically, an extension is a separate
      * project in a separate repo and can be developed and maintained independently from the application.
      * They are deployed in jar format and the application loads them dynamically.
      * But for our demo purposes, a built-in extension is good enough to show off ExtensionManagerDialog.
@@ -193,6 +209,8 @@ public class ExtensionsOverviewPanel extends PanelBuilder {
                                                 "built with it, such as musicplayer or imageviewer or snotes " +
                                                 "or tasktracker, etc.")
                     .setReleaseNotes("example")
+                    .setTargetAppName("swing-extras demo")
+                    .setTargetAppVersion(Version.VERSION)
                     .build();
         }
 
