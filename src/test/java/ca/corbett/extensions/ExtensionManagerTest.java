@@ -415,7 +415,7 @@ public class ExtensionManagerTest {
     }
 
     @Test
-    public void extractExtInfo_withNonExistentJar_file_shouldReturnNull() throws Exception {
+    public void extractExtInfo_withNonExistentJarFile_shouldReturnNull() throws Exception {
         File nonExistentJar = new File("this_jar_file_should_not_exist_12345.jar");
         AppExtensionInfo extInfo = extManager.extractExtInfo(nonExistentJar);
         assertNull(extInfo);
