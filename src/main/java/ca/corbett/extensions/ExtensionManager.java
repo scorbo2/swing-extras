@@ -788,9 +788,9 @@ public abstract class ExtensionManager<T extends AppExtension> {
                         }
                         catch (NoSuchMethodException ignored) {
                             // Extensions must supply a no-argument constructor:
-                            addStartupError(jarFile, "Class"
+                            addStartupError(jarFile, "Class "
                                     + candidate.getName()
-                                    + "has no default constructor - ignored.");
+                                    + " has no default constructor - ignored.");
                             continue;
                         }
                         catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
