@@ -906,7 +906,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
         // If we make it here, we got through the whole jar without finding an extInfo.json:
         addStartupError(jarFile, "extractExtInfo: jar file "
                 + jarFile.getAbsolutePath()
-                + "does not contain an extInfo.json file.");
+                + " does not contain an extInfo.json file.");
         return null;
     }
 
