@@ -396,20 +396,20 @@ public class ExtensionManagerTest {
     }
 
     @Test
-    public void loadExtensionFromJar_withNullJar_file_shouldReturnNull() throws Exception {
+    public void loadExtensionFromJar_withNullJarFile_shouldReturnNull() throws Exception {
         AppExtension ext = extManager.loadExtensionFromJar(null, AppExtension.class);
         assertNull(ext);
     }
 
     @Test
-    public void loadExtensionFromJar_withNonExistentJar_file_shouldReturnNull() throws Exception {
+    public void loadExtensionFromJar_withNonExistentJarFile_shouldReturnNull() throws Exception {
         File nonExistentJar = new File("this_jar_file_should_not_exist_12345.jar");
         AppExtension ext = extManager.loadExtensionFromJar(nonExistentJar, AppExtension.class);
         assertNull(ext);
     }
 
     @Test
-    public void extractExtInfo_withNullJar_file_shouldReturnNull() throws Exception {
+    public void extractExtInfo_withNullJarFile_shouldReturnNull() throws Exception {
         AppExtensionInfo extInfo = extManager.extractExtInfo(null);
         assertNull(extInfo);
     }
