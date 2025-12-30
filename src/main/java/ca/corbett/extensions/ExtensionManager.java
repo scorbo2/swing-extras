@@ -215,7 +215,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * Searches for any loaded extension with a matching name (case-sensitive) and returns
      * the first match. Will return null if no extensions are loaded or no match is found.
      *
-     * @param name The fully qualified class name of the extension in question.
+     * @param name The extension name (as reported by {@code extension.getInfo().getName()}).
      * @return The extension instance, or null if not found.
      */
     public T findExtensionByName(String name) {
