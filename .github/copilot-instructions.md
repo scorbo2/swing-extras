@@ -8,7 +8,7 @@
 - **Language**: Java 17
 - **Size**: ~189 source files, ~65 test files
 - **Main Output**: JAR library + runnable demo application
-- **Version**: 2.5.0
+- **Version**: 2.6.0
 - **License**: MIT
 
 ## Key Dependencies and Frameworks
@@ -56,10 +56,10 @@
    mvn package -DskipTests
    ```
    Takes ~15 seconds. Creates:
-   - `target/swing-extras-2.5.0.jar` (1MB - library only)
-   - `target/swing-extras-2.5.0-jar-with-dependencies.jar` (3.7MB - runnable with demo)
-   - `target/swing-extras-2.5.0-sources.jar` (794KB)
-   - `target/swing-extras-2.5.0-javadoc.jar` (1.8MB)
+   - `target/swing-extras-2.6.0.jar` (1MB - library only)
+   - `target/swing-extras-2.6.0-jar-with-dependencies.jar` (3.7MB - runnable with demo)
+   - `target/swing-extras-2.6.0-sources.jar` (794KB)
+   - `target/swing-extras-2.6.0-javadoc.jar` (1.8MB)
 
 5. **Full build with tests**:
    ```bash
@@ -82,7 +82,7 @@
 
 After building with `mvn package`:
 ```bash
-java -jar target/swing-extras-2.5.0-jar-with-dependencies.jar
+java -jar target/swing-extras-2.6.0-jar-with-dependencies.jar
 ```
 Note: Requires a graphical environment. Main class: `ca.corbett.extras.demo.DemoAppLauncher`
 

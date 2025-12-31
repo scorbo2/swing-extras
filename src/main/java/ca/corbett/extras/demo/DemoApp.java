@@ -26,7 +26,6 @@ import ca.corbett.forms.demo.FormsRendererPanel;
 import ca.corbett.forms.demo.FormsValidationPanel;
 import ca.corbett.forms.demo.ListFieldPanel;
 
-import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -36,14 +35,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.util.logging.Logger;
 
@@ -61,16 +56,10 @@ public class DemoApp extends JFrame {
     private static final Logger logger = Logger.getLogger(DemoApp.class.getName());
     AudioDemoPanel audioDemoPanel = new AudioDemoPanel();
     private static DemoApp instance;
-    private static final Desktop desktop;
 
     private DefaultListModel<String> cardListModel;
     private JList<String> cardList;
     private JPanel demoPanel;
-
-    static {
-        // The current JRE may or may not give us access to this:
-        desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-    }
 
     public static DemoApp getInstance() {
         if (instance == null) {
@@ -187,44 +176,5 @@ public class DemoApp extends JFrame {
         demoPanel = new JPanel();
         demoPanel.setLayout(new CardLayout());
         return demoPanel;
-    }
-
-    /**
-     * If the current JRE supports browsing, this action will open the given URI
-     * in the user's default browser.
-     */
-    public static class BrowseAction extends AbstractAction {
-        private final URI uri;
-
-        public BrowseAction(URI uri) {
-            this.uri = uri;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (isBrowsingSupported()) {
-                try {
-                    desktop.browse(uri);
-                }
-                catch (IOException ioe) {
-                    logger.warning("Unable to browse URI: " + ioe.getMessage());
-                }
-            }
-        }
-    }
-
-    /**
-     * Reports whether the current JRE supports browsing (needed to open hyperlinks).
-     */
-    public static boolean isBrowsingSupported() {
-        return desktop != null && desktop.isSupported(Desktop.Action.BROWSE);
-    }
-
-    /**
-     * Does a very quick check on the given String to see if it looks like a URL.
-     * This doesn't guarantee that it will parse as one! This is just a very quick check.
-     */
-    public static boolean isUrl(String url) {
-        return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }
 }

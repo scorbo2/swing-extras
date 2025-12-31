@@ -12,6 +12,20 @@ You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
 - The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
 
+## NEWS! December 31, 2025 - swing extras 2.6 release is here!
+
+Happy New Year! The 2.6 release of swing-extras is now available.
+The biggest change in 2.6 is that  ExtensionManager no longer insists on an exact version match when loading extensions,
+instead just looking at the major version. So, no more mandatory re-releases of extensions for every minor
+application release!
+
+Other notable additions in swing-extras 2.6:
+- new FormFields: HtmlLabelField, ListSubsetField, ButtonField
+- new Utility classes: HyperlinkUtil, TextFileDetector, SingleInstanceManager
+- and a few minor bug fixes.
+
+Refer to the [release notes](src/main/resources/swing-extras/releaseNotes.txt) for a complete list.
+
 ## NEWS! December 1, 2025 - swing-extras 2.5 release is here!
 
 The 2.5 release of swing-extras is HUGE, and contains not only some new form fields and properties, but
@@ -21,9 +35,7 @@ the new `UpdateManager` class and also the [ext-packager](https://github.com/sco
 project for details on how to set this up!
 
 Other notable additions in swing-extras 2.5:
-- new FormField: SliderField
-- new FormField: CollapsiblePanelField
-- new FormField: ImageListField
+- new FormFields: SliderField, CollapsiblePanelField, ImageListField
 - much cleaner demo application with code snippets!
 
 There are also numerous bug fixes and minor improvements throughout the library in this release.
@@ -38,7 +50,7 @@ Refer to the [release notes](src/main/resources/swing-extras/releaseNotes.txt) f
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>2.5.0</version>
+    <version>2.6.0</version>
   </dependency>
 </dependencies>
 ```
@@ -52,7 +64,7 @@ cd swing-extras
 mvn package
 
 # Run the built-in demo app:
-java -jar target/swing-extras-2.5.0-jar-with-dependencies.jar 
+java -jar target/swing-extras-2.6.0-jar-with-dependencies.jar 
 ```
 
 ## License

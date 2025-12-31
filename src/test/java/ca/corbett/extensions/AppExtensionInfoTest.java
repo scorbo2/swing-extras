@@ -8,7 +8,9 @@ import java.io.FileWriter;
 import java.io.Writer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AppExtensionInfoTest {
 
@@ -95,4 +97,154 @@ public class AppExtensionInfoTest {
         assertNotNull(info2);
         assertEquals(info, info2);
     }
+
+    @Test
+    public void getMajorVersion_shouldExtractMajorVersion() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("2.5.1")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(2, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withInvalidVersion_shouldReturnInvalid() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("invalid.version")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(AppExtensionInfo.INVALID, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withPartialVersionString_shouldStillSucceed() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("3")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(3, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withNullVersion_shouldReturnInvalid() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion(null)
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(AppExtensionInfo.INVALID, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withEmptyVersion_shouldReturnInvalid() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(AppExtensionInfo.INVALID, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withLeadingVInVersion_shouldSucceed() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("v4.2.0")
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(4, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withNegativeVersion_shouldSucceed() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("-1.2.3") // it'll just get stripped out
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(1, majorVersion);
+    }
+
+    @Test
+    public void getMajorVersion_withCrazyLongVersionString_shouldSucceed() {
+        AppExtensionInfo info = new AppExtensionInfo.Builder("test")
+                .setVersion("1.2.3.4.5.6.7.8.9.blahblahblah") // only first 3 digits matter
+                .build();
+        int majorVersion = info.getMajorVersion();
+        assertEquals(1, majorVersion);
+    }
+
+    @Test
+    public void isValid_withValidExtInfo_shouldSucceed() {
+        // GIVEN an AppExtensionInfo instance with all required fields provided:
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("name")
+                .setVersion("1.0")
+                .setTargetAppName("targetAppName")
+                .setTargetAppVersion("1.0")
+                .build();
+
+        // WHEN we validate it:
+        boolean isValid = extInfo.isValid();
+
+        // THEN we should see that it passed:
+        assertTrue(isValid);
+    }
+
+    @Test
+    public void isValid_withMissingName_shouldFail() {
+        // GIVEN an AppExtensionInfo instance with all required fields except name provided:
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("")
+                .setVersion("1.0")
+                .setTargetAppName("targetAppName")
+                .setTargetAppVersion("1.0")
+                .build();
+
+        // WHEN we validate it:
+        boolean isValid = extInfo.isValid();
+
+        // THEN we should see that it failed:
+        assertFalse(isValid);
+    }
+
+    @Test
+    public void isValid_withMissingVersion_shouldFail() {
+        // GIVEN an AppExtensionInfo instance with all required fields except version provided:
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("name")
+                .setTargetAppName("targetAppName")
+                .setTargetAppVersion("1.0")
+                .build();
+
+        // WHEN we validate it:
+        boolean isValid = extInfo.isValid();
+
+        // THEN we should see that it failed:
+        assertFalse(isValid);
+    }
+
+    @Test
+    public void isValid_withMissingTargetAppName_shouldFail() {
+        // GIVEN an AppExtensionInfo instance with all required fields except targetAppName provided:
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("name")
+                .setVersion("1.0")
+                .setTargetAppVersion("1.0")
+                .build();
+
+        // WHEN we validate it:
+        boolean isValid = extInfo.isValid();
+
+        // THEN we should see that it failed:
+        assertFalse(isValid);
+    }
+
+    @Test
+    public void isValid_withMissingTargetAppVersion_shouldFail() {
+        // GIVEN an AppExtensionInfo instance with all required fields except targetAppVersion provided:
+        AppExtensionInfo extInfo = new AppExtensionInfo.Builder("name")
+                .setVersion("1.0")
+                .setTargetAppName("targetAppName")
+                .build();
+
+        // WHEN we validate it:
+        boolean isValid = extInfo.isValid();
+
+        // THEN we should see that it failed:
+        assertFalse(isValid);
+    }
+
 }

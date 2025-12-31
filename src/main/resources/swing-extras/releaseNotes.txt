@@ -1,6 +1,33 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.6.0 [2025-12-31] - Maintenance release
+  #224 - Better extension error handling in ExtensionManager
+  #222 - ListSubsetField: support drag and drop
+  #220 - ListSubsetField: auto-sorting is optional (default: off)
+  #218 - Slight adjustment to HyperlinkUtil.BrowseAction
+  #215 - Fix minor bug in SingleInstanceManagerTest
+  #213 - New utility method: FileSystemUtil.sanitizeFilename()
+  #212 - Absorb HyperlinkUtil from ExtPackager
+  #210 - Allow CheckBoxField to get/set checkbox text
+  #208 - New FieldValidator: ListEmptySelectionValidator
+  #204 - PopupTextDialog: hide Cancel button in read-only mode
+  #203 - New FormField: ButtonField / ButtonProperty
+  #199 - Cosmetic fix for HtmlLabelField
+  #198 - New utility class: TextFileDetector
+  #197 - Make Stopwatch utility class thread safe
+  #195 - AboutPanel: use HtmlLabelField for swing-extras attribution
+  #183 - Absorb SingleInstanceManager class from MusicPlayer
+  #180 - Add Property wrappers for panel fields
+  #179 - ImageListPanel: fix minor drag-and-drop bug
+  #178 - New FormField: HtmlLabelField / HtmlLabelProperty
+  #177 - Add "built with swing-extras" option to AboutPanel
+  #176 - ExtensionManager: loosen up extension version matching
+  #175 - ExtensionManagerDialog: cache downloaded screenshots
+  #174 - Improved logging in UpdateManager
+  #173 - Fix minor bug when launching LogConsole from AboutDialog
+  #112 - New FormField: ListSubsetField / ListSubsetProperty
+
 Version 2.5.0 [2025-12-01] - Dynamic extension discovery
   #171 - UpdateSources: prune local sources automatically
   #170 - UpdateSources: allow variable substitution

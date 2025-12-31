@@ -70,10 +70,10 @@ public class UpdateManager {
     /**
      * The process exit code that signals to our launcher script that we want to
      * restart the application (like after a new extension is installed).
-     * Don't change this value without also updating the launcher script!
-     * If they're not in sync, the application will exit and then not restart.
+     * <b>Don't change this value without also updating the launcher script!</b>
+     * If they're not in sync, the application will simply exit without restarting.
      */
-    public static final int APPLICATION_RESTART = 100;
+    public static final int APPLICATION_RESTART = 100; // arbitrary choice - nothing special about this number
 
     /**
      * Disable this to prevent the constructor from attempting to automatically
@@ -181,6 +181,7 @@ public class UpdateManager {
      */
     void retrieveVersionManifestWithoutNotify() {
         if (updateSources == null || updateSources.getUpdateSources().isEmpty()) {
+            log.warning("UpdateManager: No update sources are defined; cannot retrieve version manifest.");
             return;
         }
 
@@ -401,6 +402,7 @@ public class UpdateManager {
     }
 
     protected void fireDownloadFailed(URL requestedUrl, String errorMessage) {
+        log.warning("Download failed for URL: " + requestedUrl + " - " + errorMessage);
         List<UpdateManagerListener> copy = new ArrayList<>(listeners);
         for (UpdateManagerListener listener : copy) {
             listener.downloadFailed(this, requestedUrl, errorMessage);
@@ -417,6 +419,7 @@ public class UpdateManager {
      */
     public static URL resolveUrl(URL base, String path) {
         if (base == null) {
+            log.warning("UpdateManager.resolveUrl: base URL is null; cannot resolve path: " + path);
             return null;
         }
         if (path == null || path.isBlank()) {
@@ -433,9 +436,11 @@ public class UpdateManager {
             }
             return new URI(baseStr).resolve(path).toURL();
         }
-        catch (URISyntaxException | MalformedURLException ignored) {
-            return null;
+        catch (URISyntaxException | MalformedURLException e) {
+            log.log(Level.SEVERE, "UpdateManager.resolveUrl: Unable to resolve URL from base: "
+                    + base + " and path: " + path, e);
         }
+        return null;
     }
 
     /**
@@ -451,6 +456,7 @@ public class UpdateManager {
      */
     public static String unresolveUrl(URL base, URL fullUrl) {
         if (base == null || fullUrl == null) {
+            log.warning("UpdateManager.unresolveUrl: base or fullUrl is null; cannot unresolve.");
             return null;
         }
 
@@ -463,7 +469,7 @@ public class UpdateManager {
         }
 
         if (!fullStr.startsWith(baseStr)) {
-            // fullUrl is not derived from baseUrl
+            log.warning("UpdateManager.unresolveUrl: fullUrl was not derived from base; cannot unresolve.");
             return null;
         }
 
@@ -580,6 +586,7 @@ public class UpdateManager {
                 fireScreenshotFileDownloaded(url, ImageUtil.loadImage(result));
             }
             catch (IOException e) {
+                log.log(Level.SEVERE, "Problem loading screenshot image file: " + e.getMessage(), e);
                 downloadFailed(thread, url, "Problem loading screenshot: " + e.getMessage());
             }
         }

@@ -1,6 +1,7 @@
 package ca.corbett.extensions.ui;
 
 import ca.corbett.extensions.AppExtension;
+import ca.corbett.extensions.AppExtensionInfo;
 import ca.corbett.extensions.ExtensionManager;
 import ca.corbett.extras.ListPanel;
 import ca.corbett.extras.MessageUtil;
@@ -40,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,6 +76,10 @@ public class AvailableExtensionsPanel extends JPanel {
     protected final String applicationName;
     protected final String applicationVersion;
 
+    // Screenshot cache infrastructure
+    protected final File screenshotCacheDir;
+    protected final ConcurrentHashMap<String, File> screenshotCache;
+
     public AvailableExtensionsPanel(Window owner, ExtensionManager<?> extManager, UpdateManager updateManager, String appName, String appVersion) {
         this.owner = owner;
         this.updateManager = updateManager;
@@ -84,6 +90,8 @@ public class AvailableExtensionsPanel extends JPanel {
         this.isRestartRequired = false;
         this.currentUpdateSource = null;
         detailsPanelMap = new HashMap<>();
+        screenshotCache = new ConcurrentHashMap<>();
+        screenshotCacheDir = createScreenshotCacheDirectory();
         extensionListPanel = new ListPanel<>(List.of(new RefreshAction()));
         extensionListPanel.setPreferredSize(new Dimension(200, 200));
         extensionListPanel.setMinimumSize(new Dimension(200, 1));
@@ -135,8 +143,9 @@ public class AvailableExtensionsPanel extends JPanel {
         headerPanel.removeAll();
         detailsPanel.removeAll();
         final ExtensionPlaceholder placeholder = extensionListPanel.getSelected();
-        final VersionManifest.ExtensionVersion latestVersion =
-                placeholder == null ? null : VersionManifest.findLatestExtVersion(placeholder.getExtension());
+        final VersionManifest.ExtensionVersion latestVersion = placeholder == null
+                ? null
+                : placeholder.getExtension().getHighestVersion().orElse(null);
         if (placeholder == null || latestVersion == null) {
             headerPanel.add(new ExtensionTitleBar(null));
             detailsPanel.add(emptyPanel);
@@ -261,13 +270,43 @@ public class AvailableExtensionsPanel extends JPanel {
         extensionListPanel.clear();
         detailsPanelMap.clear();
 
-        // Find all extensions for our version of the application, sort them, and add them to the list:
-        manifest.getApplicationVersions().stream()
-                .filter(version -> applicationVersion.equals(version.getVersion()))
-                .flatMap(version -> version.getExtensions().stream())
-                .sorted(Comparator.comparing(VersionManifest.Extension::getName))
-                .map(extension -> new ExtensionPlaceholder(extension, isInstalled(extension)))
-                .forEach(extensionListPanel::addItem);
+        // Starting in swing-extras 2.6, we now only consider the application's major version when
+        // determining if an extension is compatible. The versioning convention that applications must
+        // follow is to release a minor version if there are no extension-breaking changes, and a major version
+        // if there are extension-breaking changes. So, an extension will be considered compatible if
+        // its target application major version matches the application's major version. So, we will grab the
+        // highest version of each extension that matches this application's major version.
+        int appMajorVersion = AppExtensionInfo.extractMajorVersion(applicationVersion);
+        if (appMajorVersion != AppExtensionInfo.INVALID) {
+            // Get a list of the highest version of each extension that matches our application's major version:
+            // (this list will be returned to us sorted by extension name in ascending order)
+            for (VersionManifest.ExtensionVersion highestVersion :
+                    manifest.getHighestExtensionVersionsForMajorAppVersion(appMajorVersion)) {
+
+                // Grab its containing Extension and add it to our list:
+                manifest.findExtensionForExtensionVersion(highestVersion)
+                        .ifPresent(e -> extensionListPanel.addItem(new ExtensionPlaceholder(e, isInstalled(e))));
+            }
+        }
+
+        // If we can't extract the major version from the application version, then fall back to exact matching:
+        // TODO this code path will almost certainly never be hit... I'm tempted to just remove it entirely.
+        //      But it's nice to have some kind of fallback for wonky error conditions (malformed version strings).
+        else {
+            // Scold the user about their poor versioning practices:
+            log.warning("Unable to extract major version from application version: "
+                                + applicationVersion
+                                + " - falling back to exact version matching for extensions."
+                                + " Application versions should be in X.Y format!");
+
+            // Now let's hope there are extensions that target this exact application version:
+            manifest.getApplicationVersions().stream()
+                    .filter(version -> applicationVersion.equals(version.getVersion()))
+                    .flatMap(version -> version.getExtensions().stream())
+                    .sorted(Comparator.comparing(VersionManifest.Extension::getName))
+                    .map(extension -> new ExtensionPlaceholder(extension, isInstalled(extension)))
+                    .forEach(extensionListPanel::addItem);
+        }
 
         if (!extensionListPanel.isEmpty()) {
             extensionListPanel.selectItem(0); // select 1st
@@ -491,12 +530,18 @@ public class AvailableExtensionsPanel extends JPanel {
                 getMessageUtil().info("There is no update source selected.");
                 return;
             }
+            VersionManifest.ExtensionVersion latestVersion = extension.getExtension().getHighestVersion().orElse(null);
+            if (latestVersion == null) {
+                getMessageUtil().info("Unable to determine latest version of extension "
+                                              + extension.extension.getName()
+                                              + " - cannot proceed with install.");
+                return;
+            }
             MultiProgressDialog progressDialog = new MultiProgressDialog(owner, "Downloading...");
             progressDialog.setInitialShowDelayMS(500);
             final ExtensionDownloadThread workerThread = new ExtensionDownloadThread(downloadManager,
                                                                                      currentUpdateSource,
-                                                                                     VersionManifest.findLatestExtVersion(
-                                                                                             extension.getExtension()));
+                                                                                     latestVersion);
             workerThread.setDownloadOptions(ExtensionDownloadThread.Options.JarAndSignature);
             workerThread.addProgressListener(new SimpleProgressAdapter() {
                 @Override
@@ -508,13 +553,11 @@ public class AvailableExtensionsPanel extends JPanel {
                     }
                     SwingUtilities.invokeLater(() -> {
                         if (extensionInstallCallback(workerThread.getDownloadedExtension())) {
-                            VersionManifest.ExtensionVersion latestVersion = VersionManifest
-                                    .findLatestExtVersion(extension.extension);
-                            String version = latestVersion == null
-                                    ? "(latest)"
-                                    : latestVersion.getExtInfo().getVersion();
-                            log.info(
-                                    "Successfully installed extension " + extension.extension.getName() + " version " + version);
+                            String version = latestVersion.getExtInfo().getVersion();
+                            log.info("Successfully installed extension "
+                                             + extension.extension.getName()
+                                             + " version "
+                                             + version);
 
                             // Execute any additional completion listeners we have before we prompt for restart:
                             for (ActionListener listener : completionListeners) {
@@ -552,9 +595,14 @@ public class AvailableExtensionsPanel extends JPanel {
                 return;
             }
             final File jarFile = extensionManager.findExtensionJarByExtensionName(extension.extension.getName());
-            VersionManifest.ExtensionVersion latestVersion = VersionManifest
-                    .findLatestExtVersion(extension.getExtension());
-            String latestVersionStr = latestVersion == null ? "(latest)" : latestVersion.getExtInfo().getVersion();
+            VersionManifest.ExtensionVersion latestVersion = extension.getExtension().getHighestVersion().orElse(null);
+            if (latestVersion == null) {
+                getMessageUtil().info("Unable to determine latest version of extension "
+                                              + extension.extension.getName()
+                                              + " - cannot proceed with update.");
+                return;
+            }
+            String latestVersionStr = latestVersion.getExtInfo().getVersion();
             if (jarFile == null) {
                 getMessageUtil().info("The extension \"" + extension.getExtension().getName()
                                               + "\" is a built-in extension.\n"
@@ -640,11 +688,81 @@ public class AvailableExtensionsPanel extends JPanel {
     }
 
     /**
+     * Creates a temporary directory for caching screenshot images during this panel's lifetime.
+     * Returns null if creation fails.
+     */
+    protected File createScreenshotCacheDirectory() {
+        try {
+            File tempDir = new File(System.getProperty("java.io.tmpdir"));
+            File cacheDir = new File(tempDir, "ext-screenshots-" + System.currentTimeMillis());
+            if (cacheDir.mkdir()) {
+                log.info("Created screenshot cache directory: " + cacheDir.getAbsolutePath());
+                return cacheDir;
+            }
+            else {
+                log.warning("Failed to create screenshot cache directory");
+                return null;
+            }
+        }
+        catch (Exception e) {
+            log.log(Level.WARNING, "Error creating screenshot cache directory: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Cleans up the temporary screenshot cache directory. We rely on the caller to invoke
+     * this, as we don't know when the panel is no longer needed. This is typically invoked
+     * from the ExtensionManagerDialog when it is closed.
+     */
+    public void cleanupScreenshotCache() {
+        if (screenshotCacheDir == null || !screenshotCacheDir.exists()) {
+            return;
+        }
+
+        try {
+            File[] files = screenshotCacheDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (!file.delete()) {
+                        log.warning("Failed to delete cached screenshot: " + file.getName());
+                    }
+                }
+            }
+            if (!screenshotCacheDir.delete()) {
+                log.warning("Failed to delete screenshot cache directory");
+            }
+            else {
+                log.info("Cleaned up screenshot cache directory");
+            }
+        }
+        catch (Exception e) {
+            log.log(Level.WARNING, "Error cleaning up screenshot cache: " + e.getMessage(), e);
+        }
+        finally {
+            if (screenshotCache != null) {
+                screenshotCache.clear();
+            }
+        }
+    }
+
+    /**
+     * Generates a cache key from a URL to use as filename.
+     */
+    protected String getCacheKeyForUrl(URL url) {
+        if (url == null) {
+            return null;
+        }
+        // Use the hash of the entire URL as part of the cache key to avoid collisions:
+        return Integer.toHexString(url.toString().hashCode());
+    }
+
+    /**
      * Internal helper class to grab all the screenshots for the given extension version
      * and load them into the given ExtensionDetailsPanel.
      * <p>
-     * Currently, there's no caching. So, every time you visit an extension in the
-     * left menu, the screenshots for it get re-downloaded. That's wasteful.
+     * Screenshots are cached in a temporary directory to avoid re-downloading them
+     * when the same extension is selected multiple times.
      * </p>
      */
     private class ScreenshotDownloader {
@@ -658,6 +776,43 @@ public class AvailableExtensionsPanel extends JPanel {
         }
 
         public void start() {
+            // Check if we already have all screenshots cached
+            List<String> screenshotUrls = extVersion.getScreenshots();
+            List<File> cachedFiles = new ArrayList<>();
+            boolean allCached = true;
+
+            for (String screenshotPath : screenshotUrls) {
+                URL screenshotUrl = UpdateManager.resolveUrl(currentUpdateSource.getBaseUrl(), screenshotPath);
+                if (screenshotUrl == null) {
+                    allCached = false;
+                    break;
+                }
+
+                String cacheKey = getCacheKeyForUrl(screenshotUrl);
+                if (cacheKey == null) {
+                    allCached = false;
+                    break;
+                }
+                File cachedFile = screenshotCache.get(cacheKey);
+
+                if (cachedFile != null && cachedFile.exists()) {
+                    cachedFiles.add(cachedFile);
+                }
+                else {
+                    allCached = false;
+                    break;
+                }
+            }
+
+            // If all screenshots are cached, load them directly without downloading
+            if (allCached && !cachedFiles.isEmpty()) {
+                log.info("Loading " + cachedFiles.size() + " cached screenshots for extension: " + extVersion
+                        .getExtInfo().getName());
+                loadCachedScreenshots(cachedFiles);
+                return;
+            }
+
+            // Otherwise, proceed with downloading
             MultiProgressDialog progressDialog = new MultiProgressDialog(owner, "Downloading...");
             ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager,
                                                                          currentUpdateSource,
@@ -678,9 +833,41 @@ public class AvailableExtensionsPanel extends JPanel {
             progressDialog.runWorker(worker, true);
         }
 
-        public void processResults(DownloadedExtension extensionFiles) {
-            for (File screenshotFile : extensionFiles.getScreenshots()) {
+        private void loadCachedScreenshots(List<File> cachedFiles) {
+            for (File cachedFile : cachedFiles) {
                 try {
+                    BufferedImage image = ImageUtil.loadImage(cachedFile);
+                    SwingUtilities.invokeLater(() -> extDetailsPanel.addScreenshot(image, false));
+                }
+                catch (IOException ioe) {
+                    log.log(Level.SEVERE, "Problem loading cached screenshot: " + ioe.getMessage(), ioe);
+                }
+            }
+        }
+
+        public void processResults(DownloadedExtension extensionFiles) {
+            List<String> screenshotUrls = extVersion.getScreenshots();
+            List<File> downloadedFiles = extensionFiles.getScreenshots();
+
+            for (int i = 0; i < downloadedFiles.size() && i < screenshotUrls.size(); i++) {
+                File screenshotFile = downloadedFiles.get(i);
+                String screenshotPath = screenshotUrls.get(i);
+                URL screenshotUrl = UpdateManager.resolveUrl(currentUpdateSource.getBaseUrl(), screenshotPath);
+
+                try {
+                    // Cache the downloaded file if caching is enabled
+                    if (screenshotCacheDir != null && screenshotUrl != null) {
+                        String cacheKey = getCacheKeyForUrl(screenshotUrl);
+                        if (cacheKey != null) {
+                            String extension = DownloadManager.getFileExtension(screenshotFile.getName());
+                            File cachedFile = new File(screenshotCacheDir, cacheKey + extension);
+                            Files.copy(screenshotFile.toPath(), cachedFile.toPath(),
+                                       StandardCopyOption.REPLACE_EXISTING);
+                            screenshotCache.put(cacheKey, cachedFile);
+                            log.fine("Cached screenshot: " + cacheKey);
+                        }
+                    }
+
                     // Do I/O on the worker thread:
                     BufferedImage image = ImageUtil.loadImage(screenshotFile);
 

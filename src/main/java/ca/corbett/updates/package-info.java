@@ -15,6 +15,10 @@
  * <p>
  *     <b>UpdateManager</b> - this is the class that your application will interact with to do the
  *     actual interrogation of remote update sources and handle downloading and installing extensions.
+ *     This is handled transparently by ExtensionManagerDialog! Your application code will likely never
+ *     have to deal with UpdateManager directly, other than instantiating an instance of it using
+ *     the update sources json file bundled with your application, and then supplying that instance to
+ *     ExtensionManagerDialog.
  * </p>
  * <p>
  *     <b>How do I set all this up?</b> - There's a helper application called
