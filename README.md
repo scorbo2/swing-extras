@@ -5,7 +5,6 @@ applications. The library includes a demo application so you can try out the var
 utilities within swing-extras:
 
 ![DemoApp](demo-app.png "Demo app")
-TODO update screenshot for 2.6 release
 
 ## Documentation
 
@@ -16,14 +15,13 @@ You can browse the full documentation online:
 ## NEWS! December 31, 2025 - swing extras 2.6 release is here!
 
 Happy New Year! The 2.6 release of swing-extras is now available.
-This release offers a few minor new features and several bug fixes and improvements.
-Most notably, ExtensionManager no longer insists on an exact version match when loading extensions,
-instead just looking at the major version. So, no more mandatory re-releases of extensions for minor
-application updates!
+The biggest change in 2.6 is that  ExtensionManager no longer insists on an exact version match when loading extensions,
+instead just looking at the major version. So, no more mandatory re-releases of extensions for every minor
+application release!
 
 Other notable additions in swing-extras 2.6:
-- new FormField: HtmlLabelField
-- new property wrappers for PanelField and CollapsiblePanelField
+- new FormFields: HtmlLabelField, ListSubsetField, ButtonField
+- new Utility classes: HyperlinkUtil, TextFileDetector, SingleInstanceManager
 - and a few minor bug fixes.
 
 Refer to the [release notes](src/main/resources/swing-extras/releaseNotes.txt) for a complete list.
@@ -37,9 +35,7 @@ the new `UpdateManager` class and also the [ext-packager](https://github.com/sco
 project for details on how to set this up!
 
 Other notable additions in swing-extras 2.5:
-- new FormField: SliderField
-- new FormField: CollapsiblePanelField
-- new FormField: ImageListField
+- new FormFields: SliderField, CollapsiblePanelField, ImageListField
 - much cleaner demo application with code snippets!
 
 There are also numerous bug fixes and minor improvements throughout the library in this release.
