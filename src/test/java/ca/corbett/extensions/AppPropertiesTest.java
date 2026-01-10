@@ -60,7 +60,7 @@ class AppPropertiesTest {
         assertEquals("", actual);
     }
 
-    class TestLogHandler extends Handler {
+    static class TestLogHandler extends Handler {
         private List<LogRecord> records = new ArrayList<>();
 
         @Override
