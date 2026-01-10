@@ -47,17 +47,23 @@ class AppPropertiesTest {
         Logger testLogger = Logger.getLogger(AppProperties.class.getName());
         testLogger.addHandler(logHandler);
 
-        // GIVEN a non-existent properties file (for example, an application run for the first time):
-        File propsFile = File.createTempFile("nonexistent", ".props");
-        propsFile.delete();
+        try {
+            // GIVEN a non-existent properties file (for example, an application run for the first time):
+            File propsFile = File.createTempFile("nonexistent", ".props");
+            propsFile.delete();
 
-        // WHEN we try to peek() a value from that file:
-        String actual = AppProperties.peek(propsFile, "AnyProperty");
+            // WHEN we try to peek() a value from that file:
+            String actual = AppProperties.peek(propsFile, "AnyProperty");
 
-        // THEN we should find a simple warning in the log file and NOT a stack trace:
-        assertTrue(logHandler.hasWarningContaining("The properties file does not yet exist"));
-        assertFalse(logHandler.hasWarningContaining("Exception"));
-        assertEquals("", actual);
+            // THEN we should find a simple warning in the log file and NOT a stack trace:
+            assertTrue(logHandler.hasWarningContaining("The properties file does not yet exist"));
+            assertFalse(logHandler.hasWarningContaining("Exception"));
+            assertEquals("", actual);
+        }
+        finally {
+            // Clean up our log capturing mechanism:
+            testLogger.removeHandler(logHandler);
+        }
     }
 
     static class TestLogHandler extends Handler {
