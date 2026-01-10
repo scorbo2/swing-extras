@@ -1,6 +1,9 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.7.0 [TODO release date here] - Maintenance release
+  TODO - Add line items for 2.7 here, one per ticket
+
 Version 2.6.0 [2025-12-31] - Maintenance release
   #224 - Better extension error handling in ExtensionManager
   #222 - ListSubsetField: support drag and drop
