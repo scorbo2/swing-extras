@@ -13,6 +13,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +106,12 @@ public abstract class AppProperties<T extends AppExtension> {
             tempProps.load();
             result = tempProps.getString(propName, result);
         }
+        catch (FileNotFoundException ignored) {
+            // This is not a big deal! Just log it, no need for the scary stack trace:
+            logger.warning("peek(): The properties file does not yet exist.");
+        }
         catch (IOException ioe) {
+            // Something else went wrong, log the error with a full stack trace:
             logger.log(Level.WARNING, "AppProperties.peek(): encountered IOException: " + ioe.getMessage(), ioe);
         }
         return result;
