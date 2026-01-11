@@ -82,13 +82,13 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
     @SuppressWarnings("unchecked")
     protected FormField generateFormFieldImpl() {
 
-        // ComboField wants a List of options, and we need a selected index.
+        // ComboField wants a List<T> of options, and we need a selected index.
         T[] enumConstants = (T[])value.getDeclaringClass().getEnumConstants();
-        List<String> options = new ArrayList<>();
+        List<T> options = new ArrayList<>();
         int selectedIndex = 0; // safe default
         for (int i = 0; i < enumConstants.length; i++) {
             T enumConstant = enumConstants[i];
-            options.add(enumConstant.toString());
+            options.add(enumConstant);
             if (enumConstant.equals(value)) {
                 selectedIndex = i;
             }
