@@ -643,6 +643,10 @@ public final class FileSystemUtil {
      * Both {@code destinationDir} and {@code candidateFile} must be non-null. If either argument
      * is {@code null}, this method will throw an {@link IllegalArgumentException}.
      * </p>
+     *
+     * @param destinationDir The directory where we want to place the file.
+     * @param candidateFile  The File we want to copy or move to the destination directory.
+     * @return A File object representing a unique filename within the destination directory.
      */
     public static File getUniqueDestinationFile(File destinationDir, File candidateFile) {
         if (destinationDir == null) {
@@ -653,6 +657,8 @@ public final class FileSystemUtil {
         }
         String candidateFileName = candidateFile.getName();
         File destFile = new File(destinationDir, candidateFileName);
+
+        // The easiest check can come first: if we have no conflict, return the original file:
         if (!destFile.exists()) {
             return destFile;
         }
@@ -662,10 +668,18 @@ public final class FileSystemUtil {
         String ext;
         int dotIndex = candidateFileName.lastIndexOf('.');
         if (dotIndex == -1) {
+            // The file has no dot in it, so there is no extension:
+            nameWithoutExt = candidateFileName;
+            ext = "";
+        }
+        else if (dotIndex == 0) {
+            // On Linux-based systems, it's common to have files that start with a dot and have no extension.
+            // In this case, we'll just say the file has no extension:
             nameWithoutExt = candidateFileName;
             ext = "";
         }
         else {
+            // The file has at least one dot, so we can separate name and extension:
             nameWithoutExt = candidateFileName.substring(0, dotIndex);
             ext = candidateFileName.substring(dotIndex);
         }

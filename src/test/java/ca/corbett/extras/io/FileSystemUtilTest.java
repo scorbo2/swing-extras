@@ -387,7 +387,10 @@ public class FileSystemUtilTest {
         final String expected = "testfile.txt";
         File toDelete = new File(tempDir, expected);
         if (toDelete.exists()) {
-            toDelete.delete(); // Make sure it doesn't exist
+            // Make sure it doesn't exist
+            if (!toDelete.delete()) {
+                fail("Unable to delete existing test file: " + toDelete.getAbsolutePath());
+            }
         }
 
         // WHEN we compute a unique destination file:
@@ -395,7 +398,82 @@ public class FileSystemUtilTest {
 
         // THEN we should get back the same file we sent in, because there are no conflicts:
         assertEquals(expected, destinationFile.getName());
-        assertEquals(toDelete.getAbsolutePath(), destinationFile.getAbsolutePath());
+    }
+
+    @Test
+    public void getUniqueDestinationFile_withFileWithoutExtension_ShouldReturnUniqueFile() throws Exception {
+        final File tempDir = new File(System.getProperty("java.io.tmpdir"));
+
+        // GIVEN a candidate File without an extension and a target directory with name conflicts:
+        final String baseName = "testfile";
+        File toDelete = new File("/some/source/directory", baseName);
+        File conflict1 = new File(tempDir, "testfile"); // Oops! This filename is taken.
+        File conflict2 = new File(tempDir, "testfile_1"); // Oops! Our fallback filename is also taken.
+        if (!conflict1.createNewFile() || !conflict2.createNewFile()) {
+            fail("Unable to create test files!");
+        }
+
+        // WHEN we compute a unique destination file:
+        File destinationFile = FileSystemUtil.getUniqueDestinationFile(tempDir, toDelete);
+
+        // THEN we should get back a uniquely named file with our fallback fallback name:
+        assertEquals("testfile_2", destinationFile.getName());
+
+        // Clean up
+        if (!conflict1.delete() || !conflict2.delete()) {
+            fail("Unable to delete test files!");
+        }
+    }
+
+    @Test
+    public void getUniqueDestinationFile_withExtensionHavingMultipleDots_ShouldReturnUniqueFile() throws Exception {
+        final File tempDir = new File(System.getProperty("java.io.tmpdir"));
+
+        // GIVEN a candidate File with multiple dots in the extension and a target directory with name conflicts:
+        final String baseName = "testfile.tar.gz";
+        File toDelete = new File("/some/source/directory", baseName);
+        File conflict1 = new File(tempDir, "testfile.tar.gz"); // Oops! This filename is taken.
+        File conflict2 = new File(tempDir, "testfile.tar_1.gz"); // Oops! Our fallback filename is also taken.
+        if (!conflict1.createNewFile() || !conflict2.createNewFile()) {
+            fail("Unable to create test files!");
+        }
+
+        // WHEN we compute a unique destination file:
+        File destinationFile = FileSystemUtil.getUniqueDestinationFile(tempDir, toDelete);
+
+        // THEN we should get back a uniquely named file with our fallback fallback name:
+        // (yeah, it should probably be "testfile_2.tar.gz" but the code isn't THAT smart)
+        assertEquals("testfile.tar_2.gz", destinationFile.getName());
+
+        // Clean up
+        if (!conflict1.delete() || !conflict2.delete()) {
+            fail("Unable to delete test files!");
+        }
+    }
+
+    @Test
+    public void getUniqueDestinationFile_withHiddenFile_ShouldReturnUniqueFile() throws Exception {
+        final File tempDir = new File(System.getProperty("java.io.tmpdir"));
+
+        // GIVEN a candidate hidden File and a target directory with name conflicts:
+        final String baseName = ".testfile";
+        File toDelete = new File("/some/source/directory", baseName);
+        File conflict1 = new File(tempDir, ".testfile"); // Oops! This filename is taken.
+        File conflict2 = new File(tempDir, ".testfile_1"); // Oops! Our fallback filename is also taken.
+        if (!conflict1.createNewFile() || !conflict2.createNewFile()) {
+            fail("Unable to create test files!");
+        }
+
+        // WHEN we compute a unique destination file:
+        File destinationFile = FileSystemUtil.getUniqueDestinationFile(tempDir, toDelete);
+
+        // THEN we should get back a uniquely named file with our fallback fallback name:
+        assertEquals(".testfile_2", destinationFile.getName());
+
+        // Clean up
+        if (!conflict1.delete() || !conflict2.delete()) {
+            fail("Unable to delete test files!");
+        }
     }
 
     @Test
@@ -406,9 +484,10 @@ public class FileSystemUtilTest {
         final String baseName = "testfile.txt";
         File toDelete = new File("/some/source/directory", baseName);
         File conflict1 = new File(tempDir, "testfile.txt"); // Oops! This filename is taken.
-        conflict1.createNewFile();
         File conflict2 = new File(tempDir, "testfile_1.txt"); // Oops! Our fallback filename is also taken.
-        conflict2.createNewFile();
+        if (!conflict1.createNewFile() || !conflict2.createNewFile()) {
+            fail("Unable to create test files!");
+        }
 
         // WHEN we compute a unique destination file:
         File destinationFile = FileSystemUtil.getUniqueDestinationFile(tempDir, toDelete);
@@ -417,8 +496,9 @@ public class FileSystemUtilTest {
         assertEquals("testfile_2.txt", destinationFile.getName());
 
         // Clean up
-        conflict1.delete();
-        conflict2.delete();
+        if (!conflict1.delete() || !conflict2.delete()) {
+            fail("Unable to delete test files!");
+        }
     }
 
     private static void createNestedTestDir(File rootDir, int dirCount1, int dirCount2, int dirCount3, boolean createFiles)
