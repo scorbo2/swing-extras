@@ -15,6 +15,7 @@ import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
@@ -599,10 +600,11 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             // We have a border! Let's be careful to take its size into account.
             // The imageX and imageY calculations further down will use these offsets,
             // and we'll also use this to compute our myWidth and myHeight values later.
-            borderOffsetLeft = getBorder().getBorderInsets(this).left;
-            borderOffsetTop = getBorder().getBorderInsets(this).top;
-            int borderOffsetRight = getBorder().getBorderInsets(this).right;
-            int borderOffsetBottom = getBorder().getBorderInsets(this).bottom;
+            Insets insets = getBorder().getBorderInsets(this);
+            borderOffsetLeft = insets.left;
+            borderOffsetTop = insets.top;
+            int borderOffsetRight = insets.right;
+            int borderOffsetBottom = insets.bottom;
             borderWidthTotal = borderOffsetLeft + borderOffsetRight;
             borderHeightTotal = borderOffsetTop + borderOffsetBottom;
         }
