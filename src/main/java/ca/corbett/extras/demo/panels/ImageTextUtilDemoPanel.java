@@ -19,6 +19,7 @@ import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.ValueChangedListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -82,6 +83,8 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
         panel.setLayout(new BorderLayout());
 
         imagePanel = new ImagePanel(image, ImagePanelConfig.createDefaultProperties());
+        imagePanel.setBorder(BorderFactory.createEtchedBorder());
+
         panel.add(imagePanel, BorderLayout.CENTER);
 
         FormPanel formPanel = buildFormPanel("ImageTextUtil", 12);
@@ -188,7 +191,14 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
                                fillColor);
 
         // Render the results into our ImagePanel:
-        imagePanel.setImage(image);
+        //imagePanel.setImage(image);
+        // We don't actually need to invoke setImage(), because in this example, we're directly
+        // updating the image instance already contained by that panel. But in an actual application,
+        // if you've created a new BufferedImage instance, you would need to call setImage() to
+        // update the panel to use that new instance. The setImage() method will invoke repaint() for you.
+
+        // For our demo application, we just need to tell the panel to repaint itself:
+        imagePanel.repaint();
     }
 
     /**
