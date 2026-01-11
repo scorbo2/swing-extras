@@ -86,7 +86,7 @@ public final class ImageUtil {
     }
 
     /**
-     * Loads and returns an ImageIcon from the specified image file.
+     * Loads and returns an ImageIcon from the specified URL.
      * Generally, you should use loadImage() instead, as that returns a BufferedImage
      * that can be manipulated in memory and then written out using saveImage(), but
      * certain types of images (namely animated GIFs) are better in ImageIcon format.
