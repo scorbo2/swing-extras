@@ -3,6 +3,7 @@ package ca.corbett.forms.fields;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.ValidationResult;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import javax.swing.JPanel;
 import java.util.List;
@@ -421,6 +422,158 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
         assertEquals(2, selectedItems.size());
         assertEquals("Item 2", selectedItems.get(0));
         assertEquals("Item 9", selectedItems.get(1));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void selectItem_withValueChangedListener_shouldNotify() {
+        // GIVEN a ListSubsetField with a ValueChangedListener:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we select an item programmatically:
+        subsetField.selectItem("Item 2");
+
+        // THEN our listener should be notified once:
+        Mockito.verify(listener, Mockito.times(1)).formFieldValueChanged(subsetField);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void unselectItem_withValueChangedListener_shouldNotify() {
+        // GIVEN a ListSubsetField with a ValueChangedListener and an item already selected:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"),
+                java.util.List.of("Item 2"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we unselect the item:
+        subsetField.unselectItem("Item 2");
+
+        // THEN our listener should be notified once:
+        Mockito.verify(listener, Mockito.times(1)).formFieldValueChanged(subsetField);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void selectItems_withValueChangedListener_shouldNotify() {
+        // GIVEN a ListSubsetField with a ValueChangedListener:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3", "Item 4"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we select multiple items at once:
+        subsetField.selectItems(List.of("Item 2", "Item 4"));
+
+        // THEN our listener should be notified once (not twice):
+        Mockito.verify(listener, Mockito.times(1)).formFieldValueChanged(subsetField);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void selectAllItems_withValueChangedListener_shouldNotify() {
+        // GIVEN a ListSubsetField with a ValueChangedListener:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we select all items:
+        subsetField.selectAllItems();
+
+        // THEN our listener should be notified once:
+        Mockito.verify(listener, Mockito.times(1)).formFieldValueChanged(subsetField);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void unselectAllItems_withValueChangedListener_shouldNotify() {
+        // GIVEN a ListSubsetField with a ValueChangedListener and some items selected:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"),
+                java.util.List.of("Item 2", "Item 3"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we unselect all items:
+        subsetField.unselectAllItems();
+
+        // THEN our listener should be notified once:
+        Mockito.verify(listener, Mockito.times(1)).formFieldValueChanged(subsetField);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void selectItem_withNonExistingItem_shouldNotNotify() {
+        // GIVEN a ListSubsetField with a ValueChangedListener:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we try to select an item that doesn't exist:
+        subsetField.selectItem("Item 99");
+
+        // THEN our listener should NOT be notified because nothing changed:
+        Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(subsetField);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void selectItems_withNoValidItems_shouldNotNotify() {
+        // GIVEN a ListSubsetField with a ValueChangedListener:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we try to select items that don't exist:
+        subsetField.selectItems(List.of("Item 99", "Item 100"));
+
+        // THEN our listener should NOT be notified because nothing changed:
+        Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(subsetField);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void multipleSelections_withValueChangedListener_shouldNotifyMultipleTimes() {
+        // GIVEN a ListSubsetField with a ValueChangedListener:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3", "Item 4"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we make multiple selection changes:
+        subsetField.selectItem("Item 1");
+        subsetField.selectItem("Item 2");
+        subsetField.unselectItem("Item 1");
+        subsetField.selectAllItems();
+        subsetField.unselectAllItems();
+
+        // THEN our listener should be notified 5 times (once per change):
+        Mockito.verify(listener, Mockito.times(5)).formFieldValueChanged(subsetField);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void removeValueChangedListener_shouldStopNotifications() {
+        // GIVEN a ListSubsetField with a ValueChangedListener that is later removed:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+        subsetField.removeValueChangedListener(listener);
+
+        // WHEN we make changes:
+        subsetField.selectItem("Item 1");
+        subsetField.selectAllItems();
+
+        // THEN our listener should NOT be notified:
+        Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(subsetField);
     }
 
     private static class TestValidator implements FieldValidator<ListSubsetField<String>> {
