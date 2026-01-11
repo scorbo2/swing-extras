@@ -598,7 +598,7 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         if (getBorder() != null) {
             // We have a border! Let's be careful to take its size into account.
             // The imageX and imageY calculations further down will use these offsets,
-            // and we'll also use this to computer our myWidth and myHeight values later.
+            // and we'll also use this to compute our myWidth and myHeight values later.
             borderOffsetLeft = getBorder().getBorderInsets(this).left;
             borderOffsetTop = getBorder().getBorderInsets(this).top;
             int borderOffsetRight = getBorder().getBorderInsets(this).right;
