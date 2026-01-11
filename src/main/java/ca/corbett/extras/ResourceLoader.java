@@ -131,10 +131,10 @@ public class ResourceLoader {
      * Otherwise, the given path is expected to be the full resource path within the jar.
      * Will return null if the resource cannot be found.
      * If you request a resource that is not text, the result will be garbage.
-     * <P>
-     *     Note: This method joins lines using the system line separator, regardless
-     *     of what line endings are present in the original resource. If you'd rather
-     *     process the lines separately, use getTextResourceAsLines() instead.
+     * <p>
+     * Note: This method joins lines using the system line separator, regardless
+     * of what line endings are present in the original resource. If you'd rather
+     * process the lines separately, use getTextResourceAsLines() instead.
      * </P>
      */
     public static String getTextResource(String resourcePath) {
