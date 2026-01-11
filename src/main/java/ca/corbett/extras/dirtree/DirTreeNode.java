@@ -16,13 +16,15 @@ public final class DirTreeNode extends DefaultMutableTreeNode {
     private final File dir;
     private boolean childrenLoaded;
     private final boolean hasChildren;
+    private final boolean showHiddenDirs;
 
-    public DirTreeNode(File dir) {
+    public DirTreeNode(File dir, boolean showHiddenDirs) {
         super(dir.getName());
         this.dir = dir;
         this.hasChildren = hasChildren();
         setAllowsChildren(hasChildren);
         childrenLoaded = false;
+        this.showHiddenDirs = showHiddenDirs;
     }
 
     @Override
@@ -34,26 +36,35 @@ public final class DirTreeNode extends DefaultMutableTreeNode {
         return dir;
     }
 
+    public boolean isShowHiddenDirs() {
+        return showHiddenDirs;
+    }
+
     public void loadChildren() {
-        if (!childrenLoaded) {
-            int dirCount = 0;
-            String[] fileNames = dir.list();
-            if (fileNames != null) {
-                Arrays.sort(fileNames, new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        return o1.toLowerCase().compareTo(o2.toLowerCase());
-                    }
-                });
-                for (String fileName : fileNames) {
-                    File file = new File(dir, fileName);
-                    if (file.isDirectory()) {
-                        add(new DirTreeNode(file));
-                        dirCount++;
-                    }
+        if (!childrenLoaded && dir.canRead()) {
+            synchronized(this) {
+                // Double-check after lock
+                if (childrenLoaded) {
+                    return;
                 }
-                childrenLoaded = true;
-                setAllowsChildren(dirCount > 0);
+                int dirCount = 0;
+                String[] fileNames = dir.list();
+                if (fileNames != null) {
+                    Arrays.sort(fileNames, Comparator.comparing(String::toLowerCase));
+                    for (String fileName : fileNames) {
+                        File file = new File(dir, fileName);
+                        if (file.isDirectory()) {
+                            // Skip hidden directories if the flag is set
+                            if (file.isHidden() && !showHiddenDirs) {
+                                continue;
+                            }
+                            add(new DirTreeNode(file, showHiddenDirs));
+                            dirCount++;
+                        }
+                    }
+                    childrenLoaded = true;
+                    setAllowsChildren(dirCount > 0);
+                }
             }
         }
     }
@@ -63,6 +74,10 @@ public final class DirTreeNode extends DefaultMutableTreeNode {
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
+                    // Skip hidden directories if the flag is set
+                    if (file.isHidden() && !showHiddenDirs) {
+                        continue;
+                    }
                     return true;
                 }
             }
@@ -79,10 +94,7 @@ public final class DirTreeNode extends DefaultMutableTreeNode {
         if (dir != null && that.dir == null) {
             return false;
         }
-        if (dir != null && !dir.getAbsolutePath().equals(that.dir.getAbsolutePath())) {
-            return false;
-        }
-        return true;
+        return dir == null || dir.getAbsolutePath().equals(that.dir.getAbsolutePath());
     }
 
     @Override
