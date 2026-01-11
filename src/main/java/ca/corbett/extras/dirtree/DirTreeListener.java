@@ -11,12 +11,22 @@ import java.io.File;
 public interface DirTreeListener {
 
     /**
+     * Invoked before a selection change occurs within the DirTree.
+     * You can return false here to veto the selection change.
+     *
+     * @param source         The DirTree instance triggering this event.
+     * @param newSelectedDir The directory that is about to be selected.
+     * @return True to allow the selection change, false to veto it.
+     */
+    boolean selectionWillChange(DirTree source, File newSelectedDir);
+
+    /**
      * Fired when a directory is selected within the DirTree.
      *
      * @param source      The DirTree instance triggering this event.
      * @param selectedDir The newly selected directory.
      */
-    public void selectionChanged(DirTree source, File selectedDir);
+    void selectionChanged(DirTree source, File selectedDir);
 
 
     /**
@@ -25,7 +35,7 @@ public interface DirTreeListener {
      * @param source  The DirTree instance triggering this event.
      * @param lockDir The subdirectory to which the DirTree is now locked.
      */
-    public void treeLocked(DirTree source, File lockDir);
+    void treeLocked(DirTree source, File lockDir);
 
 
     /**
@@ -33,5 +43,5 @@ public interface DirTreeListener {
      *
      * @param source The DirTree instance triggering this event.
      */
-    public void treeUnlocked(DirTree source);
+    void treeUnlocked(DirTree source);
 }
