@@ -5,6 +5,7 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListDataListener;
 import java.util.List;
 
 /**
@@ -12,6 +13,20 @@ import java.util.List;
  * A common use case would be ListField&lt;String&gt; to wrap a simple
  * list of Strings. The underlying JList can be obtained by calling
  * getList(), if you need to do custom styling or whatnot on the JList.
+ * <p>
+ *     <b>An important note about value changed events</b> - this
+ *     field's "value" is the list of selected items. Therefore,
+ *     value changed events are only fired when the selection changes,
+ *     and NOT when the list contents change. If you need to be notified
+ *     when the list contents change, you will need to add a
+ *     ListDataListener to the underlying ListModel yourself.
+ *     You can do this by accessing the list model directly:
+ * </p>
+ * <pre>myListField.getListModel().addListDataListener(...);</pre>
+ * <p>
+ * Or, you can use the new addListDataListener() convenience method:
+ * </p>
+ * <pre>myListField.addListDataListener(...);</pre>
  *
  * @since swing-extras 2.3
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -43,6 +58,15 @@ public class ListField<T> extends FormField {
         list.setFixedCellWidth(100);
         list.setFont(getDefaultFont());
         fieldComponent = new JScrollPane(list);
+
+        // ListField is generally intended to allow the user to select zero
+        // or more items out of a static list of items. Therefore, our "value"
+        // in swing-forms terms is the list of selected items, not the list contents.
+        // We therefore do NOT fire a valueChangedEvent when the list contents change,
+        // only when the selection changes. Callers should therefore be careful
+        // to understand the difference:
+        //      addValueChangedListener() -> notified when selection changes
+        //      addListDataListener() -> notified when list contents change
         list.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 fireValueChangedEvent();
@@ -174,6 +198,18 @@ public class ListField<T> extends FormField {
      */
     public DefaultListModel<T> getListModel() {
         return listModel;
+    }
+
+    /**
+     * A convenience method to add a ListDataListener to the underlying ListModel.
+     * <b>Important:</b> If you add a ValueChangedListener to this ListField, that listener
+     * will only be notified when the selection changes, not when the list data changes.
+     * If you need to be notified when the list data changes, you must add a ListDataListener
+     * to the ListModel. This method makes that a bit easier.
+     */
+    public ListField<T> addListDataListener(ListDataListener listener) {
+        listModel.addListDataListener(listener);
+        return this;
     }
 
     /**

@@ -6,6 +6,7 @@ Version 2.7.0 [TODO release date here] - Maintenance release
   #256 - DirTree: remove Linux-specific logic
   #252 - ImageUtil: better validation in loadImageIcon
   #247 - DirTree: add selectionWillChange event with veto option
+  #245 - ListField: listener convenience methods; better javadoc
   #242 - Added more VersionStringComparator convenience methods
   #239 - PropertiesManager: add option to set border margin
   #232 - DirTree: add option to show hidden files
