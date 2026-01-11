@@ -166,7 +166,7 @@ public class KeyboardManager {
      * If the given shortcut is invalid, a warning will be logged and
      * your action will not be registered!
      * <p>
-     * An action can only be registered once. If you invoke registerKeyHandler() with
+     * An action can only be registered once. If you invoke registerHandler() with
      * an action that is already assigned to a shortcut, its previous assignment
      * will be removed, and this new assignment will replace it.
      * </p>
