@@ -49,7 +49,10 @@ public class KeyboardManager {
 
     /**
      * Disposes this keyboard manager, removing its key event dispatcher from the
-     * KeyboardFocusManager and clearing all registered key bindings.
+     * KeyboardFocusManager and clearing all registered key bindings. If your KeyboardManager
+     * is attached to your application's main window, you don't need to invoke this method.
+     * It's intended more for temporary windows or dialogs that may be created and destroyed
+     * multiple times during the application's lifetime.
      */
     public void dispose() {
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
