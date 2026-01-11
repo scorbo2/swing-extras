@@ -12,10 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 class EnumPropertyTest extends AbstractPropertyBaseTests {
 
-    enum TestEnum1 {
-        VALUE1, VALUE2, VALUE3;
-    }
-
     enum TestEnumWithLabels {
         VALUE1("This is value 1"),
         VALUE2("This is value 2"),
@@ -35,66 +31,37 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
 
     @Override
     protected AbstractProperty createTestObject(String name, String label) {
-        return new EnumProperty<TestEnumWithLabels>(name, label, TestEnumWithLabels.VALUE1);
+        return new EnumProperty<>(name, label, TestEnumWithLabels.VALUE1);
     }
 
     @Test
     public void getSelectedItem_withValidEnum_shouldSucceed() {
         // GIVEN an EnumProperty with a valid enum:
-        EnumProperty<TestEnum1> testProp = new EnumProperty<>("test1", "test1", TestEnum1.VALUE2);
+        EnumProperty<TestEnumWithLabels> testProp = new EnumProperty<>("test1", "test1", TestEnumWithLabels.VALUE2);
 
         // WHEN we try to get the selected item:
-        TestEnum1 actual = testProp.getSelectedItem();
+        TestEnumWithLabels actual = testProp.getSelectedItem();
 
         // THEN it should be a valid output:
-        assertEquals(TestEnum1.VALUE2, actual);
+        assertEquals(TestEnumWithLabels.VALUE2, actual);
     }
 
     @Test
     public void setSelectedItem_withValidEnum_shouldSucceed() {
         // GIVEN an EnumProperty with a valid selection:
-        EnumProperty<TestEnum1> testProp = new EnumProperty<>("test1", "test1", TestEnum1.VALUE2);
+        EnumProperty<TestEnumWithLabels> testProp = new EnumProperty<>("test1", "test1", TestEnumWithLabels.VALUE2);
 
         // WHEN we try to set the selected item using a valid enum value:
-        testProp.setSelectedItem(TestEnum1.VALUE1);
+        testProp.setSelectedItem(TestEnumWithLabels.VALUE1);
 
         // THEN it should change the selection to that value:
-        assertEquals(0, testProp.getSelectedIndex());
-        assertEquals(TestEnum1.VALUE1, testProp.getSelectedItem());
+        assertEquals(TestEnumWithLabels.VALUE1, testProp.getSelectedItem());
     }
 
     @Test
-    public void setSelectedIndex_withInvalidIndex_shouldIgnore() {
-        // GIVEN an EnumProperty with a valid selection:
-        EnumProperty<TestEnum1> testProp = new EnumProperty<>("test1", "test1", TestEnum1.VALUE2);
-        int selectedIndexBefore = testProp.getSelectedIndex();
-
-        // WHEN we try to set the selected index using a garbage value:
-        testProp.setSelectedIndex(99);
-
-        // THEN the selection should not have changed:
-        assertEquals(1, selectedIndexBefore);
-        assertEquals(selectedIndexBefore, testProp.getSelectedIndex());
-    }
-
-    @Test
+    @SuppressWarnings("unchecked")
     public void generateFormField_withValidEnum_shouldSucceed() {
         // GIVEN an EnumProperty with a valid selection:
-        EnumProperty<TestEnum1> testProp = new EnumProperty<>("test1", "test1", TestEnum1.VALUE1);
-
-        // WHEN we generate a form field from it:
-        FormField formField = testProp.generateFormField();
-
-        // THEN we should see a valid form field with expected options:
-        assertInstanceOf(ComboField.class, formField);
-        ComboField comboField = (ComboField)formField;
-        assertEquals(0, comboField.getSelectedIndex());
-        assertEquals(TestEnum1.VALUE1.name(), comboField.getSelectedItem());
-    }
-
-    @Test
-    public void generateFormField_withValidEnumWithLabels_shouldSucceed() {
-        // GIVEN an EnumProperty that has labels as well as names:
         EnumProperty<TestEnumWithLabels> testProp = new EnumProperty<>("test1", "test1", TestEnumWithLabels.VALUE1);
 
         // WHEN we generate a form field from it:
@@ -102,62 +69,32 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
 
         // THEN we should see a valid form field with expected options:
         assertInstanceOf(ComboField.class, formField);
-        ComboField comboField = (ComboField)formField;
+        ComboField<TestEnumWithLabels> comboField = (ComboField<TestEnumWithLabels>)formField;
         assertEquals(0, comboField.getSelectedIndex());
-        assertEquals(TestEnumWithLabels.VALUE1.toString(), comboField.getSelectedItem());
-    }
-
-    @Test
-    public void generateFormField_withValidEnumWithLabelsUsingName_shouldSucceed() {
-        // GIVEN an EnumProperty that has labels, but configured to ignore them and use names:
-        EnumProperty<TestEnumWithLabels> testProp = new EnumProperty<>("test1", "test1", TestEnumWithLabels.VALUE1,
-                                                                       true);
-
-        // WHEN we generate a form field from it:
-        FormField formField = testProp.generateFormField();
-
-        // THEN we should see a valid form field with expected options:
-        assertInstanceOf(ComboField.class, formField);
-        ComboField comboField = (ComboField)formField;
-        assertEquals(0, comboField.getSelectedIndex());
-        assertEquals(TestEnumWithLabels.VALUE1.name(), comboField.getSelectedItem());
+        assertEquals(TestEnumWithLabels.VALUE1, comboField.getSelectedItem());
     }
 
     @Test
     public void loadFromFormField_givenValidFormField_shouldSucceed() {
         // GIVEN a FormField of the correct type with the correct options:
-        ComboField<TestEnum1> comboField = new ComboField<>("Test", List.of(TestEnum1.values()), 2, false);
+        ComboField<TestEnumWithLabels> comboField = new ComboField<>("Test", List.of(TestEnumWithLabels.values()), 2,
+                                                                     false);
         comboField.setIdentifier("my.field.test1");
 
         // WHEN we try to load an EnumProperty from that field:
-        EnumProperty<TestEnum1> enumProperty = new EnumProperty<>("my.field.test1", "test1", TestEnum1.VALUE1);
+        EnumProperty<TestEnumWithLabels> enumProperty = new EnumProperty<>("my.field.test1", "test1",
+                                                                           TestEnumWithLabels.VALUE1);
         enumProperty.loadFromFormField(comboField);
 
         // THEN the selection should have been updated appropriately:
-        assertEquals(2, enumProperty.getSelectedIndex());
-        assertEquals(TestEnum1.VALUE3, enumProperty.getSelectedItem());
+        assertEquals(TestEnumWithLabels.VALUE3, enumProperty.getSelectedItem());
     }
 
     @Test
     public void saveToProps_withName_shouldSucceed() {
         // GIVEN an enum with valid values:
-        EnumProperty<TestEnum1> enumProperty = new EnumProperty<>("my.test.field", "hello", TestEnum1.VALUE2);
-
-        // WHEN we save it to a properties object:
-        Properties props = new Properties();
-        enumProperty.saveToProps(props);
-
-        // THEN it should have saved as expected:
-        assertEquals(1, props.getPropertyNames().size());
-        assertEquals("my.test.field", props.getPropertyNames().get(0));
-        assertEquals(TestEnum1.VALUE2.name(), props.getString("my.test.field", "defaultShouldBeIgnored"));
-    }
-
-    @Test
-    public void saveToProps_withLabel_shouldIgnoreLabelAndUseName() {
-        // GIVEN an enum that has labels:
         EnumProperty<TestEnumWithLabels> enumProperty = new EnumProperty<>("my.test.field", "hello",
-                                                                           TestEnumWithLabels.VALUE3);
+                                                                           TestEnumWithLabels.VALUE2);
 
         // WHEN we save it to a properties object:
         Properties props = new Properties();
@@ -166,22 +103,22 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
         // THEN it should have saved as expected:
         assertEquals(1, props.getPropertyNames().size());
         assertEquals("my.test.field", props.getPropertyNames().get(0));
-        assertEquals(TestEnum1.VALUE3.name(), props.getString("my.test.field", "defaultShouldBeIgnored"));
+        assertEquals(TestEnumWithLabels.VALUE2.name(), props.getString("my.test.field", "defaultShouldBeIgnored"));
     }
 
     @Test
     public void loadFromProps_withValidProps_shouldSucceed() {
         // GIVEN a properties instance that has a valid value:
         Properties props = new Properties();
-        props.setString("my.test.field", TestEnum1.VALUE3.name());
+        props.setString("my.test.field", TestEnumWithLabels.VALUE3.name());
 
         // WHEN we try to load from props:
-        EnumProperty<TestEnum1> enumProperty = new EnumProperty<>("my.test.field", "blah", TestEnum1.VALUE1);
+        EnumProperty<TestEnumWithLabels> enumProperty = new EnumProperty<>("my.test.field", "blah",
+                                                                           TestEnumWithLabels.VALUE1);
         enumProperty.loadFromProps(props);
 
         // THEN the field should have updated correctly:
-        assertEquals(2, enumProperty.getSelectedIndex());
-        assertEquals(TestEnum1.VALUE3, enumProperty.getSelectedItem());
+        assertEquals(TestEnumWithLabels.VALUE3, enumProperty.getSelectedItem());
     }
 
     @Test
@@ -191,18 +128,18 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
         props.setString("my.test.field", "This value is just wrong, plain wrong.");
 
         // WHEN we try to load from props:
-        EnumProperty<TestEnum1> enumProperty = new EnumProperty<>("my.test.field", "blah", TestEnum1.VALUE1);
+        EnumProperty<TestEnumWithLabels> enumProperty = new EnumProperty<>("my.test.field", "blah",
+                                                                           TestEnumWithLabels.VALUE1);
         enumProperty.loadFromProps(props);
 
         // THEN the field should have ignored the load request and stuck with the default value:
-        assertEquals(0, enumProperty.getSelectedIndex());
-        assertEquals(TestEnum1.VALUE1, enumProperty.getSelectedItem());
+        assertEquals(TestEnumWithLabels.VALUE1, enumProperty.getSelectedItem());
     }
 
     @Test
     public void formFieldChangeListener_withFormFieldChanges_shouldFireChangeEvents() {
         // GIVEN a test prop with a mocked property form field change listener on it:
-        EnumProperty<TestEnum1> testProp = new EnumProperty<>("test", "test", TestEnum1.VALUE1);
+        EnumProperty<TestEnumWithLabels> testProp = new EnumProperty<>("test", "test", TestEnumWithLabels.VALUE1);
         PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);
         testProp.addFormFieldChangeListener(listener);
 
