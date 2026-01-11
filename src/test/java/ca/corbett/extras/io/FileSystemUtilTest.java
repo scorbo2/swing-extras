@@ -379,6 +379,48 @@ public class FileSystemUtilTest {
         assertEquals(200, actual.length(), "Filename was not truncated properly!");
     }
 
+    @Test
+    public void getUniqueDestinationFile_withNoConflicts_ShouldReturnInputFile() throws Exception {
+        final File tempDir = new File(System.getProperty("java.io.tmpdir"));
+
+        // GIVEN a candidate file that we want to copy/move to a directory where there are no name conflicts:
+        final String expected = "testfile.txt";
+        File toDelete = new File(tempDir, expected);
+        if (toDelete.exists()) {
+            toDelete.delete(); // Make sure it doesn't exist
+        }
+
+        // WHEN we compute a unique destination file:
+        File destinationFile = FileSystemUtil.getUniqueDestinationFile(tempDir, toDelete);
+
+        // THEN we should get back the same file we sent in, because there are no conflicts:
+        assertEquals(expected, destinationFile.getName());
+        assertEquals(toDelete.getAbsolutePath(), destinationFile.getAbsolutePath());
+    }
+
+    @Test
+    public void getUniqueDestinationFile_withConflicts_ShouldReturnUniqueFile() throws Exception {
+        final File tempDir = new File(System.getProperty("java.io.tmpdir"));
+
+        // GIVEN a candidate File and a target directory with name conflicts:
+        final String baseName = "testfile.txt";
+        File toDelete = new File("/some/source/directory", baseName);
+        File conflict1 = new File(tempDir, "testfile.txt"); // Oops! This filename is taken.
+        conflict1.createNewFile();
+        File conflict2 = new File(tempDir, "testfile_1.txt"); // Oops! Our fallback filename is also taken.
+        conflict2.createNewFile();
+
+        // WHEN we compute a unique destination file:
+        File destinationFile = FileSystemUtil.getUniqueDestinationFile(tempDir, toDelete);
+
+        // THEN we should get back a uniquely named file with our fallback fallback name:
+        assertEquals("testfile_2.txt", destinationFile.getName());
+
+        // Clean up
+        conflict1.delete();
+        conflict2.delete();
+    }
+
     private static void createNestedTestDir(File rootDir, int dirCount1, int dirCount2, int dirCount3, boolean createFiles)
             throws IOException {
         rootDir.mkdir();

@@ -632,4 +632,44 @@ public final class FileSystemUtil {
 
         return sanitized.isEmpty() ? defaultName : sanitized;
     }
+
+    /**
+     * Given a destination directory and a candidate File that we want to copy or move there,
+     * this method will check for name conflicts in the destination, and return a File object
+     * representing a unique filename within the destination directory. If a file with the original
+     * name already exists, a number will be appended to the name (before the extension)
+     * to make it unique.
+     */
+    public static File getUniqueDestinationFile(File destinationDir, File candidateFile) {
+        String candidateFileName = candidateFile.getName();
+        File destFile = new File(destinationDir, candidateFileName);
+        if (!destFile.exists()) {
+            return destFile;
+        }
+
+        // Separate the name and extension:
+        String nameWithoutExt;
+        String ext;
+        int dotIndex = candidateFileName.lastIndexOf('.');
+        if (dotIndex == -1) {
+            nameWithoutExt = candidateFileName;
+            ext = "";
+        }
+        else {
+            nameWithoutExt = candidateFileName.substring(0, dotIndex);
+            ext = candidateFileName.substring(dotIndex);
+        }
+
+        // Just keep appending a number until we find one that doesn't exist:
+        for (int counter = 1; counter < Integer.MAX_VALUE; counter++) {
+            String newName = String.format("%s_%d%s", nameWithoutExt, counter, ext);
+            destFile = new File(destinationDir, newName);
+            if (!destFile.exists()) {
+                return destFile;
+            }
+        }
+
+        // Extremely unlikely, but just in case we hit the limit:
+        return new File(destinationDir, nameWithoutExt + System.currentTimeMillis() + ext);
+    }
 }
