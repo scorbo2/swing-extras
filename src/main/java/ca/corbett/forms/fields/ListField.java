@@ -24,7 +24,7 @@ import java.util.List;
  * </p>
  * <pre>myListField.getListModel().addListDataListener(...);</pre>
  * <p>
- * Or, you can use the new addListDataListener() convenience method:
+ * Or, you can use the addListDataListener() convenience method:
  * </p>
  * <pre>myListField.addListDataListener(...);</pre>
  *
