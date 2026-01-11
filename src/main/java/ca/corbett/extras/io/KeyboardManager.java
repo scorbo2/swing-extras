@@ -341,9 +341,15 @@ public class KeyboardManager {
 
         // Handle function keys
         if (keyName.matches("f\\d+")) {
-            int fNum = Integer.parseInt(keyName.substring(1));
-            if (fNum >= 1 && fNum <= 24) {
-                return KeyEvent.VK_F1 + (fNum - 1);
+            try {
+                int fNum = Integer.parseInt(keyName.substring(1));
+                if (fNum >= 1 && fNum <= 24) {
+                    return KeyEvent.VK_F1 + (fNum - 1);
+                }
+            }
+            catch (NumberFormatException e) {
+                log.warning("getKeyCode: Invalid function key number in key name: " + keyName);
+                return KeyEvent.VK_UNDEFINED;
             }
         }
 
