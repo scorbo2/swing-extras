@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListDataListener;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -192,14 +193,67 @@ class ListFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testAddValueChangedListener() {
-        //noinspection unchecked
+    @SuppressWarnings("unchecked")
+    public void selectionChange_withValueChangedListener_shouldNotify() {
+        // Given a ListField with a ValueChangedListener:
         ListField<String> actualField = (ListField<String>)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
-        actual.addValueChangedListener(listener);
+        actualField.addValueChangedListener(listener);
+
+        // WHEN we make two changes to the selection:
         actualField.setSelectedIndex(1);
         actualField.setSelectedIndexes(new int[]{0, 1});
+
+        // THEN our listener should be notified twice:
         Mockito.verify(listener, Mockito.times(2)).formFieldValueChanged(actual);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void selectionChange_withListDataListener_shouldNotNotify() {
+        // GIVEN a ListField with a ListDataListener:
+        ListField<String> actualField = (ListField<String>)actual;
+        ListDataListener listener = Mockito.mock(ListDataListener.class);
+        actualField.addListDataListener(listener);
+
+        // WHEN we make two changes to the selection:
+        actualField.setSelectedIndex(1);
+        actualField.setSelectedIndexes(new int[]{0, 1});
+
+        // THEN our listener should NOT be notified:
+        Mockito.verify(listener, Mockito.times(0)).intervalAdded(Mockito.any());
+        Mockito.verify(listener, Mockito.times(0)).intervalRemoved(Mockito.any());
+        Mockito.verify(listener, Mockito.times(0)).contentsChanged(Mockito.any());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void listDataChange_withValueChangedListener_shouldNotNotify() {
+        // GIVEN a ListField with a ValueChangedListener:
+        ListField<String> actualField = (ListField<String>)actual;
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        actualField.addValueChangedListener(listener);
+
+        // WHEN we add or remove items directly in the underlying ListModel:
+        actualField.getListModel().addElement("hello");
+
+        // THEN our listener should NOT be notified, because this is not a "value" change:
+        Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(actual);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void listDataChange_withListDataListener_shouldNotify() {
+        // GIVEN a ListField with a ListDataListener:
+        ListField<String> actualField = (ListField<String>)actual;
+        ListDataListener listener = Mockito.mock(ListDataListener.class);
+        actualField.addListDataListener(listener);
+
+        // WHEN we add or remove items directly in the underlying ListModel:
+        actualField.getListModel().addElement("hello");
+
+        // THEN our listener should be notified:
+        Mockito.verify(listener, Mockito.times(1)).intervalAdded(Mockito.any());
     }
 
     @Test

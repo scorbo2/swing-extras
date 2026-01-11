@@ -213,6 +213,14 @@ public class ListField<T> extends FormField {
     }
 
     /**
+     * Convenience method to remove a ListDataListener from the underlying ListModel.
+     */
+    public ListField<T> removeListDataListener(ListDataListener listener) {
+        listModel.removeListDataListener(listener);
+        return this;
+    }
+
+    /**
      * You can optionally set a custom cell renderer if your list items have special display requirements.
      */
     public ListField<T> setCellRenderer(ListCellRenderer<T> renderer) {
