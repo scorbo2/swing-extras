@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,7 +45,7 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
 
     private final JScrollPane scrollPane;
     private final JTree tree = new JTree();
-    private final ArrayList<DirTreeListener> listeners = new ArrayList<>();
+    private final List<DirTreeListener> listeners = new CopyOnWriteArrayList<>();
 
     private DirTreeNode fakeRootNode; // The "fake" node at the top of the tree - only used if lockNode == null
     private DirTreeNode lockNode;     // The node representing the locked root directory (will be null if unlocked)
@@ -67,9 +69,11 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         TreeCellRenderer renderer = tree.getCellRenderer();
-        ((DefaultTreeCellRenderer)renderer).setClosedIcon(null);
-        ((DefaultTreeCellRenderer)renderer).setLeafIcon(null);
-        ((DefaultTreeCellRenderer)renderer).setOpenIcon(null);
+        if (renderer instanceof DefaultTreeCellRenderer) {
+            ((DefaultTreeCellRenderer)renderer).setClosedIcon(null);
+            ((DefaultTreeCellRenderer)renderer).setLeafIcon(null);
+            ((DefaultTreeCellRenderer)renderer).setOpenIcon(null);
+        }
 
         // Force single selection and enable lazy load of subdirectories:
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -346,9 +350,28 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
             return;
         }
 
+        // All of this is just to try to accommodate case-insensitive filesystems:
+        String newRootDirCanonicalPath;
+        String lockNodeCanonicalPath;
+        try {
+            newRootDirCanonicalPath = newRootDir.getCanonicalPath();
+            lockNodeCanonicalPath = (lockNode == null)
+                    ? null
+                    : lockNode.getDir().getCanonicalPath();
+        }
+        catch (IOException ioe) {
+            // Fallback to absolute paths... this may fail on case-insensitive filesystems
+            // if the paths differ only by case, but it's the best we can do:
+            newRootDirCanonicalPath = newRootDir.getAbsolutePath();
+            lockNodeCanonicalPath = (lockNode == null)
+                    ? null
+                    : lockNode.getDir().getAbsolutePath();
+            log.log(Level.WARNING, "DirTree.lock(): IOException while getting canonical paths.", ioe);
+        }
+
         // If the new rootDir is the same as the current one, nothing to do, unless we're forcing a reload:
         if (lockNode != null
-                && newRootDir.getAbsolutePath().equals(lockNode.getDir().getAbsolutePath())
+                && newRootDirCanonicalPath.equals(lockNodeCanonicalPath)
                 && !isForceReload) {
             return;
         }
@@ -393,7 +416,7 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
      */
     void unlock(boolean forceReload) {
         // If we're not locked, nothing to do, unless we're forcing a reload:
-        if (lockNode != null && !forceReload) {
+        if (lockNode == null && !forceReload) {
             return;
         }
 
@@ -436,11 +459,6 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
         // Select the old root (if there was one):
         if (oldNode != null) {
             selectAndScrollTo(oldNode.getDir());
-        }
-
-        // Otherwise, if there's only one root node (on linux: "/"), expand it:
-        else if (roots.length == 1) {
-            expandNodeAtPath(Paths.get(roots[0].getAbsolutePath()));
         }
 
         // We are officially unlocked. Let listeners know:
@@ -628,7 +646,7 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
             return; // ignored
         }
 
-        File selectedDir = (currentNode == null) ? null : node.getDir();
+        File selectedDir = (node == null) ? null : node.getDir();
         for (DirTreeListener listener : new ArrayList<>(listeners)) {
             listener.selectionChanged(this, selectedDir);
         }

@@ -14,7 +14,7 @@ import java.util.Objects;
  */
 public final class DirTreeNode extends DefaultMutableTreeNode {
     private final File dir;
-    private boolean childrenLoaded;
+    private volatile boolean childrenLoaded;
     private final boolean hasChildren;
     private final boolean showHiddenDirs;
 

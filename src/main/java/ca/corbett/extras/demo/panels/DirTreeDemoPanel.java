@@ -143,8 +143,6 @@ public class DirTreeDemoPanel extends PanelBuilder {
     private class AnnoyingPromptListener implements DirTreeListener {
         @Override
         public boolean selectionWillChange(DirTree source, File newSelectedDir) {
-            String msg = "selectionWillChange: new dir is " + newSelectedDir.getAbsolutePath() +
-                    ". Confirm?";
             return JOptionPane.showConfirmDialog(DemoApp.getInstance(),
                                                  "Are you sure you wish to change directories?",
                                                  "Confirm selection change",
