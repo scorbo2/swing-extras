@@ -644,7 +644,7 @@ public final class FileSystemUtil {
      * is {@code null}, this method will throw an {@link IllegalArgumentException}.
      * </p>
      *
-     * @param destinationDir The directory where we want to place the file.
+     * @param destinationDir The directory where we want to place the file. Must exist and must be a directory.
      * @param candidateFile  The File we want to copy or move to the destination directory.
      * @return A File object representing a unique filename within the destination directory.
      */
@@ -655,6 +655,10 @@ public final class FileSystemUtil {
         if (candidateFile == null) {
             throw new IllegalArgumentException("candidateFile must not be null");
         }
+        if (!destinationDir.exists() || !destinationDir.isDirectory()) {
+            throw new IllegalArgumentException("destinationDir must exist, and must be a directory");
+        }
+
         String candidateFileName = candidateFile.getName();
         File destFile = new File(destinationDir, candidateFileName);
 

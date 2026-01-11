@@ -272,6 +272,7 @@ public class FileSystemUtilTest {
     /**
      * This one only works on my machine, and I don't want to check in a jar file as a test resource
      * just for this purpose. So, this test is disabled by default.
+     * TODO find a better home for these "not really a unit test" tests, or delete them. There's 3 of them in total.
      */
     @Disabled
     @Test
@@ -494,6 +495,86 @@ public class FileSystemUtilTest {
 
         // THEN we should get back a uniquely named file with our fallback fallback name:
         assertEquals("testfile_2.txt", destinationFile.getName());
+
+        // Clean up
+        if (!conflict1.delete() || !conflict2.delete()) {
+            fail("Unable to delete test files!");
+        }
+    }
+
+    @Test
+    public void getUniqueDestinationFile_withNullInputs_ShouldThrowException() {
+        final File tempDir = new File(System.getProperty("java.io.tmpdir"));
+
+        // GIVEN a null target directory:
+        File toDelete = new File("/some/source/directory", "testfile.txt");
+        try {
+            FileSystemUtil.getUniqueDestinationFile(null, toDelete);
+            fail("Expected exception but didn't get one!");
+        }
+        catch (IllegalArgumentException ignored) {
+        }
+
+        // GIVEN a null candidate file:
+        try {
+            FileSystemUtil.getUniqueDestinationFile(tempDir, null);
+            fail("Expected exception but didn't get one!");
+        }
+        catch (IllegalArgumentException ignored) {
+        }
+    }
+
+    @Test
+    public void getUniqueDestinationFile_withNonexistentTargetDir_ShouldThrowException() {
+        // GIVEN a target directory that doesn't exist:
+        File tempDir = new File(System.getProperty("java.io.tmpdir"));
+        File toDelete = new File("/some/source/directory", "testfile.txt");
+        File nonexistentDir = new File(tempDir, "this_directory_should_not_exist_12345");
+        try {
+            FileSystemUtil.getUniqueDestinationFile(nonexistentDir, toDelete);
+            fail("Expected exception but didn't get one!");
+        }
+        catch (IllegalArgumentException ignored) {
+        }
+    }
+
+    @Test
+    public void getUniqueDestinationFile_withTargetDirThatIsNotADirectory_ShouldThrowException() throws Exception {
+        // GIVEN a target directory that is actually a file:
+        File tempDir = new File(System.getProperty("java.io.tmpdir"));
+        File toDelete = new File("/some/source/directory", "testfile.txt");
+        File notADir = File.createTempFile("not_a_dir", ".txt", tempDir);
+        try {
+            FileSystemUtil.getUniqueDestinationFile(notADir, toDelete);
+            fail("Expected exception but didn't get one!");
+        }
+        catch (IllegalArgumentException ignored) {
+        }
+        finally {
+            if (notADir.exists()) {
+                notADir.delete();
+            }
+        }
+    }
+
+    @Test
+    public void getUniqueDestinationFile_withFilenameWithTrailingDot_shouldHandleProperly() throws Exception {
+        final File tempDir = new File(System.getProperty("java.io.tmpdir"));
+
+        // GIVEN a candidate File with a trailing dot in the name and a target directory with name conflicts:
+        final String baseName = "testfile.";
+        File toDelete = new File("/some/source/directory", baseName);
+        File conflict1 = new File(tempDir, "testfile."); // Oops! This filename is taken.
+        File conflict2 = new File(tempDir, "testfile_1."); // Oops! Our fallback filename is also taken.
+        if (!conflict1.createNewFile() || !conflict2.createNewFile()) {
+            fail("Unable to create test files!");
+        }
+
+        // WHEN we compute a unique destination file:
+        File destinationFile = FileSystemUtil.getUniqueDestinationFile(tempDir, toDelete);
+
+        // THEN we should get back a uniquely named file with our fallback fallback name:
+        assertEquals("testfile_2.", destinationFile.getName());
 
         // Clean up
         if (!conflict1.delete() || !conflict2.delete()) {
