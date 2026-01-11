@@ -44,7 +44,7 @@ class KeyboardManagerTest {
     }
 
     @Test
-    public void parseKeyStrokes_invalidInput_null() {
+    public void parseKeyStroke_invalidInput_null() {
         // GIVEN some invalid keystroke strings:
         String[] keyStrokes = {
                 "",
