@@ -132,8 +132,12 @@ public class KeyboardManager {
         KeyStroke keyStroke = parseKeyStroke(shortcut);
         if (keyStroke != null) {
             List<Action> actions = keyBindings.get(keyStroke);
-            if (actions != null && !actions.isEmpty()) {
-                return new ArrayList<>(actions);
+            if (actions != null) {
+                synchronized(actions) {
+                    if (!actions.isEmpty()) {
+                        return new ArrayList<>(actions);
+                    }
+                }
             }
         }
         return new ArrayList<>();
@@ -246,10 +250,12 @@ public class KeyboardManager {
             KeyStroke keyStroke = parseKeyStroke(shortcut);
             if (keyStroke != null) {
                 List<Action> actions = keyBindings.get(keyStroke);
-                if (actions != null) {
-                    actions.remove(action);
-                    if (actions.isEmpty()) {
-                        keyBindings.remove(keyStroke);
+                synchronized(actions) {
+                    if (actions != null) {
+                        actions.remove(action);
+                        if (actions.isEmpty()) {
+                            keyBindings.remove(keyStroke);
+                        }
                     }
                 }
             }
@@ -472,27 +478,29 @@ public class KeyboardManager {
 
             // Check if we have a registered handler for that KeyStroke:
             List<Action> actions = keyBindings.get(keyStroke);
-            if (actions != null && !actions.isEmpty()) {
+            synchronized(actions) {
+                if (actions != null && !actions.isEmpty()) {
 
-                // Multiple handlers can be registered for the same shortcut:
-                // (That's a bit wonky, but it can happen by accident if multiple
-                //  application extensions happen to want the same shortcut.
-                //  This conflict will be highlighted to the user in application
-                //  settings, and they can remap one of the conflicting shortcuts
-                //  to something else if desired).
-                for (Action action : actions) {
-                    // Don't execute disabled actions:
-                    if (action.isEnabled()) {
-                        action.actionPerformed(new ActionEvent(window,
-                                                               ActionEvent.ACTION_PERFORMED,
-                                                               keyStrokeToString(keyStroke)));
+                    // Multiple handlers can be registered for the same shortcut:
+                    // (That's a bit wonky, but it can happen by accident if multiple
+                    //  application extensions happen to want the same shortcut.
+                    //  This conflict will be highlighted to the user in application
+                    //  settings, and they can remap one of the conflicting shortcuts
+                    //  to something else if desired).
+                    for (Action action : actions) {
+                        // Don't execute disabled actions:
+                        if (action.isEnabled()) {
+                            action.actionPerformed(new ActionEvent(window,
+                                                                   ActionEvent.ACTION_PERFORMED,
+                                                                   keyStrokeToString(keyStroke)));
+                        }
+                        else {
+                            log.info("KeyboardManager: action for shortcut " +
+                                             keyStrokeToString(keyStroke) + " is disabled; not executing.");
+                        }
                     }
-                    else {
-                        log.info("KeyboardManager: action for shortcut " +
-                                         keyStrokeToString(keyStroke) + " is disabled; not executing.");
-                    }
+                    return true;
                 }
-                return true;
             }
 
             return false;
