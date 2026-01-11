@@ -36,6 +36,7 @@ import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.SliderField;
 
@@ -77,6 +78,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
 
     private PropertiesManager propsManager;
     private ComboField<Alignment> alignmentField;
+    private NumberField borderMarginField;
 
     /**
      * An example enum to show off EnumProperty.
@@ -125,6 +127,10 @@ public class PropertiesDemoPanel extends PanelBuilder {
 
         alignmentField = new ComboField<>("Form alignment:", List.of(Alignment.values()), 1, false);
         formPanel.add(alignmentField);
+
+        // New in swing-extras 2.7: we can control the borderMargin for generated form panels!
+        borderMarginField = new NumberField("Border margin:", 16, 0, 64, 1);
+        formPanel.add(borderMarginField);
 
         // We can use PanelField to wrap a button for launching the dialog:
         PanelField panelField = new PanelField();
@@ -404,7 +410,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
             PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(),
                                                                   "Test properties",
                                                                   alignmentField.getSelectedItem(),
-                                                                  16);
+                                                                  borderMarginField.getCurrentValue().intValue());
             dialog.setVisible(true);
             if (dialog.wasOkayed()) {
                 propsManager.save();

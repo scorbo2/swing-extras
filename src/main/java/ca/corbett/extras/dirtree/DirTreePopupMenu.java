@@ -5,8 +5,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Represents a dynamic right click menu for DirTree. When invoked, it will give you the
@@ -51,18 +49,13 @@ public class DirTreePopupMenu extends JPopupMenu {
      * Invoked automatically to show this popup. The menu will be dynamically constructed
      * based on the DirTree instance associated with this menu.
      *
-     * @param source The JTree instance that triggered this popu.
+     * @param source The JTree instance that triggered this popup.
      * @param x      Mouse x location.
      * @param y      Mouse y location.
      */
     @Override
     public void show(Component source, int x, int y) {
         if (!(source instanceof JTree)) {
-            return;
-        }
-
-        // If our DirTree does not allow locking or unlocking, we're done here:
-        if (!dirTree.getAllowLock() && !dirTree.getAllowUnlock()) {
             return;
         }
 
@@ -91,13 +84,13 @@ public class DirTreePopupMenu extends JPopupMenu {
         removeAll();
 
         JMenuItem reloadItem = new JMenuItem("Reload tree");
-        reloadItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dirTree.reload(dirTree.getCurrentDir());
-            }
-        });
+        reloadItem.addActionListener(e -> dirTree.reload());
         add(reloadItem);
+
+        JMenuItem showHiddenItems = new JMenuItem("Show hidden directories: " +
+                                                          (dirTree.getShowHiddenDirs() ? "ON" : "OFF"));
+        showHiddenItems.addActionListener(e -> dirTree.setShowHiddenDirs(!dirTree.getShowHiddenDirs()));
+        add(showHiddenItems);
 
         if (selectedNode != null && dirTree.getAllowLock()) {
             add(buildLockMenuItem(selectedNode));
@@ -118,14 +111,7 @@ public class DirTreePopupMenu extends JPopupMenu {
      */
     private JMenuItem buildLockMenuItem(DirTreeNode node) {
         JMenuItem item = new JMenuItem("Lock to " + node.getDir().getAbsolutePath());
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dirTree.lock(node.getDir());
-            }
-
-        });
-
+        item.addActionListener(e -> dirTree.lock(node.getDir()));
         return item;
     }
 
@@ -136,13 +122,7 @@ public class DirTreePopupMenu extends JPopupMenu {
      */
     private JMenuItem buildUnlockMenuItem() {
         JMenuItem item = new JMenuItem("Unlock tree");
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dirTree.unlock();
-            }
-        });
-
+        item.addActionListener(e -> dirTree.unlock());
         return item;
     }
 }

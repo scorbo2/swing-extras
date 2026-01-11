@@ -61,6 +61,30 @@ public class VersionStringComparator implements Comparator<String> {
 
     /**
      * Convenience method to quickly compare a candidate version and report if it is
+     * at least (equal to or newer than) the given target version.
+     */
+    public static boolean isAtLeast(String candidateVersion, String targetVersion) {
+        return comparator.compare(candidateVersion, targetVersion) >= 0;
+    }
+
+    /**
+     * Convenience method to quickly compare a candidate version and report if it is
+     * at most (equal to or older than) the given target version.
+     */
+    public static boolean isAtMost(String candidateVersion, String targetVersion) {
+        return comparator.compare(candidateVersion, targetVersion) <= 0;
+    }
+
+    /**
+     * Convenience method to quickly compare a candidate version and report if it is
+     * exactly equal to the given target version.
+     */
+    public static boolean isExactly(String candidateVersion, String targetVersion) {
+        return comparator.compare(candidateVersion, targetVersion) == 0;
+    }
+
+    /**
+     * Convenience method to quickly compare a candidate version and report if it is
      * newer (higher version number) than the given target version.
      */
     public static boolean isNewerThan(String candidateVersion, String targetVersion) {

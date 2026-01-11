@@ -5,12 +5,13 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.ExpandVetoException;
 
 /**
- * Listener implementations for the FileTree component.
+ * A custom listener for the DirTree component that handles lazy loading of child nodes
+ * when a node is expanded.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2017-11-09
  */
-public class DirTreeExpandListener implements TreeWillExpandListener {
+class DirTreeExpandListener implements TreeWillExpandListener {
 
     @Override
     public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
@@ -20,5 +21,4 @@ public class DirTreeExpandListener implements TreeWillExpandListener {
     @Override
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
     }
-
 }

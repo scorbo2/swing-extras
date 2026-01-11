@@ -1,6 +1,19 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.7.0 [TODO release date here] - Maintenance release
+  #264 - ListSubsetField: fire value changed events when items move
+  #257 - new FileSystemUtil method: getUniqueDestinationFile()
+  #256 - DirTree: remove Linux-specific logic
+  #252 - ImageUtil: better validation in loadImageIcon
+  #247 - DirTree: add selectionWillChange event with veto option
+  #245 - ListField: listener convenience methods; better javadoc
+  #242 - Added more VersionStringComparator convenience methods
+  #239 - PropertiesManager: add option to set border margin
+  #232 - DirTree: add option to show hidden files
+  #230 - DirTree: mark factory methods as deprecated
+  #228 - Turn down scary exception logging in AppProperties
+
 Version 2.6.0 [2025-12-31] - Maintenance release
   #224 - Better extension error handling in ExtensionManager
   #222 - ListSubsetField: support drag and drop

@@ -13,6 +13,7 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +68,9 @@ public abstract class AppProperties<T extends AppExtension> {
     protected int propertiesDialogMinimumWidth = PropertiesDialog.MINIMUM_WIDTH;
     protected int propertiesDialogMinimumHeight = PropertiesDialog.MINIMUM_HEIGHT;
 
+    // The border margin on generated form panels can also be adjusted by subclasses if desired:
+    protected int propertiesDialogFormPanelBorderMargin = 16;
+
 
     /**
      * If your application has an ExtensionManager, you can supply it here and this
@@ -105,7 +109,12 @@ public abstract class AppProperties<T extends AppExtension> {
             tempProps.load();
             result = tempProps.getString(propName, result);
         }
+        catch (FileNotFoundException ignored) {
+            // This is not a big deal! Just log it, no need for the scary stack trace:
+            logger.warning("peek(): The properties file does not yet exist.");
+        }
         catch (IOException ioe) {
+            // Something else went wrong, log the error with a full stack trace:
             logger.log(Level.WARNING, "AppProperties.peek(): encountered IOException: " + ioe.getMessage(), ioe);
         }
         return result;
@@ -201,7 +210,10 @@ public abstract class AppProperties<T extends AppExtension> {
      */
     public boolean showPropertiesDialog(Frame owner, Alignment alignment) {
         reconcileExtensionEnabledStatus();
-        PropertiesDialog dialog = propsManager.generateDialog(owner, appName + " properties", alignment, 24);
+        PropertiesDialog dialog = propsManager.generateDialog(owner,
+                                                              appName + " properties",
+                                                              alignment,
+                                                              propertiesDialogFormPanelBorderMargin);
         dialog.setSize(propertiesDialogInitialWidth, propertiesDialogInitialHeight);
         dialog.setMinimumSize(new Dimension(propertiesDialogMinimumWidth, propertiesDialogMinimumHeight));
         dialog.setVisible(true);

@@ -7,9 +7,16 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppPropertiesTest {
 
@@ -31,6 +38,55 @@ class AppPropertiesTest {
 
         // THEN we should see the property disappear:
         assertNull(appProps.getPropertiesManager().getProperty("General.General.testProperty"));
+    }
+
+    @Test
+    public void peek_withNonExistentFile_shouldLogWarning() throws Exception {
+        // Use our log capturing mechanism to spy on AppProperties:
+        TestLogHandler logHandler = new TestLogHandler();
+        Logger testLogger = Logger.getLogger(AppProperties.class.getName());
+        testLogger.addHandler(logHandler);
+
+        try {
+            // GIVEN a non-existent properties file (for example, an application run for the first time):
+            File propsFile = File.createTempFile("nonexistent", ".props");
+            propsFile.delete();
+
+            // WHEN we try to peek() a value from that file:
+            String actual = AppProperties.peek(propsFile, "AnyProperty");
+
+            // THEN we should find a simple warning in the log file and NOT a stack trace:
+            assertTrue(logHandler.hasWarningContaining("The properties file does not yet exist"));
+            assertFalse(logHandler.hasWarningContaining("Exception"));
+            assertEquals("", actual);
+        }
+        finally {
+            // Clean up our log capturing mechanism:
+            testLogger.removeHandler(logHandler);
+        }
+    }
+
+    static class TestLogHandler extends Handler {
+        private List<LogRecord> records = new ArrayList<>();
+
+        @Override
+        public void publish(LogRecord record) {
+            records.add(record);
+        }
+
+        public boolean hasWarningContaining(String message) {
+            return records.stream()
+                          .anyMatch(r -> r.getLevel() == Level.WARNING &&
+                                  r.getMessage().contains(message));
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
     }
 
     public static class TestAppProperties extends AppProperties<AppExtension> {
