@@ -576,6 +576,39 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
         Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(subsetField);
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    public void selectAllItems_withNoItemsToMove_shouldNotNotify() {
+        // GIVEN a ListSubsetField with a ValueChangedListener and all items already selected:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"),
+                java.util.List.of("Item 1", "Item 2", "Item 3"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we try to select all items (but there are none to move):
+        subsetField.selectAllItems();
+
+        // THEN our listener should NOT be notified:
+        Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(subsetField);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void unselectAllItems_withNoItemsToMove_shouldNotNotify() {
+        // GIVEN a ListSubsetField with a ValueChangedListener and no items selected:
+        ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
+                java.util.List.of("Item 1", "Item 2", "Item 3"));
+        ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
+        subsetField.addValueChangedListener(listener);
+
+        // WHEN we try to unselect all items (but there are none to move):
+        subsetField.unselectAllItems();
+
+        // THEN our listener should NOT be notified:
+        Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(subsetField);
+    }
+
     private static class TestValidator implements FieldValidator<ListSubsetField<String>> {
 
         public static final String MSG = "selected items must not be empty";

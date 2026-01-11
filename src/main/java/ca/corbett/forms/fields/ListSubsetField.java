@@ -404,44 +404,52 @@ public class ListSubsetField<T> extends FormField {
 
     private void moveSelectedRight() {
         List<T> selectedValues = availableList.getSelectedValuesList();
-        for (T value : selectedValues) {
-            availableListModel.removeElement(value);
-            selectedListModel.addElement(value);
+        if (!selectedValues.isEmpty()) {
+            for (T value : selectedValues) {
+                availableListModel.removeElement(value);
+                selectedListModel.addElement(value);
+            }
+            if (autoSortingEnabled) {
+                sortListModel(selectedListModel);
+            }
+            fireValueChangedEvent();
         }
-        if (autoSortingEnabled) {
-            sortListModel(selectedListModel);
-        }
-        fireValueChangedEvent();
     }
 
     private void moveSelectedLeft() {
         List<T> selectedValues = selectedList.getSelectedValuesList();
-        for (T value : selectedValues) {
-            selectedListModel.removeElement(value);
-            availableListModel.addElement(value);
+        if (!selectedValues.isEmpty()) {
+            for (T value : selectedValues) {
+                selectedListModel.removeElement(value);
+                availableListModel.addElement(value);
+            }
+            if (autoSortingEnabled) {
+                sortListModel(availableListModel);
+            }
+            fireValueChangedEvent();
         }
-        if (autoSortingEnabled) {
-            sortListModel(availableListModel);
-        }
-        fireValueChangedEvent();
     }
 
     private void moveAllRight() {
-        selectedListModel.addAll(Collections.list(availableListModel.elements()));
-        availableListModel.clear();
-        if (autoSortingEnabled) {
-            sortListModel(selectedListModel);
+        if (!availableListModel.isEmpty()) {
+            selectedListModel.addAll(Collections.list(availableListModel.elements()));
+            availableListModel.clear();
+            if (autoSortingEnabled) {
+                sortListModel(selectedListModel);
+            }
+            fireValueChangedEvent();
         }
-        fireValueChangedEvent();
     }
 
     private void moveAllLeft() {
-        availableListModel.addAll(Collections.list(selectedListModel.elements()));
-        selectedListModel.clear();
-        if (autoSortingEnabled) {
-            sortListModel(availableListModel);
+        if (!selectedListModel.isEmpty()) {
+            availableListModel.addAll(Collections.list(selectedListModel.elements()));
+            selectedListModel.clear();
+            if (autoSortingEnabled) {
+                sortListModel(availableListModel);
+            }
+            fireValueChangedEvent();
         }
-        fireValueChangedEvent();
     }
 
     private void sortListModel(DefaultListModel<T> model) {
