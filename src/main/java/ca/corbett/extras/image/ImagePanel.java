@@ -15,6 +15,7 @@ import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
@@ -566,20 +567,18 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
     }
 
     /**
-     * Returns the current ImageIcon, if one is set.
-     *
-     * @return The ImageIcon being displayed in this panel, if there is one.
-     */
-    /**
      * Overridden from JComponent, this method renders the image using current options.
      *
      * @param g The Graphics object to use for rendering.
      */
     @Override
     public void paintComponent(Graphics g) {
+
+        // Our parent class can handle basic painting first:
+        super.paintComponent(g);
+
         // If we have no image, we're done here:
         if (dBuffer == null && imageIcon == null) {
-            super.paintComponent(g);
             return;
         }
 
@@ -591,10 +590,29 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             resetZoomCenter();
         }
 
+        // If we have a border set, we have to adjust for its insets.
+        // Otherwise, we might overdraw the image on top of the border.
+        int borderOffsetLeft = 0;
+        int borderOffsetTop = 0;
+        int borderWidthTotal = 0;
+        int borderHeightTotal = 0;
+        if (getBorder() != null) {
+            // We have a border! Let's be careful to take its size into account.
+            // The imageX and imageY calculations further down will use these offsets,
+            // and we'll also use this to compute our myWidth and myHeight values later.
+            Insets insets = getBorder().getBorderInsets(this);
+            borderOffsetLeft = insets.left;
+            borderOffsetTop = insets.top;
+            int borderOffsetRight = insets.right;
+            int borderOffsetBottom = insets.bottom;
+            borderWidthTotal = borderOffsetLeft + borderOffsetRight;
+            borderHeightTotal = borderOffsetTop + borderOffsetBottom;
+        }
+
         // Gather image information:
         Graphics2D graphics2D = (Graphics2D)g;
-        int myWidth = getWidth();
-        int myHeight = getHeight();
+        int myWidth = getWidth() - borderWidthTotal;
+        int myHeight = getHeight() - borderHeightTotal;
         int imgWidth = (int)(srcImgWidth * zoomFactor);
         int imgHeight = (int)(srcImgHeight * zoomFactor);
 
@@ -640,8 +658,8 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         }
 
         // Figure out the center point:
-        int centerX = (int)myWidth / 2;
-        int centerY = (int)myHeight / 2;
+        int centerX = myWidth / 2;
+        int centerY = myHeight / 2;
         imageX = centerX - (int)(zoomCenter.getX() * zoomFactor);
         imageY = centerY - (int)(zoomCenter.getY() * zoomFactor);
 
@@ -653,47 +671,49 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
 
         // Handle horizontal overflow:
         if (imgWidth >= myWidth) {
-            if (imageX > 0) {
-                imageX = 0;
+            if (imageX > borderOffsetLeft) {
+                imageX = borderOffsetLeft;
             }
-            else if (imageX < (myWidth - imgWidth)) {
-                imageX = myWidth - imgWidth;
+            else if (imageX < (borderOffsetLeft + myWidth - imgWidth)) {
+                imageX = borderOffsetLeft + myWidth - imgWidth;
             }
         }
 
         // Handle vertical overflow:
         if (imgHeight >= myHeight) {
-            if (imageY > 0) {
-                imageY = 0;
+            if (imageY > borderOffsetTop) {
+                imageY = borderOffsetTop;
             }
-            else if (imageY < (myHeight - imgHeight)) {
-                imageY = myHeight - imgHeight;
+            else if (imageY < (borderOffsetTop + myHeight - imgHeight)) {
+                imageY = borderOffsetTop + myHeight - imgHeight;
             }
         }
 
         // Handle image placement (already calculated above, tweak it if need be):
         switch (properties.getDisplayMode()) {
 
-            // Unconditionally place it at 0,0
+            // Unconditionally place it at 0,0 (adjusted for border):
             case NONE:
             case STRETCH:
-                imageX = 0;
-                imageY = 0;
+                imageX = borderOffsetLeft;
+                imageY = borderOffsetTop;
                 break;
 
             // Otherwise, try to keep it centered:
             default:
-                imageX = (imgWidth < myWidth) ? (int)((myWidth - imgWidth) / 2) : imageX;
-                imageY = (imgHeight < myHeight) ? (int)((myHeight - imgHeight) / 2) : imageY;
+                imageX = (imgWidth < myWidth) ? borderOffsetLeft + (int)((myWidth - imgWidth) / 2) : imageX;
+                imageY = (imgHeight < myHeight) ? borderOffsetTop + (int)((myHeight - imgHeight) / 2) : imageY;
                 break;
         }
 
         // Set Rendering quality, draw the image, and we're done:
         if (dBuffer != null) {
-            super.paintComponent(g);
             setRenderingQuality(graphics2D);
             graphics2D.drawImage(dBuffer, imageX, imageY, imgWidth, imgHeight, null);
-            graphics2D.dispose();
+
+            // DON'T dispose the graphics object we were given!
+            // This will prevent further painting operations from working correctly.
+            //graphics2D.dispose();
         }
         else {
             if (lastRenderedImageWidth != imgWidth || lastRenderedImageHeight != imgHeight) {
@@ -703,7 +723,6 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
                 lastRenderedImageHeight = imgHeight;
             }
             imageIconLabel.setBounds(imageX, imageY, imgWidth, imgHeight);
-            super.paintComponent(g);
         }
     }
 
