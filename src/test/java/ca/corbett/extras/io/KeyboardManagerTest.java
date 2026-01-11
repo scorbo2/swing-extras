@@ -237,6 +237,71 @@ class KeyboardManagerTest {
     }
 
     @Test
+    public void clear_withActionsRegistered_shouldClear() {
+        Action action = new AbstractAction("SomeAction") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                // no-op
+            }
+        };
+
+        keyManager.registerHandler("ctrl+Z", action);
+        assertEquals(1, keyManager.getHandlers("ctrl+z").size(), "Should have one handler before clear");
+
+        keyManager.clear();
+        assertTrue(keyManager.getHandlers("ctrl+z").isEmpty(), "Should have no handlers after clear");
+        assertNull(keyManager.getShortcutForHandler(action), "No shortcut should be associated after clear");
+    }
+
+    @Test
+    public void getRegisteredShortcuts_withMultipleRegistrations_shouldReturnAllSorted() {
+        Action action1 = new AbstractAction("Action1") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                // no-op
+            }
+        };
+        Action action2 = new AbstractAction("Action2") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                // no-op
+            }
+        };
+
+        // Add in reverse alphabetical order to test sorting:
+        keyManager.registerHandler("ctrl+M", action1); // note lower case modifier - should get normalized
+        keyManager.registerHandler("alt+N", action2); // note lower case modifier - should get normalized
+
+        List<String> shortcuts = keyManager.getRegisteredShortcuts();
+        assertEquals(2, shortcuts.size(), "Should return two registered shortcuts");
+        assertTrue(shortcuts.contains("Ctrl+M"), "Should contain Ctrl+M"); // Should output "Ctrl" capitalized
+        assertTrue(shortcuts.contains("Alt+N"), "Should contain Alt+N"); // Should output "Alt" capitalized
+        assertTrue(shortcuts.get(0).compareTo(shortcuts.get(1)) < 0, "Shortcuts should be sorted");
+    }
+
+    @Test
+    public void dispose_withRegisteredHandlers_shouldClearAll() {
+        Action action = new AbstractAction("DisposableAction") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                // no-op
+            }
+        };
+
+        keyManager.registerHandler("shift+P", action);
+        assertEquals(1, keyManager.getHandlers("shift+p").size(), "Should have one handler before dispose");
+
+        keyManager.dispose();
+        assertTrue(keyManager.getHandlers("shift+p").isEmpty(), "Should have no handlers after dispose");
+        assertNull(keyManager.getShortcutForHandler(action), "No shortcut should be associated after dispose");
+
+        // We can't test window==null because we don't supply one in unit tests...
+        // But we can get KeyboardManager to set a "isDisposed" flag and just verify it got hit:
+        // It's only set to true at the end of dispose(), which also sets window to null.
+        assertTrue(keyManager.isDisposed());
+    }
+
+    @Test
     public void keyStrokeToString_and_parseKeyStroke_are_consistent() {
         String[] shortcuts = {
                 "ctrl+shift+F3",

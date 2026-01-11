@@ -8,6 +8,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +28,7 @@ public class KeyboardManager {
 
     private static final Logger log = Logger.getLogger(KeyboardManager.class.getName());
 
+    private boolean isDisposed = false;
     private Window window;
     private final Map<KeyStroke, List<Action>> keyBindings = new ConcurrentHashMap<>();
     private boolean isEnabled;
@@ -54,6 +56,7 @@ public class KeyboardManager {
         manager.removeKeyEventDispatcher(keyDispatcher);
         keyBindings.clear();
         window = null;
+        isDisposed = true;
     }
 
     /**
@@ -185,7 +188,7 @@ public class KeyboardManager {
         // First, check that the given shortcut is valid:
         KeyStroke keyStroke = parseKeyStroke(shortcut);
         if (keyStroke == null) {
-            log.warning("registerKeyHandler: Invalid shortcut format: " + shortcut +
+            log.warning("registerHandler: Invalid shortcut format: " + shortcut +
                                 "; action \"" + actionName + "\" - ignoring request.");
             return this;
         }
@@ -193,7 +196,7 @@ public class KeyboardManager {
         // Is this action already registered for another shortcut?
         String existingShortcut = getShortcutForHandler(action);
         if (existingShortcut != null) {
-            log.warning("registerKeyHandler: Action \"" + actionName + "\" " +
+            log.warning("registerHandler: Action \"" + actionName + "\" " +
                                 "is already registered for shortcut " +
                                 existingShortcut + "; replacing with new shortcut " + shortcut);
             // Unregister it first:
@@ -201,7 +204,9 @@ public class KeyboardManager {
         }
 
         // We support multiple actions for the same shortcut:
-        List<Action> actions = keyBindings.computeIfAbsent(keyStroke, k -> new ArrayList<>());
+        // (use synchronizedList to avoid concurrency issues)
+        List<Action> actions = keyBindings.computeIfAbsent(keyStroke,
+                                                           k -> Collections.synchronizedList(new ArrayList<>()));
         actions.add(action);
 
         // Store the accelerator in the Action so menu items can access it
@@ -489,5 +494,12 @@ public class KeyboardManager {
 
             return false;
         }
+    }
+
+    /**
+     * For testing purposes, to verify dispose()
+     */
+    boolean isDisposed() {
+        return isDisposed && keyBindings.isEmpty();
     }
 }

@@ -21,6 +21,18 @@ import java.util.logging.Logger;
  * This demo panel shows off the KeyboardManager class,
  * which makes it easy to register and manage keyboard shortcut
  * handlers for any window.
+ * <p>
+ *     <b>A note about memory management</b> - for this little
+ *     demo app, our KeyboardManager is created and attached
+ *     to the DemoApp window itself, so it effectively lives for the
+ *     duration of the application. In a real application, you
+ *     should invoke the KeyboardManager's {@code dispose()} method
+ *     if your KeyboardManager is attached to a window that may be
+ *     closed and discarded during the application's lifetime.
+ *     This will ensure that all references held by the KeyboardManager
+ *     are released, allowing the window to be garbage collected
+ *     properly.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.7
@@ -73,8 +85,12 @@ public class KeyboardManagerPanel extends PanelBuilder {
                                         "Use the same format as the examples above.</html>");
         formPanel.add(customField);
 
-        ButtonField buttonField = new ButtonField(List.of(new CustomAction()));
-        buttonField.setButtonPreferredSize(new Dimension(210, 25));
+        ButtonField buttonField = new ButtonField(List.of(
+                new CustomAction(),
+                new SuspendAction(),
+                new ResumeAction()
+        ));
+        buttonField.setButtonPreferredSize(new Dimension(100, 25));
         formPanel.add(buttonField);
 
         return formPanel;
@@ -91,8 +107,11 @@ public class KeyboardManagerPanel extends PanelBuilder {
 
         // Make sure it's valid!
         if (!keyManager.isKeyStrokeValid(shortcutString)) {
-            getMessageUtil().error("Invalid Shortcut",
-                                   "The shortcut string you entered is not valid:\n\n" + shortcutString);
+            String msg = "The shortcut string you entered is not valid:\n\n" + shortcutString;
+            if (shortcutString.isBlank()) {
+                msg = "You must enter a shortcut string first!";
+            }
+            getMessageUtil().error("Invalid Shortcut", msg);
             return;
         }
 
@@ -162,12 +181,50 @@ public class KeyboardManagerPanel extends PanelBuilder {
     private class CustomAction extends AbstractAction {
 
         public CustomAction() {
-            super("Register Custom Shortcut");
+            super("Register");
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             executeCustomShortcut();
+        }
+    }
+
+    /**
+     * You can "suspend" (disable) a KeyboardManager at any time.
+     * This will disable all registered shortcuts until it is resumed.
+     * This does not affect the registered handlers; they remain registered,
+     * but they will not be invoked while the KeyboardManager is suspended.
+     */
+    private class SuspendAction extends AbstractAction {
+
+        public SuspendAction() {
+            super("Disable");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            keyManager.suspend();
+            getMessageUtil().info("Keyboard Shortcuts disabled",
+                                  "All keyboard shortcuts are now disabled.");
+        }
+    }
+
+    /**
+     * "Resuming" (enabling) a KeyboardManager will re-enable
+     * all previously registered shortcuts.
+     */
+    private class ResumeAction extends AbstractAction {
+
+        public ResumeAction() {
+            super("Enable");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            keyManager.resume();
+            getMessageUtil().info("Keyboard Shortcuts enabled",
+                                  "All keyboard shortcuts are now enabled.");
         }
     }
 
