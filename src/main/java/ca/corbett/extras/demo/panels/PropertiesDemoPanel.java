@@ -359,15 +359,27 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(collapsiblePanelProp);
 
         // And finally, we can show off EnumProperty, which is a handy way of generating combo boxes from enums:
-        props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));
+        props.add(new LabelProperty("Enums.Enums.label1",
+                                    "With EnumProperty, you can easily make combo boxes from enums!"));
         props.add(new EnumProperty<>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
         props.add(new LabelProperty("Enums.Enums.label2",
-                                    "Alternatively, you can use the enum names instead of toString():"));
-        props.add(new EnumProperty<>("Enums.Enums.enumField2", "Choose:", TestEnum.VALUE1, true));
+                                    "Alternatively, you can use ComboProperty to show the enum names instead:"));
+
+        // Prior to swing-extras 2.7, EnumProperty had the option of using name() instead of toString().
+        // That option has been removed from EnumProperty, but you can still do it with ComboProperty if you like:
+        List<TestEnum> enumValues = List.of(TestEnum.values());
+        List<String> enumNames = new ArrayList<>();
+        for (TestEnum val : enumValues) {
+            enumNames.add(val.name());
+        }
+        props.add(new ComboProperty<>("Enums.Enums.enumField1_names",
+                                      "Choose:",
+                                      enumNames, 0, false));
+
         props.add(new LabelProperty("Enums.Enums.label3",
-                                    "<html>Either way, your code deals natively with instances of your enum<br>" +
-                                            "and the combobox is generated for you! And either way,<br>" +
-                                            "the value saved to the properties file will be the enum name,<br>" +
+                                    "<html>EnumProperty is the better option, as your code deals natively<br>" +
+                                            "with instances of your enum and the combo is generated for you!<br>" +
+                                            "Also, the value saved to the properties file will be the enum name,<br>" +
                                             " in case the toString() changes over time or is localized to<br>" +
                                             " a different language.</html>")
                           .setFont(new Font(Font.DIALOG, Font.PLAIN, 12))

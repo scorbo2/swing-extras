@@ -59,22 +59,7 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
         testProp.setSelectedItem(TestEnum1.VALUE1);
 
         // THEN it should change the selection to that value:
-        assertEquals(0, testProp.getSelectedIndex());
         assertEquals(TestEnum1.VALUE1, testProp.getSelectedItem());
-    }
-
-    @Test
-    public void setSelectedIndex_withInvalidIndex_shouldIgnore() {
-        // GIVEN an EnumProperty with a valid selection:
-        EnumProperty<TestEnum1> testProp = new EnumProperty<>("test1", "test1", TestEnum1.VALUE2);
-        int selectedIndexBefore = testProp.getSelectedIndex();
-
-        // WHEN we try to set the selected index using a garbage value:
-        testProp.setSelectedIndex(99);
-
-        // THEN the selection should not have changed:
-        assertEquals(1, selectedIndexBefore);
-        assertEquals(selectedIndexBefore, testProp.getSelectedIndex());
     }
 
     @Test
@@ -108,22 +93,6 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
-    public void generateFormField_withValidEnumWithLabelsUsingName_shouldSucceed() {
-        // GIVEN an EnumProperty that has labels, but configured to ignore them and use names:
-        EnumProperty<TestEnumWithLabels> testProp = new EnumProperty<>("test1", "test1", TestEnumWithLabels.VALUE1,
-                                                                       true);
-
-        // WHEN we generate a form field from it:
-        FormField formField = testProp.generateFormField();
-
-        // THEN we should see a valid form field with expected options:
-        assertInstanceOf(ComboField.class, formField);
-        ComboField comboField = (ComboField)formField;
-        assertEquals(0, comboField.getSelectedIndex());
-        assertEquals(TestEnumWithLabels.VALUE1.name(), comboField.getSelectedItem());
-    }
-
-    @Test
     public void loadFromFormField_givenValidFormField_shouldSucceed() {
         // GIVEN a FormField of the correct type with the correct options:
         ComboField<TestEnum1> comboField = new ComboField<>("Test", List.of(TestEnum1.values()), 2, false);
@@ -134,7 +103,6 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
         enumProperty.loadFromFormField(comboField);
 
         // THEN the selection should have been updated appropriately:
-        assertEquals(2, enumProperty.getSelectedIndex());
         assertEquals(TestEnum1.VALUE3, enumProperty.getSelectedItem());
     }
 
@@ -180,7 +148,6 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
         enumProperty.loadFromProps(props);
 
         // THEN the field should have updated correctly:
-        assertEquals(2, enumProperty.getSelectedIndex());
         assertEquals(TestEnum1.VALUE3, enumProperty.getSelectedItem());
     }
 
@@ -195,7 +162,6 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
         enumProperty.loadFromProps(props);
 
         // THEN the field should have ignored the load request and stuck with the default value:
-        assertEquals(0, enumProperty.getSelectedIndex());
         assertEquals(TestEnum1.VALUE1, enumProperty.getSelectedItem());
     }
 
