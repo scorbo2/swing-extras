@@ -68,6 +68,9 @@ public abstract class AppProperties<T extends AppExtension> {
     protected int propertiesDialogMinimumWidth = PropertiesDialog.MINIMUM_WIDTH;
     protected int propertiesDialogMinimumHeight = PropertiesDialog.MINIMUM_HEIGHT;
 
+    // The border margin on generated form panels can also be adjusted by subclasses if desired:
+    protected int propertiesDialogFormPanelBorderMargin = 16;
+
 
     /**
      * If your application has an ExtensionManager, you can supply it here and this
@@ -207,7 +210,10 @@ public abstract class AppProperties<T extends AppExtension> {
      */
     public boolean showPropertiesDialog(Frame owner, Alignment alignment) {
         reconcileExtensionEnabledStatus();
-        PropertiesDialog dialog = propsManager.generateDialog(owner, appName + " properties", alignment, 24);
+        PropertiesDialog dialog = propsManager.generateDialog(owner,
+                                                              appName + " properties",
+                                                              alignment,
+                                                              propertiesDialogFormPanelBorderMargin);
         dialog.setSize(propertiesDialogInitialWidth, propertiesDialogInitialHeight);
         dialog.setMinimumSize(new Dimension(propertiesDialogMinimumWidth, propertiesDialogMinimumHeight));
         dialog.setVisible(true);
