@@ -639,8 +639,18 @@ public final class FileSystemUtil {
      * representing a unique filename within the destination directory. If a file with the original
      * name already exists, a number will be appended to the name (before the extension)
      * to make it unique.
+     * <p>
+     * Both {@code destinationDir} and {@code candidateFile} must be non-null. If either argument
+     * is {@code null}, this method will throw an {@link IllegalArgumentException}.
+     * </p>
      */
     public static File getUniqueDestinationFile(File destinationDir, File candidateFile) {
+        if (destinationDir == null) {
+            throw new IllegalArgumentException("destinationDir must not be null");
+        }
+        if (candidateFile == null) {
+            throw new IllegalArgumentException("candidateFile must not be null");
+        }
         String candidateFileName = candidateFile.getName();
         File destFile = new File(destinationDir, candidateFileName);
         if (!destFile.exists()) {
