@@ -2,7 +2,6 @@ package ca.corbett.extras.image;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import javax.swing.ImageIcon;
@@ -14,7 +13,6 @@ import static org.mockito.Mockito.when;
 
 public class ImageUtilTest {
 
-    @Mock
     private ImageIcon mockedImageIcon;
 
     @BeforeEach
@@ -86,4 +84,37 @@ public class ImageUtilTest {
         }
     }
 
+    @Test
+    public void validateImageIcon_withCOMPLETEDImage_shouldPass() {
+        // GIVEN a mocked ImageIcon with a getImageLoadStatus of COMPLETE:
+        when(mockedImageIcon.getIconWidth()).thenReturn(100); // valid
+        when(mockedImageIcon.getIconHeight()).thenReturn(100); // valid
+        when(mockedImageIcon.getImageLoadStatus()).thenReturn(MediaTracker.COMPLETE); // valid
+
+        try {
+            // WHEN we try to validate it:
+            // THEN it should pass without exception:
+            ImageUtil.validateImageIcon(mockedImageIcon);
+        }
+        catch (IOException ignored) {
+            fail("Did not expect an exception but got one!");
+        }
+    }
+
+    @Test
+    public void validateImageIcon_withERROREDImage_shouldThrow() {
+        // GIVEN a mocked ImageIcon with a getImageLoadStatus of ERRORED:
+        when(mockedImageIcon.getIconWidth()).thenReturn(100); // valid
+        when(mockedImageIcon.getIconHeight()).thenReturn(100); // valid
+        when(mockedImageIcon.getImageLoadStatus()).thenReturn(MediaTracker.ERRORED); // invalid!
+
+        // WHEN we try to validate it:
+        try {
+            // THEN we should get an IOException:
+            ImageUtil.validateImageIcon(mockedImageIcon);
+            fail("Expected exception but didn't get one!");
+        }
+        catch (IOException ignored) {
+        }
+    }
 }

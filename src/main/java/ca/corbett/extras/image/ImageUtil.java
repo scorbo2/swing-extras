@@ -103,6 +103,11 @@ public final class ImageUtil {
 
     /**
      * Invoked internally to attempt to validate the results of loading an ImageIcon.
+     * It seems that ImageIcon's constructor will not throw any kind of exception if the
+     * load fails, leaving callers with no obvious sign of trouble. The returned ImageIcon
+     * in that case would be non-null, but would not contain any valid image data.
+     * This extra validation step intercepts the ImageIcon before we return it,
+     * and adds an IOException if the image appears to be invalid.
      *
      * @param image A candidate ImageIcon to evaluate.
      * @return The input ImageIcon if it appears valid.
