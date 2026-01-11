@@ -699,8 +699,8 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
 
             // Otherwise, try to keep it centered:
             default:
-                imageX = (imgWidth < myWidth) ? borderOffsetLeft + (int)((myWidth - imgWidth) / 2) : borderOffsetLeft;
-                imageY = (imgHeight < myHeight) ? borderOffsetTop + (int)((myHeight - imgHeight) / 2) : borderOffsetTop;
+                imageX = (imgWidth < myWidth) ? borderOffsetLeft + (int)((myWidth - imgWidth) / 2) : imageX;
+                imageY = (imgHeight < myHeight) ? borderOffsetTop + (int)((myHeight - imgHeight) / 2) : imageY;
                 break;
         }
 
