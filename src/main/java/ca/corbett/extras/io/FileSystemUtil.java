@@ -632,4 +632,72 @@ public final class FileSystemUtil {
 
         return sanitized.isEmpty() ? defaultName : sanitized;
     }
+
+    /**
+     * Given a destination directory and a candidate File that we want to copy or move there,
+     * this method will check for name conflicts in the destination, and return a File object
+     * representing a unique filename within the destination directory. If a file with the original
+     * name already exists, a number will be appended to the name (before the extension)
+     * to make it unique.
+     * <p>
+     * Both {@code destinationDir} and {@code candidateFile} must be non-null. If either argument
+     * is {@code null}, this method will throw an {@link IllegalArgumentException}.
+     * </p>
+     *
+     * @param destinationDir The directory where we want to place the file. Must exist and must be a directory.
+     * @param candidateFile  The File we want to copy or move to the destination directory.
+     * @return A File object representing a unique filename within the destination directory.
+     */
+    public static File getUniqueDestinationFile(File destinationDir, File candidateFile) {
+        if (destinationDir == null) {
+            throw new IllegalArgumentException("destinationDir must not be null");
+        }
+        if (candidateFile == null) {
+            throw new IllegalArgumentException("candidateFile must not be null");
+        }
+        if (!destinationDir.exists() || !destinationDir.isDirectory()) {
+            throw new IllegalArgumentException("destinationDir must exist, and must be a directory");
+        }
+
+        String candidateFileName = candidateFile.getName();
+        File destFile = new File(destinationDir, candidateFileName);
+
+        // The easiest check can come first: if we have no conflict, return the original file:
+        if (!destFile.exists()) {
+            return destFile;
+        }
+
+        // Separate the name and extension:
+        String nameWithoutExt;
+        String ext;
+        int dotIndex = candidateFileName.lastIndexOf('.');
+        if (dotIndex == -1) {
+            // The file has no dot in it, so there is no extension:
+            nameWithoutExt = candidateFileName;
+            ext = "";
+        }
+        else if (dotIndex == 0) {
+            // On Linux-based systems, it's common to have files that start with a dot and have no extension.
+            // In this case, we'll just say the file has no extension:
+            nameWithoutExt = candidateFileName;
+            ext = "";
+        }
+        else {
+            // The file has at least one dot, so we can separate name and extension:
+            nameWithoutExt = candidateFileName.substring(0, dotIndex);
+            ext = candidateFileName.substring(dotIndex);
+        }
+
+        // Just keep appending a number until we find one that doesn't exist:
+        for (int counter = 1; counter < Integer.MAX_VALUE; counter++) {
+            String newName = String.format("%s_%d%s", nameWithoutExt, counter, ext);
+            destFile = new File(destinationDir, newName);
+            if (!destFile.exists()) {
+                return destFile;
+            }
+        }
+
+        // Extremely unlikely, but just in case we hit the limit:
+        return new File(destinationDir, nameWithoutExt + System.currentTimeMillis() + ext);
+    }
 }
