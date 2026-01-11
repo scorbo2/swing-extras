@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.7.0 [TODO release date here] - Maintenance release
   TODO - Add line items for 2.7 here, one per ticket
   #256 - DirTree: remove Linux-specific logic
+  #247 - DirTree: add selectionWillChange event with veto option
   #232 - DirTree: add option to show hidden files
   #230 - DirTree: mark factory methods as deprecated
   #228 - Turn down scary exception logging in AppProperties
