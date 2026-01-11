@@ -24,9 +24,9 @@ import java.util.logging.Logger;
  * <pre>
  *     public class MyAppResourceLoader extends ResourceLoader {
  *         public static final String LOGO_IMG
- *                  = "/com/mycompany/myapp/images/logo.png";
+ *                  = "com/mycompany/myapp/images/logo.png";
  *         public static final String RELEASE_NOTES
- *                  = "/com/mycompany/myapp/docs/release-notes.txt";
+ *                  = "com/mycompany/myapp/docs/release-notes.txt";
  *
  *         public static BufferedImage getLogo() {
  *             return getImage(LOGO_IMG);
@@ -44,7 +44,7 @@ import java.util.logging.Logger;
  * For example:
  * </p>
  * <pre>
- *     ResourceLoader.setPrefix("/com/mycompany/myapp/");
+ *     ResourceLoader.setPrefix("com/mycompany/myapp/");
  *     BufferedImage logo = ResourceLoader.getImage("images/logo.png");
  *     String helpText = ResourceLoader.getTextResource("docs/help.txt");
  *     // And so on...
@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  * need to implement the loadJarResources() method in their AppExtension subclass and use
  * that class's class loader to load resources from the extension jar. Refer to the javadocs
  * in AppExtension and ExtensionManager for more details, or refer to the
- * <A href="https://www.corbett.ca/swing-extras-book/>swing-extras book</A> for a complete example.
+ * <A href="https://www.corbett.ca/swing-extras-book/">swing-extras book</A> for a complete example.
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -82,7 +82,7 @@ public class ResourceLoader {
      * @param prefix A resource path prefix common to all your resources, e.g. "/my/app/prefix/"
      */
     public static void setPrefix(String prefix) {
-        ResourceLoader.prefix = prefix;
+        ResourceLoader.prefix = prefix == null ? "" : prefix;
     }
 
     /**
@@ -100,7 +100,11 @@ public class ResourceLoader {
      * If you request a resource that is not text, the result will be garbage.
      */
     public static List<String> getTextResourceAsLines(String resourcePath) {
-        String path = prefix + resourcePath;
+        if (resourcePath == null) {
+            log.warning("getTextResourceAsLines(null) invoked.");
+            ;
+        }
+        String path = prefix + (resourcePath == null ? "" : resourcePath);
         URL url = ResourceLoader.class.getClassLoader().getResource(path);
         if (url == null) {
             log.severe("Unable to load text resource from path: " + path);
@@ -148,7 +152,10 @@ public class ResourceLoader {
      * Returns true if successful, false otherwise.
      */
     public static boolean extractResourceToFile(String resourcePath, File outFile) {
-        String path = prefix + resourcePath;
+        if (resourcePath == null) {
+            log.warning("extractResourceToFile(null, outFile) invoked.");
+        }
+        String path = prefix + (resourcePath == null ? "" : resourcePath);
         URL url = ResourceLoader.class.getClassLoader().getResource(path);
         if (url == null) {
             log.severe("Unable to load resource from path: " + path);
@@ -180,7 +187,10 @@ public class ResourceLoader {
      * Will return null if the resource cannot be found.
      */
     public static BufferedImage getImage(String imagePath) {
-        String path = prefix + imagePath;
+        if (imagePath == null) {
+            log.warning("getImage(null) invoked.");
+        }
+        String path = prefix + (imagePath == null ? "" : imagePath);
         URL url = ResourceLoader.class.getClassLoader().getResource(path);
         return loadImage(url, 0);
     }
@@ -192,7 +202,10 @@ public class ResourceLoader {
      * Will return null if the resource cannot be found.
      */
     public static ImageIcon getIcon(String imagePath, int iconSize) {
-        String path = prefix + imagePath;
+        if (imagePath == null) {
+            log.warning("getIcon(null) invoked.");
+        }
+        String path = prefix + (imagePath == null ? "" : imagePath);
         URL url = ResourceLoader.class.getClassLoader().getResource(path);
         return loadIcon(url, iconSize);
     }
@@ -202,8 +215,7 @@ public class ResourceLoader {
      * Will return null if the resource cannot be found, or if the given URL is null.
      */
     protected static ImageIcon loadIcon(URL url) {
-        BufferedImage image = loadImage(url, 0);
-        return (image == null) ? null : new ImageIcon(image);
+        return loadIcon(url, 0);
     }
 
     /**
@@ -211,7 +223,10 @@ public class ResourceLoader {
      * Will return null if the resource cannot be found, or if the given URL is null.
      */
     protected static ImageIcon loadIcon(URL url, int size) {
-        BufferedImage image = loadImage(url, size);
+        if (url == null) {
+            log.warning("loadIcon(null) invoked.");
+        }
+        BufferedImage image = (url == null) ? null : loadImage(url, size);
         return (image == null) ? null : new ImageIcon(image);
     }
 
