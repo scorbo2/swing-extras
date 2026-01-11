@@ -442,9 +442,6 @@ public class KeyboardManager {
 
     private class CustomKeyDispatcher implements KeyEventDispatcher {
 
-        public CustomKeyDispatcher() {
-        }
-
         @Override
         public boolean dispatchKeyEvent(KeyEvent e) {
             // Don't process if we're disabled:
