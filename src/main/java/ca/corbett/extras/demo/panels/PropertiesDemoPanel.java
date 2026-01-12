@@ -194,6 +194,12 @@ public class PropertiesDemoPanel extends PanelBuilder {
                                                             new HyperlinkActionHandler());
         props.add(htmlLabel);
 
+        // This seems pretty minor, but before swing-extras 2.7, you couldn't show a field label on a LabelProperty.
+        LabelProperty labelWithFieldLabel = new LabelProperty("Intro.Labels.labelWithFieldLabel",
+                                                              "This label shows its field label too.");
+        labelWithFieldLabel.setFieldLabelText("Field label:");
+        props.add(labelWithFieldLabel);
+
         // Now add some dummy labels to force a scroll bar to appear:
         for (int i = 0; i < 10; i++) {
             props.add(new LabelProperty("Intro.Labels.scroll" + i, "Scroll down!"));
