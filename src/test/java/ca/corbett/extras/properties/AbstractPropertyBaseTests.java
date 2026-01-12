@@ -287,7 +287,7 @@ public abstract class AbstractPropertyBaseTests {
         int bottom = 3;
         int right = 4;
         int inner = 5;
-        actual.addPadding(top, left, right, bottom, inner);
+        actual.addPadding(left, top, right, bottom, inner);
 
         // WHEN we generate a form field from our property:
         FormField formField = actual.generateFormField();
@@ -322,7 +322,7 @@ public abstract class AbstractPropertyBaseTests {
         int bottom = 3;
         int right = 4;
         int inner = 5;
-        actual.addPadding(top, left, right, bottom, inner);
+        actual.addPadding(left, top, right, bottom, inner);
 
         // And GIVEN a FormFieldGenerationListener that overrides those values:
         actual.addFormFieldGenerationListener((p, f) -> {

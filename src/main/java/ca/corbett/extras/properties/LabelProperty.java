@@ -131,16 +131,25 @@ public class LabelProperty extends AbstractProperty {
         return this;
     }
 
+    /**
+     * Optionally set extra margin padding to go above and below the label.
+     */
     public LabelProperty setExtraMargins(int top, int bottom) {
         extraTopMargin = top;
         extraBottomMargin = bottom;
         return this;
     }
 
+    /**
+     * Returns the extra top margin for this label.
+     */
     public int getExtraTopMargin() {
         return extraTopMargin;
     }
 
+    /**
+     * Returns the extra bottom margin for this label.
+     */
     public int getExtraBottomMargin() {
         return extraBottomMargin;
     }

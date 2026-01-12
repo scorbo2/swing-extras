@@ -459,7 +459,7 @@ public abstract class AbstractProperty {
      * Add the specified padding values to the generated FormField's margins.
      * This ADDS to the default margin values, it does not replace them.
      */
-    public AbstractProperty addPadding(int top, int left, int right, int bottom, int inner) {
+    public AbstractProperty addPadding(int left, int top, int right, int bottom, int inner) {
         marginPadding.setTop(top);
         marginPadding.setLeft(left);
         marginPadding.setRight(right);
@@ -468,8 +468,13 @@ public abstract class AbstractProperty {
         return this;
     }
 
+    /**
+     * Returns a copy of the margin padding that will be applied to the generated FormField.
+     * This method is for inspection only - to modify the values, use addPadding() or one
+     * of the other convenience methods instead.
+     */
     public Margins getMarginPadding() {
-        return marginPadding;
+        return new Margins(marginPadding);
     }
 
     /**
