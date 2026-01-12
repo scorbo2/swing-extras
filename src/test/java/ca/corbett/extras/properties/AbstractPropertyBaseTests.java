@@ -1,5 +1,6 @@
 package ca.corbett.extras.properties;
 
+import ca.corbett.forms.Margins;
 import ca.corbett.forms.fields.FormField;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -254,5 +255,92 @@ public abstract class AbstractPropertyBaseTests {
 
         // THEN we should see that our change was utterly ignored:
         assertEquals(actual.fullyQualifiedName, formField.getIdentifier());
+    }
+
+    @Test
+    public void addPadding_withNoValues_shouldUseDefaults() {
+        // WHEN we DON'T add padding to our property:
+        int expectedTop = Margins.DEFAULT_MARGIN;
+        int expectedBottom = Margins.DEFAULT_MARGIN;
+
+        // We have to special-case LabelProperty, because it can add its own padding values as well:
+        if (actual instanceof LabelProperty) {
+            LabelProperty labelProp = (LabelProperty)actual;
+            expectedTop += labelProp.getExtraTopMargin();
+            expectedBottom += labelProp.getExtraBottomMargin();
+        }
+
+        // THEN we should see the default values in the generated FormField:
+        FormField formField = actual.generateFormField();
+        assertEquals(expectedTop, formField.getMargins().getTop());
+        assertEquals(Margins.DEFAULT_MARGIN, formField.getMargins().getLeft());
+        assertEquals(expectedBottom, formField.getMargins().getBottom());
+        assertEquals(Margins.DEFAULT_MARGIN, formField.getMargins().getRight());
+        assertEquals(Margins.DEFAULT_MARGIN, formField.getMargins().getInternalSpacing());
+    }
+
+    @Test
+    public void addPadding_withPaddingValues_shouldAddCorrectly() {
+        // GIVEN padding values:
+        int top = 1;
+        int left = 2;
+        int bottom = 3;
+        int right = 4;
+        int inner = 5;
+        actual.addPadding(left, top, right, bottom, inner);
+
+        // WHEN we generate a form field from our property:
+        FormField formField = actual.generateFormField();
+
+        // THEN we should see those values in the generated FormField:
+        //      They should be ADDED to the default as padding, they shouldn't replace the defaults!
+        int expectedLeft = Margins.DEFAULT_MARGIN + left;
+        int expectedTop = Margins.DEFAULT_MARGIN + top;
+        int expectedBottom = Margins.DEFAULT_MARGIN + bottom;
+        int expectedRight = Margins.DEFAULT_MARGIN + right;
+        int expectedInner = Margins.DEFAULT_MARGIN + inner;
+
+        // We have to special-case LabelProperty, because it can add its own padding values as well:
+        if (actual instanceof LabelProperty) {
+            LabelProperty labelProp = (LabelProperty)actual;
+            expectedTop += labelProp.getExtraTopMargin();
+            expectedBottom += labelProp.getExtraBottomMargin();
+        }
+
+        assertEquals(expectedTop, formField.getMargins().getTop());
+        assertEquals(expectedLeft, formField.getMargins().getLeft());
+        assertEquals(expectedBottom, formField.getMargins().getBottom());
+        assertEquals(expectedRight, formField.getMargins().getRight());
+        assertEquals(expectedInner, formField.getMargins().getInternalSpacing());
+    }
+
+    @Test
+    public void addPadding_withFormFieldGenerationOverride_shouldBeOverridden() {
+        // GIVEN initial padding values:
+        int top = 1;
+        int left = 2;
+        int bottom = 3;
+        int right = 4;
+        int inner = 5;
+        actual.addPadding(left, top, right, bottom, inner);
+
+        // And GIVEN a FormFieldGenerationListener that overrides those values:
+        actual.addFormFieldGenerationListener((p, f) -> {
+            f.getMargins().setTop(10);
+            f.getMargins().setLeft(20);
+            f.getMargins().setBottom(30);
+            f.getMargins().setRight(40);
+            f.getMargins().setInternalSpacing(50);
+        });
+
+        // WHEN we generate a FormField from this property:
+        FormField formField = actual.generateFormField();
+
+        // THEN we should see that our input values should have been overridden:
+        assertEquals(10, formField.getMargins().getTop());
+        assertEquals(20, formField.getMargins().getLeft());
+        assertEquals(30, formField.getMargins().getBottom());
+        assertEquals(40, formField.getMargins().getRight());
+        assertEquals(50, formField.getMargins().getInternalSpacing());
     }
 }
