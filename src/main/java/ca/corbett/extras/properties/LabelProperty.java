@@ -137,6 +137,14 @@ public class LabelProperty extends AbstractProperty {
         return this;
     }
 
+    public int getExtraTopMargin() {
+        return extraTopMargin;
+    }
+
+    public int getExtraBottomMargin() {
+        return extraBottomMargin;
+    }
+
     public LabelProperty setFont(Font f) {
         labelFont = f;
         return this;
