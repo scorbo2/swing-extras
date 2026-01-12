@@ -177,8 +177,9 @@ public class LabelProperty extends AbstractProperty {
      * Optionally sets text for our field label. Normally, we don't show our field label, only
      * our value label. But you can set this to a non-empty string to show a field label as well.
      */
-    public void setFieldLabelText(String fieldLabelText) {
+    public LabelProperty setFieldLabelText(String fieldLabelText) {
         this.fieldLabelText = fieldLabelText;
+        return this;
     }
 
     @Override
