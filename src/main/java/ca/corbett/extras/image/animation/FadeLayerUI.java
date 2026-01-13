@@ -5,6 +5,7 @@ import javax.swing.JLayer;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.plaf.LayerUI;
+import java.awt.AWTEvent;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -235,6 +236,8 @@ public class FadeLayerUI extends LayerUI<JPanel> {
             if (opacity >= 1f) {
                 opacity = 1f;
                 timer.stop();
+                animating = false;
+                fadeCache = null; // Clear cache
                 // Force a final repaint at full opacity before executing callback
                 if (layer != null) {
                     layer.repaint();
@@ -310,12 +313,21 @@ public class FadeLayerUI extends LayerUI<JPanel> {
         super.installUI(c);
         if (c instanceof JLayer) {
             layer = (JLayer<JPanel>)c;
+            // Ensure the layer receives all mouse events
+            ((JLayer<JPanel>)c).setLayerEventMask(
+                    AWTEvent.MOUSE_EVENT_MASK |
+                            AWTEvent.MOUSE_MOTION_EVENT_MASK |
+                            AWTEvent.KEY_EVENT_MASK
+            );
         }
     }
 
     @Override
     public void uninstallUI(JComponent c) {
         super.uninstallUI(c);
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
         layer = null;
         fadeCache = null;
     }

@@ -351,8 +351,6 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
      */
     private class BlurAction extends AbstractAction {
 
-        private boolean isBlurred = false;
-
         public BlurAction() {
             super("Toggle blur");
         }
@@ -365,7 +363,7 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
             containerPanel.revalidate();
             containerPanel.repaint();
 
-            if (!isBlurred) {
+            if (!blurLayerUI.isBlurred()) {
                 blurLayerUI.setOverlayText(overlayTextField.getText());
                 blurLayerUI.setBlurIntensity(blurIntensityField.getSelectedItem());
                 blurLayerUI.setBlurred(true);
@@ -373,7 +371,7 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
             else {
                 blurLayerUI.setBlurred(false);
             }
-            isBlurred = !isBlurred;
+            blurLayerUI.setBlurred(!blurLayerUI.isBlurred());
         }
     }
 
