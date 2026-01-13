@@ -137,7 +137,21 @@ class SingleInstanceManagerTest {
         SingleInstanceManager.getInstance().release();
         assertFalse(SingleInstanceManager.getInstance().isListening());
 
-        boolean isPrimaryAgain = SingleInstanceManager.getInstance().tryAcquireLock(null, port);
+        // There's an extremely intermittent failure in this test (observed on Linux).
+        // It seems that very rarely, the OS doesn't immediately release the port after closing the socket,
+        // causing the reacquire attempt to fail. I can't make it fail reliably, so to try to work around this,
+        // we will retry a few times before failing the test.
+        boolean isPrimaryAgain = false;
+        int maxAttempts = 10;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            if (SingleInstanceManager.getInstance().tryAcquireLock(null, port)) {
+                isPrimaryAgain = true;
+                break;
+            }
+            Thread.sleep(50); // small backoff
+        }
+
+        // If we still failed after retries, then it might be a legitimate failure:
         assertTrue(isPrimaryAgain, "Should be able to reacquire lock on port " + port + " after release");
     }
 
