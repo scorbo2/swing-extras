@@ -32,7 +32,7 @@ import java.awt.image.BufferedImage;
  * <pre>
  *     JPanel contentPanel = ...;
  *     FadeLayerUI fadeLayerUI = new FadeLayerUI();
- *     JLayer<JPanel> layeredPanel = new JLayer<>(contentPanel, fadeLayerUI);
+ *     JLayer&lt;JPanel&gt; layeredPanel = new JLayer&lt;&gt;(contentPanel, fadeLayerUI);
  *     containerPanel.add(layeredPanel);
  *
  *     // Set your fade options, or live with the defaults:
@@ -40,15 +40,15 @@ import java.awt.image.BufferedImage;
  *     fadeLayerUI.setAnimationDuration(FadeLayerUI.AnimationDuration.VeryLong);
  *
  *     // Then, in a button handler or whatever:
- *     fadeLayerUI.fadeOut(() -> {
+ *     fadeLayerUI.fadeOut(() -&gt; {
  *         // Swap content here
- *         fadeLayerUI.fadeIn(() -> {
+ *         fadeLayerUI.fadeIn(() -&gt;
  *             // Re-enable interaction here
  *         });
  *     });
  *
  *     // Or, more simply, if you just want to fade out, swap, and fade in:
- *     fadeLayerUI.fadeOut(() -> {
+ *     fadeLayerUI.fadeOut(() -&gt; {
  *         // Swap content here
  *         fadeLayerUI.fadeIn(null); // No action needed after fade in
  *     });
@@ -151,11 +151,11 @@ public class FadeLayerUI extends LayerUI<JPanel> {
 
     /**
      * Creates a new FadeLayerUI with default settings. You can associate it with
-     * a JLayer<JPanel> to use it:
+     * a JLayer&lt;JPanel&gt; to use it:
      * <pre>
      *     JPanel contentPanel = ...;
      *     FadeLayerUI fadeLayerUI = new FadeLayerUI();
-     *     JLayer<JPanel> layeredPanel = new JLayer<>(contentPanel, fadeLayerUI);
+     *     JLayer&lt;JPanel&gt; layeredPanel = new JLayer&lt;&gt;(contentPanel, fadeLayerUI);
      * </pre>
      * <p>
      * Then you can use the fadeOut() and fadeIn() methods in this class to perform

@@ -29,7 +29,7 @@ import java.util.Arrays;
  * <pre>
  *     JPanel contentPanel = ...;
  *     BlurLayerUI blurLayerUI = new BlurLayerUI();
- *     JLayer<JPanel> layeredPanel = new JLayer<>(contentPanel, blurLayerUI);
+ *     JLayer&lt;JPanel&gt; layeredPanel = new JLayer&lt;&gt;(contentPanel, blurLayerUI);
  *     containerPanel.add(layeredPanel);
  *
  *     // Set your blur options, or live with the defaults:

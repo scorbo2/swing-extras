@@ -50,7 +50,7 @@ import java.util.logging.Logger;
  *     // And so on...
  * </pre>
  *
- * <h3>Application extensions</h3>
+ * <h2>Application extensions</h2>
  * <p>
  * Application extensions can use this class to load resources from the application's jar file, but
  * they cannot use this to load resources from their own extension jar files. Extension developers

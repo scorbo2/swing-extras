@@ -27,7 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <pre>
  *     JPanel contentPanel = ...;
  *     SnowLayerUI snowLayerUI = new SnowLayerUI();
- *     JLayer<JPanel> layeredPanel = new JLayer<>(contentPanel, snowLayerUI);
+ *     JLayer&lt;JPanel&gt; layeredPanel = new JLayer&lt;&gt;(contentPanel, snowLayerUI);
  *     containerPanel.add(layeredPanel);
  *
  *     // Set your snow options, or live with the defaults:
