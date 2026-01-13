@@ -89,7 +89,7 @@ public final class MultiProgressDialog extends JDialog {
     private JProgressBar minorProgressBar;
     private long initialShowDelayMS;
     private boolean isCanceled;
-    private String formatString = DEFAULT_PROGRESS_FORMAT;
+    private volatile String formatString = DEFAULT_PROGRESS_FORMAT;
 
     /**
      * Creates a new, blank MultiProgressDialog with the specified owner window
