@@ -111,7 +111,7 @@ public class BlurLayerUI extends LayerUI<JPanel> {
      * Sets whether the panel should be blurred.
      */
     public void setBlurred(boolean blurred) {
-        boolean oldValue = blurred;
+        boolean oldValue = this.blurred;
         this.blurred = blurred;
         if (!blurred) {
             blurredImage = null; // Clear cached image
