@@ -20,7 +20,7 @@ class StringFormatterTest {
     }
 
     @Test
-    public void format_withNullMapper_shouldReturnThrow() {
+    public void format_withNullMapper_shouldThrow() {
         try {
             StringFormatter.format("Hello", null);
             fail("Expected IllegalArgumentException but didn't get one!");
