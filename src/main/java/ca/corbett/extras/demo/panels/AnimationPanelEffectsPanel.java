@@ -229,7 +229,6 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
                 .setColor(BlurLayerUI.DEFAULT_TEXT_COLOR);
         overlayTextColorField.addValueChangedListener(e -> blurOptionsChanged());
         formPanel.add(overlayTextColorField);
-        ;
 
         ButtonField buttonField = new ButtonField(List.of(new BlurAction()));
         buttonField.setButtonPreferredSize(new Dimension(110, 25));
