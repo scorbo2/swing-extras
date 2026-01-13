@@ -305,7 +305,7 @@ public final class MultiProgressDialog extends JDialog {
      * See the DEFAULT_PROGRESS_FORMAT constant for details.
      */
     public void setFormatString(String formatString) {
-        this.formatString = formatString;
+        this.formatString = (formatString != null) ? formatString : DEFAULT_PROGRESS_FORMAT;
     }
 
     /**
