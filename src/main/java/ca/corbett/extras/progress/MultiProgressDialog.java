@@ -1,5 +1,6 @@
 package ca.corbett.extras.progress;
 
+import ca.corbett.extras.StringFormatter;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
@@ -63,6 +64,37 @@ import java.util.TimerTask;
  */
 public final class MultiProgressDialog extends JDialog {
 
+    /**
+     * This will yield: "[%currentStep of %totalSteps] %message"
+     * <p>
+     * You can go back to the pre-2.7 format with "%m (%s of %t)", which will
+     * yield "%message (%currentStep of %totalSteps)".
+     * </p>
+     * <p>
+     * It's probably best to keep the "x of y" part on the left side of the string.
+     * The string length of "%message" can vary widely and rapidly as progress
+     * continues, which can make it hard to read the step counts if they're bouncing
+     * around at the end of the string.
+     * </p>
+     * <p>
+     * But rather than hard-coding a "fix" for that problem, it is now configurable!
+     * </p>
+     * <p>
+     *     The available tags are:
+     * </p>
+     * <ul>
+     *     <li>%m - The progress message sent from the worker thread</li>
+     *     <li>%s - The current step number (1-based)</li>
+     *     <li>%t - The total number of steps</li>
+     * </ul>
+     * <p>
+     *     You can add whatever punctuation, spacing, or other text you like around the tags,
+     *     though be aware there is a length limit on the progress label, and the worker-supplied
+     *     message can be quite long.
+     * </p>
+     */
+    public static final String DEFAULT_PROGRESS_FORMAT = "[%s of %t] %m";
+
     private static final int LABEL_LENGTH_CUTOFF = 50;
     private LabelField majorProgressLabel;
     private LabelField minorProgressLabel;
@@ -70,6 +102,7 @@ public final class MultiProgressDialog extends JDialog {
     private JProgressBar minorProgressBar;
     private long initialShowDelayMS;
     private boolean isCanceled;
+    private volatile String formatString = DEFAULT_PROGRESS_FORMAT;
 
     /**
      * Creates a new, blank MultiProgressDialog with the specified owner window
@@ -273,6 +306,22 @@ public final class MultiProgressDialog extends JDialog {
     }
 
     /**
+     * Returns the current format string that will be used to display progress messages.
+     * See the DEFAULT_PROGRESS_FORMAT constant for details.
+     */
+    public String getFormatString() {
+        return formatString;
+    }
+
+    /**
+     * Optionally change the format string that will be used to display progress messages.
+     * See the DEFAULT_PROGRESS_FORMAT constant for details.
+     */
+    public void setFormatString(String formatString) {
+        this.formatString = (formatString != null) ? formatString : DEFAULT_PROGRESS_FORMAT;
+    }
+
+    /**
      * Invoked internally to lay out the form.
      */
     private void initComponents() {
@@ -405,11 +454,17 @@ public final class MultiProgressDialog extends JDialog {
         @Override
         public boolean majorProgressUpdate(int majorStep, int totalMinorSteps, String message) {
             this.totalMinorSteps = totalMinorSteps;
+            String formatString = progressDialog.getFormatString();
+            final String formatted = StringFormatter.format(formatString, key -> switch (key) {
+                case 'm' -> message;
+                case 's' -> Integer.toString(majorStep + 1);
+                case 't' -> Integer.toString(totalMajorSteps);
+                default -> null;
+            });
             SwingUtilities.invokeLater(() -> {
                 showDialogIfNeeded();
                 progressDialog.setMinorProgressBounds(0, totalMinorSteps);
-                progressDialog.setMajorProgress(majorStep + 1,
-                                                message + " (" + (majorStep + 1) + " of " + totalMajorSteps + ")");
+                progressDialog.setMajorProgress(majorStep + 1, formatted);
                 progressDialog.setMinorProgress(0, "");
             });
             return !progressDialog.isCanceled();
@@ -417,10 +472,16 @@ public final class MultiProgressDialog extends JDialog {
 
         @Override
         public boolean minorProgressUpdate(int majorStep, int minorStep, String message) {
+            String formatString = progressDialog.getFormatString();
+            final String formatted = StringFormatter.format(formatString, key -> switch (key) {
+                case 'm' -> message;
+                case 's' -> Integer.toString(minorStep + 1);
+                case 't' -> Integer.toString(totalMinorSteps);
+                default -> null;
+            });
             SwingUtilities.invokeLater(() -> {
                 showDialogIfNeeded();
-                progressDialog.setMinorProgress(minorStep + 1,
-                                                message + " (" + (minorStep + 1) + " of " + totalMinorSteps + ")");
+                progressDialog.setMinorProgress(minorStep + 1, formatted);
             });
             return !progressDialog.isCanceled();
         }
@@ -505,10 +566,16 @@ public final class MultiProgressDialog extends JDialog {
 
         @Override
         public boolean progressUpdate(int currentStep, String message) {
+            String formatString = progressDialog.getFormatString();
+            final String formatted = StringFormatter.format(formatString, key -> switch (key) {
+                case 'm' -> message;
+                case 's' -> Integer.toString(currentStep + 1);
+                case 't' -> Integer.toString(totalSteps);
+                default -> null;
+            });
             SwingUtilities.invokeLater(() -> {
                 showDialogIfNeeded();
-                progressDialog.setMajorProgress(currentStep + 1,
-                                                message + " (" + (currentStep + 1) + " of " + totalSteps + ")");
+                progressDialog.setMajorProgress(currentStep + 1, formatted);
                 progressDialog.setMinorProgress(0, "");
             });
             return !progressDialog.isCanceled();
