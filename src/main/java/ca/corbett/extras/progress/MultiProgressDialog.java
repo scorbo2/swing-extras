@@ -79,6 +79,19 @@ public final class MultiProgressDialog extends JDialog {
      * <p>
      * But rather than hard-coding a "fix" for that problem, it is now configurable!
      * </p>
+     * <p>
+     *     The available tags are:
+     * </p>
+     * <ul>
+     *     <li>%m - The progress message sent from the worker thread</li>
+     *     <li>%s - The current step number (1-based)</li>
+     *     <li>%t - The total number of steps</li>
+     * </ul>
+     * <p>
+     *     You can add whatever punctuation, spacing, or other text you like around the tags,
+     *     though be aware there is a length limit on the progress label, and the worker-supplied
+     *     message can be quite long.
+     * </p>
      */
     public static final String DEFAULT_PROGRESS_FORMAT = "[%s of %t] %m";
 
