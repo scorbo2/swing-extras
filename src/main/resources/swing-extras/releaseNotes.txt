@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.7.0 [TODO release date here] - Maintenance release
   #276 - MultiProgressDialog: make progress label configurable
   #267 - MessageUtil: add more convenience wrappers for JOptionPane
+  #275 - Fix intermittent bug in SingleInstanceManager test
   #264 - ListSubsetField: fire value changed events when items move
   #257 - new FileSystemUtil method: getUniqueDestinationFile()
   #256 - DirTree: remove Linux-specific logic
