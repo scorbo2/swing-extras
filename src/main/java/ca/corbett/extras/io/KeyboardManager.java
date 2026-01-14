@@ -8,10 +8,8 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -30,7 +28,7 @@ public class KeyboardManager {
 
     private boolean isDisposed = false;
     private Window window;
-    private final Map<KeyStroke, List<Action>> keyBindings = new ConcurrentHashMap<>();
+    private final List<KeyAssignment> keyAssignments = new ArrayList<>();
     private boolean isEnabled;
     private final KeyEventDispatcher keyDispatcher = new CustomKeyDispatcher();
 
@@ -57,7 +55,7 @@ public class KeyboardManager {
     public void dispose() {
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         manager.removeKeyEventDispatcher(keyDispatcher);
-        keyBindings.clear();
+        keyAssignments.clear();
         window = null;
         isDisposed = true;
     }
@@ -165,7 +163,7 @@ public class KeyboardManager {
      * Removes all registered keyboard shortcuts and their associated actions.
      */
     public void clear() {
-        keyBindings.clear();
+        keyAssignments.clear();
     }
 
     /**
@@ -183,9 +181,10 @@ public class KeyboardManager {
      *
      * @param shortcut the keyboard shortcut (e.g., "ctrl+P", "F5")
      * @param action   the action to execute
+     * @param name     A descriptive name for the action (will be used in the config UI to identify this action)
      * @return this manager, for fluent-style method chaining
      */
-    public KeyboardManager registerHandler(String shortcut, Action action) {
+    public KeyboardManager registerHandler(String shortcut, Action action, String name) {
         // For logging purposes, let's get the action name:
         String actionName = (String)action.getValue(Action.NAME);
         if (actionName == null) {
@@ -210,11 +209,14 @@ public class KeyboardManager {
             unregisterHandler(action);
         }
 
+        KeyAssignment assignment = new KeyAssignment(action, shortcut, name);
+        keyAssignments.add(assignment);
+
         // We support multiple actions for the same shortcut:
         // (use synchronizedList to avoid concurrency issues)
-        List<Action> actions = keyBindings.computeIfAbsent(keyStroke,
-                                                           k -> Collections.synchronizedList(new ArrayList<>()));
-        actions.add(action);
+//        List<Action> actions = keyBindings.computeIfAbsent(keyStroke,
+//                                                           k -> Collections.synchronizedList(new ArrayList<>()));
+//        actions.add(action);
 
         // Store the accelerator in the Action so menu items can access it
         action.putValue(Action.ACCELERATOR_KEY, keyStroke);
@@ -520,5 +522,51 @@ public class KeyboardManager {
      */
     boolean isDisposed() {
         return isDisposed && keyBindings.isEmpty();
+    }
+
+    /**
+     * Encapsulates a single key assignment: a keystroke, its associated action, and a short description.
+     */
+    public static class KeyAssignment {
+        // These can't be final, as we want to support reassigning:
+        private final Action action;
+        private String keyStroke;
+        private String name;
+
+        /**
+         * Creates a new KeyAssignment, binding the given action to the given key stroke and description.
+         *
+         * @param action    Any Action. Must not be null.
+         * @param keyStroke The user-presentable keystroke string (e.g., "Ctrl+P"). Must not be null.
+         * @param name      A short description of the action (e.g., "Print Document"). Must not be null.
+         */
+        public KeyAssignment(Action action, String keyStroke, String name) {
+            if (action == null || keyStroke == null || name == null) {
+                throw new IllegalArgumentException("KeyAssignment: action, keyStroke, and name must not be null");
+            }
+            this.action = action;
+            this.keyStroke = keyStroke;
+            this.name = name;
+        }
+
+        public Action getAction() {
+            return action;
+        }
+
+        public String getKeyStroke() {
+            return keyStroke;
+        }
+
+        public void setKeyStroke(String keyStroke) {
+            this.keyStroke = keyStroke;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 }
