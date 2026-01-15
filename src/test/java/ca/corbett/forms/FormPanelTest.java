@@ -185,11 +185,29 @@ class FormPanelTest {
         assertEquals(MARGIN * 2, gbc.insets.top);
     }
 
+    @Test
+    public void setMultiLineFieldExtraTopMargin_withExtraMargin_shouldApply() {
+        // GIVEN a multi-line FormField on a FormPanel with an extra top margin set for multi-line components:
+        final int FIELD_MARGIN = 5; // some non-default margin value to give to the FormField itself
+        final int EXTRA_MARGIN = 7; // An extra margin to be supplied via the FormPanel
+        FormPanel formPanel = new FormPanel();
+        PanelField field = new PanelField();
+        field.getFieldLabel().setText("This will force the field margin to be visible");
+        field.getMargins().setTop(FIELD_MARGIN);
+        formPanel.setMultiLineFieldExtraTopMargin(EXTRA_MARGIN);
+        formPanel.add(field);
+
+        // WHEN we look at the margins that were applied to the multi-line field's field label:
+        GridBagConstraints gbc = ((GridBagLayout)formPanel.getLayout()).getConstraints(field.getFieldLabel());
+
+        // THEN we should see it was added to the field's own margin value:
+        assertEquals(FIELD_MARGIN + EXTRA_MARGIN, gbc.insets.top);
+    }
+
     private void assertExpectedComponentCount_borderMarginTest(FormPanel formPanel) {
         // There should be a margin label on each edge: top, right, bottom, left
         // additionally, we should see our empty panel
         // finally, we should see the validation label
         assertEquals(6, formPanel.getComponentCount());
     }
-
 }

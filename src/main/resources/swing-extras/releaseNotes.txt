@@ -19,6 +19,7 @@ Version 2.7.0 [TODO release date here] - Maintenance release
   #242 - Added more VersionStringComparator convenience methods
   #239 - PropertiesManager: add option to set border margin
   #238 - EnumProperty: remove useNamesInsteadOfLabels option
+  #237 - FormPanel: minor refactoring and Javadoc touchups
   #232 - DirTree: add option to show hidden files
   #230 - DirTree: mark factory methods as deprecated
   #229 - New utility class: KeyboardManager
