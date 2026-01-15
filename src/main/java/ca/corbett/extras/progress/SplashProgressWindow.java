@@ -214,6 +214,14 @@ public final class SplashProgressWindow extends JWindow {
         final Action action;
         final SplashProgressWindow thisWindow;
 
+        /**
+         * Creates a new {@code FakeWorker} that simulates progress over a fixed number of steps.
+         *
+         * @param steps      the total number of progress steps to simulate
+         * @param stepDelay  the delay in milliseconds to wait between each simulated step
+         * @param action     an optional action to invoke when all steps have completed; may be {@code null}
+         * @param window     the {@link SplashProgressWindow} associated with this worker
+         */
         public FakeWorker(int steps, int stepDelay, Action action, SplashProgressWindow window) {
             this.steps = steps;
             this.stepDelay = stepDelay;
