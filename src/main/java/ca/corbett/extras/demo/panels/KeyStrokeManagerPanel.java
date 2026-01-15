@@ -18,18 +18,18 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * This demo panel shows off the KeyboardManager class,
+ * This demo panel shows off the KeyStrokeManager class,
  * which makes it easy to register and manage keyboard shortcut
  * handlers for any window.
  * <p>
  *     <b>A note about memory management</b> - for this little
- *     demo app, our KeyboardManager is created and attached
+ *     demo app, our KeyStrokeManager is created and attached
  *     to the DemoApp window itself, so it effectively lives for the
  *     duration of the application. In a real application, you
- *     should invoke the KeyboardManager's {@code dispose()} method
- *     if your KeyboardManager is attached to a window that may be
+ *     should invoke the KeyStrokeManager's {@code dispose()} method
+ *     if your KeyStrokeManager is attached to a window that may be
  *     closed and discarded during the application's lifetime.
- *     This will ensure that all references held by the KeyboardManager
+ *     This will ensure that all references held by the KeyStrokeManager
  *     are released, allowing the window to be garbage collected
  *     properly.
  * </p>
@@ -37,8 +37,8 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.7
  */
-public class KeyboardManagerPanel extends PanelBuilder {
-    private final static Logger log = Logger.getLogger(KeyboardManagerPanel.class.getName());
+public class KeyStrokeManagerPanel extends PanelBuilder {
+    private final static Logger log = Logger.getLogger(KeyStrokeManagerPanel.class.getName());
     private final KeyStrokeManager keyManager;
     private FormPanel formPanel;
     private KeyStrokeField customField;
@@ -52,7 +52,7 @@ public class KeyboardManagerPanel extends PanelBuilder {
     private final KeyStroke exampleKeyStroke2 = KeyStrokeManager.parseKeyStroke("Alt+Shift+X");
 
 
-    public KeyboardManagerPanel() {
+    public KeyStrokeManagerPanel() {
         keyManager = new KeyStrokeManager(DemoApp.getInstance()); // Safe to call here. DemoApp instance is ready.
 
         // Create a couple of example actions:
@@ -72,14 +72,14 @@ public class KeyboardManagerPanel extends PanelBuilder {
 
     @Override
     public String getTitle() {
-        return "KeyboardManager";
+        return "KeyStrokeManager";
     }
 
     @Override
     public JPanel build() {
-        formPanel = buildFormPanel("KeyboardManager");
+        formPanel = buildFormPanel("KeyStrokeManager");
 
-        String sb = "<html>The <b>KeyboardManager</b> provides a way to very easily<br>" +
+        String sb = "<html>The <b>KeyStrokeManager</b> provides a way to very easily<br>" +
                 "add keyboard shortcut handlers to any window.<br>" +
                 "Try it out with one of the example shortcuts below,<br>" +
                 "or try adding your own on the fly!</html>";
@@ -150,7 +150,7 @@ public class KeyboardManagerPanel extends PanelBuilder {
         userAction = new ExampleAction("User-supplied", customKeyStroke);
         keyManager.registerHandler(customKeyStroke, userAction);
 
-        getMessageUtil().info("Shortcut  Registered",
+        getMessageUtil().info("Shortcut Registered",
                               "The custom shortcut '" +
                                       KeyStrokeManager.keyStrokeToString(customKeyStroke) +
                                       "' has been registered successfully!\n\n"
@@ -173,10 +173,10 @@ public class KeyboardManagerPanel extends PanelBuilder {
     }
 
     /**
-     * You can "suspend" (disable) a KeyboardManager at any time.
+     * You can "suspend" (disable) a KeyStrokeManager at any time.
      * This will disable all registered shortcuts until it is resumed.
      * This does not affect the registered handlers; they remain registered,
-     * but they will not be invoked while the KeyboardManager is suspended.
+     * but they will not be invoked while the KeyStrokeManager is suspended.
      */
     private class SuspendAction extends AbstractAction {
 
@@ -193,7 +193,7 @@ public class KeyboardManagerPanel extends PanelBuilder {
     }
 
     /**
-     * "Resuming" (enabling) a KeyboardManager will re-enable
+     * "Resuming" (enabling) a KeyStrokeManager will re-enable
      * all previously registered shortcuts.
      */
     private class ResumeAction extends AbstractAction {

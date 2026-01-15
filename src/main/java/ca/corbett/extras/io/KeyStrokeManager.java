@@ -46,7 +46,7 @@ public class KeyStrokeManager {
     private final KeyEventDispatcher keyDispatcher = new CustomKeyDispatcher();
 
     /**
-     * Creates a keyboard manager for the given window. This keyboard manager is immediately
+     * Creates a KeyStrokeManager for the given window. This KeyStrokeManager is immediately
      * installed into the given window and enabled. You can use setEnabled(false) to temporarily
      * disable it if needed.
      *
@@ -59,8 +59,8 @@ public class KeyStrokeManager {
     }
 
     /**
-     * Disposes this keyboard manager, removing its key event dispatcher from the
-     * KeyboardFocusManager and clearing all registered key bindings. If your KeyboardManager
+     * Disposes this KeyStrokeManager, removing its key event dispatcher from the
+     * KeyboardFocusManager and clearing all registered key bindings. If your KeyStrokeManager
      * is attached to your application's main window, you don't need to invoke this method.
      * It's intended more for temporary windows or dialogs that may be created and destroyed
      * multiple times during the application's lifetime.
@@ -77,14 +77,14 @@ public class KeyStrokeManager {
     }
 
     /**
-     * Reports whether this keyboard manager is currently enabled.
+     * Reports whether this KeyStrokeManager is currently enabled.
      */
     public boolean isEnabled() {
         return isEnabled;
     }
 
     /**
-     * Can be used to enable or disable this keyboard manager. When disabled, no keyboard
+     * Can be used to enable or disable this KeyStrokeManager. When disabled, no keyboard
      * shortcuts will be processed. This does not unregister any assigned actions!
      * It simply means those actions will not be invoked until we are re-enabled.
      */
@@ -162,6 +162,9 @@ public class KeyStrokeManager {
      * @throws InvalidKeyStrokeException if the given keyStroke string is invalid
      */
     public List<Action> getActionsForKeyStroke(String keyStroke) throws InvalidKeyStrokeException {
+        if (!isKeyStrokeValid(keyStroke)) {
+            throw new InvalidKeyStrokeException("getActionsForKeyStroke: invalid keyStroke string: " + keyStroke);
+        }
         return getActionsForKeyStroke(parseKeyStroke(keyStroke));
     }
 
@@ -201,6 +204,9 @@ public class KeyStrokeManager {
      * Shorthand for !hasHandlers(keyStroke)
      */
     public boolean isAvailable(String keyStroke) throws InvalidKeyStrokeException {
+        if (!isKeyStrokeValid(keyStroke)) {
+            throw new InvalidKeyStrokeException("isAvailable: invalid keyStroke string: " + keyStroke);
+        }
         return !hasHandlers(keyStroke);
     }
 
@@ -222,6 +228,9 @@ public class KeyStrokeManager {
      * @throws InvalidKeyStrokeException If the given keyStroke string is invalid
      */
     public boolean hasHandlers(String keyStroke) throws InvalidKeyStrokeException {
+        if (!isKeyStrokeValid(keyStroke)) {
+            throw new InvalidKeyStrokeException("hasHandlers: invalid keyStroke string: " + keyStroke);
+        }
         return hasHandlers(parseKeyStroke(keyStroke));
     }
 
@@ -241,6 +250,9 @@ public class KeyStrokeManager {
      * @throws InvalidKeyStrokeException if the given shortcut string is invalid
      */
     public KeyStrokeManager registerHandler(String keyStroke, Action action) throws InvalidKeyStrokeException {
+        if (!isKeyStrokeValid(keyStroke)) {
+            throw new InvalidKeyStrokeException("registerHandler: invalid keyStroke string: " + keyStroke);
+        }
         return registerHandler(parseKeyStroke(keyStroke), action);
     }
 
@@ -568,7 +580,7 @@ public class KeyStrokeManager {
             // Create KeyStroke from the event:
             KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
             String keyStrokeStr = keyStrokeToString(keyStroke);
-            log.fine("KeyboardManager: Key pressed: " + keyStrokeStr);
+            log.fine("KeyStrokeManager: Key pressed: " + keyStrokeStr);
 
             // Check if we have a registered handler for that KeyStroke:
             List<Action> actions = getActionsForKeyStroke(keyStroke);
@@ -588,7 +600,7 @@ public class KeyStrokeManager {
                                                                    keyStrokeStr));
                         }
                         else {
-                            log.info("KeyboardManager: action for shortcut " +
+                            log.info("KeyStrokeManager: action for shortcut " +
                                              keyStrokeStr + " is disabled; not executing.");
                         }
                     }

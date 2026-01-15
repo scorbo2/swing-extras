@@ -276,6 +276,24 @@ class KeyStrokeManagerTest {
     }
 
     @Test
+    public void registerHandler_withInvalidKeyStrokeString_shouldThrow() {
+        Action action = new AbstractAction("InvalidKeyStrokeAction") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                // no-op
+            }
+        };
+
+        try {
+            keyManager.registerHandler("thisIsNotAValidKeyStroke!", action);
+            fail("Expected InvalidKeyStrokeException for invalid keystroke, but didn't get one!");
+        }
+        catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
+            // Expected exception
+        }
+    }
+
+    @Test
     public void registerHandler_withNullKeyStroke_shouldThrow() {
         Action action = new AbstractAction("NullKeyStrokeAction") {
             @Override
@@ -291,6 +309,74 @@ class KeyStrokeManagerTest {
         catch (IllegalArgumentException ignored) {
             // Expected exception
             return;
+        }
+    }
+
+    @Test
+    public void isAvailable_withInvalidKeyStrokeString_shouldThrow() {
+        // GIVEN some invalid keystroke strings:
+        String[] invalidKeyStrokes = {
+                "",
+                "notAKeyStroke",
+                "ctrl++A",
+                null
+        };
+
+        for (String ks : invalidKeyStrokes) {
+            // WHEN we ask if they are available:
+            try {
+                boolean available = keyManager.isAvailable(ks);
+                fail("Expected InvalidKeyStrokeException for invalid keystroke: " + ks +
+                             ", but got availability: " + available);
+            }
+            catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
+                // Expected exception
+            }
+        }
+    }
+
+    @Test
+    public void hasHandlers_withInvalidKeyStrokeString_shouldThrow() {
+        // GIVEN some invalid keystroke strings:
+        String[] invalidKeyStrokes = {
+                "",
+                "notAKeyStroke",
+                "shift++B",
+                null
+        };
+
+        for (String ks : invalidKeyStrokes) {
+            // WHEN we ask if they have handlers:
+            try {
+                boolean hasHandlers = keyManager.hasHandlers(ks);
+                fail("Expected InvalidKeyStrokeException for invalid keystroke: " + ks +
+                             ", but got hasHandlers: " + hasHandlers);
+            }
+            catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
+                // Expected exception
+            }
+        }
+    }
+
+    @Test
+    public void getActionsForKeyStroke_withInvalidKeyStrokeString_shouldThrow() {
+        // GIVEN some invalid keystroke strings:
+        String[] invalidKeyStrokes = {
+                "",
+                "notAKeyStroke",
+                "alt++C",
+                null
+        };
+
+        for (String ks : invalidKeyStrokes) {
+            // WHEN we try to get actions for them:
+            try {
+                keyManager.getActionsForKeyStroke(ks);
+                fail("Expected InvalidKeyStrokeException for invalid keystroke: " + ks);
+            }
+            catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
+                // Expected exception
+            }
         }
     }
 
@@ -313,7 +399,7 @@ class KeyStrokeManagerTest {
         assertTrue(keyManager.isEmpty(), "No shortcut should be associated after dispose");
 
         // We can't test window==null because we don't supply one in unit tests...
-        // But we can get KeyboardManager to set a "isDisposed" flag and just verify it got hit:
+        // But we can get KeyStrokeManager to set a "isDisposed" flag and just verify it got hit:
         // It's only set to true at the end of dispose(), which also sets window to null.
         assertTrue(keyManager.isDisposed());
     }

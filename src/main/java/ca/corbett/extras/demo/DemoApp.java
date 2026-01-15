@@ -11,7 +11,7 @@ import ca.corbett.extras.demo.panels.DirTreeDemoPanel;
 import ca.corbett.extras.demo.panels.ImageTextUtilDemoPanel;
 import ca.corbett.extras.demo.panels.ImageUtilDemoPanel;
 import ca.corbett.extras.demo.panels.IntroPanel;
-import ca.corbett.extras.demo.panels.KeyboardManagerPanel;
+import ca.corbett.extras.demo.panels.KeyStrokeManagerPanel;
 import ca.corbett.extras.demo.panels.LogConsolePanel;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.demo.panels.ProgressDemoPanel;
@@ -125,7 +125,7 @@ public class DemoApp extends JFrame {
         addDemoPanel(new CustomFormFieldPanel());
         addDemoPanel(new FormHelpPanel());
         addDemoPanel(new ExtensionsOverviewPanel());
-        addDemoPanel(new KeyboardManagerPanel());
+        addDemoPanel(new KeyStrokeManagerPanel());
         addDemoPanel(new LogConsolePanel());
         addDemoPanel(new AboutDemoPanel());
         cardList.setSelectedIndex(0);
