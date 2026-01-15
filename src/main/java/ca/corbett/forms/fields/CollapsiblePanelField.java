@@ -149,7 +149,7 @@ public class CollapsiblePanelField extends FormField {
     /**
      * We need to override and return false unconditionally here, otherwise the rendering of this
      * component within FormPanel will get wonky. The CollapsiblePanelField maintains its own
-     * header with label and expand/collapse button, so we don't want FormField to add another label
+     * header with label and expand/collapse button, so we don't want FormPanel to add another label
      * beside it. So, we pretend we have no field label even though we sort of do.
      * Callers can still invoke getFieldLabel().getText() to retrieve our field label text,
      * but this method will pretend that we have no field label so we can handle our own rendering of it.
