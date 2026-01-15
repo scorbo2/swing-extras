@@ -4,8 +4,6 @@ import ca.corbett.forms.fields.FormField;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -21,7 +19,7 @@ import java.util.List;
  *     <li><b>Form validation</b> - assuming you've added FieldValidator instances to
  *         your FormFields as needed, you don't need to write much manual validation code,
  *         and you don't need to write any UI code to show validation results. Just
- *         call formField.validate() and the validators will be invoked automatically.
+ *         call validateForm() or isFormValid(), and the validators will be invoked automatically.
  *     <li><b>Optional inline help</b> - every FormField can have optional help text
  *         which the FormPanel will render inline in the form of an information icon
  *         next to the field, which will show tooltip help text.
@@ -30,9 +28,30 @@ import java.util.List;
  *         for custom display and editing of data.
  * </ul>
  *
- * <p>Handling oversized forms</p><br>
+ * <h2>Handling oversized forms</h2>
+ * <p>
  * You can easily add a FormPanel to a JScrollPane to provide for scrollbars in the
  * case where the form is unreasonably large.
+ * </p>
+ *
+ * <h2>Alignment</h2>
+ * <p>
+ *     The Alignment property of the FormPanel controls how the entire form is aligned
+ *     within the panel. You can choose left, center, or right horizontal alignment,
+ *     and top, center, or bottom vertical alignment.
+ * </p>
+ * <p>
+ *     Additionally, the setBorderMargin() method allows you to specify extra pixel margins
+ *     around the entire form, to keep it away from the edges of its container.
+ * </p>
+ *
+ * <h2>More documentation</h2>
+ * <p>
+ *     The <a href="https://www.corbett.ca/swing-extras-book/">swing-extras-book</a>
+ *     contains much more documentation regarding the use of FormPanel, FormField,
+ *     and related classes. Additionally, the built-in demo application showcases
+ *     many of the features of this library.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
@@ -51,6 +70,7 @@ public final class FormPanel extends JPanel {
     private Alignment alignment;
     private final Margins formPanelMargins = new Margins(0);
     private boolean renderInProgress = false;
+    private int multiLineFieldExtraTopMargin = 4;
 
     /**
      * Creates a new, empty FormPanel with TOP_CENTER Alignment.
@@ -64,6 +84,7 @@ public final class FormPanel extends JPanel {
      */
     public FormPanel(Alignment alignment) {
         this.alignment = alignment;
+        render();
     }
 
     /**
@@ -72,12 +93,14 @@ public final class FormPanel extends JPanel {
      * be applied. Note that any value given here is added to whatever margins are already present on
      * each individual FormField. This value does not replace those values. So, you can still indent
      * a FormField from the others by setting its left margin on a left-aligned form, even if the
-     * FormPanel itself already specifies a left margin. The two values are added together in that case.
+     * FormPanel itself already specifies a border margin. The two values are added together in that case.
      *
      * @param margin The margin, in pixels, to apply to the FormPanel. Negative values are treated as 0.
+     * @return This FormPanel instance, to allow method chaining.
      */
     public FormPanel setBorderMargin(int margin) {
         formPanelMargins.setAll(margin);
+        render();
         return this;
     }
 
@@ -87,14 +110,19 @@ public final class FormPanel extends JPanel {
      * be applied. Note that any value given here is added to whatever margins are already present on
      * each individual FormField. This value does not replace those values. So, you can still indent
      * a FormField from the others by setting its left margin on a left-aligned form, even if the
-     * FormPanel itself already specifies a left margin. The two values are added together in that case.
+     * FormPanel itself already specifies a border margin. The two values are added together in that case.
      * <p>
      * <b>Note:</b> the Margins class defines an internalSpacing property. That property is ignored
      * for FormPanel margin calculations. We only care about top, left, bottom, and right.
+     * "internalSpacing" is only relevant within individual FormField instances.
      * </p>
+     *
+     * @param margins The Margins instance defining the margins to apply. Negative values are treated as 0.
+     * @return This FormPanel instance, to allow method chaining.
      */
     public FormPanel setBorderMargin(Margins margins) {
         formPanelMargins.copy(margins);
+        render();
         return this;
     }
 
@@ -136,11 +164,24 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Removes all FormFields from this FormPanel and re-renders it.
+     * Synonym for getFormField(String identifier).
+     *
+     * @param identifier The identifier to search for.
+     * @return A FormField matching that identifier, or null if not found.
      */
-    public void removeAllFormFields() {
+    public FormField findFormField(String identifier) {
+        return getFormField(identifier);
+    }
+
+    /**
+     * Removes all FormFields from this FormPanel and re-renders it.
+     *
+     * @return This FormPanel instance, to allow method chaining.
+     */
+    public FormPanel removeAllFormFields() {
         formFields.clear();
         render();
+        return this;
     }
 
     /**
@@ -168,22 +209,33 @@ public final class FormPanel extends JPanel {
         for (FormField field : formFields) {
             field.setEnabled(enabled);
         }
+        // No need to re-render here, since enabling/disabling does not change layout
+    }
+
+    /**
+     * Synonym for addAll(List<FormField> fields).
+     */
+    public FormPanel add(List<FormField> fields) {
+        addAll(fields);
+        return this;
     }
 
     /**
      * Adds the specified list of FormFields to this FormPanel.
      */
-    public void add(List<FormField> fields) {
+    public FormPanel addAll(List<FormField> fields) {
         this.formFields.addAll(fields);
         render();
+        return this;
     }
 
     /**
      * Adds the specified FormField to this FormPanel.
      */
-    public void add(FormField field) {
+    public FormPanel add(FormField field) {
         this.formFields.add(field);
         render();
+        return this;
     }
 
     /**
@@ -197,10 +249,13 @@ public final class FormPanel extends JPanel {
      * Invoke this to clear the validation label off any previously validated field.
      * Useful for when resetting a form to its initial state.
      */
-    public void clearValidationResults() {
+    public FormPanel clearValidationResults() {
+        // We don't need to re-render here, since clearing validation results
+        // does not change layout (FormField will handle hiding its validation label internally):
         for (FormField field : formFields) {
             field.clearValidationResults();
         }
+        return this;
     }
 
     /**
@@ -213,14 +268,17 @@ public final class FormPanel extends JPanel {
         for (FormField field : formFields) {
             isValid = field.validate() && isValid;
         }
+        // No need to re-render here, since validation does not change layout
+        // (FormField will handle showing its validation label internally)
         return isValid;
     }
 
     /**
      * Shorthand for isFormValid()
      */
-    public void validateForm() {
+    public FormPanel validateForm() {
         isFormValid();
+        return this;
     }
 
     /**
@@ -228,7 +286,7 @@ public final class FormPanel extends JPanel {
      */
     public FormPanel setAlignment(Alignment alignment) {
         this.alignment = alignment;
-        forceRerender();
+        render();
 
         return this;
     }
@@ -241,21 +299,42 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * If it is required to re-render the form panel for some reason, you can do it manually here.
-     * Generally, this should not be necessary, as a re-render will happen automatically as fields
-     * are added or removed. But, if a field has changed structurally in some way that requires
-     * a re-render, this option exists.
+     * This is an obsolete method from an earlier version of swing-forms. It is
+     * scheduled for removal in a future release.
+     *
+     * @Deprecated As of swing-extras 2.7. This method will be removed in a future release.
      */
-    public void forceRerender() {
+    @Deprecated(since = "swing-extras 2.7", forRemoval = true)
+    public FormPanel forceRerender() {
+        // What was the use case for making this public? No usages found. Probably safe to remove.
+        // We'll do it in 2.8, after I'm 100% convinced no one is using it.
         render();
+        return this;
+    }
 
-        // swing wonkiness... changing layouts requires rejiggering the container:
-        final Component component = this;
-        SwingUtilities.invokeLater(() -> {
-            component.invalidate();
-            component.revalidate();
-            component.repaint();
-        });
+    /**
+     * Returns the extra top margin, in pixels, that will be applied to multi-line
+     * field labels to better align them with their associated field components.
+     */
+    public int getMultiLineFieldExtraTopMargin() {
+        return multiLineFieldExtraTopMargin;
+    }
+
+    /**
+     * There's a very slight misalignment issue with field labels on multi-line
+     * FormField implementations due to the way GridBagLayout anchors components. This
+     * property allows you to specify an extra top margin, in pixels, to be applied
+     * to multi-line field labels to better align them with their associated field components.
+     * The default value is 4 pixels, which is usually sufficient. You can set this to zero
+     * if you don't want any extra margin applied.
+     *
+     * @param multiLineFieldExtraTopMargin The extra top margin, in pixels, for multi-line field labels.
+     * @return This FormPanel instance, to allow method chaining.
+     */
+    public FormPanel setMultiLineFieldExtraTopMargin(int multiLineFieldExtraTopMargin) {
+        this.multiLineFieldExtraTopMargin = multiLineFieldExtraTopMargin;
+        render();
+        return this;
     }
 
     /**
@@ -288,6 +367,11 @@ public final class FormPanel extends JPanel {
         }
 
         addFooterMargin(row);
+
+        // Finally, invalidate/revalidate/repaint to ensure UI updates properly:
+        invalidate();
+        revalidate();
+        repaint();
     }
 
     /**
@@ -302,7 +386,7 @@ public final class FormPanel extends JPanel {
         constraints.gridx = FORM_FIELD_START_COLUMN;
         constraints.gridy = row;
         constraints.anchor = field.isMultiLine() ? GridBagConstraints.FIRST_LINE_START : GridBagConstraints.WEST;
-        int extraTopMargin = field.isMultiLine() ? 4 : 0; // TODO don't hard-code this value
+        int extraTopMargin = field.isMultiLine() ? multiLineFieldExtraTopMargin : 0;
         constraints.insets = new Insets(margins.getTop() + extraTopMargin,
                                         margins.getLeft(),
                                         margins.getBottom(),
@@ -331,7 +415,7 @@ public final class FormPanel extends JPanel {
         constraints.anchor = field.isMultiLine() ? GridBagConstraints.NORTHWEST : GridBagConstraints.WEST;
 
         if (field.shouldExpand()) {
-            constraints.weightx = 4; // this feels a bit hacky but it does force the component to form width
+            constraints.weightx = 4; // this feels a bit hacky, but it does force the component to form width
             constraints.fill = GridBagConstraints.BOTH;
         }
 
@@ -365,11 +449,6 @@ public final class FormPanel extends JPanel {
      * Invoked internally to render the validation label for the given FormField, if it has one.
      */
     private void renderValidationLabel(FormField field, int row, Margins margins) {
-        // We need to render it unconditionally because it might have a right margin that we need to honor
-        //if (!field.hasValidationLabel()) {
-        //    return;
-        //}
-
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = VALIDATION_COLUMN;
         constraints.gridy = row;
@@ -471,13 +550,16 @@ public final class FormPanel extends JPanel {
         FormField field = formFields.get(fieldIndex);
         Margins margins = new Margins(field.getMargins());
 
+        // First field gets the top margin:
         if (fieldIndex == 0) {
             margins.setTop(margins.getTop() + formPanelMargins.getTop());
         }
 
+        // All fields get left and right margins:
         margins.setLeft(margins.getLeft() + formPanelMargins.getLeft());
         margins.setRight(margins.getRight() + formPanelMargins.getRight());
 
+        // Last field gets the bottom margin:
         if (fieldIndex == formFields.size() - 1) {
             margins.setBottom(margins.getBottom() + formPanelMargins.getBottom());
         }
