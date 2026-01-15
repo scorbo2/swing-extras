@@ -14,14 +14,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-class KeyboardManagerTest {
+class KeyStrokeManagerTest {
 
-    private KeyboardManager keyManager;
+    private KeyStrokeManager keyManager;
 
     @BeforeEach
     public void setup() {
-        keyManager = new KeyboardManager(null);
+        keyManager = new KeyStrokeManager(null);
     }
 
     @Test
@@ -51,6 +52,7 @@ class KeyboardManagerTest {
                 "   ",
                 "ctrl++A",
                 "unknown+KEY",
+                "Shift+somethingThatIsVeryObviouslyNotAKeyOnAnyStandardKeyboardButReallyShouldBeThatWouldBeCool",
                 null,
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                 "ctrl+a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p+q+r+s+t+u+v+w+x+y+z"
@@ -58,7 +60,7 @@ class KeyboardManagerTest {
 
         // WHEN we parse them:
         for (String keyStroke : keyStrokes) {
-            KeyStroke result = keyManager.parseKeyStroke(keyStroke);
+            KeyStroke result = KeyStrokeManager.parseKeyStroke(keyStroke);
 
             // THEN we should get a null KeyStroke:
             assertNull(result, "Parsed invalid key stroke: " + keyStroke);
@@ -78,7 +80,7 @@ class KeyboardManagerTest {
         // WHEN we parse it:
         int expectedKeyCode = KeyEvent.VK_A;
         for (String keyStroke : keyStrokes) {
-            KeyStroke result = keyManager.parseKeyStroke(keyStroke);
+            KeyStroke result = KeyStrokeManager.parseKeyStroke(keyStroke);
 
             // THEN the result should match the input:
             assertNotNull(result);
@@ -105,7 +107,7 @@ class KeyboardManagerTest {
         };
         int expectedKeyCode = KeyEvent.VK_A;
         for (int i = 0; i < keyStrokes.length; i++) {
-            KeyStroke result = keyManager.parseKeyStroke(keyStrokes[i]);
+            KeyStroke result = KeyStrokeManager.parseKeyStroke(keyStrokes[i]);
 
             // THEN the result should have the correct key code and modifier:
             assertNotNull(result);
@@ -130,7 +132,7 @@ class KeyboardManagerTest {
         };
         int expectedKeyCode = KeyEvent.VK_A;
         for (int i = 0; i < keyStrokes.length; i++) {
-            KeyStroke result = keyManager.parseKeyStroke(keyStrokes[i]);
+            KeyStroke result = KeyStrokeManager.parseKeyStroke(keyStrokes[i]);
 
             // THEN the result should have the correct key code and modifiers:
             assertNotNull(result);
@@ -143,69 +145,54 @@ class KeyboardManagerTest {
     }
 
     @Test
-    public void register_unregister_reassignHandler_flow() {
+    public void register_unregister_reassignHandler_flow() throws Exception {
+        // GIVEN a simply dummy action:
         AtomicInteger invoked = new AtomicInteger(0);
-        Action action = new AbstractAction("MyAction") {
+        Action actionUnderTest = new AbstractAction("MyAction") {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 invoked.incrementAndGet();
             }
         };
 
-        // Register to ctrl+X
-        keyManager.registerHandler("ctrl+X", action);
-        List<Action> handlers = keyManager.getHandlers("ctrl+x");
-        assertEquals(1, handlers.size(), "Should have one handler after register");
-        assertEquals(action, handlers.get(0), "Registered handler should be present");
+        // WHEN we register that action with a keystroke:
+        final String actionName = "MyAction";
+        keyManager.registerHandler("ctrl+X", actionUnderTest);
 
-        // Shortcut should be discoverable and accelerator stored
-        String found = keyManager.getShortcutForHandler(action);
-        assertNotNull(found, "getShortcutForHandler should return a string");
-        KeyStroke ks = keyManager.parseKeyStroke(found);
-        assertEquals(ks, action.getValue(Action.ACCELERATOR_KEY), "Action ACCELERATOR_KEY should be set");
+        // THEN it should be registered correctly:
+        List<Action> actions = keyManager.getActionsForKeyStroke("ctrl+x");
+        assertEquals(1, actions.size(), "Should have one handler after register");
+        assertEquals(actionUnderTest, actions.get(0), "Registered handler should be present");
 
-        // Reassign to alt+Y
-        keyManager.reassignHandler(action, "alt+Y");
-        assertTrue(keyManager.getHandlers("ctrl+x").isEmpty(), "Old shortcut should no longer have handlers");
-        List<Action> newHandlers = keyManager.getHandlers("alt+y");
-        assertEquals(1, newHandlers.size(), "Should have one handler for new shortcut");
-        assertEquals(action, newHandlers.get(0));
+        // AND the action should be associated with the keystroke:
+        KeyStroke keyStroke = KeyStrokeManager.parseKeyStroke("ctrl+X");
+        assertEquals(keyStroke, actionUnderTest.getValue(Action.ACCELERATOR_KEY),
+                     "Action ACCELERATOR_KEY should be set");
 
-        // Unregister
-        keyManager.unregisterHandler(action);
-        assertTrue(keyManager.getHandlers("alt+y").isEmpty(), "Handlers list should be empty after unregister");
-        assertNull(keyManager.getShortcutForHandler(action), "No shortcut should be associated after unregister");
+        // WHEN we reassign the handler to a new keystroke:
+        keyManager.reassignHandler(actionUnderTest, "alt+Y");
+
+        // THEN the old assignment should be removed:
+        assertTrue(keyManager.getActionsForKeyStroke(keyStroke).isEmpty(),
+                   "Old shortcut should no longer have handlers");
+
+        // AND the new assignment should be present:
+        actions = keyManager.getActionsForKeyStroke("alt+y");
+        assertEquals(1, actions.size(), "Should have one handler for new shortcut");
+        assertEquals(actionUnderTest, actions.get(0), "Reassigned handler should be present");
+
+        // WHEN we unregister the handler:
+        keyManager.unregisterHandler(actionUnderTest);
+
+        // THEN it should be removed from the keystroke:
+        assertTrue(keyManager.getActionsForKeyStroke("alt+y").isEmpty(),
+                   "Handlers list should be empty after unregister");
+        assertTrue(keyManager.isEmpty(), "No shortcut should be associated after unregister");
     }
 
-    @Test
-    public void registeringSameActionTwice_doesNotDuplicate_and_allowsReassignment() {
-        Action action = new AbstractAction("GuardedAction") {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                // no-op
-            }
-        };
-
-        // Register to ctrl+A
-        keyManager.registerHandler("ctrl+A", action);
-        // Register again to same shortcut - implementation should unregister then re-add (no duplicate)
-        keyManager.registerHandler("ctrl+A", action);
-
-        List<Action> handlers = keyManager.getHandlers("ctrl+a");
-        assertEquals(1, handlers.size(), "Duplicate registration should not create duplicate entries");
-        assertEquals(action, handlers.get(0));
-
-        // Now register same action to a different shortcut - should move it
-        keyManager.registerHandler("shift+B", action);
-        assertTrue(keyManager.getHandlers("ctrl+a").isEmpty(),
-                   "Original shortcut should be cleared after reassignment");
-        List<Action> newHandlers = keyManager.getHandlers("shift+b");
-        assertEquals(1, newHandlers.size(), "Action should now be assigned to new shortcut only");
-        assertEquals(action, newHandlers.get(0));
-    }
 
     @Test
-    public void multipleActionsSameKeystroke_areBothRegistered_and_haveAccelerators() {
+    public void multipleActionsSameKeystroke_areBothRegistered_and_haveAccelerators() throws Exception {
         AtomicInteger a1 = new AtomicInteger(0);
         AtomicInteger a2 = new AtomicInteger(0);
 
@@ -222,22 +209,36 @@ class KeyboardManagerTest {
             }
         };
 
+        // WHEN we register two different actions to the same keystroke:
         keyManager.registerHandler("F5", action1);
         keyManager.registerHandler("F5", action2);
 
-        List<Action> handlers = keyManager.getHandlers("f5");
-        assertEquals(2, handlers.size(), "Both actions should be registered for the same keystroke");
-        assertTrue(handlers.contains(action1));
-        assertTrue(handlers.contains(action2));
+        // THEN they should both be registered:
+        List<Action> actions = keyManager.getActionsForKeyStroke("f5");
+        assertEquals(2, actions.size(), "Both actions should be registered for the same keystroke");
+
+        // AND Each of our actions should be present exactly once:
+        boolean foundAction1 = false;
+        boolean foundAction2 = false;
+        for (Action action : actions) {
+            if (action == action1) {
+                foundAction1 = true;
+            }
+            else if (action == action2) {
+                foundAction2 = true;
+            }
+        }
+        assertTrue(foundAction1, "Action1 should be registered");
+        assertTrue(foundAction2, "Action2 should be registered");
 
         // Both actions should have ACCELERATOR_KEY set to the same KeyStroke
-        KeyStroke expected = keyManager.parseKeyStroke("F5");
+        KeyStroke expected = KeyStrokeManager.parseKeyStroke("F5");
         assertEquals(expected, action1.getValue(Action.ACCELERATOR_KEY));
         assertEquals(expected, action2.getValue(Action.ACCELERATOR_KEY));
     }
 
     @Test
-    public void clear_withActionsRegistered_shouldClear() {
+    public void clear_withActionsRegistered_shouldClear() throws Exception {
         Action action = new AbstractAction("SomeAction") {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -245,42 +246,56 @@ class KeyboardManagerTest {
             }
         };
 
+        // WHEN we register an action:
         keyManager.registerHandler("ctrl+Z", action);
-        assertEquals(1, keyManager.getHandlers("ctrl+z").size(), "Should have one handler before clear");
 
+        // THEN it should be registered:
+        assertEquals(1, keyManager.getActionsForKeyStroke("ctrl+z").size(), "Should have one handler before clear");
+
+        // WHEN we clear the key manager:
         keyManager.clear();
-        assertTrue(keyManager.getHandlers("ctrl+z").isEmpty(), "Should have no handlers after clear");
-        assertNull(keyManager.getShortcutForHandler(action), "No shortcut should be associated after clear");
+
+        // THEN it should be empty:
+        assertTrue(keyManager.getActionsForKeyStroke("ctrl+z").isEmpty(), "Should have no handlers after clear");
+        assertTrue(keyManager.isEmpty(), "No shortcut should be associated after clear");
     }
 
     @Test
-    public void getRegisteredShortcuts_withMultipleRegistrations_shouldReturnAllSorted() {
-        Action action1 = new AbstractAction("Action1") {
+    public void registerHandler_withNullAction_shouldThrow() {
+        try {
+            keyManager.registerHandler("ctrl+Q", null);
+            fail("Expected IllegalArgumentException for null action, but didn't get one!");
+        }
+        catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
+            fail("I dunno how this happened, but we got the wrong exception type here.");
+        }
+        catch (IllegalArgumentException ignored) {
+            // Expected exception
+            return;
+        }
+    }
+
+    @Test
+    public void registerHandler_withNullKeyStroke_shouldThrow() {
+        Action action = new AbstractAction("NullKeyStrokeAction") {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 // no-op
             }
         };
-        Action action2 = new AbstractAction("Action2") {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                // no-op
-            }
-        };
 
-        // Add in reverse alphabetical order to test sorting:
-        keyManager.registerHandler("ctrl+M", action1); // note lower case modifier - should get normalized
-        keyManager.registerHandler("alt+N", action2); // note lower case modifier - should get normalized
-
-        List<String> shortcuts = keyManager.getRegisteredShortcuts();
-        assertEquals(2, shortcuts.size(), "Should return two registered shortcuts");
-        assertTrue(shortcuts.contains("Ctrl+M"), "Should contain Ctrl+M"); // Should output "Ctrl" capitalized
-        assertTrue(shortcuts.contains("Alt+N"), "Should contain Alt+N"); // Should output "Alt" capitalized
-        assertTrue(shortcuts.get(0).compareTo(shortcuts.get(1)) < 0, "Shortcuts should be sorted");
+        try {
+            keyManager.registerHandler((KeyStroke)null, action);
+            fail("Expected IllegalArgumentException for null keystroke, but didn't get one!");
+        }
+        catch (IllegalArgumentException ignored) {
+            // Expected exception
+            return;
+        }
     }
 
     @Test
-    public void dispose_withRegisteredHandlers_shouldClearAll() {
+    public void dispose_withRegisteredHandlers_shouldClearAll() throws Exception {
         Action action = new AbstractAction("DisposableAction") {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -288,12 +303,14 @@ class KeyboardManagerTest {
             }
         };
 
+        // WHEN we register an action and then immediately dispose():
         keyManager.registerHandler("shift+P", action);
-        assertEquals(1, keyManager.getHandlers("shift+p").size(), "Should have one handler before dispose");
-
+        assertEquals(1, keyManager.getActionsForKeyStroke("shift+p").size(), "Should have one handler before dispose");
         keyManager.dispose();
-        assertTrue(keyManager.getHandlers("shift+p").isEmpty(), "Should have no handlers after dispose");
-        assertNull(keyManager.getShortcutForHandler(action), "No shortcut should be associated after dispose");
+
+        // THEN it should be cleared out:
+        assertTrue(keyManager.getActionsForKeyStroke("shift+p").isEmpty(), "Should have no handlers after dispose");
+        assertTrue(keyManager.isEmpty(), "No shortcut should be associated after dispose");
 
         // We can't test window==null because we don't supply one in unit tests...
         // But we can get KeyboardManager to set a "isDisposed" flag and just verify it got hit:
@@ -313,13 +330,13 @@ class KeyboardManagerTest {
         };
 
         for (String s : shortcuts) {
-            KeyStroke k1 = keyManager.parseKeyStroke(s);
+            KeyStroke k1 = KeyStrokeManager.parseKeyStroke(s);
             assertNotNull(k1, "parseKeyStroke should accept: " + s);
 
-            String s2 = keyManager.keyStrokeToString(k1);
+            String s2 = KeyStrokeManager.keyStrokeToString(k1);
             assertNotNull(s2, "keyStrokeToString should not return null for: " + s);
 
-            KeyStroke k2 = keyManager.parseKeyStroke(s2);
+            KeyStroke k2 = KeyStrokeManager.parseKeyStroke(s2);
             assertNotNull(k2, "parseKeyStroke should parse the string produced by keyStrokeToString: " + s2);
 
             assertEquals(k1.getKeyCode(), k2.getKeyCode(), "Key codes should match for " + s + " -> " + s2);

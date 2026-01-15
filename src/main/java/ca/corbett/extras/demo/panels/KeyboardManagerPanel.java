@@ -2,16 +2,16 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.MessageUtil;
 import ca.corbett.extras.demo.DemoApp;
-import ca.corbett.extras.io.KeyboardManager;
+import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ButtonField;
+import ca.corbett.forms.fields.KeyStrokeField;
 import ca.corbett.forms.fields.LabelField;
-import ca.corbett.forms.fields.ShortTextField;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.List;
@@ -39,17 +39,29 @@ import java.util.logging.Logger;
  */
 public class KeyboardManagerPanel extends PanelBuilder {
     private final static Logger log = Logger.getLogger(KeyboardManagerPanel.class.getName());
-    private final KeyboardManager keyManager;
-    private ShortTextField customField;
+    private final KeyStrokeManager keyManager;
+    private FormPanel formPanel;
+    private KeyStrokeField customField;
     private MessageUtil messageUtil;
     private ExampleAction userAction;
 
+    // Normally, your application would get these from application settings on startup,
+    // or whenever the user changes their shortcut preferences. For this demo, we'll
+    // just hard-code them here:
+    private final KeyStroke exampleKeyStroke1 = KeyStrokeManager.parseKeyStroke("Ctrl+1");
+    private final KeyStroke exampleKeyStroke2 = KeyStrokeManager.parseKeyStroke("Alt+Shift+X");
+
+
     public KeyboardManagerPanel() {
-        keyManager = new KeyboardManager(DemoApp.getInstance()); // Safe to call here. DemoApp instance is ready.
+        keyManager = new KeyStrokeManager(DemoApp.getInstance()); // Safe to call here. DemoApp instance is ready.
+
+        // Create a couple of example actions:
+        Action action1 = new ExampleAction("Example1", exampleKeyStroke1);
+        Action action2 = new ExampleAction("Example2", exampleKeyStroke2);
 
         // Most keyboard shortcuts are set up in advance in code, like so:
-        keyManager.registerHandler("Ctrl+1", new ExampleAction("Example1", "Ctrl+1"));
-        keyManager.registerHandler("Alt+Shift+X", new ExampleAction("Example2", "Alt+Shift+X"));
+        keyManager.registerHandler(exampleKeyStroke1, action1);
+        keyManager.registerHandler(exampleKeyStroke2, action2);
         // The action that you supply can also be given to a JMenuItem or JButton,
         // so that the same action can be invoked either by clicking a button/menu item,
         // or by pressing the keyboard shortcut. Disabling the action will also
@@ -65,7 +77,7 @@ public class KeyboardManagerPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        FormPanel formPanel = buildFormPanel("KeyboardManager");
+        formPanel = buildFormPanel("KeyboardManager");
 
         String sb = "<html>The <b>KeyboardManager</b> provides a way to very easily<br>" +
                 "add keyboard shortcut handlers to any window.<br>" +
@@ -75,14 +87,24 @@ public class KeyboardManagerPanel extends PanelBuilder {
         labelField.getMargins().setTop(12).setBottom(16);
         formPanel.add(labelField);
 
-        formPanel.add(new LabelField("Example 1:", "Ctrl+1"));
-        formPanel.add(new LabelField("Example 2:", "Alt+Shift+X"));
+        // Let's show our example actions in a couple of LabelFields:
+        formPanel.add(new LabelField("Example 1:", KeyStrokeManager.keyStrokeToString(exampleKeyStroke1)));
+        formPanel.add(new LabelField("Example 2:", KeyStrokeManager.keyStrokeToString(exampleKeyStroke2)));
 
-        customField = new ShortTextField("Custom:", 15);
+        // We can allow custom entry with our KeyStrokeField:
+        customField = new KeyStrokeField("Custom:", null);
         customField.setHelpText("<html>Enter a custom keyboard shortcut string here!<br>" +
                                         "Optional modifiers: ctrl, shift, alt, meta, command<br>" +
                                         "Special keys: enter, space, tab, esc, pageup, F1, and so on.<br>" +
                                         "Use the same format as the examples above.</html>");
+
+        // Let's "reserve" our example shortcuts so the user can't accidentally
+        // try to register them again. Note that this is optional! It's perfectly
+        // valid to have more than one action registered for the same shortcut,
+        // if you want to. But we have the option to prevent it, like this:
+        customField.setReservedKeyStrokes(List.of(exampleKeyStroke1, exampleKeyStroke2),
+                                          "This shortcut is already in use by an example action.");
+
         formPanel.add(customField);
 
         ButtonField buttonField = new ButtonField(List.of(
@@ -102,77 +124,37 @@ public class KeyboardManagerPanel extends PanelBuilder {
      * You can define new ones dynamically at runtime!
      */
     private void executeCustomShortcut() {
-        // Get the custom shortcut string from the text field:
-        String shortcutString = customField.getText();
-
-        // Make sure it's valid!
-        if (!keyManager.isKeyStrokeValid(shortcutString)) {
-            String msg = "The shortcut string you entered is not valid:\n\n" + shortcutString;
-            if (shortcutString.isBlank()) {
-                msg = "You must enter a shortcut string first!";
-            }
-            getMessageUtil().error("Invalid Shortcut", msg);
+        // Validate the form (this will show validation message to user if invalid):
+        if (!formPanel.isFormValid()) {
             return;
         }
 
-        // Check to see if there's already a handler for this shortcut.
-        // If so, we can let the user decide whether to continue or not.
-        // Note that the KeyboardManager class actually allows multiple actions
-        // to be registered for the same shortcut. So, if your application has
-        // multiple extensions that want to use the same shortcut, they can all
-        // register for it, and all their handlers will be invoked when the shortcut
-        // is pressed.
-        // TODO mention KeyboardManagerField when that class is ready.
-        //      The idea is that the user can remap conflicting shortcuts via application settings.
-        List<Action> existingHandlers = keyManager.getHandlers(shortcutString);
-        if (!existingHandlers.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("The shortcut '").append(shortcutString).append("' is already registered for:\n\n");
-            for (Action a : existingHandlers) {
-                sb.append(" - ").append(a.getValue(Action.NAME)).append("\n");
-            }
-            sb.append("\nRegistering your new shortcut will unregister the existing handler(s).\n\n" +
-                              "Do you want to continue?");
-            if (JOptionPane.showConfirmDialog(DemoApp.getInstance(),
-                                              sb.toString(),
-                                              "Shortcut Already Registered",
-                                              JOptionPane.YES_NO_OPTION,
-                                              JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION) {
-                // User chose not to continue.
-                return;
-            }
+        // We can get the KeyStroke from the KeyStrokeField now:
+        // (we know it's valid because we just validated the form)
+        KeyStroke customKeyStroke = customField.getKeyStroke();
 
-            // Unregister existing handlers:
-            for (Action a : existingHandlers) {
-                keyManager.unregisterHandler(a);
-            }
-        }
+        // We COULD check to see if there's already a handler for this shortcut,
+        // and disallow it if so - this is an application decision. The KeyStrokeManager
+        // allows multiple handlers for the same shortcut, so it's up to your application
+        // logic to decide whether that's acceptable or not.
+        // Example:
+        //    List<Action> existingHandlers = keyManager.getActionsForKeyStroke(customKeyStroke);
+        // If existingHandlers is not empty, we could reject the new assignment...
 
-        // If our userAction was already registered, unregister it first:
+        // If our userAction is already registered, we should unregister it first:
         if (userAction != null) {
             keyManager.unregisterHandler(userAction);
         }
 
-        // Create a new action for this shortcut:
-        userAction = new ExampleAction("User-supplied", shortcutString);
+        // Create a new action for this shortcut and register it!
+        userAction = new ExampleAction("User-supplied", customKeyStroke);
+        keyManager.registerHandler(customKeyStroke, userAction);
 
-        // Register it!
-        keyManager.registerHandler(shortcutString, userAction);
-
-        // Verify it was registered:
-        List<Action> handlers = keyManager.getHandlers(shortcutString);
-        if (handlers.contains(userAction)) {
-            getMessageUtil().info("Shortcut Registered",
-                                  "The shortcut '" + shortcutString + "' was successfully registered.\n\n" +
-                                          "Close this confirmation dialog, then try pressing it to see it in action!");
-        }
-        else {
-            // This generally shouldn't happen, especially because we validated the keystroke earlier.
-            // But, to be diligent, your code shouldn't assume that registerHandler() always works.
-            getMessageUtil().error("Registration Failed",
-                                   "The shortcut '" + shortcutString +
-                                           "' could not be registered for some reason :(");
-        }
+        getMessageUtil().info("Shortcut  Registered",
+                              "The custom shortcut '" +
+                                      KeyStrokeManager.keyStrokeToString(customKeyStroke) +
+                                      "' has been registered successfully!\n\n"
+                                      + "Close this dialog, then try pressing it to see it in action!");
     }
 
     /**
@@ -236,18 +218,20 @@ public class KeyboardManagerPanel extends PanelBuilder {
     private class ExampleAction extends AbstractAction {
 
         private final String name;
-        private final String shortcutString;
+        private final KeyStroke keyStroke;
+        private final String keyStrokeString;
 
-        public ExampleAction(String name, String shortcutString) {
+        public ExampleAction(String name, KeyStroke keyStroke) {
             super(name);
             this.name = name;
-            this.shortcutString = shortcutString;
+            this.keyStroke = keyStroke;
+            this.keyStrokeString = KeyStrokeManager.keyStrokeToString(keyStroke);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             getMessageUtil().info("Shortcut Invoked",
-                                  "The " + name + " handler for shortcut '" + shortcutString + "' was invoked!");
+                                  "The " + name + " handler for shortcut '" + keyStrokeString + "' was invoked!");
         }
     }
 
