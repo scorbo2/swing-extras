@@ -213,7 +213,7 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Synonym for addAll(List<FormField> fields).
+     * Synonym for addAll(List&lt;FormField&gt; fields).
      */
     public FormPanel add(List<FormField> fields) {
         addAll(fields);
@@ -302,7 +302,7 @@ public final class FormPanel extends JPanel {
      * This is an obsolete method from an earlier version of swing-forms. It is
      * scheduled for removal in a future release.
      *
-     * @Deprecated As of swing-extras 2.7. This method will be removed in a future release.
+     * @deprecated As of swing-extras 2.7. This method will be removed in a future release.
      */
     @Deprecated(since = "swing-extras 2.7", forRemoval = true)
     public FormPanel forceRerender() {

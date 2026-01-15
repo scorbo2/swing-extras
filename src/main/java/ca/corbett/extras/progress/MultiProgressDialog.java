@@ -67,7 +67,8 @@ import java.util.TimerTask;
  *     method to set this delay time in milliseconds. The default is 0, meaning the dialog
  *     will appear as soon as the work begins.</li>
  *     <li>You can customize the format of the progress messages shown in the major and minor
- *     progress labels. See the DEFAULT_PROGRESS_FORMAT constant for details.</li>
+ *     progress labels. See the DEFAULT_PROGRESS_FORMAT constant for details.
+ *     Use the setFormatString() method to change the format string.</li>
  * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -102,6 +103,9 @@ public final class MultiProgressDialog extends JDialog {
      *     You can add whatever punctuation, spacing, or other text you like around the tags,
      *     though be aware there is a length limit on the progress label, and the worker-supplied
      *     message can be quite long.
+     * </p>
+     * <p>
+     *     Use the setFormatString() method to change the format string.
      * </p>
      */
     public static final String DEFAULT_PROGRESS_FORMAT = "[%s of %t] %m";
