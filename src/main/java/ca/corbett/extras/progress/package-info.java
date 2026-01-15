@@ -12,7 +12,7 @@
  *     In this case you can extend the {@link ca.corbett.extras.progress.MultiProgressWorker} class instead,
  *     which provides more options for firing progress events to update the two progress bars.</li>
  *     <li> The {@link ca.corbett.extras.progress.SplashProgressWindow} class is intended to provide a simple
- *     splash screen with a built-in progress bar, if your application has a length operation to perform
+ *     splash screen with a built-in progress bar, if your application has a lengthy operation to perform
  *     at startup. You can again extend the {@link ca.corbett.extras.progress.SimpleProgressWorker} class to implement
  *     your startup task, and the splash screen will be displayed automatically while the work is performed.
  *     </li>
