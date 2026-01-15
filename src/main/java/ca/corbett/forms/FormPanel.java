@@ -96,6 +96,7 @@ public final class FormPanel extends JPanel {
      * FormPanel itself already specifies a border margin. The two values are added together in that case.
      *
      * @param margin The margin, in pixels, to apply to the FormPanel. Negative values are treated as 0.
+     * @return This FormPanel instance, to allow method chaining.
      */
     public FormPanel setBorderMargin(int margin) {
         formPanelMargins.setAll(margin);
@@ -115,6 +116,9 @@ public final class FormPanel extends JPanel {
      * for FormPanel margin calculations. We only care about top, left, bottom, and right.
      * "internalSpacing" is only relevant within individual FormField instances.
      * </p>
+     *
+     * @param margins The Margins instance defining the margins to apply. Negative values are treated as 0.
+     * @return This FormPanel instance, to allow method chaining.
      */
     public FormPanel setBorderMargin(Margins margins) {
         formPanelMargins.copy(margins);
@@ -171,6 +175,8 @@ public final class FormPanel extends JPanel {
 
     /**
      * Removes all FormFields from this FormPanel and re-renders it.
+     *
+     * @return This FormPanel instance, to allow method chaining.
      */
     public FormPanel removeAllFormFields() {
         formFields.clear();
@@ -321,9 +327,14 @@ public final class FormPanel extends JPanel {
      * to multi-line field labels to better align them with their associated field components.
      * The default value is 4 pixels, which is usually sufficient. You can set this to zero
      * if you don't want any extra margin applied.
+     *
+     * @param multiLineFieldExtraTopMargin The extra top margin, in pixels, for multi-line field labels.
+     * @return This FormPanel instance, to allow method chaining.
      */
-    public void setMultiLineFieldExtraTopMargin(int multiLineFieldExtraTopMargin) {
+    public FormPanel setMultiLineFieldExtraTopMargin(int multiLineFieldExtraTopMargin) {
         this.multiLineFieldExtraTopMargin = multiLineFieldExtraTopMargin;
+        render();
+        return this;
     }
 
     /**
