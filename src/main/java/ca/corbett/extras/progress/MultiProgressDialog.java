@@ -31,36 +31,47 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Replacement for ProgressMonitor, which is a bit limiting.
+ * Replacement for Java's ProgressMonitor class, which is a bit limiting.
  * Specifically, this dialog can show "major" and "minor" progress
- * bars simultaneously, and increment them each as a long-running thread
+ * bars simultaneously, and increment them both, as a long-running worker thread
  * progresses. This allows you to show more detailed progress, particularly for
  * executing worker threads involving a list of long-running work items. For example,
- * iterating over a list of directories and performing some time-intensive operation within
- * each directory. In this hypothetical example, it would be helpful to the user to show
- * a "major" progress bar showing the progress through the list of directories (for example,
- * "directory 2 of 12"), while also showing a "minor" progress bar showing the progress
- * within the current directory ("file 17 of 111").
+ * iterating over a list of directories (major steps), and performing some time-intensive
+ * operation within each directory (minor steps). In this hypothetical example, it
+ * would be helpful to the user to show a "major" progress bar showing the progress
+ * through the list of directories ("directory 2 of 12"), while also showing
+ * a "minor" progress bar showing the progress within the current directory ("file 17 of 111").
  * <p>
- * <b>USAGE:</b></p>
+ * <b>USAGE:</b> Start by extending one of the worker classes: either MultiProgressWorker
+ * (for major and minor progress) or SimpleProgressWorker (for just a single progress bar).
+ * Implement the run() method to perform your long-running task. As your task progresses,
+ * invoke the various fire...() methods to notify listeners of progress. Remember to
+ * invoke either fireProgressComplete() or fireProgressCanceled() at the end of your
+ * run() method to let listeners know that the work is done. Failure to invoke one of
+ * these termination events will result in the progress dialog remaining open indefinitely.
+ * </p>
  * <p>
- * Create an instance of MultiProgressDialog and pass it into a worker thread (or have the
- * worker thread create one). The worker thread should invoke setMajorProgressBounds() to
- * set the min and max values of the major progress bar. The worker thread can then show the
- * dialog and begin work. As soon as the bounds of the minor progress bar are known, the worker
- * thread can invoke setMinorProgressBounds(). Periodically, the worker thread should invoke
- * setMajorProgress() and setMinorProgress() to let the user know what's going on, and also
- * check on the isCanceled() method to learn if the user has clicked the cancel button.
- * When the worker thread is finished, it can dispose the dialog.
+ * When you have your worker class ready, create an instance of MultiProgressDialog,
+ * and invoke its runWorker() method, passing in an instance of your worker class.
+ * If you wish to set other options (documented below), do so before invoking runWorker().
  * </p>
  * <p>
  * MultiProgressDialog instances can be re-used, but be sure to invoke resetProgress()
- * in between each usage to reset the progress bars (you will also then need to invoke
- * setMajorProgressBounds() and setMinorProgressBounds() as soon as they are known, as above).
+ * in between each usage to reset the progress bars.
  * </p>
+ * <h2>Other options</h2>
+ * <ul>
+ *     <li>You can set an initial show delay on the dialog, so that it will only appear
+ *     if the work takes longer than a certain amount of time. This is useful to avoid
+ *     flashing a progress dialog for very short operations. Use the setInitialShowDelayMS()
+ *     method to set this delay time in milliseconds. The default is 0, meaning the dialog
+ *     will appear as soon as the work begins.</li>
+ *     <li>You can customize the format of the progress messages shown in the major and minor
+ *     progress labels. See the DEFAULT_PROGRESS_FORMAT constant for details.</li>
+ * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2022-04-15
+ * @since swing-extras 1.6 (2022-04-15)
  */
 public final class MultiProgressDialog extends JDialog {
 
@@ -175,9 +186,11 @@ public final class MultiProgressDialog extends JDialog {
         minorProgressLabel.setVisible(true);
         minorProgressBar.setVisible(true);
         setSize(new Dimension(500, 210));
-        // Use a priority listener to make sure we get notified first...
-        // otherwise, the timer on the dialog may force it visible even if some other handler is showing a popup
-        // Our listener will kill the timer, which avoids that problem as long as our listener is invoked first.
+        // We will use a "priority listener" to make sure we get notified first...
+        // This feature of our worker classes is package-protected, so only we can do this.
+        // Without this, the "initialShowDelay" timer on the dialog may force it visible after completion, even if some
+        // other listener is trying showing a popup (for example, to report on the results of the operation).
+        // Our priority listener will kill the timer, which avoids that problem.
         worker.addPriorityProgressListener(new MultiProgressHandler(this, initialShowDelayMS, disposeWhenComplete));
         new Thread(worker).start();
     }
