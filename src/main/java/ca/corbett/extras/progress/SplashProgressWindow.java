@@ -6,6 +6,7 @@ import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.extras.image.LogoProperty;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JProgressBar;
 import javax.swing.JWindow;
@@ -20,12 +21,13 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 
 /**
- * Normally the SplashScreen that comes with AWT is good enough for an application, but if the
+ * Normally the SplashScreen that comes with AWT is good enough for an application. But if the
  * app has some costly process to go through before the UI is shown, it is useful to be able to
- * show a progress bar with the splash screen, to give the user some idea of how startup is going.
+ * show a progress bar with the splash screen. This gives the user some idea of how startup is going,
+ * and reassures them that the application is actually starting up and isn't frozen.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2022-05-10
+ * @since swing-extras 1.6 (2022-05-10)
  */
 public final class SplashProgressWindow extends JWindow {
 
@@ -75,8 +77,8 @@ public final class SplashProgressWindow extends JWindow {
      * a splash screen based on the given image. You must still supply a background and foreground
      * color so the progress bar can be styled to match the logo image.
      *
-     * @param fgColor     The foreground colour for the progress bar.
-     * @param bgColor     The background colour for the progress bar.
+     * @param fgColor     The foreground color for the progress bar.
+     * @param bgColor     The background color for the progress bar.
      * @param splashImage The application logo image. Window dimensions will be based on this image's
      *                    dimensions.
      */
@@ -90,8 +92,8 @@ public final class SplashProgressWindow extends JWindow {
      * But, for testing purposes (or perhaps for some custom scenario), this constructor
      * is offered as a way to set a parent frame for it.
      *
-     * @param fgColor     The foreground colour for the progress bar.
-     * @param bgColor     The background colour for the progress bar.
+     * @param fgColor     The foreground color for the progress bar.
+     * @param bgColor     The background color for the progress bar.
      * @param splashImage The application logo image. Window dimensions will be based on this image's
      *                    dimensions.
      */
@@ -134,32 +136,7 @@ public final class SplashProgressWindow extends JWindow {
      * @param worker Any SimpleProgressWorker implementation.
      */
     public void runWorker(SimpleProgressWorker worker) {
-        final SplashProgressWindow thisWindow = this;
-        final SimpleProgressListener listener = new SimpleProgressAdapter() {
-            @Override
-            public void progressBegins(int stepCount) {
-                SwingUtilities.invokeLater(() -> thisWindow.initializeProgressBar(stepCount));
-            }
-
-            @Override
-            public boolean progressUpdate(int currentStep, String message) {
-                SwingUtilities.invokeLater(() -> thisWindow.setProgress(currentStep + 1));
-                return true;
-            }
-
-            @Override
-            public void progressComplete() {
-                SwingUtilities.invokeLater(() -> thisWindow.dispose());
-            }
-
-            @Override
-            public void progressCanceled() {
-                SwingUtilities.invokeLater(() -> thisWindow.dispose());
-            }
-
-        };
-
-        worker.addProgressListener(listener);
+        worker.addProgressListener(new BuiltInProgressListener(this));
         setVisible(true);
         new Thread(worker).start();
     }
@@ -179,25 +156,7 @@ public final class SplashProgressWindow extends JWindow {
      * @param action    An AbstractAction to be fired when the fake work is done.
      */
     public void showFakeProgress(int steps, int stepDelay, AbstractAction action) {
-        final SplashProgressWindow thisWindow = this;
-        runWorker(new SimpleProgressWorker() {
-            @Override
-            public void run() {
-                fireProgressBegins(steps);
-                for (int i = 0; i < steps; i++) {
-                    fireProgressUpdate(i, "");
-                    try {
-                        Thread.sleep(stepDelay);
-                    }
-                    catch (InterruptedException ignored) {
-                    }
-                }
-                fireProgressComplete();
-                if (action != null) {
-                    action.actionPerformed(new ActionEvent(thisWindow, 0, "Complete"));
-                }
-            }
-        });
+        runWorker(new FakeWorker(steps, stepDelay, action, this));
     }
 
     /**
@@ -246,4 +205,72 @@ public final class SplashProgressWindow extends JWindow {
         add(progressBar, BorderLayout.SOUTH);
     }
 
+    /**
+     * A simple worker thread to perform some "fake" work to simulate slow progress.
+     */
+    private static class FakeWorker extends SimpleProgressWorker {
+        final int steps;
+        final int stepDelay;
+        final Action action;
+        final SplashProgressWindow thisWindow;
+
+        public FakeWorker(int steps, int stepDelay, Action action, SplashProgressWindow window) {
+            this.steps = steps;
+            this.stepDelay = stepDelay;
+            this.action = action;
+            this.thisWindow = window;
+        }
+
+        @Override
+        public void run() {
+            fireProgressBegins(steps);
+            for (int i = 0; i < steps; i++) {
+                fireProgressUpdate(i, "");
+                try {
+                    Thread.sleep(stepDelay);
+                }
+                catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            fireProgressComplete();
+            if (action != null) {
+                action.actionPerformed(new ActionEvent(thisWindow, 0, "Complete"));
+            }
+        }
+    }
+
+    /**
+     * Used internally to monitor progress and update our progress bar.
+     * Will dispose the given SplashProgressWindow when completed or canceled.
+     */
+    private static class BuiltInProgressListener extends SimpleProgressAdapter {
+
+        private final SplashProgressWindow thisWindow;
+
+        public BuiltInProgressListener(SplashProgressWindow window) {
+            thisWindow = window;
+        }
+
+        @Override
+        public void progressBegins(int stepCount) {
+            SwingUtilities.invokeLater(() -> thisWindow.initializeProgressBar(stepCount));
+        }
+
+        @Override
+        public boolean progressUpdate(int currentStep, String message) {
+            SwingUtilities.invokeLater(() -> thisWindow.setProgress(currentStep + 1));
+            return true;
+        }
+
+        @Override
+        public void progressComplete() {
+            SwingUtilities.invokeLater(thisWindow::dispose);
+        }
+
+        @Override
+        public void progressCanceled() {
+            SwingUtilities.invokeLater(thisWindow::dispose);
+        }
+    }
 }

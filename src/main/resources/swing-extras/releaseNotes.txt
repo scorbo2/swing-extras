@@ -21,6 +21,7 @@ Version 2.7.0 [TODO release date here] - Maintenance release
   #238 - EnumProperty: remove useNamesInsteadOfLabels option
   #237 - FormPanel: minor refactoring and Javadoc touchups
   #232 - DirTree: add option to show hidden files
+  #231 - Progress package: javadoc pass and minor touchups
   #230 - DirTree: mark factory methods as deprecated
   #229 - New utility class: KeyboardManager
   #228 - Turn down scary exception logging in AppProperties
