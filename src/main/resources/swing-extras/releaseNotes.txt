@@ -14,6 +14,7 @@ Version 2.7.0 [TODO release date here] - Maintenance release
   #252 - ImageUtil: better validation in loadImageIcon
   #250 - AbstractProperty: add margin padding options
   #249 - New visual effects: FadeLayerUI, BlurLayerUI, SnowLayerUI
+  #248 - ListField: offer built-in helper actions for common tasks
   #247 - DirTree: add selectionWillChange event with veto option
   #245 - ListField: listener convenience methods; better javadoc
   #244 - LabelProperty: add ability to set field label text

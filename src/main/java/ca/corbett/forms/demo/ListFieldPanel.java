@@ -1,11 +1,16 @@
 package ca.corbett.forms.demo;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.SnippetAction;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.actions.ListItemClearAction;
+import ca.corbett.forms.actions.ListItemMoveAction;
+import ca.corbett.forms.actions.ListItemRemoveAction;
+import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.CollapsiblePanelField;
 import ca.corbett.forms.fields.ComboField;
@@ -24,6 +29,7 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
@@ -104,6 +110,25 @@ public class ListFieldPanel extends PanelBuilder {
         listField2.setFixedCellWidth(80);
         listField2.setVisibleRowCount(3);
         formPanel.add(listField2);
+
+        // In swing-extras 2.7, we have handy prebuilt actions to manipulate ListField contents:
+        ListField<String> listField3 = new ListField<>("Dynamic list:",
+                                                       List.of("Add items!", "Remove items!",
+                                                               "This list is interactive!"));
+        listField3.setFixedCellWidth(200);
+        listField3.setVisibleRowCount(4);
+        formPanel.add(listField3);
+
+        // This ButtonField will get merged right into ListField when issue #240 is tackled:
+        ButtonField listButtons = new ButtonField(List.of(
+                new ListItemAddAction(listField3),
+                new ListItemMoveAction<>(listField3, ListItemMoveAction.Direction.UP),
+                new ListItemMoveAction<>(listField3, ListItemMoveAction.Direction.DOWN),
+                new ListItemRemoveAction(listField3),
+                new ListItemClearAction(listField3)
+        ));
+        listButtons.setButtonPreferredSize(new Dimension(90, 25));
+        formPanel.add(listButtons);
 
         // New in swing-extras 2.6, let's show the ListSubsetField:
         formPanel.add(new ListSubsetField<>("List subset:",
@@ -186,6 +211,29 @@ public class ListFieldPanel extends PanelBuilder {
         panel.add(centerPanel, BorderLayout.CENTER);
 
         return panel;
+    }
+
+    /**
+     * Adding a list item is one of the actions that we can't supply out-of-the-box,
+     * because we don't know what type of data the list holds or what the list represents.
+     * So, here's a simple example action that adds a string item to a ListField of strings.
+     */
+    private static class ListItemAddAction extends EnhancedAction {
+
+        private final ListField<String> listField;
+
+        public ListItemAddAction(ListField<String> listField) {
+            super("Add");
+            this.listField = listField;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String newItem = JOptionPane.showInputDialog(DemoApp.getInstance(), "Enter new item:");
+            if (newItem != null && !newItem.trim().isEmpty()) {
+                listField.getListModel().addElement(newItem.trim());
+            }
+        }
     }
 
     /**
