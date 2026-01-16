@@ -1,7 +1,7 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.LookAndFeelManager;
-import ca.corbett.forms.Resources;
+import ca.corbett.forms.SwingFormsResources;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -26,6 +26,7 @@ import java.awt.LayoutManager;
  */
 public class CollapsiblePanelField extends FormField {
 
+    private static final int PANEL_ICON_SIZE = 20;
     private static boolean isDefaultBorderEnabled = true;
 
     public enum ButtonPosition { Left, Right; }
@@ -68,7 +69,9 @@ public class CollapsiblePanelField extends FormField {
         labelWrapperPanel.add(label);
 
         buttonWrapperPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
-        expandCollapseButton = new JButton(isInitiallyExpanded ? Resources.getMinusIcon() : Resources.getPlusIcon());
+        expandCollapseButton = new JButton(isInitiallyExpanded
+                                                   ? SwingFormsResources.getMinusIcon(PANEL_ICON_SIZE)
+                                                   : SwingFormsResources.getPlusIcon(PANEL_ICON_SIZE));
         expandCollapseButton.addActionListener(e -> setIsExpanded(! isExpanded));
         expandCollapseButton.setBorder(null);
         expandCollapseButton.setOpaque(false);
@@ -98,7 +101,10 @@ public class CollapsiblePanelField extends FormField {
             return this; // ignore no-op requests
         }
         isExpanded = expand;
-        expandCollapseButton.setIcon(isExpanded ? Resources.getMinusIcon() : Resources.getPlusIcon());
+        expandCollapseButton.setIcon(
+                isExpanded
+                        ? SwingFormsResources.getMinusIcon(PANEL_ICON_SIZE)
+                        : SwingFormsResources.getPlusIcon(PANEL_ICON_SIZE));
         expandPanel.setVisible(isExpanded);
         if (expandPanel.getParent() != null) {
             expandPanel.getParent().invalidate();

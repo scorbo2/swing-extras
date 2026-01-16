@@ -1,6 +1,6 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.Resources;
+import ca.corbett.forms.SwingFormsResources;
 
 import javax.swing.DefaultListModel;
 import javax.swing.DropMode;
@@ -67,6 +67,7 @@ public class ListSubsetField<T> extends FormField {
 
     private static final Logger log = Logger.getLogger(ListSubsetField.class.getName());
 
+    private static final int ICON_SIZE = 16;
     public static final int DEFAULT_VISIBLE_ROW_COUNT = 4;
     public static final int DEFAULT_FIXED_CELL_WIDTH = -1;
 
@@ -97,10 +98,14 @@ public class ListSubsetField<T> extends FormField {
         availableList.setFixedCellWidth(DEFAULT_FIXED_CELL_WIDTH);
         selectedList.setFixedCellWidth(DEFAULT_FIXED_CELL_WIDTH);
         wrapperPanel = new JPanel();
-        moveLeftButton = createActionButton("Move Selected Left", Resources.getMoveLeftIcon());
-        moveRightButton = createActionButton("Move Selected Right", Resources.getMoveRightIcon());
-        moveAllLeftButton = createActionButton("Move All Left", Resources.getMoveAllLeftIcon());
-        moveAllRightButton = createActionButton("Move All Right", Resources.getMoveAllRightIcon());
+        moveLeftButton = createActionButton("Move Selected Left",
+                                            SwingFormsResources.getMoveLeftIcon(ICON_SIZE));
+        moveRightButton = createActionButton("Move Selected Right",
+                                             SwingFormsResources.getMoveRightIcon(ICON_SIZE));
+        moveAllLeftButton = createActionButton("Move All Left",
+                                               SwingFormsResources.getMoveAllLeftIcon(ICON_SIZE));
+        moveAllRightButton = createActionButton("Move All Right",
+                                                SwingFormsResources.getMoveAllRightIcon(ICON_SIZE));
         moveLeftButton.addActionListener(e -> moveSelectedLeft());
         moveRightButton.addActionListener(e -> moveSelectedRight());
         moveAllLeftButton.addActionListener(e -> moveAllLeft());

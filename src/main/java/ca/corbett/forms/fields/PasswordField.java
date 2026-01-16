@@ -1,7 +1,7 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.CoalescingDocumentListener;
-import ca.corbett.forms.Resources;
+import ca.corbett.forms.SwingFormsResources;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.NonBlankFieldValidator;
 
@@ -46,11 +46,11 @@ public class PasswordField extends FormField {
         fieldLabel.setText(label);
         textField = new JPasswordField(cols);
         setEchoChar(DEFAULT_ECHO_CHAR);
-        showPasswordButton = new JButton(Resources.getHiddenIcon());
+        showPasswordButton = new JButton(SwingFormsResources.getHiddenIcon(ICON_SIZE));
         showPasswordButton.setPreferredSize(new Dimension(26, 26));
         showPasswordButton.addActionListener(e -> toggleShowPassword());
         showPasswordButton.setToolTipText("Reveal/hide field contents");
-        copyButton = new JButton(Resources.getCopyIcon());
+        copyButton = new JButton(SwingFormsResources.getCopyIcon(ICON_SIZE));
         copyButton.setPreferredSize(new Dimension(26, 26));
         copyButton.addActionListener(e -> copyPassword());
         copyButton.setToolTipText("Copy password to clipboard");
@@ -177,7 +177,7 @@ public class PasswordField extends FormField {
      */
     public void revealPassword() {
         textField.setEchoChar((char)0);
-        showPasswordButton.setIcon(Resources.getRevealedIcon());
+        showPasswordButton.setIcon(SwingFormsResources.getRevealedIcon(ICON_SIZE));
     }
 
     /**
@@ -196,7 +196,7 @@ public class PasswordField extends FormField {
             echoChar = DEFAULT_ECHO_CHAR;
         }
         textField.setEchoChar(echoChar);
-        showPasswordButton.setIcon(Resources.getHiddenIcon());
+        showPasswordButton.setIcon(SwingFormsResources.getHiddenIcon(ICON_SIZE));
     }
 
     /**

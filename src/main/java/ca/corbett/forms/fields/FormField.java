@@ -2,7 +2,7 @@ package ca.corbett.forms.fields;
 
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.forms.Margins;
-import ca.corbett.forms.Resources;
+import ca.corbett.forms.SwingFormsResources;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.ValidationResult;
 
@@ -49,6 +49,7 @@ import java.util.Objects;
  */
 public abstract class FormField {
 
+    protected static final int ICON_SIZE = 24;
     protected static final Font DEFAULT_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
     protected static Font defaultFont = DEFAULT_FONT;
 
@@ -72,8 +73,8 @@ public abstract class FormField {
     public FormField() {
         fieldLabel.setFont(defaultFont);
         fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
-        helpLabel.setIcon(Resources.getHelpIcon());
-        validationLabel.setIcon(Resources.getBlankIcon()); // placeholder until validation occurs
+        helpLabel.setIcon(SwingFormsResources.getHelpIcon(ICON_SIZE));
+        validationLabel.setIcon(SwingFormsResources.getBlankIcon(ICON_SIZE)); // placeholder until validation occurs
     }
 
     /**
@@ -431,12 +432,12 @@ public abstract class FormField {
                 message.append("\n");
             }
             String toolTip = message.substring(0, message.length() - 1);
-            validationLabel.setIcon(Resources.getInvalidIcon());
+            validationLabel.setIcon(SwingFormsResources.getInvalidIcon(ICON_SIZE));
             validationLabel.setToolTipText(toolTip);
         }
         else {
             if (hasValidationLabel()) { // don't set the icon if this field doesn't show validation results
-                validationLabel.setIcon(Resources.getValidIcon());
+                validationLabel.setIcon(SwingFormsResources.getValidIcon(ICON_SIZE));
                 validationLabel.setToolTipText(null);
             }
         }
