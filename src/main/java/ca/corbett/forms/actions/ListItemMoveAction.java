@@ -56,7 +56,7 @@ public class ListItemMoveAction<T> extends EnhancedAction {
      * Creates a new ListItemMoveAction with the specified icon and ListField.
      *
      * @param icon      The icon for this action.
-     * @param listField The ListField from in selected items will be moved. Must not be null.
+     * @param listField The ListField in which selected items will be moved. Must not be null.
      * @param direction The direction in which selected items will be moved. Must not be null.
      */
     public ListItemMoveAction(Icon icon, ListField<T> listField, Direction direction) {
@@ -64,7 +64,7 @@ public class ListItemMoveAction<T> extends EnhancedAction {
         this.listField = listField;
         this.direction = direction;
         if (listField == null || direction == null) {
-            throw new IllegalArgumentException("listField must not be null");
+            throw new IllegalArgumentException("listField and direction must not be null");
         }
     }
 
@@ -74,13 +74,38 @@ public class ListItemMoveAction<T> extends EnhancedAction {
         if (selectedIndices.length == 0) {
             return; // Nothing selected, nothing to do
         }
+
+        // We need to preserve multiple selection, so we can't just setSelectedIndex after moving each item.
+        int[] newSelectedIndices = new int[selectedIndices.length];
+
+        // Programmer's note: The "wonky case" handling below seems to mightily confuse AI assistants.
+        //     Both GitHub Copilot and also Claude Sonnet 4.5 (amazingly) want to incorrectly
+        //     modify this code so that we look at the *old* selected indeces and not the new ones.
+        //     The code below is correct! The AIs are both wrong! A rare day! Copilot also suggested
+        //     starting from the end of the list when moving up, which is also incorrect.
+        //     I'm particularly surprised that Claude Sonnet got this wrong, as it is usually excellent
+        //     at stuff like this. Don't take my word for it - check the unit tests for proof.
+
         if (direction == Direction.UP) {
-            for (int index : selectedIndices) {
+            for (int i = 0; i < selectedIndices.length; i++) {
+                int index = selectedIndices[i];
                 if (index > 0) {
+                    // Wonky case: if we go to move an item up, but the item
+                    // immediately above it is now selected, just skip it:
+                    // (this happens when we move a group of items to the top of the list,
+                    //  and then try to move them up again)
+                    if (i > 0 && newSelectedIndices[i - 1] == index - 1) {
+                        newSelectedIndices[i] = index; // Can't move up, stays the same
+                        continue;
+                    }
+
                     T item = listField.getListModel().getElementAt(index);
                     listField.getListModel().removeElementAt(index);
                     listField.getListModel().add(index - 1, item);
-                    listField.setSelectedIndex(index - 1);
+                    newSelectedIndices[i] = index - 1;
+                }
+                else {
+                    newSelectedIndices[i] = index; // Can't move up, stays the same
                 }
             }
         }
@@ -88,12 +113,24 @@ public class ListItemMoveAction<T> extends EnhancedAction {
             for (int i = selectedIndices.length - 1; i >= 0; i--) {
                 int index = selectedIndices[i];
                 if (index < listField.getListModel().getSize() - 1) {
+                    // Wonky case: if we go to move an item down, but the item
+                    // immediately below it is now selected, just skip it:
+                    // (this happens when we move a group of items to the bottom of the list,
+                    //  and then try to move them down again)
+                    if (i < selectedIndices.length - 1 && newSelectedIndices[i + 1] == index + 1) {
+                        newSelectedIndices[i] = index; // Can't move down, stays the same
+                        continue;
+                    }
                     T item = listField.getListModel().getElementAt(index);
                     listField.getListModel().removeElementAt(index);
                     listField.getListModel().add(index + 1, item);
-                    listField.setSelectedIndex(index + 1);
+                    newSelectedIndices[i] = index + 1;
+                }
+                else {
+                    newSelectedIndices[i] = index; // Can't move down, stays the same
                 }
             }
         }
+        listField.setSelectedIndexes(newSelectedIndices);
     }
 }

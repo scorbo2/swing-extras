@@ -25,9 +25,6 @@ public class ListItemRemoveAction extends EnhancedAction {
      */
     public ListItemRemoveAction(ListField<?> listField) {
         this(DEFAULT_NAME, listField);
-        if (listField == null) {
-            throw new IllegalArgumentException("listField must not be null");
-        }
     }
 
     /**
