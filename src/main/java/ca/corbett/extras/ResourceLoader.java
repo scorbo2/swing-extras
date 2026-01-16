@@ -102,7 +102,6 @@ public class ResourceLoader {
     public static List<String> getTextResourceAsLines(String resourcePath) {
         if (resourcePath == null) {
             log.warning("getTextResourceAsLines(null) invoked.");
-            ;
         }
         String path = prefix + (resourcePath == null ? "" : resourcePath);
         URL url = ResourceLoader.class.getClassLoader().getResource(path);
