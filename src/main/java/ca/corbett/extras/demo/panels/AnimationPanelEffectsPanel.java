@@ -371,7 +371,6 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
             else {
                 blurLayerUI.setBlurred(false);
             }
-            blurLayerUI.setBlurred(!blurLayerUI.isBlurred());
         }
     }
 
