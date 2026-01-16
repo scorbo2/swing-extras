@@ -275,8 +275,14 @@ public final class SwingFormsResources extends ResourceLoader {
                 size = MAX_ICON_SIZE;
             }
 
-            // I *think* this cast is safe, as our icons are all generated from BufferedImages:
-            // (this feels fragile though... perhaps our cache should store the BufferedImages instead?)
+            // We create all our icons from BufferedImages, so it should be safe to cast,
+            // but let's be cautious:
+            if (!(icon.getImage() instanceof BufferedImage)) {
+                log.severe("SwingFormsResources: Icon image is not a BufferedImage, cannot scale: " + resourceName);
+                return icon; // return unscaled version
+            }
+
+            // Now scale it:
             BufferedImage unscaled = (BufferedImage)icon.getImage();
             BufferedImage scaled = ImageUtil.generateThumbnailWithTransparency(unscaled, size, size);
             // Should we cache the scaled icon also, so we don't have to rescale each time?
@@ -285,5 +291,12 @@ public final class SwingFormsResources extends ResourceLoader {
         }
 
         return icon;
+    }
+
+    /**
+     * Only for testing - clears the internal icon cache.
+     */
+    static void clearCache() {
+        Instance.INSTANCE.iconCache.clear();
     }
 }

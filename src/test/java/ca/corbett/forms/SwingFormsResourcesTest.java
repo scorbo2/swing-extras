@@ -39,7 +39,7 @@ class SwingFormsResourcesTest {
     @BeforeEach
     public void setup() {
         // Clear the icon cache before each test:
-        SwingFormsResources.Instance.INSTANCE.iconCache.clear();
+        SwingFormsResources.clearCache();
     }
 
     @Test
@@ -77,7 +77,7 @@ class SwingFormsResourcesTest {
         // GIVEN valid resource names:
         final int requestedSize = 24;
         for (String resourceName : validResourceNames) {
-            // WHEN we load the resource with no scaling:
+            // WHEN we load the resource with requested scaling:
             ImageIcon icon = SwingFormsResources.internalLoad(resourceName, requestedSize);
 
             // THEN the image should not be null:
