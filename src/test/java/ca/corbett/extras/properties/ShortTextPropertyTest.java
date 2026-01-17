@@ -1,6 +1,5 @@
 package ca.corbett.extras.properties;
 
-import ca.corbett.extras.CoalescingDocumentListener;
 import ca.corbett.forms.fields.ShortTextField;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -22,11 +21,10 @@ class ShortTextPropertyTest extends AbstractPropertyBaseTests {
         // WHEN we generate a form field and mess with it a bit:
         ShortTextField formField = (ShortTextField)testProp.generateFormField();
         formField.setText("hello");
-        Thread.sleep(CoalescingDocumentListener.DELAY_MS*2); // cheesy!
         formField.setText("goodbye");
-        Thread.sleep(CoalescingDocumentListener.DELAY_MS*2); // cheesy!
 
-        // THEN we should see our change listener got invoked:
-        Mockito.verify(listener, Mockito.times(2)).valueChanged(Mockito.any());
+        // THEN we should see our change listener got invoked twice per set, because
+        //      DocumentListener is broken, and we don't have a good workaround for it yet.
+        Mockito.verify(listener, Mockito.times(4)).valueChanged(Mockito.any());
     }
 }

@@ -1,6 +1,5 @@
 package ca.corbett.extras.properties;
 
-import ca.corbett.extras.CoalescingDocumentListener;
 import ca.corbett.forms.fields.FileField;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,8 +14,8 @@ class DirectoryPropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
-    public void testChangeListener() throws Exception {
-        // GIVEN a property with a mocked change listener:
+    public void testChangeListener_withNoValueSet_shouldNotifyListenerOnce() throws Exception {
+        // GIVEN a property with a mocked change listener and no file set:
         DirectoryProperty testProp = new DirectoryProperty("test", "test", false);
         PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);
         testProp.addFormFieldChangeListener(listener);
@@ -24,9 +23,27 @@ class DirectoryPropertyTest extends AbstractPropertyBaseTests {
         // WHEN we generate a form field and mess with it:
         FileField formField = (FileField)testProp.generateFormField();
         formField.setFile(new File("blah"));
-        Thread.sleep(CoalescingDocumentListener.DELAY_MS*2); // cheesy!
 
         // THEN we should see our change listener get invoked:
         Mockito.verify(listener, Mockito.times(1)).valueChanged(Mockito.any());
     }
+
+    @Test
+    public void testChangeListener_withValueSet_shouldNotifyListenerTwiceBecauseDocumentListenerIsBroken()
+            throws Exception {
+        // GIVEN a property with a mocked change listener and a value set:
+        DirectoryProperty testProp = new DirectoryProperty("test", "test", false);
+        testProp.setDirectory(new File("hello"));
+        PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);
+        testProp.addFormFieldChangeListener(listener);
+
+        // WHEN we generate a form field and mess with it:
+        FileField formField = (FileField)testProp.generateFormField();
+        formField.setFile(new File("blah"));
+
+        // THEN we should see our change listener get invoked, not once but twice, because
+        //      DocumentListener is broken, and we don't have a good workaround for it yet.
+        Mockito.verify(listener, Mockito.times(2)).valueChanged(Mockito.any());
+    }
+
 }

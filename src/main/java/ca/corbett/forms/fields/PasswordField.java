@@ -1,6 +1,5 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.extras.CoalescingDocumentListener;
 import ca.corbett.forms.SwingFormsResources;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.NonBlankFieldValidator;
@@ -8,6 +7,8 @@ import ca.corbett.forms.validators.NonBlankFieldValidator;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -25,7 +26,7 @@ import java.util.List;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.5
  */
-public class PasswordField extends FormField {
+public class PasswordField extends FormField implements DocumentListener {
 
     public static final char DEFAULT_ECHO_CHAR = '*';
 
@@ -54,8 +55,7 @@ public class PasswordField extends FormField {
         copyButton.setPreferredSize(new Dimension(26, 26));
         copyButton.addActionListener(e -> copyPassword());
         copyButton.setToolTipText("Copy password to clipboard");
-        CoalescingDocumentListener l = new CoalescingDocumentListener(textField, e -> fireValueChangedEvent());
-        textField.getDocument().addDocumentListener(l);
+        textField.getDocument().addDocumentListener(this);
 
         JPanel wrapperPanel = new JPanel(new BorderLayout());
         wrapperPanel.add(textField, BorderLayout.WEST);
@@ -211,6 +211,12 @@ public class PasswordField extends FormField {
      * Sets the text for the password field.
      */
     public PasswordField setPassword(String password) {
+        if (password == null) {
+            password = ""; // if null, assume empty string
+        }
+        if (password.equals(getPassword())) {
+            return this; // reject no-op changes
+        }
         textField.setText(password);
         return this;
     }
@@ -264,5 +270,27 @@ public class PasswordField extends FormField {
         for (FieldValidator<? extends FormField> validator : foundList) {
             fieldValidators.remove(validator);
         }
+    }
+
+    // DocumentListener interface stuff below this line --------------------------------
+    //
+    // Yeah, it's horribly broken, but CoalescingDocumentListener is even worse,
+    // and will be marked as deprecated in 2.7 (nuked for all time in 2.8).
+    // So, until a better solution appears, we're stuck with DocumentListener.
+    // https://github.com/scorbo2/swing-extras/issues/251 for the details.
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
     }
 }
