@@ -28,6 +28,13 @@ public interface DirTreeListener {
      */
     void selectionChanged(DirTree source, File selectedDir);
 
+    /**
+     * Fired when the "show hidden files" setting is changed.
+     *
+     * @param source          The DirTree instance triggering this event.
+     * @param showHiddenFiles The new state of the "show hidden files" setting.
+     */
+    void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles);
 
     /**
      * Fired when a DirTree instance is locked to a specific subdirectory (like chroot).

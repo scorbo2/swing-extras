@@ -1,5 +1,6 @@
 package ca.corbett.extras.dirtree;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -87,9 +88,8 @@ public class DirTreePopupMenu extends JPopupMenu {
         reloadItem.addActionListener(e -> dirTree.reload());
         add(reloadItem);
 
-        JMenuItem showHiddenItems = new JMenuItem("Show hidden directories: " +
-                                                          (dirTree.getShowHiddenDirs() ? "ON" : "OFF"));
-        showHiddenItems.addActionListener(e -> dirTree.setShowHiddenDirs(!dirTree.getShowHiddenDirs()));
+        JMenuItem showHiddenItems = new JCheckBoxMenuItem("Show hidden directories", dirTree.getShowHiddenDirs());
+        showHiddenItems.addActionListener(e -> dirTree.setShowHiddenDirs(showHiddenItems.isSelected()));
         add(showHiddenItems);
 
         if (selectedNode != null && dirTree.getAllowLock()) {

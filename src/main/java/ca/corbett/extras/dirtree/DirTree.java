@@ -301,8 +301,16 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
      * What constitutes a "hidden" directory is platform-dependent.
      */
     public DirTree setShowHiddenDirs(boolean showHiddenDirs) {
+        boolean oldValue = this.showHiddenDirs;
         this.showHiddenDirs = showHiddenDirs;
+
+        // Don't reload or notify if the value didn't actually change:
+        if (oldValue == showHiddenDirs) {
+            return this;
+        }
+
         reload(); // force a reload to apply the new setting
+        fireHiddenFilesChangedEvent(); // notify listeners of the change
         return this;
     }
 
@@ -652,6 +660,26 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
         }
     }
 
+    /**
+     * Fired internally to notify listeners that the "show hidden files" setting has changed.
+     */
+    private void fireHiddenFilesChangedEvent() {
+        if (!notificationsEnabled) {
+            return; // ignored
+        }
+
+        for (DirTreeListener listener : new ArrayList<>(listeners)) {
+            listener.showHiddenFilesChanged(this, showHiddenDirs);
+        }
+    }
+
+    /**
+     * Fired internally to notify listeners that the selection in the tree is about to change.
+     * Listeners can veto this change by returning false.
+     *
+     * @param newNode The node that is about to be selected.
+     * @return True to allow the selection change, false to veto it.
+     */
     private boolean fireSelectionWillChangeEvent(DirTreeNode newNode) {
         if (!notificationsEnabled) {
             return true; // ignored, and assumed allowed
