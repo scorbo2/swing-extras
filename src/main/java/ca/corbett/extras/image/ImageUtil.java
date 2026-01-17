@@ -37,17 +37,17 @@ public class ImageUtil {
     /**
      * JPEG compression quality to use. *
      */
-    public static final float COMPRESSION_QUALITY = 0.95f;
+    protected static final float COMPRESSION_QUALITY = 0.95f;
 
     /**
      * Internal handle on the ImageWriter to use. *
      */
-    protected static ImageWriter imageWriter = null;
+    private static ImageWriter imageWriter = null;
 
     /**
      * Internal handle on the (currently non editable) ImageWriteParam to use. *
      */
-    protected static ImageWriteParam imageWriteParam = null;
+    private static ImageWriteParam imageWriteParam = null;
 
     /**
      * Protected constructor to allow subclassing for application-specific utility methods
@@ -114,7 +114,7 @@ public class ImageUtil {
      * @return The input ImageIcon if it appears valid.
      * @throws IOException If the image appears to be invalid.
      */
-    static ImageIcon validateImageIcon(final ImageIcon image) throws IOException {
+    protected static ImageIcon validateImageIcon(final ImageIcon image) throws IOException {
         // ImageIcon's getImageLoadStatus() method seems to be a bit flakey...
         // Some GIF files will return status ABORTED even though they display perfectly fine.
         // If we reject those here, we may end up rejecting valid images.
