@@ -475,6 +475,21 @@ public class ListField<T> extends FormField {
     }
 
     /**
+     * A convenience method to set alignment, hgap, and vgap all at once.
+     *
+     * @param alignment One of the FlowLayout alignment options: LEFT, CENTER, RIGHT, LEADING, or TRAILING
+     * @param hgap      The horizontal gap between buttons, in pixels
+     * @param vgap      The vertical gap between the buttons and the list, in pixels
+     * @return this ListField instance, for call chaining
+     */
+    public ListField<T> setButtonLayout(int alignment, int hgap, int vgap) {
+        layout.setAlignment(alignment);
+        layout.setHgap(hgap);
+        layout.setVgap(vgap);
+        return this;
+    }
+
+    /**
      * Invoked internally to build our wrapper panel, our button panel, and our scroll pane.
      */
     private JComponent buildComponent() {

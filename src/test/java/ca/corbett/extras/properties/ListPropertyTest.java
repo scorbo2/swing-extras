@@ -80,4 +80,21 @@ class ListPropertyTest extends AbstractPropertyBaseTests {
         assertEquals(200, preferredSize.width);
         assertEquals(150, preferredSize.height);
     }
+
+    @Test
+    public void formFieldGenerationListener_withConvenienceMethodForButtonLayout_shouldSetButtonProperties() {
+        // GIVEN a test prop with some optional button properties set via the convenience method:
+        ListProperty<String> testProp = new ListProperty<>("test", "test");
+        testProp.setButtonLayout(FlowLayout.CENTER, 5, 6);
+
+        // WHEN we generate a form field:
+        FormField formField = testProp.generateFormField();
+
+        // THEN we should see our button properties were applied to the form field:
+        assertInstanceOf(ListField.class, formField);
+        ListField<?> listField = (ListField<?>)formField;
+        assertEquals(FlowLayout.CENTER, listField.getButtonAlignment());
+        assertEquals(5, listField.getButtonHgap());
+        assertEquals(6, listField.getButtonVgap());
+    }
 }

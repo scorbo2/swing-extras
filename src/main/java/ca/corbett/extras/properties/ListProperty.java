@@ -234,6 +234,21 @@ public class ListProperty<T> extends AbstractProperty {
     }
 
     /**
+     * A convenience method to set button alignment, horizontal gap, and vertical gap all at once.
+     *
+     * @param buttonAlignment One of the FlowLayout alignment options: LEFT, CENTER, RIGHT, LEADING, or TRAILING.
+     * @param buttonHgap      The horizontal gap between buttons, in pixels.
+     * @param buttonVgap      The vertical gap between the buttons and the list, in pixels.
+     * @return This ListProperty, for method chaining.
+     */
+    public ListProperty setButtonLayout(int buttonAlignment, int buttonHgap, int buttonVgap) {
+        this.buttonAlignment = buttonAlignment;
+        this.buttonHgap = buttonHgap;
+        this.buttonVgap = buttonVgap;
+        return this;
+    }
+
+    /**
      * If the ListField generated from this property is to include buttons,
      * this gets the preferred dimensions of those buttons (requires a FormFieldGenerationListener to add buttons).
      *
