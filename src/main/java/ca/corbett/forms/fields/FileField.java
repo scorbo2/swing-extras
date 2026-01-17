@@ -296,7 +296,7 @@ public final class FileField extends FormField implements DocumentListener {
     public FileField setFile(File file) {
         clearValidationResults();
         if (file == null) {
-            if (!textField.getText().isEmpty()) {
+            if (!textField.getText().trim().isEmpty()) {
                 textField.setText("");
             }
         }
