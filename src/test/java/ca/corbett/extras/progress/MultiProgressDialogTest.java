@@ -17,14 +17,14 @@ class MultiProgressDialogTest {
         String truncated = dialog.truncString(shortMessage);
 
         // THEN the message should remain unchanged:
-        assertEquals(truncated, shortMessage);
+        assertEquals(shortMessage, truncated);
 
         // WHEN we switch to TruncationMode.START:
         dialog.setTruncationMode(MultiProgressDialog.TruncationMode.START);
         truncated = dialog.truncString(shortMessage);
 
         // THEN the message should remain unchanged:
-        assertEquals(truncated, shortMessage);
+        assertEquals(shortMessage, truncated);
     }
 
     @Test
