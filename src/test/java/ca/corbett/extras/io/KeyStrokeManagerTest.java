@@ -266,9 +266,6 @@ class KeyStrokeManagerTest {
             keyManager.registerHandler("ctrl+Q", null);
             fail("Expected IllegalArgumentException for null action, but didn't get one!");
         }
-        catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
-            fail("I dunno how this happened, but we got the wrong exception type here.");
-        }
         catch (IllegalArgumentException ignored) {
             // Expected exception
             return;
@@ -286,9 +283,9 @@ class KeyStrokeManagerTest {
 
         try {
             keyManager.registerHandler("thisIsNotAValidKeyStroke!", action);
-            fail("Expected InvalidKeyStrokeException for invalid keystroke, but didn't get one!");
+            fail("Expected IllegalArgumentException for invalid keystroke, but didn't get one!");
         }
-        catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
+        catch (IllegalArgumentException ignored) {
             // Expected exception
         }
     }
@@ -326,10 +323,10 @@ class KeyStrokeManagerTest {
             // WHEN we ask if they are available:
             try {
                 boolean available = keyManager.isAvailable(ks);
-                fail("Expected InvalidKeyStrokeException for invalid keystroke: " + ks +
+                fail("Expected IllegalArgumentException for invalid keystroke: " + ks +
                              ", but got availability: " + available);
             }
-            catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
+            catch (IllegalArgumentException ignored) {
                 // Expected exception
             }
         }
@@ -349,10 +346,10 @@ class KeyStrokeManagerTest {
             // WHEN we ask if they have handlers:
             try {
                 boolean hasHandlers = keyManager.hasHandlers(ks);
-                fail("Expected InvalidKeyStrokeException for invalid keystroke: " + ks +
+                fail("Expected IllegalArgumentException for invalid keystroke: " + ks +
                              ", but got hasHandlers: " + hasHandlers);
             }
-            catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
+            catch (IllegalArgumentException ignored) {
                 // Expected exception
             }
         }
@@ -372,9 +369,9 @@ class KeyStrokeManagerTest {
             // WHEN we try to get actions for them:
             try {
                 keyManager.getActionsForKeyStroke(ks);
-                fail("Expected InvalidKeyStrokeException for invalid keystroke: " + ks);
+                fail("Expected IllegalArgumentException for invalid keystroke: " + ks);
             }
-            catch (KeyStrokeManager.InvalidKeyStrokeException ignored) {
+            catch (IllegalArgumentException ignored) {
                 // Expected exception
             }
         }
