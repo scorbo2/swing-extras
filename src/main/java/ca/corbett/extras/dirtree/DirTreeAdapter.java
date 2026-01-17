@@ -1,5 +1,7 @@
 package ca.corbett.extras.dirtree;
 
+import java.io.File;
+
 /**
  * An adapter class for DirTreeListener with empty method implementations.
  *
@@ -9,12 +11,12 @@ package ca.corbett.extras.dirtree;
 public class DirTreeAdapter implements DirTreeListener {
 
     @Override
-    public boolean selectionWillChange(DirTree source, java.io.File newSelectedDir) {
+    public boolean selectionWillChange(DirTree source, File newSelectedDir) {
         return true; // default allow change
     }
 
     @Override
-    public void selectionChanged(DirTree source, java.io.File selectedDir) {
+    public void selectionChanged(DirTree source, File selectedDir) {
         // No-op
     }
 
@@ -24,7 +26,7 @@ public class DirTreeAdapter implements DirTreeListener {
     }
 
     @Override
-    public void treeLocked(DirTree source, java.io.File lockDir) {
+    public void treeLocked(DirTree source, File lockDir) {
         // No-op
     }
 
