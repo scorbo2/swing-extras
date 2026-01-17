@@ -350,7 +350,7 @@ public class ListFieldPanel extends PanelBuilder {
                     
                     // We can tell the lists to auto-sort their contents:
                     // (this disables dragging items within a list to reorder them)
-                    listSubset.setAutoSortingEnabled(true)
+                    listSubset.setAutoSortingEnabled(true);
                     
                     // Try dragging items between the two lists!
                     """;

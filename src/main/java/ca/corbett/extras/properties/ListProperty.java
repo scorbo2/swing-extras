@@ -181,9 +181,11 @@ public class ListProperty<T> extends AbstractProperty {
      * this sets the position of those buttons (requires a FormFieldGenerationListener to add buttons).
      *
      * @param buttonPosition One of the ListField.ButtonPosition enum values.
+     * @return This ListProperty, for method chaining.
      */
-    public void setButtonPosition(ListField.ButtonPosition buttonPosition) {
+    public ListProperty<T> setButtonPosition(ListField.ButtonPosition buttonPosition) {
         this.buttonPosition = buttonPosition;
+        return this;
     }
 
     public int getButtonAlignment() {
@@ -196,9 +198,11 @@ public class ListProperty<T> extends AbstractProperty {
      *
      * @param buttonAlignment One of FlowLayout's alignment options: LEFT, CENTER, RIGHT, LEADING, or TRAILING
      *                        from the FlowLayout class.
+     * @return This ListProperty, for method chaining.
      */
-    public void setButtonAlignment(int buttonAlignment) {
+    public ListProperty<T> setButtonAlignment(int buttonAlignment) {
         this.buttonAlignment = buttonAlignment;
+        return this;
     }
 
     public int getButtonHgap() {
@@ -208,11 +212,10 @@ public class ListProperty<T> extends AbstractProperty {
     /**
      * If the ListField generated from this property is to include buttons,
      * this sets the horizontal gap between those buttons (requires a FormFieldGenerationListener to add buttons).
-     *
-     * @param buttonHgap The horizontal gap in pixels.
      */
-    public void setButtonHgap(int buttonHgap) {
+    public ListProperty<T> setButtonHgap(int buttonHgap) {
         this.buttonHgap = buttonHgap;
+        return this;
     }
 
     public int getButtonVgap() {
@@ -225,8 +228,9 @@ public class ListProperty<T> extends AbstractProperty {
      *
      * @param buttonVgap The vertical gap in pixels.
      */
-    public void setButtonVgap(int buttonVgap) {
+    public ListProperty setButtonVgap(int buttonVgap) {
         this.buttonVgap = buttonVgap;
+        return this;
     }
 
     /**
@@ -243,14 +247,15 @@ public class ListProperty<T> extends AbstractProperty {
 
     /**
      * If the ListField generated from this property is to include buttons,
-     * this sets the preferred width of those buttons (requires a FormFieldGenerationListener to add buttons).
+     * this sets the preferred dimensions of those buttons (requires a FormFieldGenerationListener to add buttons).
      *
      * @param buttonPreferredWidth  The preferred width in pixels, or 0 to use the button's default preferred width.
      * @param buttonPreferredHeight The preferred height in pixels, or 0 to use the button's default preferred height.
      */
-    public void setButtonPreferredDimensions(int buttonPreferredWidth, int buttonPreferredHeight) {
+    public ListProperty<T> setButtonPreferredDimensions(int buttonPreferredWidth, int buttonPreferredHeight) {
         this.buttonPreferredWidth = buttonPreferredWidth;
         this.buttonPreferredHeight = buttonPreferredHeight;
+        return this;
     }
 
     @Override

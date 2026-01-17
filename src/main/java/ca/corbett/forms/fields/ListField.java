@@ -336,8 +336,8 @@ public class ListField<T> extends FormField {
      * Sets the position of the button panel (above or below the list).
      */
     public ListField<T> setButtonPosition(ButtonPosition position) {
-        if (position == buttonPosition) {
-            return this; // no change
+        if (position == buttonPosition || position == null) {
+            return this; // no change or garbage input
         }
 
         // Remove the button panel from its current location:
@@ -363,6 +363,9 @@ public class ListField<T> extends FormField {
      * This will cause the button panel to become visible if it was not already.
      */
     public ListField<T> addButton(Action action) {
+        if (action == null) {
+            throw new IllegalArgumentException("Action cannot be null");
+        }
         JButton button = new JButton(action);
         // Apply any preferred size previously set for this button panel:
         if (preferredButtonSize != null) {
@@ -370,6 +373,9 @@ public class ListField<T> extends FormField {
         }
 
         buttonPanel.add(button);
+
+        // The new button should have the enabled state of the ListField:
+        button.setEnabled(isEnabled());
 
         // May require a layout update:
         getFieldComponent().revalidate();
@@ -446,7 +452,7 @@ public class ListField<T> extends FormField {
     }
 
     /**
-     * Gets the vertical gap between button rows.
+     * Gets the vertical gap between the list and the button panel.
      */
     public int getButtonVgap() {
         return layout.getVgap();
