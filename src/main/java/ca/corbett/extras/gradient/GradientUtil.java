@@ -12,12 +12,13 @@ import java.awt.image.BufferedImage;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
  */
-public final class GradientUtil {
+public class GradientUtil {
 
     /**
-     * Irrelevant constructor.
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
      */
-    private GradientUtil() {
+    protected GradientUtil() {
     }
 
     /**
@@ -307,24 +308,23 @@ public final class GradientUtil {
         graphics.setClip(oldClip);
     }
 
-    private static void fillHorizontalGradient(Graphics2D graphics, int x1, int y1, int x2, int y2, Color color1, Color color2) {
+    protected static void fillHorizontalGradient(Graphics2D graphics, int x1, int y1, int x2, int y2, Color color1, Color color2) {
         graphics.setPaint(new GradientPaint(x1, y1, color1, x2, y1, color2));
         graphics.fillRect(x1, y1, x2 - x1, y2 - y1);
     }
 
-    private static void fillVerticalGradient(Graphics2D graphics, int x1, int y1, int x2, int y2, Color color1, Color color2) {
+    protected static void fillVerticalGradient(Graphics2D graphics, int x1, int y1, int x2, int y2, Color color1, Color color2) {
         graphics.setPaint(new GradientPaint(x1, y1, color1, x1, y2, color2));
         graphics.fillRect(x1, y1, x2 - x1, y2 - y1);
     }
 
-    private static void fillDiagonal1Gradient(Graphics2D graphics, int x1, int y1, int x2, int y2, Color color1, Color color2) {
+    protected static void fillDiagonal1Gradient(Graphics2D graphics, int x1, int y1, int x2, int y2, Color color1, Color color2) {
         graphics.setPaint(new GradientPaint(x1, y1, color1, x2, y2, color2));
         graphics.fillRect(x1, y1, x2 - x1, y2 - y1);
     }
 
-    private static void fillDiagonal2Gradient(Graphics2D graphics, int x1, int y1, int x2, int y2, Color color1, Color color2) {
+    protected static void fillDiagonal2Gradient(Graphics2D graphics, int x1, int y1, int x2, int y2, Color color1, Color color2) {
         graphics.setPaint(new GradientPaint(x1, y2, color1, x2, y1, color2));
         graphics.fillRect(x1, y1, x2 - x1, y2 - y1);
     }
-
 }

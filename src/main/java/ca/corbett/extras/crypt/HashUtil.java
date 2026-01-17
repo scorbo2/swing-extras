@@ -6,9 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import java.util.HexFormat;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +16,7 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-08-29 (originally written for ICE and then generalized much later)
  */
-public final class HashUtil {
+public class HashUtil {
 
     private static final Logger log = Logger.getLogger(HashUtil.class.getName());
 
@@ -42,27 +40,31 @@ public final class HashUtil {
         }
     }
 
-    private final static Map<HashType, MessageDigest> hashMap;
-
-    private HashUtil() {
+    /**
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
+     */
+    protected HashUtil() {
     }
 
-    static {
-        hashMap = new HashMap<>();
-        for (HashType hashType : HashType.values()) {
-            // Nest the try/catch inside the loop so that if one
-            // fails, the others still have a chance to load:
-            try {
-                hashMap.put(hashType, MessageDigest.getInstance(hashType.toString()));
-            }
-            catch (NoSuchAlgorithmException nsae) {
-                // The above are all guaranteed to us by the java standard, so this *should* be okay
-                log.log(Level.SEVERE, "Digest algorithm not available: " + hashType, nsae);
-            }
+    /**
+     * Returns a new MessageDigest instance for the given HashType.
+     * Every algorithm in HashType is guaranteed to be available in any standard
+     * Java implementation, so this method should always succeed unless something
+     * is very wrong with the runtime environment.
+     *
+     * @param hashType The HashType to use.
+     * @return A new MessageDigest instance for the given HashType, or null if the algorithm is not available.
+     */
+    public static MessageDigest getMessageDigest(final HashType hashType) {
+        try {
+            return MessageDigest.getInstance(hashType.toString());
         }
-        for (MessageDigest digest : hashMap.values()) {
-            digest.reset();
+        catch (NoSuchAlgorithmException nsae) {
+            // Everything in HashType is guaranteed to us by the java standard, so this *should* be okay
+            log.log(Level.SEVERE, "Digest algorithm not available: " + hashType, nsae);
         }
+        return null;
     }
 
     /**
@@ -73,7 +75,7 @@ public final class HashUtil {
      * @return A hash of the input array using the specified digest algorithm.
      */
     public static byte[] getHash(final HashType hashType, final byte[] data) {
-        MessageDigest digest = hashMap.get(hashType);
+        MessageDigest digest = getMessageDigest(hashType);
         return digest.digest(data);
     }
 
@@ -100,7 +102,7 @@ public final class HashUtil {
             throw new IOException("File " + file.getName() + " does not exist or cannot be read.");
         }
         try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(file))) {
-            MessageDigest digest = hashMap.get(hashType);
+            MessageDigest digest = getMessageDigest(hashType);
             byte[] buffer = new byte[1024 * 1024 * 4]; // 4MB buffer
             int len;
             while ((len = is.read(buffer)) != -1) {

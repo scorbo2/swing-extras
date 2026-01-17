@@ -29,15 +29,15 @@ import java.util.Locale;
 /**
  * Contains generic methods for dealing with images and image data.
  *
- * @author steve
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-09-01
  */
-public final class ImageUtil {
+public class ImageUtil {
 
     /**
      * JPEG compression quality to use. *
      */
-    private static final float COMPRESSION_QUALITY = 0.95f;
+    protected static final float COMPRESSION_QUALITY = 0.95f;
 
     /**
      * Internal handle on the ImageWriter to use. *
@@ -50,15 +50,16 @@ public final class ImageUtil {
     private static ImageWriteParam imageWriteParam = null;
 
     /**
-     * Utility classes have no public constructor. *
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
      */
-    private ImageUtil() {
+    protected ImageUtil() {
     }
 
     /**
      * Internal method to create our internal image utilities.
      */
-    private static void createImageWriter() {
+    protected static void createImageWriter() {
         Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName("jpg");
         if (iter.hasNext()) {
             imageWriter = iter.next();
@@ -113,7 +114,7 @@ public final class ImageUtil {
      * @return The input ImageIcon if it appears valid.
      * @throws IOException If the image appears to be invalid.
      */
-    static ImageIcon validateImageIcon(final ImageIcon image) throws IOException {
+    protected static ImageIcon validateImageIcon(final ImageIcon image) throws IOException {
         // ImageIcon's getImageLoadStatus() method seems to be a bit flakey...
         // Some GIF files will return status ABORTED even though they display perfectly fine.
         // If we reject those here, we may end up rejecting valid images.

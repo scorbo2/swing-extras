@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
-public final class ImageTextUtil {
+public class ImageTextUtil {
 
     private static final Logger logger = Logger.getLogger(ImageTextUtil.class.getName());
 
@@ -65,7 +65,11 @@ public final class ImageTextUtil {
     public static final Color DEFAULT_OUTLINE_COLOR = Color.BLACK;
     public static final float DEFAULT_OUTLINE_WIDTH_FACTOR = 8f;
 
-    private ImageTextUtil() {
+    /**
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
+     */
+    protected ImageTextUtil() {
     }
 
     /**
@@ -316,7 +320,7 @@ public final class ImageTextUtil {
      * @param lineLength The length at which the given text will be split.
      * @return A List containing one or more lines generated from the line wrapping.
      */
-    private static List<String> handleLineWrap(String text, int lineLength) {
+    protected static List<String> handleLineWrap(String text, int lineLength) {
         List<String> lines = new ArrayList<>();
         return handleLineWrap(lines, text, lineLength);
     }
@@ -330,7 +334,7 @@ public final class ImageTextUtil {
      * @param lineLength The length at which the line will be line-wrapped.
      * @return The modified input List.
      */
-    private static List<String> handleLineWrap(List<String> lines, String text, int lineLength) {
+    protected static List<String> handleLineWrap(List<String> lines, String text, int lineLength) {
         if (text.length() > lineLength) {
             // Try to break on a space character:
             int splitIndex = lineLength;
@@ -364,7 +368,7 @@ public final class ImageTextUtil {
      * @param bottom The bottom edge of the text zone.
      * @return A font point size appropriate for the given text in the given boundary.
      */
-    private static int computeFontSize(Font font, List<String> text, Graphics2D g, int left, int top, int right, int bottom) {
+    protected static int computeFontSize(Font font, List<String> text, Graphics2D g, int left, int top, int right, int bottom) {
         int fontPointSize = 150; // huge default, we'll shrink it down to fit
         int boundWidth = right - left;
         int boundHeight = bottom - top;
@@ -408,7 +412,7 @@ public final class ImageTextUtil {
         return fontPointSize;
     }
 
-    private static String findLongestLine(List<String> lines) {
+    protected static String findLongestLine(List<String> lines) {
         // Lines may have different character lengths. This is a problem because if each line
         // is sized independently, it will result in lines having different font sizes, because
         // each line is scaled to fit the available width within the given Rectangle.
