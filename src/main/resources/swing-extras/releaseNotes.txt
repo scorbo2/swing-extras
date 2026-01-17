@@ -24,6 +24,7 @@ Version 2.7.0 [TODO release date here] - Maintenance release
   #245 - ListField: listener convenience methods; better javadoc
   #244 - LabelProperty: add ability to set field label text
   #242 - Added more VersionStringComparator convenience methods
+  #241 - Mention the swing-extras archetype in the README
   #240 - ListField: add support for action buttons
   #239 - PropertiesManager: add option to set border margin
   #238 - EnumProperty: remove useNamesInsteadOfLabels option
