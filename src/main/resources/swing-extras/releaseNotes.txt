@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.7.0 [TODO release date here] - Maintenance release
+  #287 - MultiProgressDialog: make label truncation configurable
   #284 - Refactor resource handling in swing-forms
   #276 - MultiProgressDialog: make progress label configurable
   #275 - Fix intermittent bug in SingleInstanceManager test

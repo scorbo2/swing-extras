@@ -110,13 +110,31 @@ public final class MultiProgressDialog extends JDialog {
      */
     public static final String DEFAULT_PROGRESS_FORMAT = "[%s of %t] %m";
 
-    private static final int LABEL_LENGTH_CUTOFF = 50;
+    /**
+     * If you really don't like the new 2.7 default format, you can use this
+     * legacy format string to get the old behavior.
+     */
+    public static final String LEGACY_PROGRESS_FORMAT = "%m (%s of %t)";
+
+    /**
+     * Long progress messages are truncated at a fixed length to avoid rendering
+     * problems with very large JLabels on the dialog. By default, we truncate them
+     * after a certain length (TruncationMode.END). You can opt to truncate
+     * from the start instead by using TruncationMode.START.
+     */
+    public enum TruncationMode {
+        START,
+        END
+    }
+
+    static final int LABEL_LENGTH_CUTOFF = 50;
     private LabelField majorProgressLabel;
     private LabelField minorProgressLabel;
     private JProgressBar majorProgressBar;
     private JProgressBar minorProgressBar;
     private long initialShowDelayMS;
     private boolean isCanceled;
+    private TruncationMode truncationMode;
     private volatile String formatString = DEFAULT_PROGRESS_FORMAT;
 
     /**
@@ -135,6 +153,7 @@ public final class MultiProgressDialog extends JDialog {
         resetProgress();
         setLocationRelativeTo(owner);
         initialShowDelayMS = 0;
+        truncationMode = TruncationMode.END; // default
     }
 
     /**
@@ -269,7 +288,7 @@ public final class MultiProgressDialog extends JDialog {
      */
     public void setMajorProgress(int progress, String message) {
         if (message != null) {
-            majorProgressLabel.setText(truncString(message));
+            majorProgressLabel.setText(truncString(message, LABEL_LENGTH_CUTOFF));
         }
         majorProgressBar.setValue(progress);
     }
@@ -293,7 +312,7 @@ public final class MultiProgressDialog extends JDialog {
      */
     public void setMinorProgress(int progress, String message) {
         if (message != null) {
-            minorProgressLabel.setText(truncString(message));
+            minorProgressLabel.setText(truncString(message, LABEL_LENGTH_CUTOFF));
         }
         minorProgressBar.setValue(progress);
     }
@@ -308,18 +327,108 @@ public final class MultiProgressDialog extends JDialog {
     }
 
     /**
-     * Truncates the given string to a size of LABEL_LENGTH_CUTOFF if necessary.
+     * Shorthand for truncString(s, LABEL_LENGTH_CUTOFF)
      *
      * @param s The string to truncate.
-     * @return The truncated string, or null if input was null.
+     * @return The truncated string, or null if input was null. Length of LABEL_LENGTH_CUTOFF or less, including "...".
      */
-    private String truncString(String s) {
+    String truncString(String s) {
+        return truncString(s, LABEL_LENGTH_CUTOFF);
+    }
+
+    /**
+     * Truncates the given string to the given length limit, if necessary.
+     * We add a "..." to indicate truncation. This is accounted for in the
+     * length of the returned string. That is, the length of the returned
+     * string will never exceed the given limit, even if we add "..." to it.
+     *
+     * @param s The string to truncate.
+     * @param limit The maximum length of the string. Cannot exceed LABEL_LENGTH_CUTOFF.
+     * @return The truncated string, or null if input was null. Length of "limit" or less, including the "...".
+     */
+    String truncString(String s, int limit) {
+        // Our resulting string, including our ellipsis, must fit within the limit:
+        final String overageMarker = "...";
+
+        // But make sure we don't end up with a negative limit:
+        if (limit < 0) {
+            limit = 0;
+        }
+
+        // Also, ensure that our given limit never exceeds our built-in max:
+        if (limit > LABEL_LENGTH_CUTOFF) {
+            limit = LABEL_LENGTH_CUTOFF;
+        }
+
+        // You give me null, you get null:
         if (s == null) {
             return null;
         }
-        return (s.length() > LABEL_LENGTH_CUTOFF)
-                ? s.substring(0, LABEL_LENGTH_CUTOFF) + "..."
-                : s;
+
+        // If our message isn't long enough to warrant this, then it's fine as-is:
+        if (s.length() <= limit) {
+            return s;
+        }
+
+        // Adjust for the ellipsis that we will add:
+        // (i.e. the TOTAL length of the returned string must be <= limit)
+        limit = limit - overageMarker.length();
+
+        // Trim the correct end of the string:
+        return switch (truncationMode) {
+            case START -> "..." + s.substring(s.length() - limit);
+            case END -> s.substring(0, limit) + "...";
+        };
+    }
+
+    /**
+     * Uses the current formatString to format the given progress message.
+     * The given msg may be truncated if it exceeds the length limit.
+     * We add a "..." to the progress message if truncation occurs.
+     * This will never result in the step counters being truncated,
+     * only the log message itself.
+     *
+     * @param msg         The progress message, which contains formatting tags to be replaced.
+     * @param currentStep The current numeric step (1-based).
+     * @param totalSteps  The total number of steps.
+     * @return A formatted progress message, of length LABEL_LENGTH_CUTOFF or less.
+     */
+    String formatMessage(String msg, int currentStep, int totalSteps) {
+        final String formatString = getFormatString();
+
+        // The logic in here is a bit more complicated than it seems like it needs to be,
+        // but we have to be careful when truncating messages, so that we don't
+        // truncate %s (currentStep) and %t (totalSteps) in the format string.
+        // Ideally, we ONLY want to truncate the %m part of the message.
+        //
+        // Example: "[1 of 10] This is a very long message that might need truncation"
+        // Should never become: "... a very long message that might need truncation" (50 chars)
+        // But rather: "[1 of 10] ...ng message that might need truncation" (50 chars)
+        //
+        // And likewise when using TruncationMode.END with the legacy format:
+        // Example: "This is a very long message that might need truncation (1 of 10)"
+        // Should never become: "This is a very long message that might need tru..." (50 chars)
+        // But rather: "This is a very long message that migh... (1 of 10)" (50 chars)
+
+        // Start by substituting in the step numbers, so that we can measure the length:
+        String intermediateMsg = StringFormatter.format(formatString, key -> switch (key) {
+            case 's' -> Integer.toString(currentStep);
+            case 't' -> Integer.toString(totalSteps);
+            default -> null;
+        });
+        int intermediateLength = intermediateMsg.length() - 2; // subtract 2 for %m, which we will replace later
+        int totalLength = intermediateLength + msg.length(); // how long will our result be?
+
+        // Now figure out if we're going to exceed the length limit:
+        int overage = totalLength - LABEL_LENGTH_CUTOFF;
+        if (overage > 0) {
+            // Our message is too long, so we need to truncate it:
+            msg = truncString(msg, msg.length() - overage);
+        }
+        final String finalMessage = msg;
+
+        // Now we can replace %m with our possibly-truncated message:
+        return StringFormatter.format(intermediateMsg, key -> key == 'm' ? finalMessage : null);
     }
 
     /**
@@ -336,6 +445,24 @@ public final class MultiProgressDialog extends JDialog {
      */
     public void setFormatString(String formatString) {
         this.formatString = (formatString != null) ? formatString : DEFAULT_PROGRESS_FORMAT;
+    }
+
+    /**
+     * Returns the current truncation mode for long progress messages.
+     */
+    public TruncationMode getTruncationMode() {
+        return truncationMode;
+    }
+
+    /**
+     * The default behavior is to truncate long progress messages at the end.
+     * You can change this to truncate at the start instead.
+     * Example: "some unreasonably long message" can either become
+     * "some unreasonably long mes..." with TruncationMode.END, or it can
+     * become "...nably long message" with TruncationMode.START.
+     */
+    public void setTruncationMode(TruncationMode truncationMode) {
+        this.truncationMode = (truncationMode != null) ? truncationMode : TruncationMode.END;
     }
 
     /**
@@ -471,13 +598,7 @@ public final class MultiProgressDialog extends JDialog {
         @Override
         public boolean majorProgressUpdate(int majorStep, int totalMinorSteps, String message) {
             this.totalMinorSteps = totalMinorSteps;
-            String formatString = progressDialog.getFormatString();
-            final String formatted = StringFormatter.format(formatString, key -> switch (key) {
-                case 'm' -> message;
-                case 's' -> Integer.toString(majorStep + 1);
-                case 't' -> Integer.toString(totalMajorSteps);
-                default -> null;
-            });
+            String formatted = progressDialog.formatMessage(message, majorStep + 1, totalMajorSteps);
             SwingUtilities.invokeLater(() -> {
                 showDialogIfNeeded();
                 progressDialog.setMinorProgressBounds(0, totalMinorSteps);
@@ -489,13 +610,7 @@ public final class MultiProgressDialog extends JDialog {
 
         @Override
         public boolean minorProgressUpdate(int majorStep, int minorStep, String message) {
-            String formatString = progressDialog.getFormatString();
-            final String formatted = StringFormatter.format(formatString, key -> switch (key) {
-                case 'm' -> message;
-                case 's' -> Integer.toString(minorStep + 1);
-                case 't' -> Integer.toString(totalMinorSteps);
-                default -> null;
-            });
+            String formatted = progressDialog.formatMessage(message, minorStep + 1, totalMinorSteps);
             SwingUtilities.invokeLater(() -> {
                 showDialogIfNeeded();
                 progressDialog.setMinorProgress(minorStep + 1, formatted);
@@ -583,13 +698,7 @@ public final class MultiProgressDialog extends JDialog {
 
         @Override
         public boolean progressUpdate(int currentStep, String message) {
-            String formatString = progressDialog.getFormatString();
-            final String formatted = StringFormatter.format(formatString, key -> switch (key) {
-                case 'm' -> message;
-                case 's' -> Integer.toString(currentStep + 1);
-                case 't' -> Integer.toString(totalSteps);
-                default -> null;
-            });
+            String formatted = progressDialog.formatMessage(message, currentStep + 1, totalSteps);
             SwingUtilities.invokeLater(() -> {
                 showDialogIfNeeded();
                 progressDialog.setMajorProgress(currentStep + 1, formatted);
