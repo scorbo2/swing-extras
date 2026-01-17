@@ -229,7 +229,7 @@ public class KeyStrokeManager {
      * Accepts shortcuts in the format: "ctrl+P", "alt+F4", "ctrl+shift+S", etc.
      * If the given shortcut already has an action registered, the new action will be added
      * to the list of actions to be executed when that shortcut is pressed.
-     * If the given shortcut is invalid, an InvalidKeyStrokeException will be thrown.
+     * If the given shortcut is invalid, an IllegalArgumentException will be thrown.
      * <p>
      * IllegalArgumentException will be thrown if any parameter is null.
      * </p>
@@ -251,7 +251,7 @@ public class KeyStrokeManager {
      * Accepts shortcuts in the format: "ctrl+P", "alt+F4", "ctrl+shift+S", etc.
      * If the given shortcut already has an action registered, the new action will be added
      * to the list of actions to be executed when that shortcut is pressed.
-     * If the given shortcut is invalid, an InvalidKeyStrokeException will be thrown.
+     * If the given shortcut is invalid, an IllegalArgumentException will be thrown.
      * <p>
      * IllegalArgumentException will be thrown if any parameter is null.
      * </p>

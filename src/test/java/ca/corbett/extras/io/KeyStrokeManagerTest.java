@@ -283,7 +283,7 @@ class KeyStrokeManagerTest {
 
         try {
             keyManager.registerHandler("thisIsNotAValidKeyStroke!", action);
-            fail("Expected InvalidKeyStrokeException for invalid keystroke, but didn't get one!");
+            fail("Expected IllegalArgumentException for invalid keystroke, but didn't get one!");
         }
         catch (IllegalArgumentException ignored) {
             // Expected exception
@@ -323,7 +323,7 @@ class KeyStrokeManagerTest {
             // WHEN we ask if they are available:
             try {
                 boolean available = keyManager.isAvailable(ks);
-                fail("Expected InvalidKeyStrokeException for invalid keystroke: " + ks +
+                fail("Expected IllegalArgumentException for invalid keystroke: " + ks +
                              ", but got availability: " + available);
             }
             catch (IllegalArgumentException ignored) {
@@ -346,7 +346,7 @@ class KeyStrokeManagerTest {
             // WHEN we ask if they have handlers:
             try {
                 boolean hasHandlers = keyManager.hasHandlers(ks);
-                fail("Expected InvalidKeyStrokeException for invalid keystroke: " + ks +
+                fail("Expected IllegalArgumentException for invalid keystroke: " + ks +
                              ", but got hasHandlers: " + hasHandlers);
             }
             catch (IllegalArgumentException ignored) {
@@ -369,7 +369,7 @@ class KeyStrokeManagerTest {
             // WHEN we try to get actions for them:
             try {
                 keyManager.getActionsForKeyStroke(ks);
-                fail("Expected InvalidKeyStrokeException for invalid keystroke: " + ks);
+                fail("Expected IllegalArgumentException for invalid keystroke: " + ks);
             }
             catch (IllegalArgumentException ignored) {
                 // Expected exception
