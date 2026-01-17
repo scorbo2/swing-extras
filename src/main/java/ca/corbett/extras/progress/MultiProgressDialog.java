@@ -462,7 +462,7 @@ public final class MultiProgressDialog extends JDialog {
      * become "...nably long message" with TruncationMode.START.
      */
     public void setTruncationMode(TruncationMode truncationMode) {
-        this.truncationMode = truncationMode;
+        this.truncationMode = (truncationMode != null) ? truncationMode : TruncationMode.END;
     }
 
     /**
