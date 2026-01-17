@@ -8,8 +8,16 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 
 /**
+ * This class is horribly broken and should not be used by anyone, ever.
+ * It was well-intentioned but ultimately harmful, and has caused many bugs.
+ * <b>This class will be removed in a future version.</b>
+ * See <a href="https://github.com/scorbo2/swing-extras/issues/251">issue 251</a>
+ * for more details. Legacy documentation is presented below.
+ * <hr>
+ * <p>
  * The way JTextComponent handles change events is infuriating - this class
  * aims to fix some of the wonkiness and make it more natural to work with.
+ * </p>
  * <P>
  * <b>The Problem:</b> the only way to listen for changes in a JTextComponent
  *     is to add a DocumentListener, which gives you a notification when
@@ -46,7 +54,9 @@ import javax.swing.text.JTextComponent;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a> (with help from claude.ai!)
  * @since swing-extras 2.4
+ * @deprecated This class is deprecated and will be removed in a future release.
  */
+@Deprecated(since = "swing-extras 2.7", forRemoval = true)
 public class CoalescingDocumentListener implements DocumentListener {
 
     public static final int DELAY_MS = 25;

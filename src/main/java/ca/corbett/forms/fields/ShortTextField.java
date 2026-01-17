@@ -1,10 +1,11 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.extras.CoalescingDocumentListener;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.NonBlankFieldValidator;
 
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,7 +20,7 @@ import java.util.Objects;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-23
  */
-public class ShortTextField extends FormField {
+public class ShortTextField extends FormField implements DocumentListener {
 
     /**
      * Creates a ShortTextField with the given field label and the given number of columns.
@@ -28,9 +29,7 @@ public class ShortTextField extends FormField {
         fieldLabel.setText(label);
         fieldComponent = new JTextField(cols);
         fieldComponent.setFont(getDefaultFont());
-        CoalescingDocumentListener listener = new CoalescingDocumentListener((JTextField)fieldComponent,
-                                                                             e -> fireValueChangedEvent());
-        ((JTextField)fieldComponent).getDocument().addDocumentListener(listener);
+        ((JTextField)fieldComponent).getDocument().addDocumentListener(this);
     }
 
     /**
@@ -46,11 +45,11 @@ public class ShortTextField extends FormField {
      * Sets the text in this field. Will overwrite any previous text.
      */
     public ShortTextField setText(String text) {
-        if (Objects.equals(getText(), text)) {
-            return this; // reject no-op changes
-        }
         if (text == null) {
             text = ""; // if null, assume empty string
+        }
+        if (Objects.equals(getText(), text)) {
+            return this; // reject no-op changes
         }
         ((JTextField)fieldComponent).setText(text);
         return this;
@@ -113,5 +112,27 @@ public class ShortTextField extends FormField {
         for (FieldValidator<? extends FormField> validator : foundList) {
             fieldValidators.remove(validator);
         }
+    }
+
+    // DocumentListener interface stuff below this line --------------------------------
+    //
+    // Yeah, it's horribly broken, but CoalescingDocumentListener is even worse,
+    // and will be marked as deprecated in 2.7 (nuked for all time in 2.8).
+    // So, until a better solution appears, we're stuck with DocumentListener.
+    // https://github.com/scorbo2/swing-extras/issues/251 for the details.
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
     }
 }
