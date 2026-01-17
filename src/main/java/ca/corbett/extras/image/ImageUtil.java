@@ -50,7 +50,8 @@ public class ImageUtil {
     protected static ImageWriteParam imageWriteParam = null;
 
     /**
-     * Utility classes have no public constructor. *
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
      */
     protected ImageUtil() {
     }

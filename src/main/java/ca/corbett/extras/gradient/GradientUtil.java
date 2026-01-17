@@ -14,6 +14,10 @@ import java.awt.image.BufferedImage;
  */
 public class GradientUtil {
 
+    /**
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
+     */
     protected GradientUtil() {
     }
 

@@ -44,6 +44,10 @@ public class HashUtil {
 
     protected final static Map<HashType, MessageDigest> hashMap;
 
+    /**
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
+     */
     protected HashUtil() {
     }
 

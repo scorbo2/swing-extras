@@ -34,6 +34,10 @@ public class FileSystemUtil {
             Pattern.CASE_INSENSITIVE
     );
 
+    /**
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
+     */
     protected FileSystemUtil() {
     }
 

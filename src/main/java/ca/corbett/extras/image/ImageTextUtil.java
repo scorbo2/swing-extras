@@ -65,6 +65,10 @@ public class ImageTextUtil {
     public static final Color DEFAULT_OUTLINE_COLOR = Color.BLACK;
     public static final float DEFAULT_OUTLINE_WIDTH_FACTOR = 8f;
 
+    /**
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
+     */
     protected ImageTextUtil() {
     }
 
