@@ -1,11 +1,21 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.extras.properties.PropertiesDialog;
+
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.Border;
 import javax.swing.event.ListDataListener;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.util.List;
 
 /**
@@ -28,11 +38,41 @@ import java.util.List;
  * </p>
  * <pre>myListField.addListDataListener(...);</pre>
  *
+ * <h2>Adding action buttons to a ListField</h2>
+ * <p>
+ *     You can add action buttons to the ListField by using the addButton(Action) method.
+ *     This works very similarly to ButtonField, in that you can control the alignment,
+ *     hgap, and vgap of the button panel. ListField offers the option of placing the
+ *     button panel either below the list (by default) or above the list, via the
+ *     setButtonPosition() method. You can control the preferred size of buttons
+ *     added to the button panel via the setButtonPreferredSize() method.
+ * </p>
+ * <p>
+ *     There are some built-in actions included with swing-extras that are useful
+ *     for ListFields, such as ListItemRemoveAction, ListItemMoveAction, and
+ *     ListItemClearAction. These are found in the ca.corbett.forms.actions package.
+ *     Adding your own actions is very easy - you can use any Action instance,
+ *     but you should consider extending the EnhancedAction class to make
+ *     setting things like icons and tooltips easier. See the example actions
+ *     in the built-in demo application on the "Forms: lists and panels" tab!
+ * </p>
+ *
  * @since swing-extras 2.3
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 public class ListField<T> extends FormField {
 
+    public static final ButtonPosition DEFAULT_BUTTON_POSITION = ButtonPosition.BOTTOM;
+    public static final int DEFAULT_BUTTON_ALIGNMENT = FlowLayout.LEFT;
+    public static final int DEFAULT_BUTTON_HGAP = 4;
+    public static final int DEFAULT_BUTTON_VGAP = 4;
+
+    public enum ButtonPosition {TOP, BOTTOM}
+
+    private JPanel buttonPanel;
+    private Dimension preferredButtonSize = null;
+    private FlowLayout layout;
+    private ButtonPosition buttonPosition;
     private final JList<T> list;
     private final DefaultListModel<T> listModel;
     private boolean shouldExpand = false;
@@ -54,10 +94,10 @@ public class ListField<T> extends FormField {
         fieldLabel.setText(label);
         this.listModel = listModel;
         list = new JList<>(listModel);
-        list.setVisibleRowCount(4);
-        list.setFixedCellWidth(100);
+        list.setVisibleRowCount(4); // arbitrary default
+        list.setFixedCellWidth(100); // arbitrary default
         list.setFont(getDefaultFont());
-        fieldComponent = new JScrollPane(list);
+        fieldComponent = buildComponent();
 
         // ListField is generally intended to allow the user to select zero
         // or more items out of a static list of items. Therefore, our "value"
@@ -128,6 +168,9 @@ public class ListField<T> extends FormField {
     public FormField setEnabled(boolean isEnabled) {
         super.setEnabled(isEnabled);
         list.setEnabled(isEnabled);
+        for (int i = 0; i < buttonPanel.getComponentCount(); i++) {
+            buttonPanel.getComponent(i).setEnabled(isEnabled);
+        }
         return this;
     }
 
@@ -280,6 +323,174 @@ public class ListField<T> extends FormField {
     @Override
     public boolean shouldExpand() {
         return shouldExpand;
+    }
+
+    /**
+     * Gets the position of the button panel (above or below the list).
+     */
+    public ButtonPosition getButtonPosition() {
+        return buttonPosition;
+    }
+
+    /**
+     * Sets the position of the button panel (above or below the list).
+     */
+    public ListField<T> setButtonPosition(ButtonPosition position) {
+        if (position == buttonPosition || position == null) {
+            return this; // no change or garbage input
+        }
+
+        // Remove the button panel from its current location:
+        getFieldComponent().remove(buttonPanel);
+
+        // Re-add it in the new location:
+        switch (position) {
+            case TOP -> getFieldComponent().add(buttonPanel, BorderLayout.NORTH);
+            case BOTTOM -> getFieldComponent().add(buttonPanel, BorderLayout.SOUTH);
+        }
+
+        buttonPosition = position;
+
+        // May require a layout update:
+        getFieldComponent().revalidate();
+        getFieldComponent().repaint();
+
+        return this;
+    }
+
+    /**
+     * Adds an Action to the button panel.
+     * This will cause the button panel to become visible if it was not already.
+     */
+    public ListField<T> addButton(Action action) {
+        if (action == null) {
+            throw new IllegalArgumentException("Action cannot be null");
+        }
+        JButton button = new JButton(action);
+        // Apply any preferred size previously set for this button panel:
+        if (preferredButtonSize != null) {
+            button.setPreferredSize(preferredButtonSize);
+        }
+
+        buttonPanel.add(button);
+
+        // The new button should have the enabled state of the ListField:
+        button.setEnabled(isEnabled());
+
+        // May require a layout update:
+        getFieldComponent().revalidate();
+        getFieldComponent().repaint();
+
+        return this;
+    }
+
+    /**
+     * Allows callers to set a border on the button panel. The default is no border.
+     */
+    public ListField<T> setButtonPanelBorder(Border border) {
+        buttonPanel.setBorder(border);
+        return this;
+    }
+
+    /**
+     * Gets the preferred size of buttons in the button panel, or null if buttons
+     * should size to their content.
+     */
+    public Dimension getButtonPreferredSize() {
+        return preferredButtonSize;
+    }
+
+    /**
+     * Allow changing the preferred size of buttons in the button panel.
+     * By default, buttons will size to their content.
+     */
+    public ListField<T> setButtonPreferredSize(Dimension dim) {
+        // Update any existing buttons in the panel:
+        boolean anyWereUpdated = false;
+        for (int i = 0; i < buttonPanel.getComponentCount(); i++) {
+            if (buttonPanel.getComponent(i) instanceof JButton) {
+                buttonPanel.getComponent(i).setPreferredSize(dim);
+                anyWereUpdated = true;
+            }
+        }
+
+        // Update the UI if we changed any button sizes:
+        if (anyWereUpdated) {
+            // revalidate/repaint the whole wrapper panel, just to be safe:
+            getFieldComponent().revalidate();
+            getFieldComponent().repaint();
+        }
+
+        // Now save this value for any future buttons added to the panel:
+        preferredButtonSize = dim;
+
+        return this;
+    }
+
+    /**
+     * One of FlowLayout's alignment options: LEFT, CENTER, RIGHT, LEADING, or TRAILING
+     * from the FlowLayout class.
+     */
+    public int getButtonAlignment() {
+        return layout.getAlignment();
+    }
+
+    /**
+     * One of FlowLayout's alignment options: LEFT, CENTER, RIGHT, LEADING, or TRAILING
+     * from the FlowLayout class.
+     */
+    public ListField<T> setButtonAlignment(int alignment) {
+        layout.setAlignment(alignment);
+        return this;
+    }
+
+    /**
+     * Gets the horizontal gap between buttons.
+     */
+    public int getButtonHgap() {
+        return layout.getHgap();
+    }
+
+    /**
+     * Gets the vertical gap between the list and the button panel.
+     */
+    public int getButtonVgap() {
+        return layout.getVgap();
+    }
+
+    /**
+     * Sets the horizontal gap between buttons, and between buttons and the edge of the containing panel.
+     */
+    public ListField<T> setButtonHgap(int hgap) {
+        layout.setHgap(hgap);
+        return this;
+    }
+
+    /**
+     * Sets the vertical gap between buttons, and between buttons and the edge of the containing panel.
+     */
+    public ListField<T> setButtonVgap(int vgap) {
+        layout.setVgap(vgap);
+        return this;
+    }
+
+    /**
+     * Invoked internally to build our wrapper panel, our button panel, and our scroll pane.
+     */
+    private JComponent buildComponent() {
+        JPanel wrapperPanel = new JPanel(new BorderLayout());
+
+        // Create an initially empty button panel at the bottom:
+        layout = new FlowLayout(DEFAULT_BUTTON_ALIGNMENT, DEFAULT_BUTTON_HGAP, DEFAULT_BUTTON_VGAP);
+        buttonPanel = new JPanel(layout);
+        buttonPosition = ButtonPosition.BOTTOM;
+        wrapperPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Wrap our list in a scroll pane:
+        JScrollPane scrollPane = PropertiesDialog.buildScrollPane(list);
+        wrapperPanel.add(scrollPane, BorderLayout.CENTER);
+
+        return wrapperPanel;
     }
 
     protected static <T> DefaultListModel<T> createDefaultListModel(List<T> items) {

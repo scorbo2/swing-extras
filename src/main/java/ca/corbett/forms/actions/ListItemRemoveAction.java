@@ -36,6 +36,7 @@ public class ListItemRemoveAction extends EnhancedAction {
     public ListItemRemoveAction(String name, ListField<?> listField) {
         super(name);
         this.listField = listField;
+        setTooltip("Remove selected item(s) from the list");
         if (listField == null) {
             throw new IllegalArgumentException("listField must not be null");
         }
@@ -50,6 +51,7 @@ public class ListItemRemoveAction extends EnhancedAction {
     public ListItemRemoveAction(Icon icon, ListField<?> listField) {
         super(null, icon);
         this.listField = listField;
+        setTooltip("Remove selected item(s) from the list");
         if (listField == null) {
             throw new IllegalArgumentException("listField must not be null");
         }
