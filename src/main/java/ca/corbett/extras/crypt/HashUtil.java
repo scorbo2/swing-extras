@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-08-29 (originally written for ICE and then generalized much later)
  */
-public final class HashUtil {
+public class HashUtil {
 
     private static final Logger log = Logger.getLogger(HashUtil.class.getName());
 
@@ -42,9 +42,9 @@ public final class HashUtil {
         }
     }
 
-    private final static Map<HashType, MessageDigest> hashMap;
+    protected final static Map<HashType, MessageDigest> hashMap;
 
-    private HashUtil() {
+    protected HashUtil() {
     }
 
     static {

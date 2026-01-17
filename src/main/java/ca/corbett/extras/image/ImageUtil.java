@@ -29,36 +29,36 @@ import java.util.Locale;
 /**
  * Contains generic methods for dealing with images and image data.
  *
- * @author steve
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-09-01
  */
-public final class ImageUtil {
+public class ImageUtil {
 
     /**
      * JPEG compression quality to use. *
      */
-    private static final float COMPRESSION_QUALITY = 0.95f;
+    public static final float COMPRESSION_QUALITY = 0.95f;
 
     /**
      * Internal handle on the ImageWriter to use. *
      */
-    private static ImageWriter imageWriter = null;
+    protected static ImageWriter imageWriter = null;
 
     /**
      * Internal handle on the (currently non editable) ImageWriteParam to use. *
      */
-    private static ImageWriteParam imageWriteParam = null;
+    protected static ImageWriteParam imageWriteParam = null;
 
     /**
      * Utility classes have no public constructor. *
      */
-    private ImageUtil() {
+    protected ImageUtil() {
     }
 
     /**
      * Internal method to create our internal image utilities.
      */
-    private static void createImageWriter() {
+    protected static void createImageWriter() {
         Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName("jpg");
         if (iter.hasNext()) {
             imageWriter = iter.next();

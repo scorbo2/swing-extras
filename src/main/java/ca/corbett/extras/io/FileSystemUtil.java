@@ -25,19 +25,16 @@ import java.util.regex.Pattern;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-07-28 (originally written for ICE, later generalized for ca.corbett.util)
  */
-public final class FileSystemUtil {
+public class FileSystemUtil {
 
-    private static final Pattern INVALID_CHARS = Pattern.compile("[^a-zA-Z0-9.-]");
-    private static final Pattern LEADING_DOTS = Pattern.compile("^\\.+");
-    private static final Pattern WINDOWS_RESERVED = Pattern.compile(
+    protected static final Pattern INVALID_CHARS = Pattern.compile("[^a-zA-Z0-9.-]");
+    protected static final Pattern LEADING_DOTS = Pattern.compile("^\\.+");
+    protected static final Pattern WINDOWS_RESERVED = Pattern.compile(
             "^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\\..*)?$",
             Pattern.CASE_INSENSITIVE
     );
 
-    /**
-     * Utility classes have no public constructor.
-     */
-    private FileSystemUtil() {
+    protected FileSystemUtil() {
     }
 
     /**
@@ -119,7 +116,7 @@ public final class FileSystemUtil {
     /**
      * Internally invoked as needed from findFiles to recurse through a directory structure.
      */
-    private static List<File> findFilesRecurse(final File rootDir,
+    protected static List<File> findFilesRecurse(final File rootDir,
                                                final boolean recursive,
                                                final Set<String> extSet,
                                                final FileSearchListener listener,
@@ -309,7 +306,7 @@ public final class FileSystemUtil {
      * @param listener  A FileSearchListener which will receive updates about found dirs.
      * @return An unsorted list of directories.
      */
-    private static List<File> findSubdirectoriesInternal(final File rootDir,
+    protected static List<File> findSubdirectoriesInternal(final File rootDir,
                                                          final boolean recursive,
                                                          final FileSearchListener listener) {
         File[] children = rootDir.listFiles();
