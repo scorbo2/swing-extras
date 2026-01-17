@@ -29,16 +29,6 @@ import java.util.logging.Logger;
 public class KeyStrokeManager {
     private static final Logger log = Logger.getLogger(KeyStrokeManager.class.getName());
 
-    /**
-     * Fired when an invalid shortcut string is supplied to registerHandler().
-     * For example: "Ctrl+Ctrl" or "Shift+FooBar" or "".
-     */
-    public static class InvalidKeyStrokeException extends Exception {
-        public InvalidKeyStrokeException(String message) {
-            super(message);
-        }
-    }
-
     private boolean isDisposed = false;
     private Window window;
     private final Map<KeyStroke, List<Action>> keyMap = new ConcurrentHashMap<>();
@@ -159,11 +149,11 @@ public class KeyStrokeManager {
      *
      * @param keyStroke The String version of the KeyStroke to search for.
      * @return A List of Actions assigned to the KeyStroke. Empty if none found.
-     * @throws InvalidKeyStrokeException if the given keyStroke string is invalid
+     * @throws IllegalArgumentException if the given keyStroke string is invalid
      */
-    public List<Action> getActionsForKeyStroke(String keyStroke) throws InvalidKeyStrokeException {
+    public List<Action> getActionsForKeyStroke(String keyStroke) throws IllegalArgumentException {
         if (!isKeyStrokeValid(keyStroke)) {
-            throw new InvalidKeyStrokeException("getActionsForKeyStroke: invalid keyStroke string: " + keyStroke);
+            throw new IllegalArgumentException("getActionsForKeyStroke: invalid keyStroke string: " + keyStroke);
         }
         return getActionsForKeyStroke(parseKeyStroke(keyStroke));
     }
@@ -203,9 +193,9 @@ public class KeyStrokeManager {
     /**
      * Shorthand for !hasHandlers(keyStroke)
      */
-    public boolean isAvailable(String keyStroke) throws InvalidKeyStrokeException {
+    public boolean isAvailable(String keyStroke) throws IllegalArgumentException {
         if (!isKeyStrokeValid(keyStroke)) {
-            throw new InvalidKeyStrokeException("isAvailable: invalid keyStroke string: " + keyStroke);
+            throw new IllegalArgumentException("isAvailable: invalid keyStroke string: " + keyStroke);
         }
         return !hasHandlers(keyStroke);
     }
@@ -225,11 +215,11 @@ public class KeyStrokeManager {
      *
      * @param keyStroke The String version of the KeyStroke to check.
      * @return true if at least one action is registered for the KeyStroke, false otherwise
-     * @throws InvalidKeyStrokeException If the given keyStroke string is invalid
+     * @throws IllegalArgumentException If the given keyStroke string is invalid
      */
-    public boolean hasHandlers(String keyStroke) throws InvalidKeyStrokeException {
+    public boolean hasHandlers(String keyStroke) throws IllegalArgumentException {
         if (!isKeyStrokeValid(keyStroke)) {
-            throw new InvalidKeyStrokeException("hasHandlers: invalid keyStroke string: " + keyStroke);
+            throw new IllegalArgumentException("hasHandlers: invalid keyStroke string: " + keyStroke);
         }
         return hasHandlers(parseKeyStroke(keyStroke));
     }
@@ -247,11 +237,11 @@ public class KeyStrokeManager {
      * @param keyStroke the String version of the KeyStroke to register
      * @param action    the action to execute when the shortcut is pressed
      * @return this manager, for fluent-style method chaining
-     * @throws InvalidKeyStrokeException if the given shortcut string is invalid
+     * @throws IllegalArgumentException if the given shortcut string is invalid
      */
-    public KeyStrokeManager registerHandler(String keyStroke, Action action) throws InvalidKeyStrokeException {
+    public KeyStrokeManager registerHandler(String keyStroke, Action action) throws IllegalArgumentException {
         if (!isKeyStrokeValid(keyStroke)) {
-            throw new InvalidKeyStrokeException("registerHandler: invalid keyStroke string: " + keyStroke);
+            throw new IllegalArgumentException("registerHandler: invalid keyStroke string: " + keyStroke);
         }
         return registerHandler(parseKeyStroke(keyStroke), action);
     }
@@ -321,13 +311,13 @@ public class KeyStrokeManager {
      * @param action       The action to reassign.
      * @param newKeyStroke The new keystroke in string format (e.g., "ctrl+P", "F5"). Must be valid!
      * @return this manager, for fluent-style method chaining
-     * @throws InvalidKeyStrokeException if the given newShortcut string is invalid
+     * @throws IllegalArgumentException if the given newShortcut string is invalid
      */
-    public KeyStrokeManager reassignHandler(Action action, String newKeyStroke) throws InvalidKeyStrokeException {
+    public KeyStrokeManager reassignHandler(Action action, String newKeyStroke) throws IllegalArgumentException {
         // We should validate the keyStroke first, so we don't unregister the action if the new shortcut is invalid:
         KeyStroke ks = parseKeyStroke(newKeyStroke);
         if (ks == null) {
-            throw new InvalidKeyStrokeException("reassignHandler: invalid newShortcut string: " + newKeyStroke);
+            throw new IllegalArgumentException("reassignHandler: invalid newShortcut string: " + newKeyStroke);
         }
 
         // Now we can make it so:
