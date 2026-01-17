@@ -154,6 +154,11 @@ public class DirTreeDemoPanel extends PanelBuilder {
         }
 
         @Override
+        public void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles) {
+
+        }
+
+        @Override
         public void treeLocked(DirTree source, File lockDir) {
         }
 
@@ -175,6 +180,12 @@ public class DirTreeDemoPanel extends PanelBuilder {
         @Override
         public void selectionChanged(DirTree source, File selectedDir) {
             String msg = "selectionChanged: new dir is " + selectedDir.getAbsolutePath();
+            listenerTextArea.setText(listenerTextArea.getText() + msg + "\n");
+        }
+
+        @Override
+        public void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles) {
+            String msg = "showHiddenFilesChanged: now " + (showHiddenFiles ? "showing" : "hiding") + " hidden files";
             listenerTextArea.setText(listenerTextArea.getText() + msg + "\n");
         }
 
