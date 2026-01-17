@@ -5,6 +5,7 @@ import ca.corbett.forms.fields.ListField;
 
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +17,11 @@ import java.util.stream.Collectors;
  * Wraps a ListField to allow for a multi-select property.
  * You can use any type for the list items, but they must have
  * a meaningful toString() implementation for displaying in the list.
+ * <p>
+ * You can add action buttons to the generated ListField via
+ * a FormFieldGenerationListener. See ListField for more information
+ * on how to do this.
+ * </p>
  *
  * @since swing-extras 2.3
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -31,6 +37,14 @@ public class ListProperty<T> extends AbstractProperty {
     private int visibleRowCount;
     private int fixedCellWidth;
 
+    // For optional buttons (requires a FormFieldGenerationListener):
+    private ListField.ButtonPosition buttonPosition;
+    private int buttonAlignment;
+    private int buttonHgap;
+    private int buttonVgap;
+    private int buttonPreferredWidth;
+    private int buttonPreferredHeight;
+
     public ListProperty(String name, String label) {
         super(name, label);
         items = new ArrayList<>();
@@ -39,6 +53,13 @@ public class ListProperty<T> extends AbstractProperty {
         layoutOrientation = JList.VERTICAL;
         visibleRowCount = 4;
         fixedCellWidth = -1;
+
+        buttonPosition = ListField.DEFAULT_BUTTON_POSITION;
+        buttonAlignment = ListField.DEFAULT_BUTTON_ALIGNMENT;
+        buttonHgap = ListField.DEFAULT_BUTTON_HGAP;
+        buttonVgap = ListField.DEFAULT_BUTTON_VGAP;
+        buttonPreferredWidth = 0;  // no default
+        buttonPreferredHeight = 0; // no default
     }
 
     /**
@@ -151,6 +172,86 @@ public class ListProperty<T> extends AbstractProperty {
         return this;
     }
 
+    public ListField.ButtonPosition getButtonPosition() {
+        return buttonPosition;
+    }
+
+    /**
+     * If the ListField generated from this property is to include buttons,
+     * this sets the position of those buttons (requires a FormFieldGenerationListener to add buttons).
+     *
+     * @param buttonPosition One of the ListField.ButtonPosition enum values.
+     */
+    public void setButtonPosition(ListField.ButtonPosition buttonPosition) {
+        this.buttonPosition = buttonPosition;
+    }
+
+    public int getButtonAlignment() {
+        return buttonAlignment;
+    }
+
+    /**
+     * If the ListField generated from this property is to include buttons,
+     * this sets the alignment of those buttons (requires a FormFieldGenerationListener to add buttons).
+     *
+     * @param buttonAlignment One of FlowLayout's alignment options: LEFT, CENTER, RIGHT, LEADING, or TRAILING
+     *                        from the FlowLayout class.
+     */
+    public void setButtonAlignment(int buttonAlignment) {
+        this.buttonAlignment = buttonAlignment;
+    }
+
+    public int getButtonHgap() {
+        return buttonHgap;
+    }
+
+    /**
+     * If the ListField generated from this property is to include buttons,
+     * this sets the horizontal gap between those buttons (requires a FormFieldGenerationListener to add buttons).
+     *
+     * @param buttonHgap The horizontal gap in pixels.
+     */
+    public void setButtonHgap(int buttonHgap) {
+        this.buttonHgap = buttonHgap;
+    }
+
+    public int getButtonVgap() {
+        return buttonVgap;
+    }
+
+    /**
+     * If the ListField generated from this property is to include buttons,
+     * this sets the vertical gap between those buttons (requires a FormFieldGenerationListener to add buttons).
+     *
+     * @param buttonVgap The vertical gap in pixels.
+     */
+    public void setButtonVgap(int buttonVgap) {
+        this.buttonVgap = buttonVgap;
+    }
+
+    /**
+     * If the ListField generated from this property is to include buttons,
+     * this gets the preferred dimensions of those buttons (requires a FormFieldGenerationListener to add buttons).
+     *
+     * @return The preferred dimensions, or null to use the button's default preferred size.
+     */
+    public Dimension getButtonPreferredDimensions() {
+        return (buttonPreferredWidth > 0 && buttonPreferredHeight > 0)
+                ? new Dimension(buttonPreferredWidth, buttonPreferredHeight)
+                : null;
+    }
+
+    /**
+     * If the ListField generated from this property is to include buttons,
+     * this sets the preferred width of those buttons (requires a FormFieldGenerationListener to add buttons).
+     *
+     * @param buttonPreferredWidth  The preferred width in pixels, or 0 to use the button's default preferred width.
+     * @param buttonPreferredHeight The preferred height in pixels, or 0 to use the button's default preferred height.
+     */
+    public void setButtonPreferredDimensions(int buttonPreferredWidth, int buttonPreferredHeight) {
+        this.buttonPreferredWidth = buttonPreferredWidth;
+        this.buttonPreferredHeight = buttonPreferredHeight;
+    }
 
     @Override
     public void saveToProps(Properties props) {
@@ -183,6 +284,16 @@ public class ListProperty<T> extends AbstractProperty {
         field.setSelectionMode(selectionMode);
         field.setSelectedIndexes(selectedIndexes);
         field.setFixedCellWidth(fixedCellWidth);
+
+        // Button settings (these are optional, and require a FormFieldGenerationListener to add buttons):
+        field.setButtonPosition(buttonPosition);
+        field.setButtonAlignment(buttonAlignment);
+        field.setButtonHgap(buttonHgap);
+        field.setButtonVgap(buttonVgap);
+        if (buttonPreferredWidth > 0 && buttonPreferredHeight > 0) {
+            field.setButtonPreferredSize(new Dimension(buttonPreferredWidth, buttonPreferredHeight));
+        }
+
         return field;
     }
 

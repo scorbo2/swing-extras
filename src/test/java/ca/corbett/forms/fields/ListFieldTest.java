@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.swing.JList;
-import javax.swing.JScrollPane;
+import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataListener;
 import java.util.List;
@@ -30,7 +30,7 @@ class ListFieldTest extends FormFieldBaseTests {
     @Test
     public void testGetFieldComponent() {
         assertNotNull(actual.getFieldComponent());
-        assertInstanceOf(JScrollPane.class, actual.getFieldComponent());
+        assertInstanceOf(JPanel.class, actual.getFieldComponent());
     }
 
     @Test

@@ -35,6 +35,7 @@ public class ListItemClearAction extends EnhancedAction {
     public ListItemClearAction(String name, ListField<?> listField) {
         super(name);
         this.listField = listField;
+        setTooltip("Clear all items from the list");
         if (listField == null) {
             throw new IllegalArgumentException("listField must not be null");
         }
@@ -49,6 +50,7 @@ public class ListItemClearAction extends EnhancedAction {
     public ListItemClearAction(Icon icon, ListField<?> listField) {
         super(null, icon);
         this.listField = listField;
+        setTooltip("Clear all items from the list");
         if (listField == null) {
             throw new IllegalArgumentException("listField must not be null");
         }

@@ -47,6 +47,7 @@ public class ListItemMoveAction<T> extends EnhancedAction {
         super(name);
         this.listField = listField;
         this.direction = direction;
+        setTooltip(Direction.UP == direction ? "Move selected item(s) up" : "Move selected item(s) down");
         if (listField == null || direction == null) {
             throw new IllegalArgumentException("listField and direction must not be null");
         }
@@ -63,6 +64,7 @@ public class ListItemMoveAction<T> extends EnhancedAction {
         super(null, icon);
         this.listField = listField;
         this.direction = direction;
+        setTooltip(Direction.UP == direction ? "Move selected item(s) up" : "Move selected item(s) down");
         if (listField == null || direction == null) {
             throw new IllegalArgumentException("listField and direction must not be null");
         }

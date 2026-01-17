@@ -1,16 +1,17 @@
 package ca.corbett.forms.demo;
 
 import ca.corbett.extras.EnhancedAction;
+import ca.corbett.extras.MessageUtil;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.demo.SnippetAction;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.SwingFormsResources;
 import ca.corbett.forms.actions.ListItemClearAction;
 import ca.corbett.forms.actions.ListItemMoveAction;
 import ca.corbett.forms.actions.ListItemRemoveAction;
-import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.CollapsiblePanelField;
 import ca.corbett.forms.fields.ComboField;
@@ -20,6 +21,7 @@ import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.ListSubsetField;
 import ca.corbett.forms.fields.PanelField;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -43,6 +45,7 @@ import java.util.logging.Logger;
  */
 public class ListFieldPanel extends PanelBuilder {
     private static final Logger log = Logger.getLogger(ListFieldPanel.class.getName());
+    private MessageUtil messageUtil;
 
     @Override
     public String getTitle() {
@@ -112,23 +115,28 @@ public class ListFieldPanel extends PanelBuilder {
         formPanel.add(listField2);
 
         // In swing-extras 2.7, we have handy prebuilt actions to manipulate ListField contents:
+        // Also new in 2.7, you can add action buttons directly to a ListField, instead
+        // of creating a separate ButtonField!
         ListField<String> listField3 = new ListField<>("Dynamic list:",
                                                        List.of("Add items!", "Remove items!",
                                                                "This list is interactive!"));
         listField3.setFixedCellWidth(200);
         listField3.setVisibleRowCount(4);
+        listField3.setButtonHgap(2);
+        listField3.setButtonVgap(2);
+        listField3.setButtonAlignment(FlowLayout.CENTER);
+        listField3.setButtonPreferredSize(new Dimension(20, 20));
+        listField3.addButton(new ListItemAddAction(listField3));
+        listField3.addButton(new ListItemMoveAction<>(SwingFormsResources.getMoveUpIcon(16),
+                                                      listField3, ListItemMoveAction.Direction.UP));
+        listField3.addButton(new ListItemMoveAction<>(SwingFormsResources.getMoveDownIcon(16),
+                                                      listField3, ListItemMoveAction.Direction.DOWN));
+        listField3.addButton(new ListItemRemoveAction(SwingFormsResources.getRemoveIcon(16), listField3));
+        listField3.addButton(new ListItemClearAction(SwingFormsResources.getRemoveAllIcon(16), listField3));
+        listField3.addButton(new ListItemHelpAction());
+        listField3.setButtonPanelBorder(BorderFactory.createLoweredBevelBorder());
+        listField3.getMargins().setBottom(12);
         formPanel.add(listField3);
-
-        // This ButtonField will get merged right into ListField when issue #240 is tackled:
-        ButtonField listButtons = new ButtonField(List.of(
-                new ListItemAddAction(listField3),
-                new ListItemMoveAction<>(listField3, ListItemMoveAction.Direction.UP),
-                new ListItemMoveAction<>(listField3, ListItemMoveAction.Direction.DOWN),
-                new ListItemRemoveAction(listField3),
-                new ListItemClearAction(listField3)
-        ));
-        listButtons.setButtonPreferredSize(new Dimension(90, 25));
-        formPanel.add(listButtons);
 
         // New in swing-extras 2.6, let's show the ListSubsetField:
         formPanel.add(new ListSubsetField<>("List subset:",
@@ -137,8 +145,10 @@ public class ListFieldPanel extends PanelBuilder {
                                             List.of("Cherry", "Fig", "Lemon"))
                               .setAutoSortingEnabled(true) // optionally keep lists sorted (disables drag to reorder!)
                               .setFixedCellWidth(120));
+        formPanel.add(createSnippetLabel(new ListFieldSnippetAction()));
 
         // And a new addition in swing-extras 2.5, let's add an ImageListField:
+        formPanel.add(LabelField.createBoldHeaderLabel("Image lists"));
         ImageListField imageListField = new ImageListField("Image list:", 5, 75);
         try {
             imageListField.addImage(loadImage("media-playback-start.png"));
@@ -161,7 +171,7 @@ public class ListFieldPanel extends PanelBuilder {
         imageListField.setShouldExpand(true); // fill the width of the form panel
         imageListField.getImageListPanel().setOwnerWindow(DemoApp.getInstance()); // for ownership of the preview popup
         formPanel.add(imageListField);
-        formPanel.add(createSnippetLabel(new ListFieldSnippetAction()));
+        formPanel.add(createSnippetLabel(new ImageListFieldSnippetAction()));
 
         return formPanel;
     }
@@ -223,8 +233,9 @@ public class ListFieldPanel extends PanelBuilder {
         private final ListField<String> listField;
 
         public ListItemAddAction(ListField<String> listField) {
-            super("Add");
+            super(SwingFormsResources.getAddIcon(16));
             this.listField = listField;
+            setTooltip("Add new list item");
         }
 
         @Override
@@ -233,6 +244,22 @@ public class ListFieldPanel extends PanelBuilder {
             if (newItem != null && !newItem.trim().isEmpty()) {
                 listField.getListModel().addElement(newItem.trim());
             }
+        }
+    }
+
+    private class ListItemHelpAction extends EnhancedAction {
+
+        public ListItemHelpAction() {
+            super(SwingFormsResources.getHelpIcon(16));
+            setTooltip("Show help for this list");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            getMessageUtil().info("Action buttons can be added directly to ListFields!\n"
+                                          + "This is useful for actions that manipulate the list contents,\n"
+                                          + "such as adding, removing, or reordering items.\n\n"
+                                          + "You can control alignment, size, and spacing of the buttons!\n");
         }
     }
 
@@ -286,24 +313,73 @@ public class ListFieldPanel extends PanelBuilder {
                     listField2.setFixedCellWidth(80);
                     listField2.setVisibleRowCount(3);
                     
-                    // And a new addition in swing-extras 2.5, let's add an ImageListField:
+                    // Starting in swing-extras 2.7, we have handy prebuilt actions to manipulate ListField contents.
+                    // Also new in 2.7, you can add action buttons directly to a ListField, instead
+                    // of creating a separate ButtonField!
+                    ListField<String> listField3 = new ListField<>("Dynamic list:",
+                                                                   List.of("Add items!", "Remove items!",
+                                                                           "This list is interactive!"));
+                    listField3.setFixedCellWidth(200);
+                    listField3.setVisibleRowCount(4);
+                    
+                    // Set the properties for the button panel:
+                    listField3.setButtonHgap(2); // horizontal gap between buttons
+                    listField3.setButtonVgap(2); // vertical gap between list and buttons
+                    listField3.setButtonAlignment(FlowLayout.CENTER); // button alignment
+                    listField3.setButtonPreferredSize(new Dimension(20, 20));
+                    
+                    // We can use swing-form's built-in list item actions and built-in icons:
+                    listField3.addButton(new ListItemAddAction(listField3));
+                    listField3.addButton(new ListItemMoveAction<>(SwingFormsResources.getMoveUpIcon(16),
+                                                                  listField3, ListItemMoveAction.Direction.UP));
+                    listField3.addButton(new ListItemMoveAction<>(SwingFormsResources.getMoveDownIcon(16),
+                                                                  listField3, ListItemMoveAction.Direction.DOWN));
+                    listField3.addButton(new ListItemRemoveAction(SwingFormsResources.getRemoveIcon(16), listField3));
+                    listField3.addButton(new ListItemClearAction(SwingFormsResources.getRemoveAllIcon(16), listField3));
+                    listField3.addButton(new ListItemHelpAction());
+                    
+                    // Adding an optional border to the button panel looks nice:
+                    listField3.setButtonPanelBorder(BorderFactory.createLoweredBevelBorder());
+                    
+                    // New in swing-extras 2.6, let's show the ListSubsetField:
+                    ListSubsetField<String> listSubset = new ListSubsetField<>("List subset:",
+                                            List.of("Apple", "Banana", "Cherry", "Date", "Elderberry",
+                                                    "Fig", "Grape", "Honeydew", "Kiwi"),
+                                            List.of("Cherry", "Fig", "Lemon"));
+                    listSubset.setFixedCellWidth(120));
+                    
+                    // We can tell the lists to auto-sort their contents:
+                    // (this disables dragging items within a list to reorder them)
+                    listSubset.setAutoSortingEnabled(true)
+                    
+                    // Try dragging items between the two lists!
+                    """;
+        }
+    }
+
+    /**
+     * Shows a code snippet for creating ImageListFields.
+     *
+     * @author <a href="https://github.com/scorbo2">scorbo2</a>
+     */
+    private static class ImageListFieldSnippetAction extends SnippetAction {
+        @Override
+        protected String getSnippet() {
+            return """
+                    // Create an ImageListField with 5 visible images and each image 75 pixels high:
                     ImageListField imageListField = new ImageListField("Image list:", 5, 75);
-                    try {
-                        // You can programmatically add images, like this, or you
-                        // can start with a blank ImageListField and let the user
-                        // drag images onto it.
-                        imageListField.addImage(loadImage("media-playback-start.png"));
-                        imageListField.addImage(loadImage("media-playback-pause.png"));
-                        imageListField.addImage(loadImage("media-playback-stop.png"));
-                        imageListField.addImage(loadImage("media-record.png"));
-                        imageListField.addImage(loadImage("icon-copy.png"));
-                        imageListField.addImage(loadImage("icon-cut.png"));
-                        imageListField.addImage(loadImage("icon-paste.png"));
-                        imageListField.addImage(loadImage("swing-extras-icon.jpg"));
-                    }
-                    catch (IOException | IllegalArgumentException ioe) {
-                        log.log(Level.SEVERE, "Problem loading image resources: " + ioe.getMessage(), ioe);
-                    }
+                    
+                    // You can programmatically add images, like this, or you
+                    // can start with a blank ImageListField and let the user
+                    // drag images onto it.
+                    imageListField.addImage(loadImage("media-playback-start.png"));
+                    imageListField.addImage(loadImage("media-playback-pause.png"));
+                    imageListField.addImage(loadImage("media-playback-stop.png"));
+                    imageListField.addImage(loadImage("media-record.png"));
+                    imageListField.addImage(loadImage("icon-copy.png"));
+                    imageListField.addImage(loadImage("icon-cut.png"));
+                    imageListField.addImage(loadImage("icon-paste.png"));
+                    imageListField.addImage(loadImage("swing-extras-icon.jpg"));
                     
                     // Tell it to fill the width of the form:
                     imageListField.setShouldExpand(true);
@@ -315,5 +391,12 @@ public class ListFieldPanel extends PanelBuilder {
                     imageListField.setMaxImageCount(10);
                     """;
         }
+    }
+
+    private MessageUtil getMessageUtil() {
+        if (messageUtil == null) {
+            messageUtil = new MessageUtil(DemoApp.getInstance(), log);
+        }
+        return messageUtil;
     }
 }

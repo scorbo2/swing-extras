@@ -1,12 +1,17 @@
 package ca.corbett.extras.properties;
 
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.ListField;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ListPropertyTest extends AbstractPropertyBaseTests {
@@ -48,5 +53,31 @@ class ListPropertyTest extends AbstractPropertyBaseTests {
 
         // THEN we should see our change listener got invoked:
         Mockito.verify(listener, Mockito.times(2)).valueChanged(Mockito.any());
+    }
+
+    @Test
+    public void formFieldGenerationListener_withButtonProperties_shouldSetButtonProperties() {
+        // GIVEN a test prop with some optional button properties set:
+        ListProperty<String> testProp = new ListProperty<>("test", "test");
+        testProp.setButtonPosition(ListField.ButtonPosition.TOP);
+        testProp.setButtonAlignment(FlowLayout.RIGHT);
+        testProp.setButtonHgap(7);
+        testProp.setButtonVgap(9);
+        testProp.setButtonPreferredDimensions(200, 150);
+
+        // WHEN we generate a form field:
+        FormField formField = testProp.generateFormField();
+
+        // THEN we should see our button properties were applied to the form field:
+        assertInstanceOf(ListField.class, formField);
+        ListField<?> listField = (ListField<?>)formField;
+        assertEquals(ListField.ButtonPosition.TOP, listField.getButtonPosition());
+        assertEquals(FlowLayout.RIGHT, listField.getButtonAlignment());
+        assertEquals(7, listField.getButtonHgap());
+        assertEquals(9, listField.getButtonVgap());
+        Dimension preferredSize = listField.getButtonPreferredSize();
+        assertNotNull(preferredSize);
+        assertEquals(200, preferredSize.width);
+        assertEquals(150, preferredSize.height);
     }
 }
