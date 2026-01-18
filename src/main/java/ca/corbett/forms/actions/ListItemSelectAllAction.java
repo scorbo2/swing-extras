@@ -9,7 +9,7 @@ import java.awt.event.ActionEvent;
 /**
  * An EnhancedAction that can be used with any ListField to select all items in the list.
  * We assume that the list supports multiple selection. If it does not, only the
- * last item in the will be selected when the action executes. (This is standard
+ * last item in the list will be selected when the action executes. (This is standard
  * JList behavior.)
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
