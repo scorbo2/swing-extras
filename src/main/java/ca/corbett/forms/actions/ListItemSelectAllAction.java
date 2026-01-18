@@ -63,6 +63,9 @@ public class ListItemSelectAllAction extends EnhancedAction {
         // We could throw an exception here if the list doesn't support multiple selection,
         // but JList will just select the last item in SINGLE_SELECTION mode, and that's
         // an acceptable fallback behavior. It's up to callers to set their list up correctly.
-        listField.getList().setSelectionInterval(0, listField.getListModel().getSize() - 1);
+        int size = listField.getListModel().getSize();
+        if (size > 0) {
+            listField.getList().setSelectionInterval(0, size - 1);
+        }
     }
 }
