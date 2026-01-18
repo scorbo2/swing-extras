@@ -6,9 +6,9 @@
 
 - **Type**: Maven-based Java library
 - **Language**: Java 17
-- **Size**: ~189 source files, ~65 test files
+- **Size**: ~219 source files, ~88 test files
 - **Main Output**: JAR library + runnable demo application
-- **Version**: 2.6.0 is in production, 2.7.0-SNAPSHOT is in development
+- **Version**: 2.7.0 is in production
 - **License**: MIT
 
 ## Key Dependencies and Frameworks
@@ -46,9 +46,9 @@
    xvfb-run mvn test
    ```
    - Takes ~12 seconds
-   - Runs 832 tests (3 tests are skipped - this is normal)
+   - Runs ~1200 tests (3 tests are skipped - this is normal)
    - **MUST** use `xvfb-run` prefix or tests will fail with "No X11 DISPLAY variable was set" errors
-   - **WITHOUT** xvfb-run: 114 errors occur due to headless environment
+   - **WITHOUT** xvfb-run: many errors occur due to headless environment
    - Adding `-Djava.awt.headless=true` does NOT fix the issue - still causes failures
 
 4. **Package the project** (without tests):
@@ -56,10 +56,10 @@
    mvn package -DskipTests
    ```
    Takes ~15 seconds. Creates:
-   - `target/swing-extras-2.7.0-SNAPSHOT.jar` (1MB - library only)
-   - `target/swing-extras-2.7.0-SNAPSHOT-jar-with-dependencies.jar` (3.7MB - runnable with demo)
-   - `target/swing-extras-2.7.0-SNAPSHOT-sources.jar` (794KB)
-   - `target/swing-extras-2.7.0-SNAPSHOT-javadoc.jar` (1.8MB)
+   - `target/swing-extras-2.7.0.jar` (1MB - library only)
+   - `target/swing-extras-2.7.0-jar-with-dependencies.jar` (3.7MB - runnable with demo)
+   - `target/swing-extras-2.7.0-sources.jar` (794KB)
+   - `target/swing-extras-2.7.0-javadoc.jar` (1.8MB)
 
 5. **Full build with tests**:
    ```bash
@@ -82,7 +82,7 @@
 
 After building with `mvn package`:
 ```bash
-java -jar target/swing-extras-2.7.0-SNAPSHOT-jar-with-dependencies.jar
+java -jar target/swing-extras-2.7.0-jar-with-dependencies.jar
 ```
 Note: Requires a graphical environment. Main class: `ca.corbett.extras.demo.DemoAppLauncher`
 
@@ -119,6 +119,7 @@ src/
 ├── main/
 │   ├── java/ca/corbett/
 │   │   ├── forms/              - Form components and validators (core)
+│   │   │   ├── actions/        - Pre-built Actions for ListField (4 files)
 │   │   │   ├── fields/         - FormField implementations (46 files)
 │   │   │   ├── validators/     - Field validation logic (11 files)
 │   │   │   └── demo/           - Form demo examples
@@ -142,7 +143,7 @@ src/
 │       ├── swing-extras/       - Images, audio files, release notes
 │       └── ca/corbett/swing-forms/ - Form field icons and resources
 └── test/
-    └── java/ca/corbett/        - JUnit 5 tests (65 test classes)
+    └── java/ca/corbett/        - JUnit 5 tests (88 test classes)
 ```
 
 ### Key Source Files

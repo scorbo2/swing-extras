@@ -1,0 +1,9 @@
+Attribution:
+
+The icons in this directory are from the Adwaita icon set:
+  https://github.com/GNOME/adwaita-icon-theme
+
+by the GNOME project:
+  http://www.gnome.org
+
+They are licensed under the GNU Lesser General Public License (LGPL) version 2.1 or later.
