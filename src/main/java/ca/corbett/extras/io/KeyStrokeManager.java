@@ -22,6 +22,34 @@ import java.util.logging.Logger;
  * associated actions will be triggered when the shortcut is pressed.
  * The same Action can be registered multiple times for different shortcuts,
  * in case you want to allow multiple ways of launching the same action.
+ * <H2>Usage Example:</H2>
+ * <pre>
+ *     // Create a KeyStrokeManager for your main window:
+ *     KeyStrokeManager ksm = new KeyStrokeManager(mainWindow);
+ *
+ *     // Add some basic shortcuts:
+ *     ksm.registerHandler("ctrl+O", openFileAction);
+ *     ksm.registerHandler("ctrl+S", saveFileAction);
+ *     ksm.registerHandler("ctrl+A", aboutAction);
+ *
+ *     // That's literally all there is to it!
+ *     // As long as your main window is active,
+ *     // those shortcuts will trigger the associated actions.
+ *
+ *     // You can temporarily disable the manager if needed:
+ *     ksm.setEnabled(false); // disables shortcut processing
+ *     ksm.setEnabled(true);  // re-enables shortcut processing
+ *
+ *     // And you can reassign shortcuts as needed:
+ *     ksm.reassignHandler(saveFileAction, "ctrl+shift+S");
+ * </pre>
+ * <p>
+ *     You should also look at the KeyStrokeProperty and KeyStrokeField
+ *     classes to allow easy user customization of your shortcuts!
+ *     With KeyStrokeProperty, you can easily add these to your
+ *     application settings, where they will be automatically persisted
+ *     between application sessions.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.7
@@ -151,7 +179,7 @@ public class KeyStrokeManager {
      * @return A List of Actions assigned to the KeyStroke. Empty if none found.
      * @throws IllegalArgumentException if the given keyStroke string is invalid
      */
-    public List<Action> getActionsForKeyStroke(String keyStroke) throws IllegalArgumentException {
+    public List<Action> getActionsForKeyStroke(String keyStroke) {
         if (!isKeyStrokeValid(keyStroke)) {
             throw new IllegalArgumentException("getActionsForKeyStroke: invalid keyStroke string: " + keyStroke);
         }
@@ -193,7 +221,7 @@ public class KeyStrokeManager {
     /**
      * Shorthand for !hasHandlers(keyStroke)
      */
-    public boolean isAvailable(String keyStroke) throws IllegalArgumentException {
+    public boolean isAvailable(String keyStroke) {
         if (!isKeyStrokeValid(keyStroke)) {
             throw new IllegalArgumentException("isAvailable: invalid keyStroke string: " + keyStroke);
         }
@@ -217,7 +245,7 @@ public class KeyStrokeManager {
      * @return true if at least one action is registered for the KeyStroke, false otherwise
      * @throws IllegalArgumentException If the given keyStroke string is invalid
      */
-    public boolean hasHandlers(String keyStroke) throws IllegalArgumentException {
+    public boolean hasHandlers(String keyStroke) {
         if (!isKeyStrokeValid(keyStroke)) {
             throw new IllegalArgumentException("hasHandlers: invalid keyStroke string: " + keyStroke);
         }
@@ -239,7 +267,7 @@ public class KeyStrokeManager {
      * @return this manager, for fluent-style method chaining
      * @throws IllegalArgumentException if the given shortcut string is invalid
      */
-    public KeyStrokeManager registerHandler(String keyStroke, Action action) throws IllegalArgumentException {
+    public KeyStrokeManager registerHandler(String keyStroke, Action action) {
         if (!isKeyStrokeValid(keyStroke)) {
             throw new IllegalArgumentException("registerHandler: invalid keyStroke string: " + keyStroke);
         }
@@ -313,7 +341,7 @@ public class KeyStrokeManager {
      * @return this manager, for fluent-style method chaining
      * @throws IllegalArgumentException if the given newShortcut string is invalid
      */
-    public KeyStrokeManager reassignHandler(Action action, String newKeyStroke) throws IllegalArgumentException {
+    public KeyStrokeManager reassignHandler(Action action, String newKeyStroke) {
         // We should validate the keyStroke first, so we don't unregister the action if the new shortcut is invalid:
         KeyStroke ks = parseKeyStroke(newKeyStroke);
         if (ks == null) {

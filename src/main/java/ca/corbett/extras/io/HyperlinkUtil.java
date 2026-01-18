@@ -16,6 +16,11 @@ import java.util.logging.Logger;
 
 /**
  * Utility class for hyperlink launching in JREs that support it.
+ * Use isBrowsingSupported() to check if the current JRE allows
+ * launching hyperlinks. Use the openHyperlink(...) methods to
+ * easily launch a given hyperlink in the default browser, or
+ * use the many BrowseAction.of() overloads to create an Action
+ * that can be used with buttons, menu items, etc.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.6

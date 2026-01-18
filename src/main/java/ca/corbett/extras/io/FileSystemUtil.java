@@ -19,8 +19,9 @@ import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 /**
- * Provides a way to scan, organize, and search through a given file system, looking for
- * specific types of files recursively.
+ * Provides a number of handy static utility methods for working with files and directories.
+ * Searching for files by extension, reading and writing text files, sanitizing filenames,
+ * and more.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-07-28 (originally written for ICE, later generalized for ca.corbett.util)
