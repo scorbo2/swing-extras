@@ -69,6 +69,7 @@ class ImageListFieldTest extends FormFieldBaseTests {
         // THEN the ImageListPanel inside it should also have the new background color:
         Color imageListPanelBg = actualField.getImageListPanel().getBackground();
         assertEquals(newColor, imageListPanelBg);
+        assertEquals(newColor, actualField.getFieldComponent().getBackground()); // and the scroll pane too!
 
         // AND any child ImagePanel instances should also have the new background color:
         List<Color> foundColors = new ArrayList<>();
