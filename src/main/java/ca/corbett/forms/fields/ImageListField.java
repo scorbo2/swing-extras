@@ -6,6 +6,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.util.logging.Logger;
@@ -101,6 +102,16 @@ public class ImageListField extends FormField implements ChangeListener {
         super.setEnabled(enabled);
         imageListPanel.setReadOnly(!enabled);
         return this;
+    }
+
+    /**
+     * Sets the background color for this field's components.
+     *
+     * @param color The desired background color
+     */
+    public void setBackground(Color color) {
+        imageListPanel.setBackground(color);
+        scrollPane.setBackground(color);
     }
 
     /**

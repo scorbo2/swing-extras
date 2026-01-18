@@ -12,6 +12,7 @@ import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -253,6 +254,7 @@ public class ImageListPanel extends JPanel {
 
         // Create an ImagePanel to represent this image:
         ImagePanel imagePanel = new ImagePanel(thumbnail, ImagePanelConfig.createSimpleReadOnlyProperties());
+        imagePanel.setBackground(getBackground());
 
         // Note... we COULD show animated gifs in the panel, but the cpu usage starts to get crazy
         // if you have more than a few showing at once. Safer approach is shown above,
@@ -281,6 +283,23 @@ public class ImageListPanel extends JPanel {
      */
     public int getImageCount() {
         return getComponentCount();
+    }
+
+    /**
+     * We override this so that we can update any child ImagePanels to have the same background color.
+     *
+     * @param color the desired background <code>Color</code>
+     */
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+
+        // Propagate to child ImagePanels:
+        for (int i = 0; i < getComponentCount(); i++) {
+            if (getComponent(i) instanceof ImagePanel) {
+                getComponent(i).setBackground(color);
+            }
+        }
     }
 
     /**
