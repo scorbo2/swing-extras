@@ -46,7 +46,7 @@
    xvfb-run mvn test
    ```
    - Takes ~12 seconds
-   - Runs ~1200 tests (3 tests are skipped - this is normal)
+   - Runs 1325 tests (3 tests are skipped - this is normal)
    - **MUST** use `xvfb-run` prefix or tests will fail with "No X11 DISPLAY variable was set" errors
    - **WITHOUT** xvfb-run: many errors occur due to headless environment
    - Adding `-Djava.awt.headless=true` does NOT fix the issue - still causes failures
