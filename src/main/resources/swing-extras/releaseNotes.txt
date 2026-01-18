@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.7.0 [TODO release date here] - Maintenance release
+  #299 - New ListField support class: ListItemSelectAllAction
   #297 - ListField: minor API tweak
   #293 - KeyStrokeManager: minor API improvements
   #289 - DirTree: add listener notification for hidden file toggle
