@@ -2,7 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.7.0 [TODO release date here] - Maintenance release
-  #305 - ImagePanel: add explicit dispose() method to prevent memory leaks
+  #305 - ImagePanel: add dispose() method to prevent memory leaks
   #301 - ImageListPanel: fix setBackground() behavior
   #299 - New ListField support class: ListItemSelectAllAction
   #297 - ListField: minor API tweak
