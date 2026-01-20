@@ -4,6 +4,7 @@ import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.KeyStrokeField;
 
+import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,12 @@ import java.util.logging.Logger;
  * This allows your application to expose keyboard shortcuts to the
  * user for customization, and then persist them to application settings,
  * rather than hard-coding them.
+ * <p>
+ * The Action to associate with the KeyStroke is also stored here,
+ * though it will be ignored when persisting/loading the property.
+ * This allows applications or extensions to associate functionality
+ * with the KeyStrokeProperty for convenience.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.7
@@ -27,25 +34,45 @@ public class KeyStrokeProperty extends AbstractProperty {
     private final List<KeyStroke> reservedKeyStrokes = new ArrayList<>();
     private boolean allowBlank;
     private KeyStroke keyStroke;
+    private final Action action;
 
     /**
      * Creates a new, blank KeyStrokeProperty with the given name and label.
      * The initial KeyStroke value will be null to indicate no shortcut assigned,
-     * and "allowBlank" will be implicitly enabled.
+     * and "allowBlank" will be implicitly enabled. The associated Action will be null.
      */
     public KeyStrokeProperty(String fullyQualifiedName, String label) {
-        this(fullyQualifiedName, label, null);
+        this(fullyQualifiedName, label, null, null);
+    }
+
+    /**
+     * Creates a new, blank KeyStrokeProperty with the given name, label, and action.
+     * The initial KeyStroke value will be null to indicate no shortcut assigned,
+     * and "allowBlank" will be implicitly enabled.
+     */
+    public KeyStrokeProperty(String fullyQualifiedName, String label, Action action) {
+        this(fullyQualifiedName, label, null, null);
     }
 
     /**
      * Creates a new KeyStrokeProperty with the given name, label, and initial KeyStroke value.
      * The initial KeyStroke value can be null to indicate no shortcut assigned. If so,
-     * "allowBlank" will be implicitly enabled.
+     * "allowBlank" will be implicitly enabled. The associated Action will be null.
      */
     public KeyStrokeProperty(String fullyQualifiedName, String label, KeyStroke keyStroke) {
+        this(fullyQualifiedName, label, keyStroke, null);
+    }
+
+    /**
+     * Creates a new KeyStrokeProperty with the given name, label, initial KeyStroke value, and action.
+     * The initial KeyStroke value can be null to indicate no shortcut assigned. If so,
+     * "allowBlank" will be implicitly enabled.
+     */
+    public KeyStrokeProperty(String fullyQualifiedName, String label, KeyStroke keyStroke, Action action) {
         super(fullyQualifiedName, label);
         this.keyStroke = keyStroke;
         this.allowBlank = keyStroke == null;
+        this.action = action;
     }
 
     /**
@@ -62,6 +89,15 @@ public class KeyStrokeProperty extends AbstractProperty {
     public KeyStrokeProperty setAllowBlank(boolean allowBlank) {
         this.allowBlank = allowBlank;
         return this;
+    }
+
+    /**
+     * Gets the Action associated with this property, if any.
+     *
+     * @return The Action associated with this property, or null if none.
+     */
+    public Action getAction() {
+        return action;
     }
 
     /**
@@ -224,5 +260,4 @@ public class KeyStrokeProperty extends AbstractProperty {
         }
         return list;
     }
-
 }
