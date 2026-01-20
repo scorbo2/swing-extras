@@ -5,9 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

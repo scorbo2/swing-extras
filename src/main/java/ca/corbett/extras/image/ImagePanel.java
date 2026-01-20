@@ -20,6 +20,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -958,20 +959,9 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
     /**
      * Explicitly releases internal resources and clears references to help prevent memory leaks.
      * This method should be called when you are finished with this ImagePanel instance,
-     * particularly when creating and discarding ImagePanel instances in batches.
-     * <p>
-     * This method performs the following cleanup operations:
-     * <ul>
-     *     <li>Clears the extra attributes map</li>
-     *     <li>Removes all mouse listeners (MouseListener, MouseWheelListener, MouseMotionListener)</li>
-     *     <li>Removes all component listeners</li>
-     *     <li>Nulls out the popup menu reference</li>
-     *     <li>Nulls out the image and imageIcon references</li>
-     *     <li>Nulls out the imageIconLabel reference</li>
-     * </ul>
-     * <p>
-     * This method is idempotent - it can be safely called multiple times on the same instance
-     * with no negative effects.
+     * particularly when creating and discarding ImagePanel instances in batches. This method
+     * is idempotent - it can be safely called multiple times on the same instance with no
+     * negative effects.
      */
     public void dispose() {
         // Clear the extra attributes map
@@ -996,8 +986,8 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         }
 
         // Remove all component listeners (added for resize handling)
-        java.awt.event.ComponentListener[] componentListeners = getComponentListeners();
-        for (java.awt.event.ComponentListener listener : componentListeners) {
+        ComponentListener[] componentListeners = getComponentListeners();
+        for (ComponentListener listener : componentListeners) {
             removeComponentListener(listener);
         }
 
