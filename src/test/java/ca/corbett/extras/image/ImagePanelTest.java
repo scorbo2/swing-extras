@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for the ImagePanel class.
@@ -95,9 +96,9 @@ public class ImagePanelTest {
         int initialMouseMotionListenerCount = imagePanel.getMouseMotionListeners().length;
 
         // Verify that listeners were added during construction
-        assert initialMouseListenerCount > 0 : "Expected mouse listeners to be present";
-        assert initialMouseWheelListenerCount > 0 : "Expected mouse wheel listeners to be present";
-        assert initialMouseMotionListenerCount > 0 : "Expected mouse motion listeners to be present";
+        assertTrue(initialMouseListenerCount > 0, "Expected mouse listeners to be present");
+        assertTrue(initialMouseWheelListenerCount > 0, "Expected mouse wheel listeners to be present");
+        assertTrue(initialMouseMotionListenerCount > 0, "Expected mouse motion listeners to be present");
 
         // WHEN we call dispose:
         imagePanel.dispose();
@@ -114,7 +115,7 @@ public class ImagePanelTest {
         int initialComponentListenerCount = imagePanel.getComponentListeners().length;
 
         // Verify that listeners were added during construction
-        assert initialComponentListenerCount > 0 : "Expected component listeners to be present";
+        assertTrue(initialComponentListenerCount > 0, "Expected component listeners to be present");
 
         // WHEN we call dispose:
         imagePanel.dispose();
