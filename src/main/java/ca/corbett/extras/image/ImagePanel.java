@@ -34,6 +34,11 @@ import java.util.Map;
  * handling of mouse events to allow zooming and scrolling. Defaults are provided for
  * all configuration options. Alternatively, you can create an ImagePanelConfig
  * instance and override some or all of those defaults.
+ * <p>
+ * <strong>Important:</strong> When you are done with an ImagePanel instance, you should
+ * call {@link #dispose()} to explicitly release internal resources and help prevent memory
+ * leaks. This is especially important when creating and discarding ImagePanel instances in
+ * batches.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @see ca.corbett.extras.image.ImagePanelConfig
@@ -948,6 +953,88 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
     public void removeMouseListener(MouseListener listener) {
         super.removeMouseListener(listener);
         imageIconLabel.removeMouseListener(listener);
+    }
+
+    /**
+     * Explicitly releases internal resources and clears references to help prevent memory leaks.
+     * This method should be called when you are finished with this ImagePanel instance,
+     * particularly when creating and discarding ImagePanel instances in batches.
+     * <p>
+     * This method performs the following cleanup operations:
+     * <ul>
+     *     <li>Clears the extra attributes map</li>
+     *     <li>Removes all mouse listeners (MouseListener, MouseWheelListener, MouseMotionListener)</li>
+     *     <li>Removes all component listeners</li>
+     *     <li>Nulls out the popup menu reference</li>
+     *     <li>Nulls out the image and imageIcon references</li>
+     *     <li>Nulls out the imageIconLabel reference</li>
+     * </ul>
+     * <p>
+     * This method is idempotent - it can be safely called multiple times on the same instance
+     * with no negative effects.
+     */
+    public void dispose() {
+        // Clear the extra attributes map
+        if (extraAttributes != null) {
+            extraAttributes.clear();
+        }
+
+        // Remove all mouse listeners
+        MouseListener[] mouseListeners = getMouseListeners();
+        if (mouseListeners != null) {
+            for (MouseListener listener : mouseListeners) {
+                removeMouseListener(listener);
+            }
+        }
+
+        // Remove all mouse wheel listeners
+        MouseWheelListener[] mouseWheelListeners = getMouseWheelListeners();
+        if (mouseWheelListeners != null) {
+            for (MouseWheelListener listener : mouseWheelListeners) {
+                removeMouseWheelListener(listener);
+            }
+        }
+
+        // Remove all mouse motion listeners
+        MouseMotionListener[] mouseMotionListeners = getMouseMotionListeners();
+        if (mouseMotionListeners != null) {
+            for (MouseMotionListener listener : mouseMotionListeners) {
+                removeMouseMotionListener(listener);
+            }
+        }
+
+        // Remove all component listeners (added for resize handling)
+        java.awt.event.ComponentListener[] componentListeners = getComponentListeners();
+        if (componentListeners != null) {
+            for (java.awt.event.ComponentListener listener : componentListeners) {
+                removeComponentListener(listener);
+            }
+        }
+
+        // Clear the popup menu (do this before nulling out imageIconLabel)
+        this.popupMenu = null;
+        setComponentPopupMenu(null);
+        if (imageIconLabel != null) {
+            imageIconLabel.setComponentPopupMenu(null);
+        }
+
+        // Clear the images (do this before nulling out imageIconLabel)
+        // We call the setter methods only if imageIconLabel is not null,
+        // otherwise directly null out the references
+        if (imageIconLabel != null) {
+            setImage(null);
+            setImageIcon(null);
+        } else {
+            // Already disposed - just ensure references are null
+            dBuffer = null;
+            imageIcon = null;
+        }
+
+        // Clear the imageIconLabel reference if present
+        if (imageIconLabel != null) {
+            remove(imageIconLabel);
+            imageIconLabel = null;
+        }
     }
 
 }
