@@ -45,7 +45,8 @@ import java.util.Map;
  * @see ca.corbett.extras.image.ImagePanelConfig
  * @since 2012-09-22 (originally for StegPng, later generified for ca.corbett.util.ui)
  */
-public class ImagePanel extends JPanel implements MouseListener, MouseWheelListener, MouseMotionListener {
+public class ImagePanel extends JPanel implements
+                                       ChangeListener, MouseListener, MouseWheelListener, MouseMotionListener {
 
     /**
      * An optional map of extra, caller-supplied attributes. *
@@ -230,12 +231,8 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             }
         });
 
-        LookAndFeelManager.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                ImagePanel.super.setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY));
-            }
-        });
+        // Register to receive notice if the current LaF changes:
+        LookAndFeelManager.addChangeListener(this);
     }
 
     /**
@@ -964,6 +961,9 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
      * negative effects.
      */
     public void dispose() {
+        // Stop listening for LaF changes:
+        LookAndFeelManager.removeChangeListener(this);
+
         // Clear the extra attributes map
         extraAttributes.clear();
 
@@ -1017,4 +1017,11 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         }
     }
 
+    /**
+     * Invoked by LookAndFeelManager when the Look and Feel changes, so we can update our background color.
+     */
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY));
+    }
 }
