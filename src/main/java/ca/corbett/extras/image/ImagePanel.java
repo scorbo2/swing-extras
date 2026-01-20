@@ -975,40 +975,30 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
      */
     public void dispose() {
         // Clear the extra attributes map
-        if (extraAttributes != null) {
-            extraAttributes.clear();
-        }
+        extraAttributes.clear();
 
         // Remove all mouse listeners
         MouseListener[] mouseListeners = getMouseListeners();
-        if (mouseListeners != null) {
-            for (MouseListener listener : mouseListeners) {
-                removeMouseListener(listener);
-            }
+        for (MouseListener listener : mouseListeners) {
+            removeMouseListener(listener);
         }
 
         // Remove all mouse wheel listeners
         MouseWheelListener[] mouseWheelListeners = getMouseWheelListeners();
-        if (mouseWheelListeners != null) {
-            for (MouseWheelListener listener : mouseWheelListeners) {
-                removeMouseWheelListener(listener);
-            }
+        for (MouseWheelListener listener : mouseWheelListeners) {
+            removeMouseWheelListener(listener);
         }
 
         // Remove all mouse motion listeners
         MouseMotionListener[] mouseMotionListeners = getMouseMotionListeners();
-        if (mouseMotionListeners != null) {
-            for (MouseMotionListener listener : mouseMotionListeners) {
-                removeMouseMotionListener(listener);
-            }
+        for (MouseMotionListener listener : mouseMotionListeners) {
+            removeMouseMotionListener(listener);
         }
 
         // Remove all component listeners (added for resize handling)
         java.awt.event.ComponentListener[] componentListeners = getComponentListeners();
-        if (componentListeners != null) {
-            for (java.awt.event.ComponentListener listener : componentListeners) {
-                removeComponentListener(listener);
-            }
+        for (java.awt.event.ComponentListener listener : componentListeners) {
+            removeComponentListener(listener);
         }
 
         // Clear the popup menu (do this before nulling out imageIconLabel)
