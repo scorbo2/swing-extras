@@ -20,6 +20,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -34,12 +35,18 @@ import java.util.Map;
  * handling of mouse events to allow zooming and scrolling. Defaults are provided for
  * all configuration options. Alternatively, you can create an ImagePanelConfig
  * instance and override some or all of those defaults.
+ * <p>
+ * <strong>Important:</strong> When you are done with an ImagePanel instance, you should
+ * call {@link #dispose()} to explicitly release internal resources and help prevent memory
+ * leaks. This is especially important when creating and discarding ImagePanel instances in
+ * batches.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @see ca.corbett.extras.image.ImagePanelConfig
  * @since 2012-09-22 (originally for StegPng, later generified for ca.corbett.util.ui)
  */
-public class ImagePanel extends JPanel implements MouseListener, MouseWheelListener, MouseMotionListener {
+public class ImagePanel extends JPanel implements
+                                       ChangeListener, MouseListener, MouseWheelListener, MouseMotionListener {
 
     /**
      * An optional map of extra, caller-supplied attributes. *
@@ -224,12 +231,8 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             }
         });
 
-        LookAndFeelManager.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                ImagePanel.super.setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY));
-            }
-        });
+        // Register to receive notice if the current LaF changes:
+        LookAndFeelManager.addChangeListener(this);
     }
 
     /**
@@ -950,4 +953,75 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         imageIconLabel.removeMouseListener(listener);
     }
 
+    /**
+     * Explicitly releases internal resources and clears references to help prevent memory leaks.
+     * This method should be called when you are finished with this ImagePanel instance,
+     * particularly when creating and discarding ImagePanel instances in batches. This method
+     * is idempotent - it can be safely called multiple times on the same instance with no
+     * negative effects.
+     */
+    public void dispose() {
+        // Stop listening for LaF changes:
+        LookAndFeelManager.removeChangeListener(this);
+
+        // Clear the extra attributes map
+        extraAttributes.clear();
+
+        // Remove all mouse listeners
+        MouseListener[] mouseListeners = getMouseListeners();
+        for (MouseListener listener : mouseListeners) {
+            removeMouseListener(listener);
+        }
+
+        // Remove all mouse wheel listeners
+        MouseWheelListener[] mouseWheelListeners = getMouseWheelListeners();
+        for (MouseWheelListener listener : mouseWheelListeners) {
+            removeMouseWheelListener(listener);
+        }
+
+        // Remove all mouse motion listeners
+        MouseMotionListener[] mouseMotionListeners = getMouseMotionListeners();
+        for (MouseMotionListener listener : mouseMotionListeners) {
+            removeMouseMotionListener(listener);
+        }
+
+        // Remove all component listeners (added for resize handling)
+        ComponentListener[] componentListeners = getComponentListeners();
+        for (ComponentListener listener : componentListeners) {
+            removeComponentListener(listener);
+        }
+
+        // Clear the popup menu (do this before nulling out imageIconLabel)
+        this.popupMenu = null;
+        setComponentPopupMenu(null);
+        if (imageIconLabel != null) {
+            imageIconLabel.setComponentPopupMenu(null);
+        }
+
+        // Clear the images (do this before nulling out imageIconLabel)
+        // We call the setter methods only if imageIconLabel is not null,
+        // otherwise directly null out the references
+        if (imageIconLabel != null) {
+            setImage(null);
+            setImageIcon(null);
+        } else {
+            // Already disposed - just ensure references are null
+            dBuffer = null;
+            imageIcon = null;
+        }
+
+        // Clear the imageIconLabel reference if present
+        if (imageIconLabel != null) {
+            remove(imageIconLabel);
+            imageIconLabel = null;
+        }
+    }
+
+    /**
+     * Invoked by LookAndFeelManager when the Look and Feel changes, so we can update our background color.
+     */
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY));
+    }
 }
