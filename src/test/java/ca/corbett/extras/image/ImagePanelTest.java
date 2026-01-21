@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import java.awt.image.BufferedImage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -150,5 +151,67 @@ public class ImagePanelTest {
         // THEN there should be no errors:
         assertNull(imagePanel.getImage());
         assertEquals(0, imagePanel.getMouseListeners().length);
+    }
+
+    /**
+     * When displaying an animated GIF, ImagePanel uses a JLabel to show the
+     * ImageIcon. A RedispatchingMouseAdapter is attached to the label to forward
+     * all mouse events to the panel, to enable click-to-zoom and mouse-wheel-to-zoom.
+     * There was a bug where all incoming MouseListeners on the panel were also
+     * added to the label. This would cause double notifications for mouse events
+     * that happened on the label - one from the label, then an identical one
+     * from the panel, after the label forwards the event to the panel.
+     * The bug has been fixed so that mouse listeners are only added to the panel,
+     * and the label simply forwards events to the panel without adding its own
+     * listeners. This test demonstrates the fix.
+     */
+    @Test
+    public void addMouseListener_withDoubleClickOnImageLabel_shouldFireExactlyOnce() throws Exception {
+        // GIVEN an ImagePanel that has an ImageIcon (pretend we're showing an animated GIF and not a BufferedImage)
+        imagePanel.setImageIcon(new ImageIcon(new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB)));
+
+        // WHEN we add a mouse listener to the PANEL, not the image label: (normal client interaction!)
+        final int[] doubleClickCount = {0};
+        imagePanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    doubleClickCount[0]++;
+                }
+            }
+        });
+
+        // (Now we need to add the panel to a frame to connect it to the component tree):
+        javax.swing.JFrame frame = new javax.swing.JFrame();
+        try {
+            frame.add(imagePanel);
+            frame.pack();
+            frame.setVisible(true);
+
+            // (Ensure all pending UI updates are processed by waiting for the EDT to complete):
+            SwingUtilities.invokeAndWait(() -> {
+                // By running this empty task on the EDT and waiting for it to complete,
+                // we ensure all previously queued UI updates (including layout and paint) are done
+            });
+
+            // WHEN we simulate a double click on the LABEL, not the panel: (normal user interaction!)
+            java.awt.event.MouseEvent doubleClickEvent = new java.awt.event.MouseEvent(
+                    imagePanel.imageIconLabel,
+                    java.awt.event.MouseEvent.MOUSE_CLICKED,
+                    System.currentTimeMillis(),
+                    0,
+                    10,
+                    10,
+                    2,
+                    false
+            );
+            imagePanel.imageIconLabel.dispatchEvent(doubleClickEvent);
+
+            // THEN our listener on the PANEL should have been notified exactly once:
+            //      (because the label forwards all mouse events to the containing panel)
+            assertEquals(1, doubleClickCount[0]);
+        } finally {
+            frame.dispose();
+        }
     }
 }

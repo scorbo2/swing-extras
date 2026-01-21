@@ -218,6 +218,10 @@ public class ImagePanel extends JPanel implements
         addMouseWheelListener(new RedispatchingMouseAdapter());
         addMouseMotionListener(new RedispatchingMouseAdapter());
 
+        // Allow our image label to forward mouse events to us:
+        // (this enables click-to-zoom and mouse wheel zooming to work on animated GIFs)
+        imageIconLabel.addMouseListener(new RedispatchingMouseAdapter());
+
         // Allow resizing to auto adjust the image being displayed:
         thisPanel.addComponentListener(new ComponentAdapter() {
             @Override
@@ -941,18 +945,6 @@ public class ImagePanel extends JPanel implements
         }
     }
 
-    @Override
-    public void addMouseListener(MouseListener listener) {
-        super.addMouseListener(listener);
-        imageIconLabel.addMouseListener(listener);
-    }
-
-    @Override
-    public void removeMouseListener(MouseListener listener) {
-        super.removeMouseListener(listener);
-        imageIconLabel.removeMouseListener(listener);
-    }
-
     /**
      * Explicitly releases internal resources and clears references to help prevent memory leaks.
      * This method should be called when you are finished with this ImagePanel instance,
@@ -996,6 +988,13 @@ public class ImagePanel extends JPanel implements
         setComponentPopupMenu(null);
         if (imageIconLabel != null) {
             imageIconLabel.setComponentPopupMenu(null);
+        }
+
+        // Remove our redispatcher from imageIconLabel:
+        if (imageIconLabel != null) {
+            for (MouseListener listener : imageIconLabel.getMouseListeners()) {
+                imageIconLabel.removeMouseListener(listener);
+            }
         }
 
         // Clear the images (do this before nulling out imageIconLabel)
