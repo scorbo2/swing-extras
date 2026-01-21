@@ -318,6 +318,9 @@ public class ImageTextUtil {
      * @return The adjusted line length based on the image aspect ratio.
      */
     protected static int adjustLineWrapLength(int initialLength, int imageWidth, int imageHeight) {
+        if (imageHeight <= 0) {
+            return initialLength;
+        }
         return (int)(initialLength * ((float)imageWidth / imageHeight));
     }
 

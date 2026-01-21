@@ -82,6 +82,18 @@ public class ImageTextUtilTest {
     }
 
     /**
+     * Test that adjustLineWrapLength handles edge cases correctly.
+     */
+    @Test
+    public void testAdjustLineWrapLength_edgeCases() {
+        // Test with zero height (should return initial length to avoid division by zero)
+        assertEquals(30, ImageTextUtil.adjustLineWrapLength(30, 400, 0));
+        
+        // Test with negative height (should return initial length)
+        assertEquals(30, ImageTextUtil.adjustLineWrapLength(30, 400, -100));
+    }
+
+    /**
      * Test handleLineWrap with text shorter than lineLength.
      */
     @Test
