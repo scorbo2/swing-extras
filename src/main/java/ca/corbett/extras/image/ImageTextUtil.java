@@ -202,7 +202,7 @@ public final class ImageTextUtil {
         }
 
         // Now handle line wrapping as needed:
-        List<String> lines = handleLineWrap(text, lineLength);
+        List<String> lines = handleLineWrap(text, linewrapLength);
 
         Graphics2D g = image.createGraphics();
 
