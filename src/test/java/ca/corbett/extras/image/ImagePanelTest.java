@@ -187,8 +187,10 @@ public class ImagePanelTest {
             frame.pack();
             frame.setVisible(true);
 
-            // (Give the UI time to initialize):
-            Thread.sleep(150);
+            // (Ensure all pending UI updates are processed):
+            javax.swing.SwingUtilities.invokeAndWait(() -> {
+                // This ensures the UI is fully initialized before we dispatch the event
+            });
 
             // WHEN we simulate a double click on the LABEL, not the panel: (normal user interaction!)
             java.awt.event.MouseEvent doubleClickEvent = new java.awt.event.MouseEvent(
