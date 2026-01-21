@@ -219,7 +219,7 @@ public class ImagePanel extends JPanel implements
         addMouseMotionListener(new RedispatchingMouseAdapter());
 
         // Allow our image label to forward mouse events to us:
-        // (this enabled click-to-zoom and mouse wheel zooming to work on animated GIFs)
+        // (this enables click-to-zoom and mouse wheel zooming to work on animated GIFs)
         imageIconLabel.addMouseListener(new RedispatchingMouseAdapter());
 
         // Allow resizing to auto adjust the image being displayed:
