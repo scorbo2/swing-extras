@@ -2,7 +2,6 @@ package ca.corbett.extras.image;
 
 import org.junit.jupiter.api.Test;
 
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,42 +12,73 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ImageTextUtilTest {
 
     /**
-     * Test that line wrapping uses the adjusted length based on image dimensions.
+     * Test that adjustLineWrapLength correctly calculates adjusted length for a wide image.
      * This test validates the fix for issue #308.
      */
     @Test
-    public void testDrawText_usesAdjustedLinewrapLength() {
-        // GIVEN: A wide image (aspect ratio > 1)
-        // When image is wider than tall, linewrapLength should be > lineLength
-        BufferedImage wideImage = new BufferedImage(400, 200, BufferedImage.TYPE_INT_ARGB);
+    public void testAdjustLineWrapLength_wideImage() {
+        // GIVEN: A wide image (aspect ratio 2.0 = 400/200)
+        int imageWidth = 400;
+        int imageHeight = 200;
+        int initialLength = 30;
         
-        // AND: Text that would wrap differently at different line lengths
-        String longText = "This is a very long text that should be wrapped into multiple lines " +
-                         "when we draw it on the image using the ImageTextUtil class";
+        // WHEN: We adjust the line wrap length
+        int adjustedLength = ImageTextUtil.adjustLineWrapLength(initialLength, imageWidth, imageHeight);
         
-        // WHEN: We draw the text with a small default line length
-        int shortLineLength = 20; // This should be adjusted upward for wide images
+        // THEN: The adjusted length should be doubled (30 * 2.0 = 60)
+        assertEquals(60, adjustedLength);
+    }
+
+    /**
+     * Test that adjustLineWrapLength correctly calculates adjusted length for a narrow image.
+     */
+    @Test
+    public void testAdjustLineWrapLength_narrowImage() {
+        // GIVEN: A narrow (tall) image (aspect ratio 0.5 = 200/400)
+        int imageWidth = 200;
+        int imageHeight = 400;
+        int initialLength = 30;
         
-        // Call drawText - this should use the adjusted linewrapLength internally
-        ImageTextUtil.drawText(wideImage, longText, shortLineLength,
-                              ImageTextUtil.DEFAULT_FONT,
-                              ImageTextUtil.TextAlign.CENTER,
-                              ImageTextUtil.DEFAULT_OUTLINE_COLOR,
-                              ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR,
-                              ImageTextUtil.DEFAULT_FILL_COLOR);
+        // WHEN: We adjust the line wrap length
+        int adjustedLength = ImageTextUtil.adjustLineWrapLength(initialLength, imageWidth, imageHeight);
         
-        // THEN: Verify the method completes without errors
-        // The actual validation is that the method uses the adjusted value
-        // If it used the wrong value, text layout could be incorrect
-        assertNotNull(wideImage);
+        // THEN: The adjusted length should be halved (30 * 0.5 = 15)
+        assertEquals(15, adjustedLength);
+    }
+
+    /**
+     * Test that adjustLineWrapLength returns the same value for a square image.
+     */
+    @Test
+    public void testAdjustLineWrapLength_squareImage() {
+        // GIVEN: A square image (aspect ratio 1.0 = 300/300)
+        int imageWidth = 300;
+        int imageHeight = 300;
+        int initialLength = 30;
         
-        // We can also test the handleLineWrap method directly to verify behavior
-        List<String> wrappedAt20 = ImageTextUtil.handleLineWrap(longText, 20);
-        List<String> wrappedAt40 = ImageTextUtil.handleLineWrap(longText, 40);
+        // WHEN: We adjust the line wrap length
+        int adjustedLength = ImageTextUtil.adjustLineWrapLength(initialLength, imageWidth, imageHeight);
         
-        // With different line lengths, we should get different numbers of lines
-        assertTrue(wrappedAt20.size() > wrappedAt40.size(), 
-                  "Wrapping at 20 chars should create more lines than wrapping at 40 chars");
+        // THEN: The adjusted length should be the same (30 * 1.0 = 30)
+        assertEquals(30, adjustedLength);
+    }
+
+    /**
+     * Test that adjustLineWrapLength handles various aspect ratios correctly.
+     */
+    @Test
+    public void testAdjustLineWrapLength_variousAspectRatios() {
+        // Test aspect ratio 3:1 (very wide)
+        assertEquals(60, ImageTextUtil.adjustLineWrapLength(20, 600, 200));
+        
+        // Test aspect ratio 1:3 (very narrow)
+        assertEquals(6, ImageTextUtil.adjustLineWrapLength(20, 200, 600));
+        
+        // Test aspect ratio 16:9 (widescreen)
+        assertEquals(35, ImageTextUtil.adjustLineWrapLength(20, 1600, 900));
+        
+        // Test aspect ratio 4:3 (standard)
+        assertEquals(26, ImageTextUtil.adjustLineWrapLength(20, 800, 600));
     }
 
     /**
@@ -86,45 +116,5 @@ public class ImageTextUtilTest {
             assertTrue(line.length() <= 30, 
                       "Each line should not be excessively longer than lineLength");
         }
-    }
-
-    /**
-     * Test that drawing on narrow vs wide images would use different line wrap calculations.
-     */
-    @Test
-    public void testDrawText_differentAspectRatios() {
-        // GIVEN: A narrow (tall) image
-        BufferedImage narrowImage = new BufferedImage(200, 400, BufferedImage.TYPE_INT_ARGB);
-        
-        // AND: A wide image
-        BufferedImage wideImage = new BufferedImage(400, 200, BufferedImage.TYPE_INT_ARGB);
-        
-        // AND: Same text and line length for both
-        String text = "This is test text for aspect ratio testing";
-        int lineLength = 30;
-        
-        // WHEN: We draw on both images
-        // The narrow image should adjust lineLength DOWN (aspect ratio 0.5)
-        // Expected: 30 * 0.5 = 15
-        ImageTextUtil.drawText(narrowImage, text, lineLength,
-                              ImageTextUtil.DEFAULT_FONT,
-                              ImageTextUtil.TextAlign.CENTER,
-                              ImageTextUtil.DEFAULT_OUTLINE_COLOR,
-                              ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR,
-                              ImageTextUtil.DEFAULT_FILL_COLOR);
-        
-        // The wide image should adjust lineLength UP (aspect ratio 2.0)
-        // Expected: 30 * 2.0 = 60
-        ImageTextUtil.drawText(wideImage, text, lineLength,
-                              ImageTextUtil.DEFAULT_FONT,
-                              ImageTextUtil.TextAlign.CENTER,
-                              ImageTextUtil.DEFAULT_OUTLINE_COLOR,
-                              ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR,
-                              ImageTextUtil.DEFAULT_FILL_COLOR);
-        
-        // THEN: Both should complete without errors
-        // The key validation is that the fix ensures the adjusted value is used
-        assertNotNull(narrowImage);
-        assertNotNull(wideImage);
     }
 }
