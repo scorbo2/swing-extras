@@ -187,9 +187,10 @@ public class ImagePanelTest {
             frame.pack();
             frame.setVisible(true);
 
-            // (Ensure all pending UI updates are processed):
+            // (Ensure all pending UI updates are processed by waiting for the EDT to complete):
             javax.swing.SwingUtilities.invokeAndWait(() -> {
-                // This ensures the UI is fully initialized before we dispatch the event
+                // By running this empty task on the EDT and waiting for it to complete,
+                // we ensure all previously queued UI updates (including layout and paint) are done
             });
 
             // WHEN we simulate a double click on the LABEL, not the panel: (normal user interaction!)
