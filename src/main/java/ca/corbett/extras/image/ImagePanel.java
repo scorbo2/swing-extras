@@ -205,10 +205,15 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         addMouseWheelListener(thisPanel);
         addMouseMotionListener(thisPanel);
 
-        // Allow redispatching of mouse events to parent components:
+        // Allow redispatching of mouse events from panel to parent components:
         addMouseListener(new RedispatchingMouseAdapter());
         addMouseWheelListener(new RedispatchingMouseAdapter());
         addMouseMotionListener(new RedispatchingMouseAdapter());
+
+        // Allow redispatching of mouse events from image label to panel:
+        imageIconLabel.addMouseListener(new RedispatchingMouseAdapter());
+        imageIconLabel.addMouseWheelListener(new RedispatchingMouseAdapter());
+        imageIconLabel.addMouseMotionListener(new RedispatchingMouseAdapter());
 
         // Allow resizing to auto adjust the image being displayed:
         thisPanel.addComponentListener(new ComponentAdapter() {
@@ -919,16 +924,26 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         }
     }
 
-    @Override
-    public void addMouseListener(MouseListener listener) {
-        super.addMouseListener(listener);
-        imageIconLabel.addMouseListener(listener);
-    }
-
-    @Override
-    public void removeMouseListener(MouseListener listener) {
-        super.removeMouseListener(listener);
-        imageIconLabel.removeMouseListener(listener);
+    /**
+     * Cleans up resources when this panel is no longer needed.
+     * Removes the redispatching adapters from the image label.
+     */
+    public void dispose() {
+        for (MouseListener listener : imageIconLabel.getMouseListeners()) {
+            if (listener instanceof RedispatchingMouseAdapter) {
+                imageIconLabel.removeMouseListener(listener);
+            }
+        }
+        for (MouseWheelListener listener : imageIconLabel.getMouseWheelListeners()) {
+            if (listener instanceof RedispatchingMouseAdapter) {
+                imageIconLabel.removeMouseWheelListener(listener);
+            }
+        }
+        for (MouseMotionListener listener : imageIconLabel.getMouseMotionListeners()) {
+            if (listener instanceof RedispatchingMouseAdapter) {
+                imageIconLabel.removeMouseMotionListener(listener);
+            }
+        }
     }
 
 }
