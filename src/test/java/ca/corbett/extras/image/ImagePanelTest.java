@@ -182,28 +182,32 @@ public class ImagePanelTest {
 
         // (Now we need to add the panel to a frame to connect it to the component tree):
         javax.swing.JFrame frame = new javax.swing.JFrame();
-        frame.add(imagePanel);
-        frame.pack();
-        frame.setVisible(true);
+        try {
+            frame.add(imagePanel);
+            frame.pack();
+            frame.setVisible(true);
 
-        // (Give the UI time to initialize):
-        Thread.sleep(150);
+            // (Give the UI time to initialize):
+            Thread.sleep(150);
 
-        // WHEN we simulate a double click on the LABEL, not the panel: (normal user interaction!)
-        java.awt.event.MouseEvent doubleClickEvent = new java.awt.event.MouseEvent(
-                imagePanel.imageIconLabel,
-                java.awt.event.MouseEvent.MOUSE_CLICKED,
-                System.currentTimeMillis(),
-                0,
-                10,
-                10,
-                2,
-                false
-        );
-        imagePanel.imageIconLabel.dispatchEvent(doubleClickEvent);
+            // WHEN we simulate a double click on the LABEL, not the panel: (normal user interaction!)
+            java.awt.event.MouseEvent doubleClickEvent = new java.awt.event.MouseEvent(
+                    imagePanel.imageIconLabel,
+                    java.awt.event.MouseEvent.MOUSE_CLICKED,
+                    System.currentTimeMillis(),
+                    0,
+                    10,
+                    10,
+                    2,
+                    false
+            );
+            imagePanel.imageIconLabel.dispatchEvent(doubleClickEvent);
 
-        // THEN our listener on the PANEL should have been notified exactly once:
-        //      (because the label forwards all mouse events to the containing panel)
-        assertEquals(1, doubleClickCount[0]);
+            // THEN our listener on the PANEL should have been notified exactly once:
+            //      (because the label forwards all mouse events to the containing panel)
+            assertEquals(1, doubleClickCount[0]);
+        } finally {
+            frame.dispose();
+        }
     }
 }
