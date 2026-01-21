@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import java.awt.image.BufferedImage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -188,7 +189,7 @@ public class ImagePanelTest {
             frame.setVisible(true);
 
             // (Ensure all pending UI updates are processed by waiting for the EDT to complete):
-            javax.swing.SwingUtilities.invokeAndWait(() -> {
+            SwingUtilities.invokeAndWait(() -> {
                 // By running this empty task on the EDT and waiting for it to complete,
                 // we ensure all previously queued UI updates (including layout and paint) are done
             });
