@@ -198,7 +198,7 @@ public class ImageTextUtil {
 
         // Adjust line wrap limit based on the image aspect ratio.
         // Wide images can have more characters per line, narrow images have less space for text.
-        int linewrapLength = (int)(lineLength * ((float)image.getWidth() / image.getHeight()));
+        int linewrapLength = adjustLineWrapLength(lineLength, image.getWidth(), image.getHeight());
         if (linewrapLength != lineLength) {
             logger.log(Level.FINE,
                        "drawText: adjusting linewrap limit from {0} to {1} based on image dimensions.",
@@ -206,7 +206,7 @@ public class ImageTextUtil {
         }
 
         // Now handle line wrapping as needed:
-        List<String> lines = handleLineWrap(text, lineLength);
+        List<String> lines = handleLineWrap(text, linewrapLength);
 
         Graphics2D g = image.createGraphics();
 
@@ -306,6 +306,22 @@ public class ImageTextUtil {
         }
 
         g.dispose();
+    }
+
+    /**
+     * Adjusts the line wrap length based on the image aspect ratio.
+     * Wide images can have more characters per line, narrow images have less space for text.
+     *
+     * @param initialLength The initial line length to be adjusted.
+     * @param imageWidth    The width of the image.
+     * @param imageHeight   The height of the image.
+     * @return The adjusted line length based on the image aspect ratio.
+     */
+    protected static int adjustLineWrapLength(int initialLength, int imageWidth, int imageHeight) {
+        if (imageHeight <= 0) {
+            return initialLength;
+        }
+        return (int)(initialLength * ((float)imageWidth / imageHeight));
     }
 
     /**
