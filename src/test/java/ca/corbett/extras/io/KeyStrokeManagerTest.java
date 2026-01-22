@@ -378,6 +378,25 @@ class KeyStrokeManagerTest {
     }
 
     @Test
+    public void clear_withRegisteredAction_shouldClearActionAccelerator() throws Exception {
+        // GIVEN a registered action:
+        Action action = new AbstractAction("ClearAcceleratorAction") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                // no-op
+            }
+        };
+        keyManager.registerHandler("alt+del", action);
+        assertNotNull(action.getValue(Action.ACCELERATOR_KEY), "Action should have received an accelerator.");
+
+        // WHEN we clear the key manager:
+        keyManager.clear();
+
+        // THEN the action should no longer have an accelerator:
+        assertNull(action.getValue(Action.ACCELERATOR_KEY), "Action accelerator should be cleared after clear()");
+    }
+
+    @Test
     public void dispose_withRegisteredHandlers_shouldClearAll() throws Exception {
         Action action = new AbstractAction("DisposableAction") {
             @Override

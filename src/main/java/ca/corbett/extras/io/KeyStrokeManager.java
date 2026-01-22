@@ -188,8 +188,14 @@ public class KeyStrokeManager {
 
     /**
      * Removes all registered keyboard shortcuts and their associated actions.
+     * This will also clear the accelerator keys from all associated Actions.
      */
     public KeyStrokeManager clear() {
+        for (List<Action> actions : keyMap.values()) {
+            for (Action action : actions) {
+                action.putValue(Action.ACCELERATOR_KEY, null);
+            }
+        }
         keyMap.clear();
         return this;
     }
