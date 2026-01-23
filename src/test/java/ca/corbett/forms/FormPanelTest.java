@@ -74,10 +74,11 @@ class FormPanelTest {
         formPanel.add(field1);
         formPanel.add(field2);
         formPanel.add(new PanelField().addFieldValidator(new AlwaysFalseValidator()));
-        assertInstanceOf(JLabel.class, formPanel.getComponent(3));
-        assertInstanceOf(JLabel.class, formPanel.getComponent(7));
-        JLabel validationLabel1 = (JLabel)formPanel.getComponent(3);
-        JLabel validationLabel2 = (JLabel)formPanel.getComponent(7);
+        // With help labels always rendered, validation labels are now at different indices
+        assertInstanceOf(JLabel.class, formPanel.getComponent(4));
+        assertInstanceOf(JLabel.class, formPanel.getComponent(9));
+        JLabel validationLabel1 = (JLabel)formPanel.getComponent(4);
+        JLabel validationLabel2 = (JLabel)formPanel.getComponent(9);
         assertSame(field1.getValidationLabel(), validationLabel1);
         assertSame(field2.getValidationLabel(), validationLabel2);
 
