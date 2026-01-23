@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FormPanelTest {
 
@@ -231,8 +232,8 @@ class FormPanelTest {
         // THEN the help label should now be visible:
         assertEquals("This is helpful information", field.getHelpText());
         assertEquals("This is helpful information", field.getHelpLabel().getToolTipText());
-        assertEquals(true, field.getHelpLabel().isVisible());
-        assertEquals(true, field.hasHelpLabel());
+        assertTrue(field.getHelpLabel().isVisible());
+        assertTrue(field.hasHelpLabel());
 
         // WHEN we clear the help text:
         field.setHelpText(null);
@@ -259,8 +260,8 @@ class FormPanelTest {
         field.setHelpText("New help text");
 
         // THEN the help label should be visible again:
-        assertEquals(true, field.getHelpLabel().isVisible());
-        assertEquals(true, field.hasHelpLabel());
+        assertTrue(field.getHelpLabel().isVisible());
+        assertTrue(field.hasHelpLabel());
     }
 
     @Test
@@ -293,7 +294,7 @@ class FormPanelTest {
         assertEquals(2, gbc2.gridy);
 
         // Field 1 help label should be visible, field 2 should not be:
-        assertEquals(true, fieldWithHelp.getHelpLabel().isVisible());
+        assertTrue(fieldWithHelp.getHelpLabel().isVisible());
         assertFalse(fieldWithoutHelp.getHelpLabel().isVisible());
     }
 }

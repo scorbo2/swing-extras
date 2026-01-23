@@ -127,7 +127,7 @@ public abstract class FormFieldBaseTests {
         actual.setHelpText("Hello there");
         assertTrue(actual.hasHelpLabel());
         assertEquals("Hello there", actual.getHelpLabel().getToolTipText());
-        assertEquals(true, actual.getHelpLabel().isVisible());
+        assertTrue(actual.getHelpLabel().isVisible());
     }
 
     @Test
