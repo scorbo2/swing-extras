@@ -73,7 +73,7 @@ public abstract class FormField {
     public FormField() {
         fieldLabel.setFont(defaultFont);
         fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
-        helpLabel.setIcon(SwingFormsResources.getBlankIcon(ICON_SIZE)); // start with blank icon
+        helpLabel.setIcon(SwingFormsResources.getHelpIcon(ICON_SIZE));
         helpLabel.setVisible(false); // initially not visible, will be shown when help text is set
         validationLabel.setIcon(SwingFormsResources.getBlankIcon(ICON_SIZE)); // placeholder until validation occurs
     }
@@ -228,14 +228,7 @@ public abstract class FormField {
     public FormField setHelpText(String helpText) {
         boolean hasText = helpText != null && !helpText.isBlank();
         helpLabel.setToolTipText(hasText ? helpText : "");
-        if (hasText) {
-            helpLabel.setIcon(SwingFormsResources.getHelpIcon(ICON_SIZE));
-            helpLabel.setVisible(true);
-        }
-        else {
-            helpLabel.setIcon(SwingFormsResources.getBlankIcon(ICON_SIZE));
-            helpLabel.setVisible(false);
-        }
+        helpLabel.setVisible(hasText);
         return this;
     }
 

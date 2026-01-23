@@ -219,7 +219,7 @@ class FormPanelTest {
         // GIVEN a FormPanel with a field that initially has no help text:
         FormPanel formPanel = new FormPanel();
         ShortTextField field = new ShortTextField("Test Field:", 12);
-        formPanel.add(field);
+        formPanel.add(field); // implicitly renders the form panel
 
         // THEN the help label should be rendered but not visible:
         assertNotNull(field.getHelpLabel());
