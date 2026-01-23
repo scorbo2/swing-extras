@@ -429,13 +429,11 @@ public final class FormPanel extends JPanel {
     }
 
     /**
-     * Invoked internally to render the help label for the given FormField, if it has one.
+     * Invoked internally to render the help label for the given FormField.
+     * The help label is always rendered, even if it has no help text initially,
+     * to allow for dynamic toggling of help text visibility after the form is rendered.
      */
     private void renderHelpLabel(FormField field, int row, Margins margins) {
-        if (!field.hasHelpLabel()) {
-            return;
-        }
-
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = HELP_COLUMN;
         constraints.gridy = row;
