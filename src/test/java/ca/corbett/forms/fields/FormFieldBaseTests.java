@@ -123,9 +123,11 @@ public abstract class FormFieldBaseTests {
     public void testHelpLabel() {
         assertFalse(actual.hasHelpLabel());
         assertNull(actual.getHelpLabel().getToolTipText());
+        assertFalse(actual.getHelpLabel().isVisible());
         actual.setHelpText("Hello there");
         assertTrue(actual.hasHelpLabel());
         assertEquals("Hello there", actual.getHelpLabel().getToolTipText());
+        assertTrue(actual.getHelpLabel().isVisible());
     }
 
     @Test
@@ -218,10 +220,9 @@ public abstract class FormFieldBaseTests {
             assertComponentLayoutProperties(gbc, expectedRow, FormPanel.FORM_FIELD_START_COLUMN, DOUBLE_WIDTH);
         }
 
-        if (actual.hasHelpLabel()) {
-            gbc = layout.getConstraints(formPanel.getComponent(componentIndex++));
-            assertComponentLayoutProperties(gbc, expectedRow, FormPanel.HELP_COLUMN, SINGLE_WIDTH);
-        }
+        // Help label is always rendered now (similar to validation label):
+        gbc = layout.getConstraints(formPanel.getComponent(componentIndex++));
+        assertComponentLayoutProperties(gbc, expectedRow, FormPanel.HELP_COLUMN, SINGLE_WIDTH);
 
         if (actual.hasValidationLabel()) {
             gbc = layout.getConstraints(formPanel.getComponent(componentIndex));
@@ -240,12 +241,10 @@ public abstract class FormFieldBaseTests {
         if (field.getFieldComponent() != null) {
             expectedComponentCount++;
         }
-        if (field.hasHelpLabel()) {
-            expectedComponentCount++;
-        }
-        //if (field.hasValidationLabel()) {
-        expectedComponentCount++; // validation label is rendered unconditionally because it's the rightmost thing
-        //}
+        // Help label is now rendered unconditionally (similar to validation label):
+        expectedComponentCount++;
+        // Validation label is rendered unconditionally because it's the rightmost thing:
+        expectedComponentCount++;
 
         // But we should have an exact count of it:
         assertEquals(expectedComponentCount, panel.getComponentCount());

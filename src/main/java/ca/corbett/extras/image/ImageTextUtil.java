@@ -237,19 +237,20 @@ public class ImageTextUtil {
             }
             if (textY == 0) {
                 int paragraphHeight = textHeight * lines.size();
+                int textAscent = g.getFontMetrics().getAscent() / 4; // needed for proper vertical positioning
                 switch (align) {
                     case TOP_LEFT:
                     case TOP_CENTER:
                     case TOP_RIGHT:
-                        textY = boundTop;
+                        textY = boundTop - textAscent;
                         break;
                     case BOTTOM_LEFT:
                     case BOTTOM_CENTER:
                     case BOTTOM_RIGHT:
-                        textY = boundBottom - paragraphHeight; //  - (int)(textHeight * 0.2); // 0.2 = kludge as above
+                        textY = boundBottom - paragraphHeight - textAscent;
                         break;
                     default:
-                        textY = boundTop + ((boundHeight - paragraphHeight) / 2); //  - (int)(textHeight * 0.2); // 0.2 = kludge as above
+                        textY = boundTop + ((boundHeight - paragraphHeight) / 2) - textAscent;
                 }
             }
             else {

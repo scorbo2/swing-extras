@@ -179,7 +179,8 @@ public abstract class AbstractPropertyBaseTests {
             FormField formField = actual.generateFormField();
             assertTrue(formField.getFieldLabel().isVisible());
             assertTrue(formField.getFieldComponent().isVisible());
-            assertTrue(formField.getHelpLabel().isVisible());
+            // Help label is only visible if it has help text:
+            assertEquals(formField.hasHelpLabel(), formField.getHelpLabel().isVisible());
             assertTrue(formField.getValidationLabel().isVisible());
         }
         catch (UnsupportedOperationException ignored) {
