@@ -207,7 +207,92 @@ class FormPanelTest {
     private void assertExpectedComponentCount_borderMarginTest(FormPanel formPanel) {
         // There should be a margin label on each edge: top, right, bottom, left
         // additionally, we should see our empty panel
+        // also, the help label (always rendered now)
         // finally, we should see the validation label
-        assertEquals(6, formPanel.getComponentCount());
+        assertEquals(7, formPanel.getComponentCount());
+    }
+
+    @Test
+    public void testDynamicHelpLabelToggling() {
+        // GIVEN a FormPanel with a field that initially has no help text:
+        FormPanel formPanel = new FormPanel();
+        ShortTextField field = new ShortTextField("Test Field:", 12);
+        formPanel.add(field);
+
+        // THEN the help label should be rendered but not visible:
+        assertNotNull(field.getHelpLabel());
+        assertFalse(field.getHelpLabel().isVisible());
+        assertFalse(field.hasHelpLabel());
+
+        // WHEN we set help text on the field after the form is rendered:
+        field.setHelpText("This is helpful information");
+
+        // THEN the help label should now be visible:
+        assertEquals("This is helpful information", field.getHelpText());
+        assertEquals("This is helpful information", field.getHelpLabel().getToolTipText());
+        assertEquals(true, field.getHelpLabel().isVisible());
+        assertEquals(true, field.hasHelpLabel());
+
+        // WHEN we clear the help text:
+        field.setHelpText(null);
+
+        // THEN the help label should be hidden again:
+        assertFalse(field.getHelpLabel().isVisible());
+        assertFalse(field.hasHelpLabel());
+
+        // WHEN we set help text again with a blank string:
+        field.setHelpText("");
+
+        // THEN the help label should still be hidden:
+        assertFalse(field.getHelpLabel().isVisible());
+        assertFalse(field.hasHelpLabel());
+
+        // WHEN we set help text with whitespace only:
+        field.setHelpText("   ");
+
+        // THEN the help label should still be hidden:
+        assertFalse(field.getHelpLabel().isVisible());
+        assertFalse(field.hasHelpLabel());
+
+        // WHEN we set non-blank help text again:
+        field.setHelpText("New help text");
+
+        // THEN the help label should be visible again:
+        assertEquals(true, field.getHelpLabel().isVisible());
+        assertEquals(true, field.hasHelpLabel());
+    }
+
+    @Test
+    public void testHelpLabelAlwaysRendered() {
+        // GIVEN a FormPanel with fields with and without help text:
+        FormPanel formPanel = new FormPanel();
+        ShortTextField fieldWithHelp = new ShortTextField("Field 1:", 12);
+        fieldWithHelp.setHelpText("I have help");
+        ShortTextField fieldWithoutHelp = new ShortTextField("Field 2:", 12);
+        formPanel.add(fieldWithHelp);
+        formPanel.add(fieldWithoutHelp);
+
+        // THEN both fields should have their help labels in the FormPanel:
+        // Component layout: [top margin], [left margin], field1 label, field1 control, field1 help, field1 validation, [right margin],
+        //                   [left margin], field2 label, field2 control, field2 help, field2 validation, [right margin], [bottom margin]
+        // So we expect: 1 (top) + 6 (field1) + 6 (field2) + 1 (bottom) = 14 components
+        assertEquals(14, formPanel.getComponentCount());
+
+        // The help labels should be rendered at the correct grid positions:
+        GridBagLayout layout = (GridBagLayout)formPanel.getLayout();
+        
+        // Field 1 help label should be at row 1, column HELP_COLUMN:
+        GridBagConstraints gbc1 = layout.getConstraints(fieldWithHelp.getHelpLabel());
+        assertEquals(FormPanel.HELP_COLUMN, gbc1.gridx);
+        assertEquals(1, gbc1.gridy);
+        
+        // Field 2 help label should be at row 2, column HELP_COLUMN:
+        GridBagConstraints gbc2 = layout.getConstraints(fieldWithoutHelp.getHelpLabel());
+        assertEquals(FormPanel.HELP_COLUMN, gbc2.gridx);
+        assertEquals(2, gbc2.gridy);
+
+        // Field 1 help label should be visible, field 2 should not be:
+        assertEquals(true, fieldWithHelp.getHelpLabel().isVisible());
+        assertFalse(fieldWithoutHelp.getHelpLabel().isVisible());
     }
 }

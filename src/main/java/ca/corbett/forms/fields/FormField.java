@@ -73,7 +73,8 @@ public abstract class FormField {
     public FormField() {
         fieldLabel.setFont(defaultFont);
         fieldLabel.setForeground(LookAndFeelManager.getLafColor("Label.foreground", Color.BLACK));
-        helpLabel.setIcon(SwingFormsResources.getHelpIcon(ICON_SIZE));
+        helpLabel.setIcon(SwingFormsResources.getBlankIcon(ICON_SIZE)); // start with blank icon
+        helpLabel.setVisible(false); // initially not visible, will be shown when help text is set
         validationLabel.setIcon(SwingFormsResources.getBlankIcon(ICON_SIZE)); // placeholder until validation occurs
     }
 
@@ -219,9 +220,22 @@ public abstract class FormField {
      * the helpLabel to allow the user to get help for the field. Note that
      * some fields may decide not to render the helpLabel even if helpText
      * is set for the field.
+     * <p>
+     * Setting a non-blank value will make the help label visible. Setting a
+     * null or blank value will hide the help label.
+     * </p>
      */
     public FormField setHelpText(String helpText) {
-        helpLabel.setToolTipText((helpText == null) ? "" : helpText);
+        boolean hasText = helpText != null && !helpText.isBlank();
+        helpLabel.setToolTipText(hasText ? helpText : "");
+        if (hasText) {
+            helpLabel.setIcon(SwingFormsResources.getHelpIcon(ICON_SIZE));
+            helpLabel.setVisible(true);
+        }
+        else {
+            helpLabel.setIcon(SwingFormsResources.getBlankIcon(ICON_SIZE));
+            helpLabel.setVisible(false);
+        }
         return this;
     }
 
@@ -256,7 +270,8 @@ public abstract class FormField {
             fieldComponent.setVisible(visible);
         }
         validationLabel.setVisible(visible);
-        helpLabel.setVisible(visible);
+        // Only show help label if the field is visible AND it has help text:
+        helpLabel.setVisible(visible && hasHelpLabel());
         return this;
     }
 
