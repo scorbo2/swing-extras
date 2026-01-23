@@ -228,7 +228,8 @@ public abstract class FormField {
     public FormField setHelpText(String helpText) {
         boolean hasText = helpText != null && !helpText.isBlank();
         helpLabel.setToolTipText(hasText ? helpText : "");
-        helpLabel.setVisible(hasText);
+        boolean shouldShowHelp = hasText && isVisible();
+        helpLabel.setVisible(shouldShowHelp);
         return this;
     }
 
