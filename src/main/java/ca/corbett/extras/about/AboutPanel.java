@@ -212,6 +212,7 @@ public final class AboutPanel extends JPanel {
                 if (e.getClickCount() == 2) {
                     System.gc();
                     refreshMemoryStats();
+                    logger.info("Memory stats after GC: " + getMemoryStats());
                 }
             }
         });
