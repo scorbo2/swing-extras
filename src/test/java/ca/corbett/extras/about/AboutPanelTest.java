@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Unit tests for the AboutPanel class to verify the easter egg feature.
  *
- * @author Copilot
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2026-01-24
  */
 class AboutPanelTest {
