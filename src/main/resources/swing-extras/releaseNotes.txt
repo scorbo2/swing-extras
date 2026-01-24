@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.7.0 [TODO release date here] - Maintenance release
   #317 - FormPanel: help labels can now be toggled dynamically
   #315 - Bug: KeyStrokeManager.clear() was not removing accelerators
+  #314 - AboutPanel: double-click memory label to trigger GC
   #308 - Bug: ImageTextUtil.drawText() now uses adjusted line length
   #307 - Bug: ImagePanel was doubling mouse events for animated GIFs
   #305 - ImagePanel: add dispose() method to prevent memory leaks
