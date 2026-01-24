@@ -7,6 +7,7 @@ import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.image.LogoGenerator;
 import ca.corbett.extras.image.LogoProperty;
+import ca.corbett.extras.io.FileSystemUtil;
 import ca.corbett.extras.io.HyperlinkUtil;
 import ca.corbett.extras.logging.LogConsole;
 import ca.corbett.forms.Alignment;
@@ -205,6 +206,15 @@ public final class AboutPanel extends JPanel {
 
         memoryUsageField = new LabelField(getMemoryStats());
         memoryUsageField.getMargins().setLeft(12).setTop(1).setBottom(1);
+        memoryUsageField.getFieldComponent().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    System.gc();
+                    refreshMemoryStats();
+                }
+            }
+        });
         formPanel.add(memoryUsageField);
 
         for (String customField : info.getCustomFieldNames()) {
@@ -318,14 +328,14 @@ public final class AboutPanel extends JPanel {
 
     private String getMemoryStats() {
         Runtime runtime = Runtime.getRuntime();
-        int maxMemory = (int)(runtime.maxMemory() / 1024 / 1024);
-        int freeMemory = (int)(runtime.freeMemory() / 1024 / 1024);
-        int totalMemory = (int)(runtime.totalMemory() / 1024 / 1024);
-        int memoryUsed = totalMemory - freeMemory;
+        long maxMemory = runtime.maxMemory();
+        long freeMemory = runtime.freeMemory();
+        long totalMemory = runtime.totalMemory();
+        long memoryUsed = totalMemory - freeMemory;
         int memoryUsagePercent = (int)(((float)memoryUsed / totalMemory) * 100);
-        return "Using " + memoryUsed + "M of "
-                + totalMemory + "M (" + memoryUsagePercent + "%), "
-                + maxMemory + "M available";
+        return "Using " + FileSystemUtil.getPrintableSize(memoryUsed) + " of "
+                + FileSystemUtil.getPrintableSize(totalMemory) + " (" + memoryUsagePercent + "%), "
+                + FileSystemUtil.getPrintableSize(maxMemory) + " available";
     }
 
     /**
