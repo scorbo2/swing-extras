@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2023-11-11
  */
-public final class ImageTextUtil {
+public class ImageTextUtil {
 
     private static final Logger logger = Logger.getLogger(ImageTextUtil.class.getName());
 
@@ -65,7 +65,11 @@ public final class ImageTextUtil {
     public static final Color DEFAULT_OUTLINE_COLOR = Color.BLACK;
     public static final float DEFAULT_OUTLINE_WIDTH_FACTOR = 8f;
 
-    private ImageTextUtil() {
+    /**
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
+     */
+    protected ImageTextUtil() {
     }
 
     /**
@@ -194,7 +198,7 @@ public final class ImageTextUtil {
 
         // Adjust line wrap limit based on the image aspect ratio.
         // Wide images can have more characters per line, narrow images have less space for text.
-        int linewrapLength = (int)(lineLength * ((float)image.getWidth() / image.getHeight()));
+        int linewrapLength = adjustLineWrapLength(lineLength, image.getWidth(), image.getHeight());
         if (linewrapLength != lineLength) {
             logger.log(Level.FINE,
                        "drawText: adjusting linewrap limit from {0} to {1} based on image dimensions.",
@@ -202,7 +206,7 @@ public final class ImageTextUtil {
         }
 
         // Now handle line wrapping as needed:
-        List<String> lines = handleLineWrap(text, lineLength);
+        List<String> lines = handleLineWrap(text, linewrapLength);
 
         Graphics2D g = image.createGraphics();
 
@@ -233,19 +237,20 @@ public final class ImageTextUtil {
             }
             if (textY == 0) {
                 int paragraphHeight = textHeight * lines.size();
+                int textAscent = g.getFontMetrics().getAscent() / 4; // needed for proper vertical positioning
                 switch (align) {
                     case TOP_LEFT:
                     case TOP_CENTER:
                     case TOP_RIGHT:
-                        textY = boundTop;
+                        textY = boundTop - textAscent;
                         break;
                     case BOTTOM_LEFT:
                     case BOTTOM_CENTER:
                     case BOTTOM_RIGHT:
-                        textY = boundBottom - paragraphHeight; //  - (int)(textHeight * 0.2); // 0.2 = kludge as above
+                        textY = boundBottom - paragraphHeight - textAscent;
                         break;
                     default:
-                        textY = boundTop + ((boundHeight - paragraphHeight) / 2); //  - (int)(textHeight * 0.2); // 0.2 = kludge as above
+                        textY = boundTop + ((boundHeight - paragraphHeight) / 2) - textAscent;
                 }
             }
             else {
@@ -305,6 +310,22 @@ public final class ImageTextUtil {
     }
 
     /**
+     * Adjusts the line wrap length based on the image aspect ratio.
+     * Wide images can have more characters per line, narrow images have less space for text.
+     *
+     * @param initialLength The initial line length to be adjusted.
+     * @param imageWidth    The width of the image.
+     * @param imageHeight   The height of the image.
+     * @return The adjusted line length based on the image aspect ratio.
+     */
+    protected static int adjustLineWrapLength(int initialLength, int imageWidth, int imageHeight) {
+        if (imageHeight <= 0) {
+            return initialLength;
+        }
+        return (int)(initialLength * ((float)imageWidth / imageHeight));
+    }
+
+    /**
      * Invoked internally to break up a single long line into multiple short lines, if necessary.
      * The given lineLength is used as a guide to determine how long a line must be before
      * it is split, but the actual split point may vary, as we try to only split a line on
@@ -316,7 +337,7 @@ public final class ImageTextUtil {
      * @param lineLength The length at which the given text will be split.
      * @return A List containing one or more lines generated from the line wrapping.
      */
-    private static List<String> handleLineWrap(String text, int lineLength) {
+    protected static List<String> handleLineWrap(String text, int lineLength) {
         List<String> lines = new ArrayList<>();
         return handleLineWrap(lines, text, lineLength);
     }
@@ -330,7 +351,7 @@ public final class ImageTextUtil {
      * @param lineLength The length at which the line will be line-wrapped.
      * @return The modified input List.
      */
-    private static List<String> handleLineWrap(List<String> lines, String text, int lineLength) {
+    protected static List<String> handleLineWrap(List<String> lines, String text, int lineLength) {
         if (text.length() > lineLength) {
             // Try to break on a space character:
             int splitIndex = lineLength;
@@ -364,7 +385,7 @@ public final class ImageTextUtil {
      * @param bottom The bottom edge of the text zone.
      * @return A font point size appropriate for the given text in the given boundary.
      */
-    private static int computeFontSize(Font font, List<String> text, Graphics2D g, int left, int top, int right, int bottom) {
+    protected static int computeFontSize(Font font, List<String> text, Graphics2D g, int left, int top, int right, int bottom) {
         int fontPointSize = 150; // huge default, we'll shrink it down to fit
         int boundWidth = right - left;
         int boundHeight = bottom - top;
@@ -408,7 +429,7 @@ public final class ImageTextUtil {
         return fontPointSize;
     }
 
-    private static String findLongestLine(List<String> lines) {
+    protected static String findLongestLine(List<String> lines) {
         // Lines may have different character lengths. This is a problem because if each line
         // is sized independently, it will result in lines having different font sizes, because
         // each line is scaled to fit the available width within the given Rectangle.

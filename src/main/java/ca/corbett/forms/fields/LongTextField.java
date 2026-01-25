@@ -1,6 +1,5 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.extras.CoalescingDocumentListener;
 import ca.corbett.extras.PopupTextDialog;
 import ca.corbett.forms.validators.FieldValidator;
 import ca.corbett.forms.validators.NonBlankFieldValidator;
@@ -12,6 +11,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -28,7 +29,7 @@ import java.util.Objects;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
-public class LongTextField extends FormField {
+public class LongTextField extends FormField implements DocumentListener {
 
     public enum TextFieldType {
         MULTI_LINE_FIXED_ROWS_COLS,
@@ -62,9 +63,7 @@ public class LongTextField extends FormField {
         fieldComponent = wrapperPanel;
         fieldLabel.setText(label);
         textArea.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        CoalescingDocumentListener listener = new CoalescingDocumentListener(textArea,
-                                                                             e -> fireValueChangedEvent());
-        textArea.getDocument().addDocumentListener(listener);
+        textArea.getDocument().addDocumentListener(this);
         allowPopoutEditing = false; // arbitrary default
         shouldExpandMultiLine = false; // arbitrary default
     }
@@ -273,5 +272,27 @@ public class LongTextField extends FormField {
         for (FieldValidator<? extends FormField> validator : foundList) {
             fieldValidators.remove(validator);
         }
+    }
+
+    // DocumentListener interface stuff below this line --------------------------------
+    //
+    // Yeah, it's horribly broken, but CoalescingDocumentListener is even worse,
+    // and will be marked as deprecated in 2.7 (nuked for all time in 2.8).
+    // So, until a better solution appears, we're stuck with DocumentListener.
+    // https://github.com/scorbo2/swing-extras/issues/251 for the details.
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
     }
 }

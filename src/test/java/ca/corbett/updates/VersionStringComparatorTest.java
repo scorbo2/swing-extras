@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VersionStringComparatorTest {
@@ -47,16 +48,22 @@ class VersionStringComparatorTest {
 
     @Test
     public void isNewerThan() {
+        // Happy path
         assertTrue(VersionStringComparator.isNewerThan("1.1", "1.0"));
         assertTrue(VersionStringComparator.isNewerThan("1.1", "1"));
         assertTrue(VersionStringComparator.isNewerThan("1.1", "1.0.1"));
         assertTrue(VersionStringComparator.isNewerThan("1", "0"));
         assertTrue(VersionStringComparator.isNewerThan("1", "0.9"));
         assertTrue(VersionStringComparator.isNewerThan("11", "1.111111"));
+
+        // Unhappy path
+        assertFalse(VersionStringComparator.isNewerThan("1.0", "1.0"));
+        assertFalse(VersionStringComparator.isNewerThan("1.0", "1.1"));
     }
 
     @Test
     public void isOlderThan() {
+        // Happy path
         assertTrue(VersionStringComparator.isOlderThan("1.0", "2.0"));
         assertTrue(VersionStringComparator.isOlderThan("1.0", "1.1"));
         assertTrue(VersionStringComparator.isOlderThan("1.0", "11"));
@@ -64,5 +71,47 @@ class VersionStringComparatorTest {
         assertTrue(VersionStringComparator.isOlderThan("1.0", "2"));
         assertTrue(VersionStringComparator.isOlderThan("1.0", "2.0.0.0.0"));
         assertTrue(VersionStringComparator.isOlderThan("1.0", "10"));
+
+        // Unhappy path
+        assertFalse(VersionStringComparator.isOlderThan("1.0", "1.0"));
+        assertFalse(VersionStringComparator.isOlderThan("2.0", "1.0"));
+    }
+
+    @Test
+    public void isAtLeast() {
+        // Happy path
+        assertTrue(VersionStringComparator.isAtLeast("1.1", "1.0"));
+        assertTrue(VersionStringComparator.isAtLeast("1.0", "1.0"));
+        assertTrue(VersionStringComparator.isAtLeast("1.0", "0.9"));
+        assertTrue(VersionStringComparator.isAtLeast("2.0", "1.9.9"));
+
+        // Unhappy path
+        assertFalse(VersionStringComparator.isAtLeast("1.0", "1.1"));
+        assertFalse(VersionStringComparator.isAtLeast("1.0", "10.10"));
+    }
+
+    @Test
+    public void isAtMost() {
+        // Happy path
+        assertTrue(VersionStringComparator.isAtMost("1.0", "1.1"));
+        assertTrue(VersionStringComparator.isAtMost("1.0", "1.0"));
+        assertTrue(VersionStringComparator.isAtMost("0.9", "1.0"));
+        assertTrue(VersionStringComparator.isAtMost("1.9.9", "2.0"));
+
+        // Unhappy path
+        assertFalse(VersionStringComparator.isAtMost("1.1", "1.0"));
+        assertFalse(VersionStringComparator.isAtMost("10.10", "1.0"));
+    }
+
+    @Test
+    public void isExactly() {
+        // Happy path
+        assertTrue(VersionStringComparator.isExactly("1.0", "1.0"));
+        assertTrue(VersionStringComparator.isExactly("1.0.0.0.0.0", "1.0"));
+
+        // Unhappy path
+        assertFalse(VersionStringComparator.isExactly("1.0", "1.1"));
+        assertFalse(VersionStringComparator.isExactly("1.0", "0.9"));
+        assertFalse(VersionStringComparator.isExactly("2.0", "1.9.9"));
     }
 }

@@ -36,6 +36,7 @@ import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FileField;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.SliderField;
 
@@ -77,6 +78,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
 
     private PropertiesManager propsManager;
     private ComboField<Alignment> alignmentField;
+    private NumberField borderMarginField;
 
     /**
      * An example enum to show off EnumProperty.
@@ -125,6 +127,10 @@ public class PropertiesDemoPanel extends PanelBuilder {
 
         alignmentField = new ComboField<>("Form alignment:", List.of(Alignment.values()), 1, false);
         formPanel.add(alignmentField);
+
+        // New in swing-extras 2.7: we can control the borderMargin for generated form panels!
+        borderMarginField = new NumberField("Border margin:", 16, 0, 64, 1);
+        formPanel.add(borderMarginField);
 
         // We can use PanelField to wrap a button for launching the dialog:
         PanelField panelField = new PanelField();
@@ -187,6 +193,12 @@ public class PropertiesDemoPanel extends PanelBuilder {
                                                                     + "<a href='link2'>link 2</a></html>",
                                                             new HyperlinkActionHandler());
         props.add(htmlLabel);
+
+        // This seems pretty minor, but before swing-extras 2.7, you couldn't show a field label on a LabelProperty.
+        LabelProperty labelWithFieldLabel = new LabelProperty("Intro.Labels.labelWithFieldLabel",
+                                                              "This label shows its field label too.");
+        labelWithFieldLabel.setFieldLabelText("Field label:");
+        props.add(labelWithFieldLabel);
 
         // Now add some dummy labels to force a scroll bar to appear:
         for (int i = 0; i < 10; i++) {
@@ -353,15 +365,27 @@ public class PropertiesDemoPanel extends PanelBuilder {
         props.add(collapsiblePanelProp);
 
         // And finally, we can show off EnumProperty, which is a handy way of generating combo boxes from enums:
-        props.add(new LabelProperty("Enums.Enums.label1", "You can easily make combo boxes from enums!"));
+        props.add(new LabelProperty("Enums.Enums.label1",
+                                    "With EnumProperty, you can easily make combo boxes from enums!"));
         props.add(new EnumProperty<>("Enums.Enums.enumField1", "Choose:", TestEnum.VALUE1));
         props.add(new LabelProperty("Enums.Enums.label2",
-                                    "Alternatively, you can use the enum names instead of toString():"));
-        props.add(new EnumProperty<>("Enums.Enums.enumField2", "Choose:", TestEnum.VALUE1, true));
+                                    "Alternatively, you can use ComboProperty to show the enum names instead:"));
+
+        // Prior to swing-extras 2.7, EnumProperty had the option of using name() instead of toString().
+        // That option has been removed from EnumProperty, but you can still do it with ComboProperty if you like:
+        List<TestEnum> enumValues = List.of(TestEnum.values());
+        List<String> enumNames = new ArrayList<>();
+        for (TestEnum val : enumValues) {
+            enumNames.add(val.name());
+        }
+        props.add(new ComboProperty<>("Enums.Enums.enumField1_names",
+                                      "Choose:",
+                                      enumNames, 0, false));
+
         props.add(new LabelProperty("Enums.Enums.label3",
-                                    "<html>Either way, your code deals natively with instances of your enum<br>" +
-                                            "and the combobox is generated for you! And either way,<br>" +
-                                            "the value saved to the properties file will be the enum name,<br>" +
+                                    "<html>EnumProperty is the better option, as your code deals natively<br>" +
+                                            "with instances of your enum and the combo is generated for you!<br>" +
+                                            "Also, the value saved to the properties file will be the enum name,<br>" +
                                             " in case the toString() changes over time or is localized to<br>" +
                                             " a different language.</html>")
                           .setFont(new Font(Font.DIALOG, Font.PLAIN, 12))
@@ -404,7 +428,7 @@ public class PropertiesDemoPanel extends PanelBuilder {
             PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(),
                                                                   "Test properties",
                                                                   alignmentField.getSelectedItem(),
-                                                                  16);
+                                                                  borderMarginField.getCurrentValue().intValue());
             dialog.setVisible(true);
             if (dialog.wasOkayed()) {
                 propsManager.save();

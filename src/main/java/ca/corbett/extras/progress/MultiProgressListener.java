@@ -28,14 +28,14 @@ package ca.corbett.extras.progress;
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2022-05-10
+ * @since swing-extras 1.6 (2022-05-10)
  */
 public interface MultiProgressListener {
 
     /**
      * Invoked by the worker when an operation has begun or is about to begin. The number of
      * major work steps is provided here. At the beginning of each major work step,
-     * majorProgressUpdate will be invoked with the number of minor steps needed for this
+     * majorProgressUpdate will be invoked with the number of minor steps needed for that
      * major step.
      *
      * @param totalMajorSteps The count of major work steps that will occur during this operation.

@@ -14,6 +14,7 @@ import javax.swing.filechooser.FileFilter;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.MediaTracker;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -28,15 +29,15 @@ import java.util.Locale;
 /**
  * Contains generic methods for dealing with images and image data.
  *
- * @author steve
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2012-09-01
  */
-public final class ImageUtil {
+public class ImageUtil {
 
     /**
      * JPEG compression quality to use. *
      */
-    private static final float COMPRESSION_QUALITY = 0.95f;
+    protected static final float COMPRESSION_QUALITY = 0.95f;
 
     /**
      * Internal handle on the ImageWriter to use. *
@@ -49,15 +50,16 @@ public final class ImageUtil {
     private static ImageWriteParam imageWriteParam = null;
 
     /**
-     * Utility classes have no public constructor. *
+     * Protected constructor to allow subclassing for application-specific utility methods
+     * while preventing direct instantiation of this utility class.
      */
-    private ImageUtil() {
+    protected ImageUtil() {
     }
 
     /**
      * Internal method to create our internal image utilities.
      */
-    private static void createImageWriter() {
+    protected static void createImageWriter() {
         Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName("jpg");
         if (iter.hasNext()) {
             imageWriter = iter.next();
@@ -69,31 +71,65 @@ public final class ImageUtil {
     }
 
     /**
-     * Loads and returns an ImageIcon from the specified file.
+     * Loads and returns an ImageIcon from the specified image file.
      * Generally, you should use loadImage() instead, as that returns a BufferedImage
      * that can be manipulated in memory and then written out using saveImage(), but
-     * certain types of images (namely animated GIFs) are better in ImageIcon format,
-     * as that allows proper rendering of them, for example in an ImagePanel.
+     * certain types of images (namely animated GIFs) are better in ImageIcon format.
+     * ImagePanel has native support for animated GIF images, but you must
+     * supply them as ImageIcon instances and not BufferedImage instances.
      *
      * @param file The File from which to load the image icon.
      * @return an ImageIcon instance.
+     * @throws IOException If the image could not be loaded.
      */
-    public static ImageIcon loadImageIcon(final File file) {
-        return new ImageIcon(file.getAbsolutePath());
+    public static ImageIcon loadImageIcon(final File file) throws IOException {
+        return validateImageIcon(new ImageIcon(file.getAbsolutePath()));
     }
 
     /**
      * Loads and returns an ImageIcon from the specified URL.
      * Generally, you should use loadImage() instead, as that returns a BufferedImage
      * that can be manipulated in memory and then written out using saveImage(), but
-     * certain types of images (namely animated GIFs) are better in ImageIcon format,
-     * as that allows proper rendering of them, for example in an ImagePanel.
+     * certain types of images (namely animated GIFs) are better in ImageIcon format.
+     * ImagePanel has native support for animated GIF images, but you must
+     * supply them as ImageIcon instances and not BufferedImage instances.
      *
      * @param url The URL from which to load the image icon.
      * @return an ImageIcon instance.
+     * @throws IOException If the image could not be loaded.
      */
-    public static ImageIcon loadImageIcon(final URL url) {
-        return new ImageIcon(url);
+    public static ImageIcon loadImageIcon(final URL url) throws IOException {
+        return validateImageIcon(new ImageIcon(url));
+    }
+
+    /**
+     * Invoked internally to attempt to validate the results of loading an ImageIcon.
+     * It seems that ImageIcon's constructor will not throw any kind of exception if the
+     * load fails, leaving callers with no obvious sign of trouble. The returned ImageIcon
+     * in that case would be non-null, but would not contain any valid image data.
+     * This extra validation step intercepts the ImageIcon before we return it,
+     * and adds an IOException if the image appears to be invalid.
+     *
+     * @param image A candidate ImageIcon to evaluate.
+     * @return The input ImageIcon if it appears valid.
+     * @throws IOException If the image appears to be invalid.
+     */
+    protected static ImageIcon validateImageIcon(final ImageIcon image) throws IOException {
+        // ImageIcon's getImageLoadStatus() method seems to be a bit flakey...
+        // Some GIF files will return status ABORTED even though they display perfectly fine.
+        // If we reject those here, we may end up rejecting valid images.
+        // This makes it a bit tricky to determine whether the image actually loaded successfully.
+        // The best we can do is to do some basic sanity checks on the image dimensions,
+        // and then only reject images that have an explicit ERRORED status:
+        if (image == null
+                || image.getIconWidth() <= 0
+                || image.getIconHeight() <= 0
+                || image.getImageLoadStatus() == MediaTracker.ERRORED) {
+            throw new IOException("Error loading ImageIcon");
+        }
+
+        // If we get here... (shrug) it's probably fine:
+        return image;
     }
 
     /**
@@ -101,7 +137,7 @@ public final class ImageUtil {
      *
      * @param url The URL of the image to load.
      * @return The BufferedImage contained in that URL.
-     * @throws IOException If image not found.
+     * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadImage(final URL url) throws IOException {
         return ImageIO.read(url);
@@ -112,7 +148,7 @@ public final class ImageUtil {
      *
      * @param file The file in question. Can be any format supported by javax.imageio.ImageIO.
      * @return A BufferedImage containing the image data.
-     * @throws IOException on read/write error.
+     * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadImage(final File file) throws IOException {
         return ImageIO.read(file);
@@ -123,7 +159,7 @@ public final class ImageUtil {
      *
      * @param inStream The input stream in question. Must contain an image in a format supported by javax.imageio.ImageIo.
      * @return A BufferedImage containing the image data.
-     * @throws IOException on read/write error.
+     * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadImage(final InputStream inStream) throws IOException {
         return ImageIO.read(inStream);
@@ -135,7 +171,7 @@ public final class ImageUtil {
      * @param loadingClass The class to be used for loading the resource.
      * @param resourceName The fully qualified name of the resource to load. Must be a supported image format.
      * @return The image.
-     * @throws IOException if something goes wrong.
+     * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadFromResource(Class<?> loadingClass, String resourceName) throws IOException {
         try (InputStream inStream = loadingClass.getResourceAsStream(resourceName)) {
@@ -153,7 +189,7 @@ public final class ImageUtil {
      * @param width        The desired width of the image.
      * @param height       The desired height of the image.
      * @return The requested image.
-     * @throws IOException If something goes wrong.
+     * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadFromResource(Class<?> loadingClass, String resourceName, int width, int height)
             throws IOException {
@@ -175,7 +211,7 @@ public final class ImageUtil {
      *
      * @param image The BufferedImage to save
      * @param file  The File to which to save.
-     * @throws IOException on file access error.
+     * @throws IOException If the image could not be saved.
      */
     public static void saveImage(final BufferedImage image, final File file) throws IOException {
         if (imageWriter == null) {
@@ -192,7 +228,7 @@ public final class ImageUtil {
      * @param image              The BufferedImage to save.
      * @param file               The File to which to save.
      * @param compressionQuality The jpeg compression quality value to use.
-     * @throws IOException On file access error.
+     * @throws IOException If the image could not be saved.
      */
     public static void saveImage(final BufferedImage image, final File file, float compressionQuality)
             throws IOException {
@@ -214,7 +250,7 @@ public final class ImageUtil {
      * @param image      The BufferedImage to save.
      * @param file       The File to which to save.
      * @param writeParam The ImageWriteParam to use.
-     * @throws IOException On file access error.
+     * @throws IOException If the image could not be saved.
      */
     public static void saveImage(final BufferedImage image, final File file, ImageWriteParam writeParam)
             throws IOException {
@@ -234,7 +270,7 @@ public final class ImageUtil {
      * @param file       The File to which to save.
      * @param writer     The ImageWriter to use.
      * @param writeParam The ImageWriteParam to use.
-     * @throws IOException On file access error.
+     * @throws IOException If the image could not be saved.
      */
     public static void saveImage(final BufferedImage image, final File file, ImageWriter writer, ImageWriteParam writeParam)
             throws IOException {
@@ -334,7 +370,7 @@ public final class ImageUtil {
      *
      * @param arr A byte array generated by one of the serializeImage methods.
      * @return A BufferedImage representing the image data, or null if the input array was null.
-     * @throws IOException on access error.
+     * @throws IOException If an error occurs during deserialization.
      */
     public static BufferedImage deserializeImage(final byte[] arr) throws IOException {
         if (arr == null) {

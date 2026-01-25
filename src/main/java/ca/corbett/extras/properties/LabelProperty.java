@@ -26,6 +26,7 @@ public class LabelProperty extends AbstractProperty {
     private Font labelFont;
     private Color labelColor;
     private Action hyperlinkAction;
+    private String fieldLabelText;
 
     public LabelProperty(String name, String label) {
         this(name, label, null, null, -1, -1);
@@ -54,6 +55,7 @@ public class LabelProperty extends AbstractProperty {
             setColor(color);
         }
         setExtraMargins(extraTopMargin, extraBottomMargin);
+        fieldLabelText = ""; // by default, we don't show our field label, just our value label
     }
 
     /**
@@ -131,10 +133,27 @@ public class LabelProperty extends AbstractProperty {
         return this;
     }
 
+    /**
+     * Optionally set extra margin padding to go above and below the label.
+     */
     public LabelProperty setExtraMargins(int top, int bottom) {
         extraTopMargin = top;
         extraBottomMargin = bottom;
         return this;
+    }
+
+    /**
+     * Returns the extra top margin for this label.
+     */
+    public int getExtraTopMargin() {
+        return extraTopMargin;
+    }
+
+    /**
+     * Returns the extra bottom margin for this label.
+     */
+    public int getExtraBottomMargin() {
+        return extraBottomMargin;
     }
 
     public LabelProperty setFont(Font f) {
@@ -147,9 +166,26 @@ public class LabelProperty extends AbstractProperty {
         return this;
     }
 
+    /**
+     * Returns our field label text. Defaults to empty string, meaning no field label is shown.
+     */
+    public String getFieldLabelText() {
+        return fieldLabelText;
+    }
+
+    /**
+     * Optionally sets text for our field label. Normally, we don't show our field label, only
+     * our value label. But you can set this to a non-empty string to show a field label as well.
+     */
+    public LabelProperty setFieldLabelText(String fieldLabelText) {
+        this.fieldLabelText = fieldLabelText;
+        return this;
+    }
+
     @Override
     protected FormField generateFormFieldImpl() {
         LabelField field = new LabelField(propertyLabel);
+        field.getFieldLabel().setText(fieldLabelText);
         field.getMargins().setTop(field.getMargins().getTop() + extraTopMargin);
         field.getMargins().setBottom(field.getMargins().getBottom() + extraBottomMargin);
         if (labelFont != null) {

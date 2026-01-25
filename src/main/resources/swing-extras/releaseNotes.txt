@@ -1,6 +1,50 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.7.0 [2026-01-25] - Maintenance release
+  #317 - FormPanel: help labels can now be toggled dynamically
+  #315 - Bug: KeyStrokeManager.clear() was not removing accelerators
+  #314 - AboutPanel: double-click memory label to trigger GC
+  #308 - Bug: ImageTextUtil.drawText() now uses adjusted line length
+  #307 - Bug: ImagePanel was doubling mouse events for animated GIFs
+  #305 - ImagePanel: add dispose() method to prevent memory leaks
+  #301 - ImageListPanel: fix setBackground() behavior
+  #299 - New ListField support class: ListItemSelectAllAction
+  #297 - ListField: minor API tweak
+  #293 - KeyStrokeManager: minor API improvements
+  #289 - DirTree: add listener notification for hidden file toggle
+  #287 - MultiProgressDialog: make label truncation configurable
+  #284 - Refactor resource handling in swing-forms
+  #276 - MultiProgressDialog: make progress label configurable
+  #275 - Fix intermittent bug in SingleInstanceManager test
+  #273 - Added KeyStrokeField and KeyStrokeProperty
+  #267 - MessageUtil: add more convenience wrappers for JOptionPane
+  #264 - ListSubsetField: fire value changed events when items move
+  #257 - new FileSystemUtil method: getUniqueDestinationFile()
+  #256 - DirTree: remove Linux-specific logic
+  #253 - ImagePanel: allow custom border to be set
+  #252 - ImageUtil: better validation in loadImageIcon
+  #251 - CoalescingDocumentListener has failed me for the last time
+  #250 - AbstractProperty: add margin padding options
+  #249 - New visual effects: FadeLayerUI, BlurLayerUI, SnowLayerUI
+  #248 - ListField: offer built-in helper actions for common tasks
+  #247 - DirTree: add selectionWillChange event with veto option
+  #246 - Utility classes: remove final modifiers where not needed
+  #245 - ListField: listener convenience methods; better javadoc
+  #244 - LabelProperty: add ability to set field label text
+  #243 - New utility class: ResourceLoader
+  #242 - Added more VersionStringComparator convenience methods
+  #241 - Mention the swing-extras archetype in the README
+  #240 - ListField: add support for action buttons
+  #239 - PropertiesManager: add option to set border margin
+  #238 - EnumProperty: remove useNamesInsteadOfLabels option
+  #237 - FormPanel: minor refactoring and Javadoc touchups
+  #232 - DirTree: add option to show hidden files
+  #231 - Progress package: Javadoc pass and minor touchups
+  #230 - DirTree: mark factory methods as deprecated
+  #229 - New utility class: KeyStrokeManager
+  #228 - Turn down scary exception logging in AppProperties
+
 Version 2.6.0 [2025-12-31] - Maintenance release
   #224 - Better extension error handling in ExtensionManager
   #222 - ListSubsetField: support drag and drop

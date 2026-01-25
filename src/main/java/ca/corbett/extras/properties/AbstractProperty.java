@@ -1,6 +1,7 @@
 package ca.corbett.extras.properties;
 
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.Margins;
 import ca.corbett.forms.fields.FormField;
 
 import java.awt.event.ActionEvent;
@@ -65,6 +66,7 @@ public abstract class AbstractProperty {
     protected boolean isInitiallyEditable;
     protected boolean isInitiallyVisible;
     protected final Map<String, Object> extraAttributes;
+    protected Margins marginPadding;
 
     private final List<PropertyFormFieldChangeListener> formFieldChangeListeners = new ArrayList<>();
     private final List<FormFieldGenerationListener> formFieldGenerationListeners = new ArrayList<>();
@@ -133,6 +135,7 @@ public abstract class AbstractProperty {
         this.isInitiallyEditable = true; // arbitrary default
         this.helpText = "";
         this.extraAttributes = new HashMap<>();
+        this.marginPadding = new Margins(0); // no padding by default
     }
 
     /**
@@ -408,6 +411,73 @@ public abstract class AbstractProperty {
     }
 
     /**
+     * Will add the specified amount of left padding to the generated FormField's margins.
+     * This ADDS to the default margin value, it does not replace it.
+     */
+    public AbstractProperty addLeftPadding(int left) {
+        marginPadding.setLeft(left);
+        return this;
+    }
+
+    /**
+     * Will add the specified amount of right padding to the generated FormField's margins.
+     * This ADDS to the default margin value, it does not replace it.
+     */
+    public AbstractProperty addRightPadding(int right) {
+        marginPadding.setRight(right);
+        return this;
+    }
+
+    /**
+     * Will add the specified amount of top padding to the generated FormField's margins.
+     * This ADDS to the default margin value, it does not replace it.
+     */
+    public AbstractProperty addTopPadding(int top) {
+        marginPadding.setTop(top);
+        return this;
+    }
+
+    /**
+     * Will add the specified amount of bottom padding to the generated FormField's margins.
+     * This ADDS to the default margin value, it does not replace it.
+     */
+    public AbstractProperty addBottomPadding(int bottom) {
+        marginPadding.setBottom(bottom);
+        return this;
+    }
+
+    /**
+     * Will add the specified amount of inner padding (internal spacing) to the generated FormField's margins.
+     * This ADDS to the default margin value, it does not replace it.
+     */
+    public AbstractProperty addInnerPadding(int inner) {
+        marginPadding.setInternalSpacing(inner);
+        return this;
+    }
+
+    /**
+     * Add the specified padding values to the generated FormField's margins.
+     * This ADDS to the default margin values, it does not replace them.
+     */
+    public AbstractProperty addPadding(int left, int top, int right, int bottom, int inner) {
+        marginPadding.setTop(top);
+        marginPadding.setLeft(left);
+        marginPadding.setRight(right);
+        marginPadding.setBottom(bottom);
+        marginPadding.setInternalSpacing(inner);
+        return this;
+    }
+
+    /**
+     * Returns a copy of the margin padding that will be applied to the generated FormField.
+     * This method is for inspection only - to modify the values, use addPadding() or one
+     * of the other convenience methods instead.
+     */
+    public Margins getMarginPadding() {
+        return new Margins(marginPadding);
+    }
+
+    /**
      * Saves the current value(s) of this property to the given Properties instance.
      *
      * @param props Any Properties instance which will receive the value(s) of this property.
@@ -464,6 +534,14 @@ public abstract class AbstractProperty {
         field.setVisible(isInitiallyVisible);
         field.setHelpText(helpText);
         field.setAllExtraAttributes(extraAttributes);
+
+        // Add any padding to this field's margins (can be overridden by the FormFieldGenerationListener):
+        Margins margins = field.getMargins();
+        margins.setLeft(margins.getLeft() + marginPadding.getLeft());
+        margins.setRight(margins.getRight() + marginPadding.getRight());
+        margins.setTop(margins.getTop() + marginPadding.getTop());
+        margins.setBottom(margins.getBottom() + marginPadding.getBottom());
+        margins.setInternalSpacing(margins.getInternalSpacing() + marginPadding.getInternalSpacing());
 
         // Notify listeners about this FormField and give them a chance to tweak it:
         fireFormFieldGeneratedEvent(field);

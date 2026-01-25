@@ -1,6 +1,5 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.extras.CoalescingDocumentListener;
 import ca.corbett.extras.image.ImagePanel;
 import ca.corbett.extras.image.ImagePanelConfig;
 import ca.corbett.extras.image.ImageUtil;
@@ -20,6 +19,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -47,7 +48,7 @@ import java.util.List;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
  */
-public final class FileField extends FormField {
+public final class FileField extends FormField implements DocumentListener {
 
     /**
      * Currently supported selection modes for this field.
@@ -104,8 +105,7 @@ public final class FileField extends FormField {
         textField = new JTextField(initialValue == null ? "" : initialValue.getAbsolutePath());
         textField.setColumns(cols);
         textField.setFont(getDefaultFont());
-        textField.getDocument()
-                 .addDocumentListener(new CoalescingDocumentListener(textField, e -> fireValueChangedEvent()));
+        textField.getDocument().addDocumentListener(this);
         fileChooser = new JFileChooser(initialValue);
         fileChooser.setMultiSelectionEnabled(false);
         setSelectionType(selectionType, allowBlank);
@@ -296,10 +296,14 @@ public final class FileField extends FormField {
     public FileField setFile(File file) {
         clearValidationResults();
         if (file == null) {
-            textField.setText("");
+            if (!textField.getText().trim().isEmpty()) {
+                textField.setText("");
+            }
         }
         else {
-            textField.setText(file.getAbsolutePath());
+            if (!file.getAbsolutePath().equals(textField.getText())) {
+                textField.setText(file.getAbsolutePath());
+            }
         }
         return this;
     }
@@ -501,5 +505,27 @@ public final class FileField extends FormField {
                 repaint();
             }
         }
+    }
+
+    // DocumentListener interface stuff below this line --------------------------------
+    //
+    // Yeah, it's horribly broken, but CoalescingDocumentListener is even worse,
+    // and will be marked as deprecated in 2.7 (nuked for all time in 2.8).
+    // So, until a better solution appears, we're stuck with DocumentListener.
+    // https://github.com/scorbo2/swing-extras/issues/251 for the details.
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        fireValueChangedEvent();
     }
 }

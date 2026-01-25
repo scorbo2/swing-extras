@@ -80,7 +80,7 @@ public class IntroPanel extends PanelBuilder {
         addHyperlinkIfUrlIsValid(labelField, javadocUrl);
         introPanel.add(labelField);
 
-        labelField = new LabelField("Copyright:", "2012-2025 Steve Corbett");
+        labelField = new LabelField(Version.COPYRIGHT);
         labelField.getFieldLabel().setFont(labelFont);
         labelField.setFont(labelFont);
         labelField.getMargins().setLeft(48); // indent

@@ -3,6 +3,7 @@ package ca.corbett.extras.demo;
 import ca.corbett.extensions.demo.ExtensionsOverviewPanel;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.panels.AboutDemoPanel;
+import ca.corbett.extras.demo.panels.AnimationPanelEffectsPanel;
 import ca.corbett.extras.demo.panels.AnimationTextDemoPanel;
 import ca.corbett.extras.demo.panels.AudioDemoPanel;
 import ca.corbett.extras.demo.panels.DesktopDemoPanel;
@@ -10,6 +11,7 @@ import ca.corbett.extras.demo.panels.DirTreeDemoPanel;
 import ca.corbett.extras.demo.panels.ImageTextUtilDemoPanel;
 import ca.corbett.extras.demo.panels.ImageUtilDemoPanel;
 import ca.corbett.extras.demo.panels.IntroPanel;
+import ca.corbett.extras.demo.panels.KeyStrokeManagerPanel;
 import ca.corbett.extras.demo.panels.LogConsolePanel;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.demo.panels.ProgressDemoPanel;
@@ -84,7 +86,7 @@ public class DemoApp extends JFrame {
         }
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, buildListPanel(), buildDemoPanel());
-        splitPane.setOneTouchExpandable(true);
+        splitPane.setOneTouchExpandable(false); // sadly, this does not play well with certain Look and Feels
         splitPane.setDividerLocation(195);
         add(splitPane, BorderLayout.CENTER);
     }
@@ -109,6 +111,7 @@ public class DemoApp extends JFrame {
         addDemoPanel(new ImageUtilDemoPanel());
         addDemoPanel(new ImageTextUtilDemoPanel());
         addDemoPanel(new AnimationTextDemoPanel());
+        addDemoPanel(new AnimationPanelEffectsPanel()); // These are just for fun
         //addDemoPanel(new AnimationScrollDemoPanel()); // Not really a "swing extra"
         addDemoPanel(new ProgressDemoPanel());
         addDemoPanel(new PropertiesDemoPanel());
@@ -122,6 +125,7 @@ public class DemoApp extends JFrame {
         addDemoPanel(new CustomFormFieldPanel());
         addDemoPanel(new FormHelpPanel());
         addDemoPanel(new ExtensionsOverviewPanel());
+        addDemoPanel(new KeyStrokeManagerPanel());
         addDemoPanel(new LogConsolePanel());
         addDemoPanel(new AboutDemoPanel());
         cardList.setSelectedIndex(0);

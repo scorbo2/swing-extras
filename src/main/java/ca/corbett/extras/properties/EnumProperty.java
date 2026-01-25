@@ -11,12 +11,12 @@ import java.util.logging.Logger;
 /**
  * Represents a multi-choice property, very similar to a ComboProperty, except that the
  * options come from a supplied enum instead of a List of String values.
- * You must supply a default value for the field, and you can choose whether the
- * form field generated from this property uses the enum name() or the enum toString()
- * for the combo box values. It's important to note that even if you use the toString()
- * for the combo box values, when the property saves itself to a Properties object,
- * it will use the enum name() to identify the field value. This is handy in case
- * the toString() value changes over time or is localized to another language.
+ * The generated ComboField will be typed to the given enum type, so if you need
+ * to interact with the ComboField directly, you can do so in a type-safe manner.
+ * Enum values are displayed to the user using their toString() value, but they
+ * are persisted to properties using their name() value. This allows you to change
+ * the toString() value over time (for localization, for example) without breaking
+ * existing saved properties.
  *
  * @param <T> Supply your custom enum type.
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -26,92 +26,30 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
 
     private final Logger logger = Logger.getLogger(EnumProperty.class.getName());
 
-    private final List<String> names;
-    private final List<String> labels;
-    int selectedIndex;
-    T defaultValue;
-    private final boolean useNamesInsteadOfLabels;
+    T value;
 
     /**
      * Creates a new EnumProperty whose choices will be taken from the values
      * of the supplied enum. Any combo box generated from this property will
      * use the result of toString() on each enum, allowing you to present
      * a user-friendly value in the combo box instead of using the name().
-     * Use the other constructor if you actually want to use name() instead
-     * of toString() for the combo box values.
      *
      * @param name         The fully qualified property name.
      * @param label        The human-readable label for this property.
      * @param defaultValue A default value to use for initial selection.
      */
     public EnumProperty(String name, String label, T defaultValue) {
-        this(name, label, defaultValue, false);
-    }
-
-    /**
-     * Creates a new EnumProperty whose choices will be taken from the values
-     * of the supplied enum, and lets you choose whether you want to use
-     * name() or toString() for the possible combo box values.
-     *
-     * @param name                    The fully qualified property name.
-     * @param label                   The human-readable label for this property.
-     * @param defaultValue            A default value to use for initial selection.
-     * @param useNamesInsteadOfLabels If true, name() will be used for combo box values instead of toString().
-     */
-    public EnumProperty(String name, String label, T defaultValue, boolean useNamesInsteadOfLabels) {
         super(name, label);
-        this.defaultValue = defaultValue;
-        this.useNamesInsteadOfLabels = useNamesInsteadOfLabels;
-        names = new ArrayList<>();
-        labels = new ArrayList<>();
-        int i = 0;
-        for (Enum<?> value : defaultValue.getDeclaringClass().getEnumConstants()) {
-            names.add(value.name());
-            labels.add(value.toString());
-            if (value.name().equals(defaultValue.name())) {
-                selectedIndex = i;
-            }
-            i++;
-        }
-    }
-
-    public EnumProperty<T> setSelectedIndex(int index) {
-        if (index < 0 || index >= names.size()) {
-            return this;
-        }
-        selectedIndex = index;
-        return this;
-    }
-
-    public int getSelectedIndex() {
-        return selectedIndex;
+        this.value = defaultValue;
     }
 
     public EnumProperty<T> setSelectedItem(T item) {
-        for (int i = 0; i < names.size(); i++) {
-            if (names.get(i).equals(item.name())) {
-                selectedIndex = i;
-                break;
-            }
-        }
+        value = item;
         return this;
     }
 
-    public int indexOf(String itemName) {
-        for (int i = 0; i < names.size(); i++) {
-            if (names.get(i).equals(itemName)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public int indexOf(T item) {
-        return indexOf(item.name());
-    }
-
     public T getSelectedItem() {
-        return (T)defaultValue.getDeclaringClass().getEnumConstants()[selectedIndex];
+        return value;
     }
 
     @Override
@@ -120,27 +58,48 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void loadFromProps(Properties props) {
-        int index = indexOf(props.getString(fullyQualifiedName, getSelectedItem().name()));
-        if (index == -1) {
-            // If the one in props is not in our list, try to find our default item
-            index = indexOf(defaultValue);
+        String valueName = props.getString(fullyQualifiedName, value.name());
+        T[] enumConstants = (T[])value.getDeclaringClass().getEnumConstants();
+        boolean isFound = false;
+        for (T enumConstant : enumConstants) {
+            if (enumConstant.name().equals(valueName)) {
+                value = enumConstant;
+                isFound = true;
+                break;
+            }
         }
-        if (index == -1) {
-            selectedIndex = 0; // fallback default
-        }
-        else {
-            selectedIndex = index;
+
+        if (!isFound) {
+            logger.warning("EnumProperty.loadFromProps: value \"" + valueName + "\" not found in enum " +
+                                   value.getDeclaringClass().getName() + " -- using default \""
+                                   + value.name() + "\"");
         }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected FormField generateFormFieldImpl() {
-        List<String> options = useNamesInsteadOfLabels ? names : labels;
+
+        // ComboField wants a List<T> of options, and we need a selected index.
+        T[] enumConstants = (T[])value.getDeclaringClass().getEnumConstants();
+        List<T> options = new ArrayList<>();
+        int selectedIndex = 0; // safe default
+        for (int i = 0; i < enumConstants.length; i++) {
+            T enumConstant = enumConstants[i];
+            options.add(enumConstant);
+            if (enumConstant.equals(value)) {
+                selectedIndex = i;
+            }
+        }
+
+        // Now we can generate the FormField:
         return new ComboField<>(propertyLabel, options, selectedIndex, false);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
@@ -150,7 +109,7 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
             return;
         }
 
-        //noinspection unchecked
-        selectedIndex = ((ComboField<String>)field).getSelectedIndex();
+        ComboField<T> comboField = (ComboField<T>)field;
+        value = comboField.getSelectedItem();
     }
 }

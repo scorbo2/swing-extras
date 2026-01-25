@@ -15,10 +15,12 @@ import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -33,12 +35,18 @@ import java.util.Map;
  * handling of mouse events to allow zooming and scrolling. Defaults are provided for
  * all configuration options. Alternatively, you can create an ImagePanelConfig
  * instance and override some or all of those defaults.
+ * <p>
+ * <strong>Important:</strong> When you are done with an ImagePanel instance, you should
+ * call {@link #dispose()} to explicitly release internal resources and help prevent memory
+ * leaks. This is especially important when creating and discarding ImagePanel instances in
+ * batches.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @see ca.corbett.extras.image.ImagePanelConfig
  * @since 2012-09-22 (originally for StegPng, later generified for ca.corbett.util.ui)
  */
-public class ImagePanel extends JPanel implements MouseListener, MouseWheelListener, MouseMotionListener {
+public class ImagePanel extends JPanel implements
+                                       ChangeListener, MouseListener, MouseWheelListener, MouseMotionListener {
 
     /**
      * An optional map of extra, caller-supplied attributes. *
@@ -210,6 +218,10 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         addMouseWheelListener(new RedispatchingMouseAdapter());
         addMouseMotionListener(new RedispatchingMouseAdapter());
 
+        // Allow our image label to forward mouse events to us:
+        // (this enables click-to-zoom and mouse wheel zooming to work on animated GIFs)
+        imageIconLabel.addMouseListener(new RedispatchingMouseAdapter());
+
         // Allow resizing to auto adjust the image being displayed:
         thisPanel.addComponentListener(new ComponentAdapter() {
             @Override
@@ -223,12 +235,8 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             }
         });
 
-        LookAndFeelManager.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                ImagePanel.super.setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY));
-            }
-        });
+        // Register to receive notice if the current LaF changes:
+        LookAndFeelManager.addChangeListener(this);
     }
 
     /**
@@ -566,20 +574,18 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
     }
 
     /**
-     * Returns the current ImageIcon, if one is set.
-     *
-     * @return The ImageIcon being displayed in this panel, if there is one.
-     */
-    /**
      * Overridden from JComponent, this method renders the image using current options.
      *
      * @param g The Graphics object to use for rendering.
      */
     @Override
     public void paintComponent(Graphics g) {
+
+        // Our parent class can handle basic painting first:
+        super.paintComponent(g);
+
         // If we have no image, we're done here:
         if (dBuffer == null && imageIcon == null) {
-            super.paintComponent(g);
             return;
         }
 
@@ -591,10 +597,29 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
             resetZoomCenter();
         }
 
+        // If we have a border set, we have to adjust for its insets.
+        // Otherwise, we might overdraw the image on top of the border.
+        int borderOffsetLeft = 0;
+        int borderOffsetTop = 0;
+        int borderWidthTotal = 0;
+        int borderHeightTotal = 0;
+        if (getBorder() != null) {
+            // We have a border! Let's be careful to take its size into account.
+            // The imageX and imageY calculations further down will use these offsets,
+            // and we'll also use this to compute our myWidth and myHeight values later.
+            Insets insets = getBorder().getBorderInsets(this);
+            borderOffsetLeft = insets.left;
+            borderOffsetTop = insets.top;
+            int borderOffsetRight = insets.right;
+            int borderOffsetBottom = insets.bottom;
+            borderWidthTotal = borderOffsetLeft + borderOffsetRight;
+            borderHeightTotal = borderOffsetTop + borderOffsetBottom;
+        }
+
         // Gather image information:
         Graphics2D graphics2D = (Graphics2D)g;
-        int myWidth = getWidth();
-        int myHeight = getHeight();
+        int myWidth = getWidth() - borderWidthTotal;
+        int myHeight = getHeight() - borderHeightTotal;
         int imgWidth = (int)(srcImgWidth * zoomFactor);
         int imgHeight = (int)(srcImgHeight * zoomFactor);
 
@@ -640,8 +665,8 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         }
 
         // Figure out the center point:
-        int centerX = (int)myWidth / 2;
-        int centerY = (int)myHeight / 2;
+        int centerX = myWidth / 2;
+        int centerY = myHeight / 2;
         imageX = centerX - (int)(zoomCenter.getX() * zoomFactor);
         imageY = centerY - (int)(zoomCenter.getY() * zoomFactor);
 
@@ -653,47 +678,49 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
 
         // Handle horizontal overflow:
         if (imgWidth >= myWidth) {
-            if (imageX > 0) {
-                imageX = 0;
+            if (imageX > borderOffsetLeft) {
+                imageX = borderOffsetLeft;
             }
-            else if (imageX < (myWidth - imgWidth)) {
-                imageX = myWidth - imgWidth;
+            else if (imageX < (borderOffsetLeft + myWidth - imgWidth)) {
+                imageX = borderOffsetLeft + myWidth - imgWidth;
             }
         }
 
         // Handle vertical overflow:
         if (imgHeight >= myHeight) {
-            if (imageY > 0) {
-                imageY = 0;
+            if (imageY > borderOffsetTop) {
+                imageY = borderOffsetTop;
             }
-            else if (imageY < (myHeight - imgHeight)) {
-                imageY = myHeight - imgHeight;
+            else if (imageY < (borderOffsetTop + myHeight - imgHeight)) {
+                imageY = borderOffsetTop + myHeight - imgHeight;
             }
         }
 
         // Handle image placement (already calculated above, tweak it if need be):
         switch (properties.getDisplayMode()) {
 
-            // Unconditionally place it at 0,0
+            // Unconditionally place it at 0,0 (adjusted for border):
             case NONE:
             case STRETCH:
-                imageX = 0;
-                imageY = 0;
+                imageX = borderOffsetLeft;
+                imageY = borderOffsetTop;
                 break;
 
             // Otherwise, try to keep it centered:
             default:
-                imageX = (imgWidth < myWidth) ? (int)((myWidth - imgWidth) / 2) : imageX;
-                imageY = (imgHeight < myHeight) ? (int)((myHeight - imgHeight) / 2) : imageY;
+                imageX = (imgWidth < myWidth) ? borderOffsetLeft + (int)((myWidth - imgWidth) / 2) : imageX;
+                imageY = (imgHeight < myHeight) ? borderOffsetTop + (int)((myHeight - imgHeight) / 2) : imageY;
                 break;
         }
 
         // Set Rendering quality, draw the image, and we're done:
         if (dBuffer != null) {
-            super.paintComponent(g);
             setRenderingQuality(graphics2D);
             graphics2D.drawImage(dBuffer, imageX, imageY, imgWidth, imgHeight, null);
-            graphics2D.dispose();
+
+            // DON'T dispose the graphics object we were given!
+            // This will prevent further painting operations from working correctly.
+            //graphics2D.dispose();
         }
         else {
             if (lastRenderedImageWidth != imgWidth || lastRenderedImageHeight != imgHeight) {
@@ -703,7 +730,6 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
                 lastRenderedImageHeight = imgHeight;
             }
             imageIconLabel.setBounds(imageX, imageY, imgWidth, imgHeight);
-            super.paintComponent(g);
         }
     }
 
@@ -919,16 +945,82 @@ public class ImagePanel extends JPanel implements MouseListener, MouseWheelListe
         }
     }
 
-    @Override
-    public void addMouseListener(MouseListener listener) {
-        super.addMouseListener(listener);
-        imageIconLabel.addMouseListener(listener);
+    /**
+     * Explicitly releases internal resources and clears references to help prevent memory leaks.
+     * This method should be called when you are finished with this ImagePanel instance,
+     * particularly when creating and discarding ImagePanel instances in batches. This method
+     * is idempotent - it can be safely called multiple times on the same instance with no
+     * negative effects.
+     */
+    public void dispose() {
+        // Stop listening for LaF changes:
+        LookAndFeelManager.removeChangeListener(this);
+
+        // Clear the extra attributes map
+        extraAttributes.clear();
+
+        // Remove all mouse listeners
+        MouseListener[] mouseListeners = getMouseListeners();
+        for (MouseListener listener : mouseListeners) {
+            removeMouseListener(listener);
+        }
+
+        // Remove all mouse wheel listeners
+        MouseWheelListener[] mouseWheelListeners = getMouseWheelListeners();
+        for (MouseWheelListener listener : mouseWheelListeners) {
+            removeMouseWheelListener(listener);
+        }
+
+        // Remove all mouse motion listeners
+        MouseMotionListener[] mouseMotionListeners = getMouseMotionListeners();
+        for (MouseMotionListener listener : mouseMotionListeners) {
+            removeMouseMotionListener(listener);
+        }
+
+        // Remove all component listeners (added for resize handling)
+        ComponentListener[] componentListeners = getComponentListeners();
+        for (ComponentListener listener : componentListeners) {
+            removeComponentListener(listener);
+        }
+
+        // Clear the popup menu (do this before nulling out imageIconLabel)
+        this.popupMenu = null;
+        setComponentPopupMenu(null);
+        if (imageIconLabel != null) {
+            imageIconLabel.setComponentPopupMenu(null);
+        }
+
+        // Remove our redispatcher from imageIconLabel:
+        if (imageIconLabel != null) {
+            for (MouseListener listener : imageIconLabel.getMouseListeners()) {
+                imageIconLabel.removeMouseListener(listener);
+            }
+        }
+
+        // Clear the images (do this before nulling out imageIconLabel)
+        // We call the setter methods only if imageIconLabel is not null,
+        // otherwise directly null out the references
+        if (imageIconLabel != null) {
+            setImage(null);
+            setImageIcon(null);
+        } else {
+            // Already disposed - just ensure references are null
+            dBuffer = null;
+            imageIcon = null;
+        }
+
+        // Clear the imageIconLabel reference if present
+        if (imageIconLabel != null) {
+            remove(imageIconLabel);
+            imageIconLabel = null;
+        }
     }
 
+    /**
+     * Invoked by LookAndFeelManager when the Look and Feel changes, so we can update our background color.
+     */
     @Override
-    public void removeMouseListener(MouseListener listener) {
-        super.removeMouseListener(listener);
-        imageIconLabel.removeMouseListener(listener);
+    public void stateChanged(ChangeEvent e) {
+        setBackground(LookAndFeelManager.getLafColor("Panel.background", Color.DARK_GRAY));
     }
-
 }

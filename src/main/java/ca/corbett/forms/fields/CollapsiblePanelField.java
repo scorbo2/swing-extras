@@ -1,7 +1,7 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.extras.LookAndFeelManager;
-import ca.corbett.forms.Resources;
+import ca.corbett.forms.SwingFormsResources;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -26,6 +26,7 @@ import java.awt.LayoutManager;
  */
 public class CollapsiblePanelField extends FormField {
 
+    private static final int PANEL_ICON_SIZE = 20;
     private static boolean isDefaultBorderEnabled = true;
 
     public enum ButtonPosition { Left, Right; }
@@ -68,7 +69,9 @@ public class CollapsiblePanelField extends FormField {
         labelWrapperPanel.add(label);
 
         buttonWrapperPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
-        expandCollapseButton = new JButton(isInitiallyExpanded ? Resources.getMinusIcon() : Resources.getPlusIcon());
+        expandCollapseButton = new JButton(isInitiallyExpanded
+                                                   ? SwingFormsResources.getMinusIcon(PANEL_ICON_SIZE)
+                                                   : SwingFormsResources.getPlusIcon(PANEL_ICON_SIZE));
         expandCollapseButton.addActionListener(e -> setIsExpanded(! isExpanded));
         expandCollapseButton.setBorder(null);
         expandCollapseButton.setOpaque(false);
@@ -98,7 +101,10 @@ public class CollapsiblePanelField extends FormField {
             return this; // ignore no-op requests
         }
         isExpanded = expand;
-        expandCollapseButton.setIcon(isExpanded ? Resources.getMinusIcon() : Resources.getPlusIcon());
+        expandCollapseButton.setIcon(
+                isExpanded
+                        ? SwingFormsResources.getMinusIcon(PANEL_ICON_SIZE)
+                        : SwingFormsResources.getPlusIcon(PANEL_ICON_SIZE));
         expandPanel.setVisible(isExpanded);
         if (expandPanel.getParent() != null) {
             expandPanel.getParent().invalidate();
@@ -149,7 +155,7 @@ public class CollapsiblePanelField extends FormField {
     /**
      * We need to override and return false unconditionally here, otherwise the rendering of this
      * component within FormPanel will get wonky. The CollapsiblePanelField maintains its own
-     * header with label and expand/collapse button, so we don't want FormField to add another label
+     * header with label and expand/collapse button, so we don't want FormPanel to add another label
      * beside it. So, we pretend we have no field label even though we sort of do.
      * Callers can still invoke getFieldLabel().getText() to retrieve our field label text,
      * but this method will pretend that we have no field label so we can handle our own rendering of it.

@@ -25,7 +25,9 @@ import java.awt.Graphics;
  *
  * @author StackOverflow
  * @since 2017-11-09
+ * @deprecated This class hasn't been used in ages, and LookAndFeelManager makes it unnecessary.
  */
+@Deprecated(since = "swing-extras 2.7", forRemoval = true)
 public class DirTreeNodeIcon implements Icon {
 
     private static final int SIZE = 9;

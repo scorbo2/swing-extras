@@ -29,7 +29,7 @@ package ca.corbett.extras.progress;
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2022-05-10
+ * @since swing-extras 1.6 (2022-05-10)
  */
 public interface SimpleProgressListener {
 

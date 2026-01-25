@@ -1,23 +1,22 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.dirtree.DirTreeListener;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
-import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.LongTextField;
 
+import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.io.File;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.Path;
-import java.nio.file.spi.FileSystemProvider;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,14 +31,13 @@ import java.util.List;
 public class DirTreeDemoPanel extends PanelBuilder {
 
     private DirTree dirTree;
-    private List<FileSystem> fileSystems;
-    private ComboField<String> fileSystemCombo;
-    private ComboField<String> rootDirCombo;
-    private final DirTreeListener dirTreeListener;
+    private final DirTreeListener loggingDirTreeListener;
+    private final DirTreeListener annoyingDirTreeListener;
     private LongTextField listenerTextArea;
 
     public DirTreeDemoPanel() {
-        dirTreeListener = new LoggingDirTreeListener();
+        loggingDirTreeListener = new LoggingDirTreeListener();
+        annoyingDirTreeListener = new AnnoyingPromptListener();
     }
 
     @Override
@@ -49,22 +47,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
 
     @Override
     public JPanel build() {
-        fileSystems = findFileSystems();
-        File rootNode;
-
-        // Weird scenario: we might start up in an environment with no default file system:
-        //   (this seems really unlikely, but because of Java's cross-platform nature,
-        //    who knows what kind of device or OS we will be launched on)
-        if (fileSystems.isEmpty() || getRootNodes(fileSystems.get(0)).isEmpty()) {
-            rootNode = new File("/"); // arbitrary fallback; assume linux or linux-like
-        }
-
-        // Otherwise, just default to the first available one:
-        else {
-            rootNode = getRootNodes(fileSystems.get(0)).get(0);
-        }
-
-        dirTree = DirTree.createDirTree(rootNode);
+        dirTree = new DirTree();
         dirTree.setPreferredSize(new Dimension(200, 1));
 
         JPanel containerPanel = new JPanel();
@@ -83,38 +66,19 @@ public class DirTreeDemoPanel extends PanelBuilder {
                 "onto a file system, with the ability to do a chroot-style<br>" +
                 "lock to a specific directory, so that the DirTree only<br>" +
                 "shows the contents of that directory.<br><br>" +
-                "You can also respond to selection changes as the user<br>" +
-                "selects different nodes.</html>";
+                "On systems with multiple filesystem roots, all roots will be<br>" +
+                "shown as top-level nodes. On Linux-based systems, the contents<br>" +
+                "of \"/\" are shown as top-level nodes.</html>";
         LabelField labelField = LabelField.createPlainHeaderLabel(sb, 14);
         labelField.getMargins().setTop(12).setBottom(16);
         formPanel.add(labelField);
 
-        // We can build a ComboField to represent all the file systems we enumerated earlier:
-        List<String> options = new ArrayList<>();
-        for (FileSystem system : fileSystems) {
-            options.add(system.getClass().getSimpleName());
-        }
-        fileSystemCombo = new ComboField<>("File system:", options, 0, false);
-        fileSystemCombo.addValueChangedListener(field -> {
-            int selectedIndex = fileSystemCombo.getSelectedIndex();
-            changeFileSystem(selectedIndex);
-        });
-        formPanel.add(fileSystemCombo);
-
-        // Some file systems can have more than one root node, so let's build up
-        // another ComboField to allow selecting between them:
-        options = new ArrayList<>();
-        if (!fileSystems.isEmpty()) {
-            for (File file : getRootNodes(fileSystems.get(0))) {
-                options.add(file.getAbsolutePath());
-            }
-        }
-        rootDirCombo = new ComboField<>("Root node:", options, 0, false);
-        rootDirCombo.addValueChangedListener(field -> {
-            int selectedIndex = rootDirCombo.getSelectedIndex();
-            changeRootNode(selectedIndex);
-        });
-        formPanel.add(rootDirCombo);
+        // Demonstrate the ability to select and scroll to any arbitrary path, even
+        // if that path has not yet been lazy-loaded in the tree:
+        ButtonField buttonField = new ButtonField(List.of(new SelectAndScrollToAction()));
+        buttonField.getFieldLabel().setText("Select path:");
+        buttonField.setButtonPreferredSize(new Dimension(100, 25));
+        formPanel.add(buttonField);
 
         // We can have a simple checkbox option to allow for locking the tree to a specific directory:
         CheckBoxField checkBoxField = new CheckBoxField("Allow right-click to lock/unlock the tree", true);
@@ -124,16 +88,37 @@ public class DirTreeDemoPanel extends PanelBuilder {
         });
         formPanel.add(checkBoxField);
 
+        // And another checkbox for showing/hiding hidden directories: (new in swing-extras 2.7!)
+        checkBoxField = new CheckBoxField("Show hidden directories", true);
+        checkBoxField.addValueChangedListener(field -> {
+            boolean isSelected = ((CheckBoxField)field).isChecked();
+            dirTree.setShowHiddenDirs(isSelected);
+        });
+        formPanel.add(checkBoxField);
+
+        // And another checkbox to add a confirmation prompt on every selection change: (new in swing-extras 2.7!)
+        checkBoxField = new CheckBoxField("Prompt to confirm selection changes", false);
+        checkBoxField.addValueChangedListener(field -> {
+            boolean isSelected = ((CheckBoxField)field).isChecked();
+            if (isSelected) {
+                dirTree.addDirTreeListener(annoyingDirTreeListener);
+            }
+            else {
+                dirTree.removeDirTreeListener(annoyingDirTreeListener);
+            }
+        });
+        formPanel.add(checkBoxField);
+
         // And another checkbox option to enable or disable our LoggingDirTreeListener:
         checkBoxField = new CheckBoxField("Listen for events", false);
         checkBoxField.addValueChangedListener(field -> {
             boolean isSelected = ((CheckBoxField)field).isChecked();
             if (isSelected) {
-                dirTree.addDirTreeListener(dirTreeListener);
+                dirTree.addDirTreeListener(loggingDirTreeListener);
                 listenerTextArea.setText("Listening for events..." + System.lineSeparator());
             }
             else {
-                dirTree.removeDirTreeListener(dirTreeListener);
+                dirTree.removeDirTreeListener(loggingDirTreeListener);
                 listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
             }
         });
@@ -150,50 +135,36 @@ public class DirTreeDemoPanel extends PanelBuilder {
     }
 
     /**
-     * Invoked internally when the user changes the selected file system.
-     * We respond by setting appropriate options into the root node chooser.
+     * An annoying implementation of DirTreeListener that demonstrates the ability
+     * to listen for (and veto!) selection changes within the DirTree.
+     *
+     * @since 2.7
      */
-    private void changeFileSystem(int index) {
-        List<File> rootNodes = getRootNodes(fileSystems.get(index));
-        List<String> rootNodesStr = new ArrayList<>();
-        for (File file : rootNodes) {
-            rootNodesStr.add(file.getAbsolutePath());
+    private class AnnoyingPromptListener implements DirTreeListener {
+        @Override
+        public boolean selectionWillChange(DirTree source, File newSelectedDir) {
+            return JOptionPane.showConfirmDialog(DemoApp.getInstance(),
+                                                 "Are you sure you wish to change directories?",
+                                                 "Confirm selection change",
+                                                 JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
         }
-        rootDirCombo.setOptions(rootNodesStr, 0);
-    }
 
-    /**
-     * Invoked internally when the user changes the selected root node.
-     * We respond by pointing the DirTree at the given root node.
-     */
-    private void changeRootNode(int index) {
-        List<File> rootNodes = getRootNodes(fileSystems.get(fileSystemCombo.getSelectedIndex()));
-        dirTree.lock(rootNodes.get(index));
-    }
-
-    /**
-     * Enumerates all the file systems available on this system.
-     */
-    private List<FileSystem> findFileSystems() {
-        List<FileSystem> list = new ArrayList<>();
-        for (FileSystemProvider provider : FileSystemProvider.installedProviders()) {
-            if ("file".equals(provider.getScheme())) {
-                list.add(provider.getFileSystem(URI.create("file:///")));
-                break;
-            }
+        @Override
+        public void selectionChanged(DirTree source, File selectedDir) {
         }
-        return list;
-    }
 
-    /**
-     * Enumerates all the root nodes for the given file system.
-     */
-    private List<File> getRootNodes(FileSystem fileSystem) {
-        List<File> list = new ArrayList<>();
-        for (Path path : fileSystem.getRootDirectories()) {
-            list.add(path.toFile());
+        @Override
+        public void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles) {
+
         }
-        return list;
+
+        @Override
+        public void treeLocked(DirTree source, File lockDir) {
+        }
+
+        @Override
+        public void treeUnlocked(DirTree source) {
+        }
     }
 
     /**
@@ -202,8 +173,19 @@ public class DirTreeDemoPanel extends PanelBuilder {
      */
     private class LoggingDirTreeListener implements DirTreeListener {
         @Override
+        public boolean selectionWillChange(DirTree source, File newSelectedDir) {
+            return true;
+        }
+
+        @Override
         public void selectionChanged(DirTree source, File selectedDir) {
             String msg = "selectionChanged: new dir is " + selectedDir.getAbsolutePath();
+            listenerTextArea.setText(listenerTextArea.getText() + msg + "\n");
+        }
+
+        @Override
+        public void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles) {
+            String msg = "showHiddenFilesChanged: now " + (showHiddenFiles ? "showing" : "hiding") + " hidden files";
             listenerTextArea.setText(listenerTextArea.getText() + msg + "\n");
         }
 
@@ -217,6 +199,34 @@ public class DirTreeDemoPanel extends PanelBuilder {
         public void treeUnlocked(DirTree source) {
             String msg = "treeUnlocked";
             listenerTextArea.setText(listenerTextArea.getText() + msg + "\n");
+        }
+    }
+
+    /**
+     * A quick action to demo the ability to select and scroll to an arbitrary path
+     * within the DirTree, even if that path has not yet been lazy-loaded.
+     */
+    private class SelectAndScrollToAction extends AbstractAction {
+
+        public SelectAndScrollToAction() {
+            super("Choose");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String path = JOptionPane.showInputDialog(DemoApp.getInstance(),
+                                                      "Enter any path to select and scroll to:",
+                                                      "Select path",
+                                                      JOptionPane.QUESTION_MESSAGE);
+            if (path != null && !path.isBlank()) {
+                File pathFile = new File(path);
+                if (!dirTree.selectAndScrollTo(pathFile)) {
+                    JOptionPane.showMessageDialog(DemoApp.getInstance(),
+                                                  "The path \"" + path + "\" could not be found in the DirTree.",
+                                                  "Path not found",
+                                                  JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
         }
     }
 }

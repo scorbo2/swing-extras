@@ -1,6 +1,6 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.forms.Resources;
+import ca.corbett.forms.SwingFormsResources;
 
 import javax.swing.DefaultListModel;
 import javax.swing.DropMode;
@@ -67,6 +67,7 @@ public class ListSubsetField<T> extends FormField {
 
     private static final Logger log = Logger.getLogger(ListSubsetField.class.getName());
 
+    private static final int ICON_SIZE = 16;
     public static final int DEFAULT_VISIBLE_ROW_COUNT = 4;
     public static final int DEFAULT_FIXED_CELL_WIDTH = -1;
 
@@ -97,10 +98,14 @@ public class ListSubsetField<T> extends FormField {
         availableList.setFixedCellWidth(DEFAULT_FIXED_CELL_WIDTH);
         selectedList.setFixedCellWidth(DEFAULT_FIXED_CELL_WIDTH);
         wrapperPanel = new JPanel();
-        moveLeftButton = createActionButton("Move Selected Left", Resources.getMoveLeftIcon());
-        moveRightButton = createActionButton("Move Selected Right", Resources.getMoveRightIcon());
-        moveAllLeftButton = createActionButton("Move All Left", Resources.getMoveAllLeftIcon());
-        moveAllRightButton = createActionButton("Move All Right", Resources.getMoveAllRightIcon());
+        moveLeftButton = createActionButton("Move Selected Left",
+                                            SwingFormsResources.getMoveLeftIcon(ICON_SIZE));
+        moveRightButton = createActionButton("Move Selected Right",
+                                             SwingFormsResources.getMoveRightIcon(ICON_SIZE));
+        moveAllLeftButton = createActionButton("Move All Left",
+                                               SwingFormsResources.getMoveAllLeftIcon(ICON_SIZE));
+        moveAllRightButton = createActionButton("Move All Right",
+                                                SwingFormsResources.getMoveAllRightIcon(ICON_SIZE));
         moveLeftButton.addActionListener(e -> moveSelectedLeft());
         moveRightButton.addActionListener(e -> moveSelectedRight());
         moveAllLeftButton.addActionListener(e -> moveAllLeft());
@@ -171,15 +176,22 @@ public class ListSubsetField<T> extends FormField {
         // Move the specified items to the selected list:
         // (note we don't just invoke selectItem() on each item because we only
         //  want to do the sorting once at the end, if needed, instead of after every item)
+        boolean anyMoved = false;
         for (T item : itemsToSelect) {
             if (availableListModel.removeElement(item)) {
                 selectedListModel.addElement(item);
+                anyMoved = true;
             }
         }
 
         // Now sort the selected list if auto-sorting is enabled:
         if (autoSortingEnabled) {
             sortListModel(selectedListModel);
+        }
+
+        // Fire value changed event only if at least one item was moved:
+        if (anyMoved) {
+            fireValueChangedEvent();
         }
 
         return this;
@@ -206,6 +218,7 @@ public class ListSubsetField<T> extends FormField {
             if (autoSortingEnabled) {
                 sortListModel(selectedListModel);
             }
+            fireValueChangedEvent();
         }
         return this;
     }
@@ -223,6 +236,7 @@ public class ListSubsetField<T> extends FormField {
             if (autoSortingEnabled) {
                 sortListModel(availableListModel);
             }
+            fireValueChangedEvent();
         }
         return this;
     }
@@ -395,39 +409,51 @@ public class ListSubsetField<T> extends FormField {
 
     private void moveSelectedRight() {
         List<T> selectedValues = availableList.getSelectedValuesList();
-        for (T value : selectedValues) {
-            availableListModel.removeElement(value);
-            selectedListModel.addElement(value);
-        }
-        if (autoSortingEnabled) {
-            sortListModel(selectedListModel);
+        if (!selectedValues.isEmpty()) {
+            for (T value : selectedValues) {
+                availableListModel.removeElement(value);
+                selectedListModel.addElement(value);
+            }
+            if (autoSortingEnabled) {
+                sortListModel(selectedListModel);
+            }
+            fireValueChangedEvent();
         }
     }
 
     private void moveSelectedLeft() {
         List<T> selectedValues = selectedList.getSelectedValuesList();
-        for (T value : selectedValues) {
-            selectedListModel.removeElement(value);
-            availableListModel.addElement(value);
-        }
-        if (autoSortingEnabled) {
-            sortListModel(availableListModel);
+        if (!selectedValues.isEmpty()) {
+            for (T value : selectedValues) {
+                selectedListModel.removeElement(value);
+                availableListModel.addElement(value);
+            }
+            if (autoSortingEnabled) {
+                sortListModel(availableListModel);
+            }
+            fireValueChangedEvent();
         }
     }
 
     private void moveAllRight() {
-        selectedListModel.addAll(Collections.list(availableListModel.elements()));
-        availableListModel.clear();
-        if (autoSortingEnabled) {
-            sortListModel(selectedListModel);
+        if (!availableListModel.isEmpty()) {
+            selectedListModel.addAll(Collections.list(availableListModel.elements()));
+            availableListModel.clear();
+            if (autoSortingEnabled) {
+                sortListModel(selectedListModel);
+            }
+            fireValueChangedEvent();
         }
     }
 
     private void moveAllLeft() {
-        availableListModel.addAll(Collections.list(selectedListModel.elements()));
-        selectedListModel.clear();
-        if (autoSortingEnabled) {
-            sortListModel(availableListModel);
+        if (!selectedListModel.isEmpty()) {
+            availableListModel.addAll(Collections.list(selectedListModel.elements()));
+            selectedListModel.clear();
+            if (autoSortingEnabled) {
+                sortListModel(availableListModel);
+            }
+            fireValueChangedEvent();
         }
     }
 
@@ -659,6 +685,7 @@ public class ListSubsetField<T> extends FormField {
                     for (T item : items) {
                         sourceModel.add(dropIndex++, item);
                     }
+                    // Do NOT fire value changed event for reordering within the same list
                 } else {
                     // Moving between lists
 
@@ -685,6 +712,8 @@ public class ListSubsetField<T> extends FormField {
                             dropModel.add(dropIndex++, item);
                         }
                     }
+                    // Fire value changed event since items moved between lists
+                    fireValueChangedEvent();
                 }
 
                 return true;
