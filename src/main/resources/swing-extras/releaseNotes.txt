@@ -1,7 +1,7 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
-Version 2.7.0 [TODO release date here] - Maintenance release
+Version 2.7.0 [2026-01-25] - Maintenance release
   #317 - FormPanel: help labels can now be toggled dynamically
   #315 - Bug: KeyStrokeManager.clear() was not removing accelerators
   #314 - AboutPanel: double-click memory label to trigger GC
@@ -32,6 +32,7 @@ Version 2.7.0 [TODO release date here] - Maintenance release
   #246 - Utility classes: remove final modifiers where not needed
   #245 - ListField: listener convenience methods; better javadoc
   #244 - LabelProperty: add ability to set field label text
+  #243 - New utility class: ResourceLoader
   #242 - Added more VersionStringComparator convenience methods
   #241 - Mention the swing-extras archetype in the README
   #240 - ListField: add support for action buttons
@@ -39,9 +40,9 @@ Version 2.7.0 [TODO release date here] - Maintenance release
   #238 - EnumProperty: remove useNamesInsteadOfLabels option
   #237 - FormPanel: minor refactoring and Javadoc touchups
   #232 - DirTree: add option to show hidden files
-  #231 - Progress package: javadoc pass and minor touchups
+  #231 - Progress package: Javadoc pass and minor touchups
   #230 - DirTree: mark factory methods as deprecated
-  #229 - New utility class: KeyboardManager
+  #229 - New utility class: KeyStrokeManager
   #228 - Turn down scary exception logging in AppProperties
 
 Version 2.6.0 [2025-12-31] - Maintenance release

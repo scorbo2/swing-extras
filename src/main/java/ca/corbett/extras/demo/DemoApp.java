@@ -86,7 +86,7 @@ public class DemoApp extends JFrame {
         }
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, buildListPanel(), buildDemoPanel());
-        splitPane.setOneTouchExpandable(true);
+        splitPane.setOneTouchExpandable(false); // sadly, this does not play well with certain Look and Feels
         splitPane.setDividerLocation(195);
         add(splitPane, BorderLayout.CENTER);
     }

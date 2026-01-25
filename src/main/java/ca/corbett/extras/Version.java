@@ -29,7 +29,7 @@ public final class Version {
         aboutInfo.projectUrl = PROJECT_URL;
         aboutInfo.logoImageLocation = "/swing-extras/images/swing-extras-logo.jpg";
         aboutInfo.applicationName = Version.NAME;
-        aboutInfo.applicationVersion = Version.VERSION + "-SNAPSHOT"; // TODO Remove -SNAPSHOT for release builds
+        aboutInfo.applicationVersion = Version.VERSION;
 
         // Applications can optionally show "built with swing-extras X.Y" in their about box
         // along with a link to the swing-extras product page, but we will disable that
