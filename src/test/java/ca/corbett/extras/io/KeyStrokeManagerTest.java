@@ -19,11 +19,40 @@ import static org.junit.jupiter.api.Assertions.fail;
 class KeyStrokeManagerTest {
 
     private KeyStrokeManager keyManager;
+    private final java.awt.Frame reference = new java.awt.Frame();
+
 
     @BeforeEach
     public void setup() {
         keyManager = new KeyStrokeManager(null);
     }
+
+    @Test
+    public void addWindow_nullReference_success() {
+        keyManager.addWindow(null);
+        assertTrue(!keyManager.isEnabled());
+    }
+
+    @Test
+    public void addWindow_validInput_success() {
+        keyManager.addWindow(reference);
+        assertTrue(keyManager.isEnabled());
+    }
+
+    @Test
+    public void removeWindow_nullReference_success() {
+         keyManager.addWindow(reference);
+        keyManager.removeWindow(null);
+        assertTrue(keyManager.isEnabled());
+    }
+
+    @Test
+    public void removeWindow_validInput_success() {
+        keyManager.addWindow(reference);
+        keyManager.removeWindow(reference);
+        assertTrue(!keyManager.isEnabled());
+    }
+
 
     @Test
     public void parseKeyStroke_validInput_success() {
