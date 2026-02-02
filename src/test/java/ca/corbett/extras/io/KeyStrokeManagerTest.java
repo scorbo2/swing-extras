@@ -28,9 +28,13 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void addWindow_nullReference_success() {
-        keyManager.addWindow(null);
-        assertTrue(!keyManager.isEnabled());
+    public void addWindow_nullReference_error() {
+        try {
+            keyManager.addWindow(null);
+            fail("Expected IllegalArgumentException for null window");
+        } catch (IllegalArgumentException ignored) {
+            assertTrue(!keyManager.isEnabled());
+        }
     }
 
     @Test
@@ -42,8 +46,12 @@ class KeyStrokeManagerTest {
     @Test
     public void removeWindow_nullReference_success() {
          keyManager.addWindow(reference);
-        keyManager.removeWindow(null);
-        assertTrue(keyManager.isEnabled());
+        try {
+            keyManager.addWindow(null);
+            fail("Expected IllegalArgumentException for null window");
+        } catch (IllegalArgumentException ignored) {
+            assertTrue(keyManager.isEnabled());
+        }
     }
 
     @Test
