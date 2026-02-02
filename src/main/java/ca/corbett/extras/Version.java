@@ -8,7 +8,7 @@ import ca.corbett.extras.about.AboutInfo;
  */
 public final class Version {
 
-    public static final String VERSION = "2.7.0";
+    public static final String VERSION = "2.8.0";
 
     public static final String NAME = "swing-extras";
 
@@ -29,7 +29,7 @@ public final class Version {
         aboutInfo.projectUrl = PROJECT_URL;
         aboutInfo.logoImageLocation = "/swing-extras/images/swing-extras-logo.jpg";
         aboutInfo.applicationName = Version.NAME;
-        aboutInfo.applicationVersion = Version.VERSION;
+        aboutInfo.applicationVersion = Version.VERSION + "-SNAPSHOT"; // TODO Remove -SNAPSHOT before release
 
         // Applications can optionally show "built with swing-extras X.Y" in their about box
         // along with a link to the swing-extras product page, but we will disable that
