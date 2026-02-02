@@ -8,8 +8,11 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -58,7 +61,7 @@ public class KeyStrokeManager {
     private static final Logger log = Logger.getLogger(KeyStrokeManager.class.getName());
 
     private boolean isDisposed = false;
-    private Window window;
+    private Set<Window> windows = new HashSet<>();
     private final Map<KeyStroke, List<Action>> keyMap = new ConcurrentHashMap<>();
     private boolean isEnabled;
     private final KeyEventDispatcher keyDispatcher = new CustomKeyDispatcher();
@@ -71,7 +74,9 @@ public class KeyStrokeManager {
      * @param window the window that must be active to receive shortcuts.
      */
     public KeyStrokeManager(Window window) {
-        this.window = window;
+       if (window != null){
+            this.windows.add(window);
+       }
         this.isEnabled = window != null; // We need a window to be enabled
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(keyDispatcher);
     }
@@ -90,8 +95,42 @@ public class KeyStrokeManager {
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         manager.removeKeyEventDispatcher(keyDispatcher);
         keyMap.clear();
-        window = null;
+        windows.clear();
         isDisposed = true;
+    }
+
+    /**
+     * Adds a new window to this KeyStrokeManager
+     */
+    public void addWindow(Window window){
+       if (window == null){
+            throw new IllegalArgumentException("Window cannot be null!");
+       }
+       
+       this.windows.add(window);
+       // previously to adding multiple window support it was the normal behavior to enable the manager during initial setup if the window != null
+       // to mantain this behavior we validate if there is any window after the operation and update isEnabled
+        this.isEnabled = !this.windows.isEmpty();
+    }
+
+    /**
+     * Removes an specified window from this KeyStrokeManager
+     */
+    public void removeWindow(Window window){
+        if(window != null){
+           if(this.windows.remove(window)){
+            log.fine("window reference was found and removed");
+           }else{
+            log.warning("window reference wasn't found in this KeystrokeManager instance");
+           }
+        } else {
+            throw new IllegalArgumentException("Window cannot be null!");
+        }
+
+        //by giving the user the chance to delete any window from the manager we also give him the chance to remove them all, in case there are no more
+        // active window we disable the manager
+        this.isEnabled = !this.windows.isEmpty();
+
     }
 
     /**
@@ -108,8 +147,8 @@ public class KeyStrokeManager {
      */
     public KeyStrokeManager setEnabled(boolean enabled) {
         // If our window is null, we cannot be enabled:
-        if (window == null) {
-            log.warning("KeyStrokeManager.setEnabled: cannot enable; window is null.");
+        if (windows.isEmpty()) {
+            log.warning("KeyStrokeManager.setEnabled: cannot enable; there is no main window attached.");
             this.isEnabled = false;
             return this;
         }
@@ -584,15 +623,24 @@ public class KeyStrokeManager {
      */
     private class CustomKeyDispatcher implements KeyEventDispatcher {
 
+        private Optional<Window> getActiveWindowIfAny()
+        {
+            // Only a single window can be active at the same time, but even if there is more than one the event must be only called once
+            return windows.stream().filter(Window::isActive).findFirst();
+        }
+
         @Override
         public boolean dispatchKeyEvent(KeyEvent e) {
+
+            Optional<Window> activeWindow = getActiveWindowIfAny();
+
             // Don't process if we're disabled:
             if (!isEnabled) {
                 return false;
             }
 
-            // Don't process if our window is null or isn't active:
-            if (window == null || !window.isActive()) {
+            // Don't process if none of our windows are active
+            if (activeWindow.isEmpty()) {
                 return false;
             }
 
@@ -619,7 +667,7 @@ public class KeyStrokeManager {
                     for (Action action : actions) {
                         // Don't execute disabled actions:
                         if (action.isEnabled()) {
-                            action.actionPerformed(new ActionEvent(window,
+                            action.actionPerformed(new ActionEvent(activeWindow.get(),
                                                                    ActionEvent.ACTION_PERFORMED,
                                                                    keyStrokeStr));
                         }
