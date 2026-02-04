@@ -1,10 +1,23 @@
 package ca.corbett.extras;
 
+import ca.corbett.forms.SwingFormsResources;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -43,12 +56,10 @@ import java.util.List;
  * </p>
  * <ul>
  * <li><code>setGroupIcon(String groupName, Icon icon)</code> - sets the icon for the specified group.</li>
- * <li><code>setGroupComparator(String groupName, Comparator&lt;EnhancedAction&gt; comparator)</code> - sets
- *     the comparator for sorting actions within the specified group.</li>
- * <li><code>setGroup(String groupName, Icon icon, Comparator&lt;EnhancedAction&gt; comparator)</code> -
- *     convenience method for setting icon and Comparator at once.</li>
- * <li><code>setComparator(Comparator&lt;String&gt;>)</code> - determines the order of action groups
+ * <li><code>setGroupComparator(Comparator&lt;String&gt;>)</code> - determines the order of action groups
  *     within the ActionPanel. By default, groups are presented in the order they were added.</li>
+ * <li><code>setActionComparator(Comparator&lt;EnhancedAction&gt; comparator)</code> - sets
+ *     the comparator for sorting actions within groups.</li>
  * </ul>
  * <p>
  * <b>Styling options</b> - methods are provided to customize fonts, colors, borders,
@@ -60,15 +71,24 @@ import java.util.List;
  *    choose whether actions are presented as clickable JLabels or as JButtons. Default is JLabels.</li>
  * <li><b>Fonts</b> - use <code>setActionFont()</code> and <code>setGroupFont()</code> to set fonts for
  *     actions and group headers, respectively.</li>
+ * <li><b>Icons</b> - if your actions have icons, they will be displayed next to the action name by default.
+ *    You can disable this by calling setShowActionIcons(false). Group headers can also have icons,
+ *    which can be set using setGroupIcon(). You can disable group icons with setShowGroupIcons(false).</li>
  * <li><b>Colors</b> - use <code>setActionForeground()</code>, <code>setActionBackground()</code>,
  *    <code>setGroupForeground()</code>, and <code>setGroupBackground()</code> to set foreground
  *    and background colors for actions and group headers, respectively.</li>
  * <li><b>Borders</b> - use <code>setGroupBorder()</code> to set a border around action groups.
  *    The default is no border. Use <code>setGroupHeaderBorder()</code> to set a border
  *    around the group header. The default is no border.</li>
- * <li><b>Spacing</b> - use <code>setActionVGap()</code> and <code>setGroupVGap()</code> to set
- *    the vertical spacing between actions and between groups, respectively. Use <code>setGroupMargin()</code>
- *    to set the margin between action groups and the edge of the ActionPanel.</li>
+ * <li><b>Spacing</b> - you can control the spacing both within and around action groups:
+ *    use <code>setInternalPadding()</code> to control the space between actions and the
+ *    edges of the ActionPanel, and also between the actions themselves.
+ *    Use <code>setExternalPadding()</code> to control the space between action groups, and the
+ *    space between action groups and the edge of the ActionPanel.</li>
+ * <li><b>Expand/collapse state</b> - the user can expand or collapse action groups by clicking
+ *    the button in the group header. All action groups are expanded initially by default.
+ *    You can programmatically expand or collapse groups by calling
+ *    <code>setExpanded(String groupName, boolean expanded)</code> on the desired action group.</li>
  * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -76,39 +96,45 @@ import java.util.List;
  */
 public class ActionPanel extends JPanel {
 
-    private static final int DEFAULT_ACTION_VGAP = 2;
-    private static final int DEFAULT_GROUP_VGAP = 8;
+    public static final int DEFAULT_INTERNAL_PADDING = 2;
+    public static final int DEFAULT_EXTERNAL_PADDING = 8;
 
     private final List<ActionGroup> actionGroups;
     private Comparator<String> groupComparator;
+    private Comparator<EnhancedAction> actionComparator;
     private boolean useLabels;
     private Border groupBorder;
     private Border groupHeaderBorder;
     private Font actionFont;
     private Font groupHeaderFont;
-    private int groupMargin;
+    private int internalPadding;
+    private int externalPadding;
+    private int actionIndent;
     private Color actionBackground;
     private Color actionForeground;
     private Color groupHeaderBackground;
     private Color groupHeaderForeground;
-    private int actionVGap;
-    private int groupVGap;
+    private boolean showActionIcons;
+    private boolean showGroupIcons;
 
     public ActionPanel() {
         this.actionGroups = new ArrayList<>();
-        this.groupComparator = null;
+        this.groupComparator = null; // Default to add order
+        this.actionComparator = null; // Default to add order
         this.useLabels = true; // Default to using labels
         this.groupBorder = null;
         this.groupHeaderBorder = null;
-        this.groupMargin = 0;
         this.actionFont = null; // Use L&F default
         this.groupHeaderFont = null; // Use L&F default
         this.actionForeground = null; // Use L&F default
         this.actionBackground = null; // Use L&F default
         this.groupHeaderForeground = null; // Use L&F default
         this.groupHeaderBackground = null; // Use L&F default
-        this.actionVGap = DEFAULT_ACTION_VGAP;
-        this.groupVGap = DEFAULT_GROUP_VGAP;
+        this.internalPadding = DEFAULT_INTERNAL_PADDING;
+        this.externalPadding = DEFAULT_EXTERNAL_PADDING;
+        this.actionIndent = 0; // no indent by default
+        this.showActionIcons = true; // visible by default (if the action has an icon set)
+        this.showGroupIcons = true; // visible by default (if the group has an icon set)
     }
 
     /**
@@ -156,40 +182,31 @@ public class ActionPanel extends JPanel {
     }
 
     /**
-     * Sets the comparator for sorting actions within the specified group.
+     * Sets the comparator for sorting actions within action groups.
+     * By default, actions will be sorted in the order in which they were added to the group.
+     * You can pass null as the comparator to revert to the default behavior.
      *
-     * @param groupName  The name of the group.
-     * @param comparator The comparator to use for sorting actions.
+     * @param comparator The comparator to use for sorting actions, or null for default order.
      * @return This ActionPanel, for method chaining.
      */
-    public ActionPanel setGroupComparator(String groupName, Comparator<EnhancedAction> comparator) {
-        ActionGroup group = findOrCreateGroup(groupName);
-        group.setComparator(comparator);
+    public ActionPanel setActionComparator(Comparator<EnhancedAction> comparator) {
+        actionComparator = comparator;
+        for (ActionGroup group : actionGroups) {
+            group.setComparator(comparator);
+        }
         rebuild();
         return this;
     }
 
     /**
-     * Sets both the icon and comparator for the specified group.
-     *
-     * @param groupName  The name of the group.
-     * @param icon       The icon to set.
-     * @param comparator The comparator to use for sorting actions.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setGroup(String groupName, Icon icon, Comparator<EnhancedAction> comparator) {
-        setGroupIcon(groupName, icon);
-        setGroupComparator(groupName, comparator);
-        return this;
-    }
-
-    /**
      * Sets the comparator for ordering action groups within the ActionPanel.
+     * By default, groups will be presented in the order in which they were added.
+     * You can pass null as the comparator to revert to the default behavior.
      *
-     * @param comparator The comparator to use for sorting groups.
+     * @param comparator The comparator to use for sorting groups, or null for default order.
      * @return This ActionPanel, for method chaining.
      */
-    public ActionPanel setComparator(Comparator<String> comparator) {
+    public ActionPanel setGroupComparator(Comparator<String> comparator) {
         this.groupComparator = comparator;
         rebuild();
         return this;
@@ -328,49 +345,119 @@ public class ActionPanel extends JPanel {
     }
 
     /**
-     * Sets the vertical gap between action items.
-     * The default is 2 pixels.
+     * Sets the space between actions within an action group, and also the space between
+     * the actions and the edges of the ActionPanel. The default is 2 pixels.
      *
-     * @param vgap The vertical gap in pixels.
+     * @param padding The internal padding in pixels. Must be greater than or equal to 0.
      * @return This ActionPanel, for method chaining.
      */
-    public ActionPanel setActionVGap(int vgap) {
-        if (vgap < 0) {
-            throw new IllegalArgumentException("Action vertical gap cannot be negative.");
+    public ActionPanel setInternalPadding(int padding) {
+        if (padding < 0) {
+            throw new IllegalArgumentException("Internal padding cannot be negative.");
         }
-        actionVGap = vgap;
+        internalPadding = padding;
         rebuild();
         return this;
     }
 
     /**
-     * Sets the vertical gap between action groups.
-     * The default is 8 pixels.
+     * Sets the space between action groups, and also the space between
+     * the action groups and the edges of the ActionPanel. The default is 8 pixels.
      *
-     * @param vgap The vertical gap in pixels.
+     * @param padding The external padding in pixels. Must be greater than or equal to 0.
      * @return This ActionPanel, for method chaining.
      */
-    public ActionPanel setGroupVGap(int vgap) {
-        if (vgap < 0) {
-            throw new IllegalArgumentException("Group vertical gap cannot be negative.");
+    public ActionPanel setExternalPadding(int padding) {
+        if (padding < 0) {
+            throw new IllegalArgumentException("External padding cannot be negative.");
         }
-        groupVGap = vgap;
+        externalPadding = padding;
         rebuild();
         return this;
     }
 
     /**
-     * Sets the spacing value (in pixels) to use between action groups and the edge of the ActionPanel.
-     * The default is 0 pixels.
+     * Returns the left indent applied to action items within their group.
      *
-     * @param margin The margin in pixels. Must be greater than or equal to 0.
+     * @return The action indent in pixels.
+     */
+    public int getActionIndent() {
+        return actionIndent;
+    }
+
+    /**
+     * Sets an optional left indent to apply to action items within their group.
+     * The default is 0 (no indent).
+     *
+     * @param actionIndent The action indent in pixels. Must be greater than or equal to 0.
      * @return This ActionPanel, for method chaining.
      */
-    public ActionPanel setGroupMargin(int margin) {
-        if (margin < 0) {
-            throw new IllegalArgumentException("Margin cannot be negative.");
+    public ActionPanel setActionIndent(int actionIndent) {
+        if (actionIndent < 0) {
+            throw new IllegalArgumentException("Action indent cannot be negative.");
         }
-        groupMargin = margin;
+        this.actionIndent = actionIndent;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Reports whether action icons are shown next to action names. By default, if an action has an icon set,
+     * it will be shown next to the action name. You can disable this by calling setShowActionIcons(false).
+     */
+    public boolean isShowActionIcons() {
+        return showActionIcons;
+    }
+
+    /**
+     * Controls whether action icons are shown next to action names. By default, if an action has an icon set,
+     * it will be shown next to the action name. You can disable this by calling setShowActionIcons(false).
+     */
+    public ActionPanel setShowActionIcons(boolean showActionIcons) {
+        this.showActionIcons = showActionIcons;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Reports whether group icons are shown next to group names. By default, if a group has an icon set,
+     * it will be shown next to the group name. You can disable this by calling setShowGroupIcons(false).
+     */
+    public boolean isShowGroupIcons() {
+        return showGroupIcons;
+    }
+
+    /**
+     * Controls whether group icons are shown next to group names. By default, if a group has an icon set,
+     * it will be shown next to the group name. You can disable this by calling setShowGroupIcons(false).
+     */
+    public ActionPanel setShowGroupIcons(boolean showGroupIcons) {
+        this.showGroupIcons = showGroupIcons;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Reports whether the named group is currently expanded.
+     *
+     * @param groupName The name of the action group.
+     * @return True if the group is expanded, false if it is collapsed.
+     */
+    public boolean isExpanded(String groupName) {
+        ActionGroup group = findOrCreateGroup(groupName);
+        return group.isExpanded();
+    }
+
+    /**
+     * Sets whether the named group is expanded or collapsed.
+     *
+     * @param groupName The name of the action group.
+     * @param expanded  True to expand the group, false to collapse it.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setExpanded(String groupName, boolean expanded) {
+        ActionGroup group = findOrCreateGroup(groupName);
+        group.setExpanded(expanded);
         rebuild();
         return this;
     }
@@ -394,23 +481,257 @@ public class ActionPanel extends JPanel {
         return newGroup;
     }
 
+    /**
+     * Rebuilds the UI by clearing all components and re-rendering
+     * all action groups based on current configuration.
+     */
     private void rebuild() {
-        // TODO: Rebuild the UI based on current state
+        // Clear existing components
+        removeAll();
+
+        // Set up the main layout - vertical box layout
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        // Sort groups if comparator is set
+        List<ActionGroup> sortedGroups = new ArrayList<>(actionGroups);
+        if (groupComparator != null) {
+            sortedGroups.sort((g1, g2) -> groupComparator.compare(g1.getName(), g2.getName()));
+        }
+
+        // Render each action group
+        for (ActionGroup group : sortedGroups) {
+            // Add vertical gap between groups:
+            add(Box.createVerticalStrut(externalPadding));
+
+            // Create the group container
+            JPanel groupPanel = createGroupPanel(group);
+            add(Box.createHorizontalStrut(externalPadding)); // left margin
+            add(groupPanel);
+            add(Box.createHorizontalStrut(externalPadding)); // right margin
+        }
+
+        // Add bottom margin if specified
+        if (externalPadding > 0) {
+            add(Box.createVerticalStrut(externalPadding));
+        }
+
+        // Add glue to push everything to the top
+        add(Box.createVerticalGlue());
+
+        // Refresh the display
+        revalidate();
+        repaint();
     }
 
+    /**
+     * Creates a panel for a single action group, including header and actions.
+     */
+    private JPanel createGroupPanel(ActionGroup group) {
+        JPanel groupPanel = new JPanel();
+        groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
+        groupPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // Apply group border if set
+        if (groupBorder != null) {
+            groupPanel.setBorder(groupBorder);
+        }
+
+        // Create and add the group header
+        groupPanel.add(createGroupHeader(group));
+
+        // If the group is collapsed, we skip adding the actions:
+        if (group.isExpanded()) {
+            // Create and add the actions container
+            JPanel actionsPanel = createActionsPanel(group);
+            groupPanel.add(actionsPanel);
+        }
+
+        return groupPanel;
+    }
+
+    /**
+     * Creates the header panel for an action group.
+     */
+    private JPanel createGroupHeader(ActionGroup group) {
+        JPanel wrapperPanel = new JPanel(new BorderLayout());
+        wrapperPanel.setAlignmentX(Component.LEFT_ALIGNMENT); // no idea why, but this affects action panel alignment
+
+        // Apply header border if set
+        if (groupHeaderBorder != null) {
+            wrapperPanel.setBorder(groupHeaderBorder);
+        }
+
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
+        headerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        wrapperPanel.add(headerPanel, BorderLayout.CENTER);
+
+        // Add internal padding:
+        if (internalPadding > 0) {
+            int pad = internalPadding;
+            headerPanel.setBorder(BorderFactory.createEmptyBorder(pad, pad, pad, pad));
+        }
+
+        // Apply background color if set
+        if (groupHeaderBackground != null) {
+            headerPanel.setBackground(groupHeaderBackground);
+            headerPanel.setOpaque(true);
+        }
+
+        // Add group icon if present
+        int pad = internalPadding;
+        if (group.getIcon() != null && showGroupIcons) {
+            JLabel iconLabel = new JLabel(group.getIcon());
+            iconLabel.setBorder(BorderFactory.createEmptyBorder(pad, 0, pad, pad)); // left padded by headerPanel
+            headerPanel.add(iconLabel);
+        }
+
+        // Add group name label
+        JLabel nameLabel = new JLabel(group.getName());
+        if (groupHeaderFont != null) {
+            nameLabel.setFont(groupHeaderFont);
+        }
+        else {
+            // Make it bold by default
+            nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD));
+        }
+        if (groupHeaderForeground != null) {
+            nameLabel.setForeground(groupHeaderForeground);
+        }
+        headerPanel.add(nameLabel);
+
+        // Add glue to push everything to the left
+        headerPanel.add(Box.createHorizontalGlue());
+
+        // Add expand/collapse button:
+        Icon icon = group.isExpanded()
+                ? SwingFormsResources.getMinusIcon(16)
+                : SwingFormsResources.getPlusIcon(16);
+        JButton toggleButton = new JButton(icon);
+        toggleButton.setToolTipText(group.isExpanded() ? "Collapse group" : "Expand group");
+        toggleButton.setBorder(BorderFactory.createEmptyBorder(pad, pad, pad, 0)); // right padded by headerPanel
+        toggleButton.setContentAreaFilled(false);
+        toggleButton.setFocusPainted(false);
+        toggleButton.addActionListener(e -> {
+            group.setExpanded(!group.isExpanded());
+            rebuild();
+        });
+        headerPanel.add(toggleButton);
+
+        return wrapperPanel;
+    }
+
+    /**
+     * Creates the actions panel for an action group.
+     */
+    private JPanel createActionsPanel(ActionGroup group) {
+        JPanel actionsPanel = new JPanel();
+        actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
+        actionsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Get the group actions (will be sorted if comparator is set)
+        List<EnhancedAction> actions = group.getActions();
+
+        // Add each action
+        for (EnhancedAction action : actions) {
+            JPanel wrapperPanel = new JPanel(new BorderLayout());
+            wrapperPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            if (internalPadding > 0) {
+                int pad = internalPadding;
+                wrapperPanel.setBorder(BorderFactory.createEmptyBorder(pad, pad + actionIndent, pad, pad));
+            }
+
+            // Apply background color if set
+            if (actionBackground != null) {
+                wrapperPanel.setBackground(actionBackground);
+                wrapperPanel.setOpaque(true);
+            }
+
+            Component actionComponent = createActionComponent(action);
+            wrapperPanel.add(actionComponent, BorderLayout.CENTER);
+            actionsPanel.add(wrapperPanel);
+        }
+
+        return actionsPanel;
+    }
+
+    /**
+     * Creates a component (JButton or JLabel) for a single action.
+     */
+    private Component createActionComponent(EnhancedAction action) {
+        Component component;
+
+        if (useLabels) {
+            // Create a clickable label
+            JLabel label = new JLabel(action.getName());
+            if (action.getIcon() != null && showActionIcons) {
+                label.setIcon(action.getIcon());
+                label.setIconTextGap(internalPadding);
+            }
+            if (action.getTooltip() != null) {
+                label.setToolTipText(action.getTooltip());
+            }
+
+            // Apply styling
+            if (actionFont != null) {
+                label.setFont(actionFont);
+            }
+            if (actionForeground != null) {
+                label.setForeground(actionForeground);
+            }
+
+            // Make it clickable
+            label.setCursor(Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+            label.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    action.actionPerformed(new ActionEvent(label, ActionEvent.ACTION_PERFORMED, null));
+                }
+            });
+
+            // Labels are transparent by default - that's what we want
+            label.setAlignmentX(Component.LEFT_ALIGNMENT);
+            component = label;
+
+        }
+        else {
+            // Create a button
+            JButton button = new JButton(action);
+
+            // Apply styling
+            if (actionFont != null) {
+                button.setFont(actionFont);
+            }
+            if (actionForeground != null) {
+                button.setForeground(actionForeground);
+            }
+            if (!showActionIcons) {
+                button.setIcon(null);
+            }
+
+            button.setAlignmentX(Component.LEFT_ALIGNMENT);
+            component = button;
+        }
+
+        return component;
+    }
+
+    /**
+     * An internal class to represent a single action group.
+     */
     private class ActionGroup {
         private final String name;
         private Comparator<EnhancedAction> comparator;
-        private final List<EnhancedAction> actions;
+        private final List<EnhancedAction> actionsAsAdded;
         private Icon icon;
         private boolean isExpanded;
 
         public ActionGroup(String name) {
             this.name = name;
             this.comparator = null;
-            this.actions = new ArrayList<>();
-            this.isExpanded = false;
+            this.actionsAsAdded = new ArrayList<>();
+            this.isExpanded = true; // expanded by default
             this.icon = null;
         }
 
@@ -424,9 +745,14 @@ public class ActionPanel extends JPanel {
 
         public void setComparator(Comparator<EnhancedAction> comparator) {
             this.comparator = comparator;
+        }
+
+        public List<EnhancedAction> getActions() {
+            List<EnhancedAction> sortedActions = new ArrayList<>(actionsAsAdded);
             if (comparator != null) {
-                actions.sort(comparator);
+                sortedActions.sort(comparator);
             }
+            return sortedActions;
         }
 
         public boolean isExpanded() {
@@ -438,9 +764,9 @@ public class ActionPanel extends JPanel {
         }
 
         public void addAction(EnhancedAction action) {
-            actions.add(action);
+            actionsAsAdded.add(action);
             if (comparator != null) {
-                actions.sort(comparator);
+                actionsAsAdded.sort(comparator);
             }
         }
 

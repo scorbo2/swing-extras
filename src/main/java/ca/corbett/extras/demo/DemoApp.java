@@ -3,6 +3,7 @@ package ca.corbett.extras.demo;
 import ca.corbett.extensions.demo.ExtensionsOverviewPanel;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.demo.panels.AboutDemoPanel;
+import ca.corbett.extras.demo.panels.ActionPanelDemoPanel;
 import ca.corbett.extras.demo.panels.AnimationPanelEffectsPanel;
 import ca.corbett.extras.demo.panels.AnimationTextDemoPanel;
 import ca.corbett.extras.demo.panels.AudioDemoPanel;
@@ -126,6 +127,7 @@ public class DemoApp extends JFrame {
         addDemoPanel(new FormHelpPanel());
         addDemoPanel(new ExtensionsOverviewPanel());
         addDemoPanel(new KeyStrokeManagerPanel());
+        addDemoPanel(new ActionPanelDemoPanel());
         addDemoPanel(new LogConsolePanel());
         addDemoPanel(new AboutDemoPanel());
         cardList.setSelectedIndex(0);
