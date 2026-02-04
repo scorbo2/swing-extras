@@ -111,48 +111,6 @@ class ActionPanelTest {
     }
 
     @Test
-    void testAnimationWithRealUI() throws Exception {
-        // This test verifies that the animation actually runs without errors
-        CountDownLatch latch = new CountDownLatch(1);
-
-        SwingUtilities.invokeLater(() -> {
-            try {
-                JFrame frame = new JFrame("Test");
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-                ActionPanel panel = new ActionPanel();
-                panel.setAnimationDurationMs(100); // Short duration for test
-                panel.add("Test Group", createTestAction("Action 1"));
-                panel.add("Test Group", createTestAction("Action 2"));
-
-                frame.add(panel);
-                frame.pack();
-                frame.setVisible(true);
-
-                // Test expand/collapse animation
-                panel.setExpanded("Test Group", false);
-
-                // Wait a bit for animation
-                Thread.sleep(150);
-
-                panel.setExpanded("Test Group", true);
-
-                // Wait for animation to complete
-                Thread.sleep(150);
-
-                frame.dispose();
-                latch.countDown();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-                fail("Animation test failed: " + e.getMessage());
-            }
-        });
-
-        assertTrue(latch.await(5, TimeUnit.SECONDS), "Animation test should complete within 5 seconds");
-    }
-
-    @Test
     void testInstantExpandCollapse() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
 

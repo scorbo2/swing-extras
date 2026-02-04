@@ -80,6 +80,7 @@ public class ActionPanelDemoPanel extends PanelBuilder {
     private NumberField actionIndentField;
     private ComboField<String> animationField;
     private ComboField<String> stylingField;
+    private ColorField actionPanelBackgroundField;
     private ColorField actionForegroundField;
     private ColorField actionBackgroundField;
     private ColorField groupHeaderForegroundField;
@@ -228,6 +229,12 @@ public class ActionPanelDemoPanel extends PanelBuilder {
         stylingField.addValueChangedListener(f -> styleFieldChanged());
         formPanel.add(stylingField);
 
+        actionPanelBackgroundField = new ColorField("Panel background:", ColorSelectionType.SOLID);
+        actionPanelBackgroundField.setColor(Color.DARK_GRAY);
+        actionPanelBackgroundField.getMargins().setLeft(16); // indent a bit to show that these are styling options
+        actionPanelBackgroundField.addValueChangedListener(f -> styleFieldChanged());
+        formPanel.add(actionPanelBackgroundField);
+
         actionForegroundField = new ColorField("Action foreground:", ColorSelectionType.SOLID);
         actionForegroundField.setColor(Color.BLACK);
         actionForegroundField.getMargins().setLeft(16); // indent a bit to show that these are styling options
@@ -261,10 +268,12 @@ public class ActionPanelDemoPanel extends PanelBuilder {
      */
     private void styleFieldChanged() {
         boolean isCustom = stylingField.getSelectedIndex() == 1;
+        actionPanelBackgroundField.setEnabled(isCustom);
         actionForegroundField.setEnabled(isCustom);
         actionBackgroundField.setEnabled(isCustom);
         groupHeaderForegroundField.setEnabled(isCustom);
         groupHeaderBackgroundField.setEnabled(isCustom);
+        actionPanel.setBackground(isCustom ? actionPanelBackgroundField.getColor() : null);
         actionPanel.setActionForeground(isCustom ? actionForegroundField.getColor() : null);
         actionPanel.setActionBackground(isCustom ? actionBackgroundField.getColor() : null);
         actionPanel.setGroupHeaderForeground(isCustom ? groupHeaderForegroundField.getColor() : null);
@@ -370,15 +379,11 @@ public class ActionPanelDemoPanel extends PanelBuilder {
      */
     private class ExampleAction extends EnhancedAction {
 
-        private final String name;
-        private final Icon icon;
         private final String exampleTitle;
         private final String exampleText;
 
         public ExampleAction(String name, Icon icon, String exampleTitle, String exampleText) {
             super(name);
-            this.name = name;
-            this.icon = icon;
             this.exampleTitle = exampleTitle;
             this.exampleText = exampleText;
             setIcon(icon);

@@ -71,14 +71,16 @@ import java.util.List;
  * <ul>
  * <li><b>Labels vs Buttons</b> - use <code>setUseLabels()</code> or <code>setUseButtons()</code> to
  *    choose whether actions are presented as clickable JLabels or as JButtons. Default is JLabels.</li>
- * <li><b>Fonts</b> - use <code>setActionFont()</code> and <code>setGroupFont()</code> to set fonts for
+ * <li><b>Fonts</b> - use <code>setActionFont()</code> and <code>setGroupHeaderFont()</code> to set fonts for
  *     actions and group headers, respectively.</li>
  * <li><b>Icons</b> - if your actions have icons, they will be displayed next to the action name by default.
  *    You can disable this by calling setShowActionIcons(false). Group headers can also have icons,
  *    which can be set using setGroupIcon(). You can disable group icons with setShowGroupIcons(false).</li>
  * <li><b>Colors</b> - use <code>setActionForeground()</code>, <code>setActionBackground()</code>,
- *    <code>setGroupForeground()</code>, and <code>setGroupBackground()</code> to set foreground
- *    and background colors for actions and group headers, respectively.</li>
+ *    <code>setGroupHeaderForeground()</code>, and <code>setGroupHeaderBackground()</code> to set foreground
+ *    and background colors for actions and group headers, respectively. The ActionPanel itself also has
+ *    a background color, visible if externalPadding is set to a non-zero value. The background color
+ *    can be set using <code>setBackground()</code> inherited from JPanel.</li>
  * <li><b>Borders</b> - use <code>setGroupBorder()</code> to set a border around action groups.
  *    The default is no border. Use <code>setGroupHeaderBorder()</code> to set a border
  *    around the group header. The default is no border.</li>
@@ -94,7 +96,22 @@ import java.util.List;
  * <li><b>Animation</b> - by default, expand/collapse operations are animated with a smooth sliding effect.
  *    The default animation duration is 200ms. You can customize the animation speed using
  *    <code>setAnimationDurationMs(int ms)</code>, or disable animation entirely with
- *    <code>setAnimationEnabled(false)</code> to revert to instantaneous expand/collapse.</li>
+ *    <code>setAnimationEnabled(false)</code> to revert to instantaneous expand/collapse.
+ *    Note that programmatically calling setExpanded() will always expand/collapse instantly, without animation.</li>
+ * </ul>
+ * <p>
+ *     <b>Development TODOs:</b>
+ * </p>
+ * <ul>
+ *     <li>Customizable icon sizing for action and group icons</li>
+ *     <li>Make the expand/collapse button icon customizable</li>
+ *     <li>Add an option to click or double-click the header label for expand/collapse?</li>
+ *     <li>Consider adding mouse-over highlighting for action labels/buttons? Underline the label under
+ *         the mouse so it looks more like a link?</li>
+ *     <li>Consider adding keyboard navigation support?</li>
+ *     <li>Add font choosers to demo app to test out customizing the header/action fonts</li>
+ *     <li>Cheesy, but I want a "whoosh" sound effect for the expand/collapse animation. Just because.</li>
+ *     <li>Listeners for expand/collapse events and/or actions added/removed?</li>
  * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -118,6 +135,7 @@ public class ActionPanel extends JPanel {
     private int internalPadding;
     private int externalPadding;
     private int actionIndent;
+    private Color panelBackground;
     private Color actionBackground;
     private Color actionForeground;
     private Color groupHeaderBackground;
@@ -136,6 +154,7 @@ public class ActionPanel extends JPanel {
         this.groupHeaderBorder = null;
         this.actionFont = null; // Use L&F default
         this.groupHeaderFont = null; // Use L&F default
+        this.panelBackground = null; // Use L&F default
         this.actionForeground = null; // Use L&F default
         this.actionBackground = null; // Use L&F default
         this.groupHeaderForeground = null; // Use L&F default
@@ -157,6 +176,9 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel add(String groupName, EnhancedAction action) {
+        if (groupName == null || action == null || groupName.isEmpty()) {
+            throw new IllegalArgumentException("Group name and action cannot be null or empty.");
+        }
         ActionGroup group = findOrCreateGroup(groupName);
         group.addAction(action);
         rebuild();
@@ -171,6 +193,12 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel addAll(String groupName, List<EnhancedAction> actions) {
+        if (groupName == null || groupName.isEmpty()) {
+            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        }
+        if (actions == null || actions.isEmpty()) {
+            return this; // Just treat it as a no-op
+        }
         ActionGroup group = findOrCreateGroup(groupName);
         for (EnhancedAction action : actions) {
             group.addAction(action);
@@ -187,6 +215,9 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel setGroupIcon(String groupName, Icon icon) {
+        if (groupName == null || groupName.isEmpty()) {
+            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        }
         ActionGroup group = findOrCreateGroup(groupName);
         group.setIcon(icon);
         rebuild();
@@ -270,6 +301,19 @@ public class ActionPanel extends JPanel {
         groupHeaderFont = font;
         rebuild();
         return this;
+    }
+
+    /**
+     * We have to override this because we use a wrapper panel internally to manage
+     * our BoxLayout, so we need to store the background color and apply it to
+     * the wrapper panel during rebuild().
+     *
+     * @param bg the desired background <code>Color</code>
+     */
+    @Override
+    public void setBackground(Color bg) {
+        panelBackground = bg;
+        rebuild();
     }
 
     /**
@@ -456,6 +500,9 @@ public class ActionPanel extends JPanel {
      * @return True if the group is expanded, false if it is collapsed.
      */
     public boolean isExpanded(String groupName) {
+        if (groupName == null || groupName.isEmpty()) {
+            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        }
         ActionGroup group = findOrCreateGroup(groupName);
         return group.isExpanded();
     }
@@ -468,9 +515,12 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel setExpanded(String groupName, boolean expanded) {
+        if (groupName == null || groupName.isEmpty()) {
+            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        }
         ActionGroup group = findOrCreateGroup(groupName);
         group.setExpanded(expanded);
-        rebuild();
+        rebuild(); // set instantly - no animation for programmatic changes
         return this;
     }
 
@@ -546,8 +596,16 @@ public class ActionPanel extends JPanel {
         // Clear existing components
         removeAll();
 
+        // Wonky case: if we have no action groups, just return an empty panel
+        if (actionGroups == null || actionGroups.isEmpty()) {
+            revalidate();
+            repaint();
+            return;
+        }
+
         // Set up the main layout - vertical box layout
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        JPanel wrapperPanel = new JPanel();
+        wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.Y_AXIS));
 
         // Sort groups if comparator is set
         List<ActionGroup> sortedGroups = new ArrayList<>(actionGroups);
@@ -558,24 +616,47 @@ public class ActionPanel extends JPanel {
         // Render each action group
         for (ActionGroup group : sortedGroups) {
             // Add vertical gap between groups:
-            add(Box.createVerticalStrut(externalPadding));
+            wrapperPanel.add(Box.createVerticalStrut(externalPadding));
 
             // Create the group container
             JPanel groupPanel = createGroupPanel(group);
-            add(Box.createHorizontalStrut(externalPadding)); // left margin
-            add(groupPanel);
-            add(Box.createHorizontalStrut(externalPadding)); // right margin
+            JPanel groupWrapperPanel = new JPanel(new BorderLayout());
+            groupWrapperPanel.add(groupPanel);
+            // Add left/right margin:
+            int pad = externalPadding;
+            groupWrapperPanel.setBorder(BorderFactory.createEmptyBorder(0, pad, 0, pad));
+            groupWrapperPanel.add(groupPanel, BorderLayout.CENTER);
+            wrapperPanel.add(groupWrapperPanel);
+
+            // Apply panel background if set:
+            if (panelBackground != null) {
+                groupWrapperPanel.setBackground(panelBackground);
+                groupWrapperPanel.setOpaque(true);
+            }
         }
 
         // Add bottom margin if specified
         if (externalPadding > 0) {
-            add(Box.createVerticalStrut(externalPadding));
+            wrapperPanel.add(Box.createVerticalStrut(externalPadding));
         }
 
         // Add glue to push everything to the top
-        add(Box.createVerticalGlue());
+        wrapperPanel.add(Box.createVerticalGlue());
 
-        // Refresh the display
+        // Apply panel background if set:
+        if (panelBackground != null) {
+            wrapperPanel.setBackground(panelBackground);
+            wrapperPanel.setOpaque(true);
+        }
+
+        // Add the wrapper panel to this ActionPanel in a way that won't stretch it to fill our vertical space:
+        // (BoxLayout is finicky that way... without this BorderLayout wrapper, the action groups will
+        //  stretch vertically if there are not enough groups to fill the available space. This is especially
+        //  a problem when collapsing all groups and watching the headers grow vertically.)
+        setLayout(new BorderLayout());
+        add(wrapperPanel, BorderLayout.NORTH);
+
+        // Refresh the display:
         revalidate();
         repaint();
     }
@@ -786,7 +867,7 @@ public class ActionPanel extends JPanel {
             label.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    action.actionPerformed(new ActionEvent(label, ActionEvent.ACTION_PERFORMED, null));
+                    action.actionPerformed(new ActionEvent(label, ActionEvent.ACTION_PERFORMED, action.getName()));
                 }
             });
 
@@ -820,7 +901,7 @@ public class ActionPanel extends JPanel {
     /**
      * An internal class to represent a single action group.
      */
-    private class ActionGroup {
+    private static class ActionGroup {
         private final String name;
         private Comparator<EnhancedAction> comparator;
         private final List<EnhancedAction> actionsAsAdded;
@@ -893,7 +974,7 @@ public class ActionPanel extends JPanel {
      * An internal panel that wraps the actions panel and provides animated expand/collapse functionality.
      * The panel gradually changes its preferred height to create a smooth sliding effect.
      */
-    private class AnimatedPanel extends JPanel {
+    private static class AnimatedPanel extends JPanel {
         private final JPanel contentPanel;
         private int currentHeight;
         private int targetHeight;
