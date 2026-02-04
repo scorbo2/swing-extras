@@ -9,11 +9,13 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -89,6 +91,10 @@ import java.util.List;
  *    the button in the group header. All action groups are expanded initially by default.
  *    You can programmatically expand or collapse groups by calling
  *    <code>setExpanded(String groupName, boolean expanded)</code> on the desired action group.</li>
+ * <li><b>Animation</b> - by default, expand/collapse operations are animated with a smooth sliding effect.
+ *    The default animation duration is 200ms. You can customize the animation speed using
+ *    <code>setAnimationDurationMs(int ms)</code>, or disable animation entirely with
+ *    <code>setAnimationEnabled(false)</code> to revert to instantaneous expand/collapse.</li>
  * </ul>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -98,6 +104,8 @@ public class ActionPanel extends JPanel {
 
     public static final int DEFAULT_INTERNAL_PADDING = 2;
     public static final int DEFAULT_EXTERNAL_PADDING = 8;
+    public static final int DEFAULT_ANIMATION_DURATION_MS = 200;
+    public static final int ANIMATION_FRAME_DELAY_MS = 10;
 
     private final List<ActionGroup> actionGroups;
     private Comparator<String> groupComparator;
@@ -116,6 +124,8 @@ public class ActionPanel extends JPanel {
     private Color groupHeaderForeground;
     private boolean showActionIcons;
     private boolean showGroupIcons;
+    private int animationDurationMs;
+    private boolean animationEnabled;
 
     public ActionPanel() {
         this.actionGroups = new ArrayList<>();
@@ -135,6 +145,8 @@ public class ActionPanel extends JPanel {
         this.actionIndent = 0; // no indent by default
         this.showActionIcons = true; // visible by default (if the action has an icon set)
         this.showGroupIcons = true; // visible by default (if the group has an icon set)
+        this.animationDurationMs = DEFAULT_ANIMATION_DURATION_MS;
+        this.animationEnabled = true; // enabled by default
     }
 
     /**
@@ -463,6 +475,51 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Returns whether animation is enabled for expand/collapse operations.
+     *
+     * @return True if animation is enabled, false otherwise.
+     */
+    public boolean isAnimationEnabled() {
+        return animationEnabled;
+    }
+
+    /**
+     * Sets whether animation is enabled for expand/collapse operations.
+     * When disabled, groups will expand and collapse instantaneously.
+     *
+     * @param animationEnabled True to enable animation, false to disable it.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setAnimationEnabled(boolean animationEnabled) {
+        this.animationEnabled = animationEnabled;
+        return this;
+    }
+
+    /**
+     * Returns the duration of the expand/collapse animation in milliseconds.
+     *
+     * @return The animation duration in milliseconds.
+     */
+    public int getAnimationDurationMs() {
+        return animationDurationMs;
+    }
+
+    /**
+     * Sets the duration of the expand/collapse animation in milliseconds.
+     * The default is 200ms. A longer duration will result in a slower animation.
+     *
+     * @param animationDurationMs The animation duration in milliseconds. Must be greater than 0.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setAnimationDurationMs(int animationDurationMs) {
+        if (animationDurationMs <= 0) {
+            throw new IllegalArgumentException("Animation duration must be greater than 0.");
+        }
+        this.animationDurationMs = animationDurationMs;
+        return this;
+    }
+
+    /**
      * Invoked internally to find an existing action group by name,
      * or create a new one if it does not exist. Group names are
      * case-insensitive.
@@ -539,12 +596,25 @@ public class ActionPanel extends JPanel {
         // Create and add the group header
         groupPanel.add(createGroupHeader(group));
 
-        // If the group is collapsed, we skip adding the actions:
+        // Create the actions panel (always create it, even if collapsed)
+        JPanel actionsPanel = createActionsPanel(group);
+
+        // Create an animated wrapper for the actions panel
+        AnimatedPanel animatedWrapper = new AnimatedPanel(actionsPanel);
+        animatedWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Store reference to the animated wrapper in the group for later access
+        group.setAnimatedWrapper(animatedWrapper);
+
+        // Set initial state based on expanded state
         if (group.isExpanded()) {
-            // Create and add the actions container
-            JPanel actionsPanel = createActionsPanel(group);
-            groupPanel.add(actionsPanel);
+            animatedWrapper.setFullyExpanded();
         }
+        else {
+            animatedWrapper.setFullyCollapsed();
+        }
+
+        groupPanel.add(animatedWrapper);
 
         return groupPanel;
     }
@@ -613,8 +683,38 @@ public class ActionPanel extends JPanel {
         toggleButton.setContentAreaFilled(false);
         toggleButton.setFocusPainted(false);
         toggleButton.addActionListener(e -> {
-            group.setExpanded(!group.isExpanded());
-            rebuild();
+            boolean newExpandedState = !group.isExpanded();
+            group.setExpanded(newExpandedState);
+
+            // Update button icon and tooltip
+            toggleButton.setIcon(newExpandedState
+                                         ? SwingFormsResources.getMinusIcon(16)
+                                         : SwingFormsResources.getPlusIcon(16));
+            toggleButton.setToolTipText(newExpandedState ? "Collapse group" : "Expand group");
+
+            // Animate the expand/collapse
+            AnimatedPanel wrapper = group.getAnimatedWrapper();
+            if (wrapper != null) {
+                if (animationEnabled) {
+                    if (newExpandedState) {
+                        wrapper.animateExpand(animationDurationMs);
+                    }
+                    else {
+                        wrapper.animateCollapse(animationDurationMs);
+                    }
+                }
+                else {
+                    // Instant expand/collapse
+                    if (newExpandedState) {
+                        wrapper.setFullyExpanded();
+                    }
+                    else {
+                        wrapper.setFullyCollapsed();
+                    }
+                    revalidate();
+                    repaint();
+                }
+            }
         });
         headerPanel.add(toggleButton);
 
@@ -637,7 +737,7 @@ public class ActionPanel extends JPanel {
             JPanel wrapperPanel = new JPanel(new BorderLayout());
             wrapperPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-            if (internalPadding > 0) {
+            if (internalPadding > 0 || actionIndent > 0) {
                 int pad = internalPadding;
                 wrapperPanel.setBorder(BorderFactory.createEmptyBorder(pad, pad + actionIndent, pad, pad));
             }
@@ -726,6 +826,7 @@ public class ActionPanel extends JPanel {
         private final List<EnhancedAction> actionsAsAdded;
         private Icon icon;
         private boolean isExpanded;
+        private AnimatedPanel animatedWrapper;
 
         public ActionGroup(String name) {
             this.name = name;
@@ -733,6 +834,7 @@ public class ActionPanel extends JPanel {
             this.actionsAsAdded = new ArrayList<>();
             this.isExpanded = true; // expanded by default
             this.icon = null;
+            this.animatedWrapper = null;
         }
 
         public String getName() {
@@ -776,6 +878,161 @@ public class ActionPanel extends JPanel {
 
         public void setIcon(Icon icon) {
             this.icon = icon;
+        }
+
+        public AnimatedPanel getAnimatedWrapper() {
+            return animatedWrapper;
+        }
+
+        public void setAnimatedWrapper(AnimatedPanel animatedWrapper) {
+            this.animatedWrapper = animatedWrapper;
+        }
+    }
+
+    /**
+     * An internal panel that wraps the actions panel and provides animated expand/collapse functionality.
+     * The panel gradually changes its preferred height to create a smooth sliding effect.
+     */
+    private class AnimatedPanel extends JPanel {
+        private final JPanel contentPanel;
+        private int currentHeight;
+        private int targetHeight;
+        private Timer animationTimer;
+
+        public AnimatedPanel(JPanel contentPanel) {
+            this.contentPanel = contentPanel;
+            setLayout(new BorderLayout());
+            add(contentPanel, BorderLayout.CENTER);
+
+            // Initialize heights
+            this.targetHeight = contentPanel.getPreferredSize().height;
+            this.currentHeight = targetHeight;
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension contentSize = contentPanel.getPreferredSize();
+            return new Dimension(contentSize.width, currentHeight);
+        }
+
+        @Override
+        public Dimension getMaximumSize() {
+            Dimension contentSize = contentPanel.getMaximumSize();
+            return new Dimension(contentSize.width, currentHeight);
+        }
+
+        /**
+         * Sets the panel to fully expanded state (instantaneous).
+         */
+        public void setFullyExpanded() {
+            stopAnimation();
+            targetHeight = contentPanel.getPreferredSize().height;
+            currentHeight = targetHeight;
+            revalidate();
+            repaint();
+        }
+
+        /**
+         * Sets the panel to fully collapsed state (instantaneous).
+         */
+        public void setFullyCollapsed() {
+            stopAnimation();
+            targetHeight = 0;
+            currentHeight = 0;
+            revalidate();
+            repaint();
+        }
+
+        /**
+         * Animates the panel expanding to its full height.
+         *
+         * @param durationMs The duration of the animation in milliseconds.
+         */
+        public void animateExpand(int durationMs) {
+            stopAnimation();
+            targetHeight = contentPanel.getPreferredSize().height;
+
+            if (currentHeight >= targetHeight) {
+                // Already expanded
+                currentHeight = targetHeight;
+                revalidate();
+                repaint();
+                return;
+            }
+
+            startAnimation(durationMs);
+        }
+
+        /**
+         * Animates the panel collapsing to zero height.
+         *
+         * @param durationMs The duration of the animation in milliseconds.
+         */
+        public void animateCollapse(int durationMs) {
+            stopAnimation();
+            targetHeight = 0;
+
+            if (currentHeight <= 0) {
+                // Already collapsed
+                currentHeight = 0;
+                revalidate();
+                repaint();
+                return;
+            }
+
+            startAnimation(durationMs);
+        }
+
+        /**
+         * Starts the animation timer.
+         */
+        private void startAnimation(int durationMs) {
+            final int startHeight = currentHeight;
+            final int heightDifference = targetHeight - startHeight;
+            final long startTime = System.currentTimeMillis();
+
+            animationTimer = new Timer(ANIMATION_FRAME_DELAY_MS, e -> {
+                long elapsed = System.currentTimeMillis() - startTime;
+                double progress = Math.min(1.0, (double)elapsed / durationMs);
+
+                // Use ease-in-out function for smoother animation
+                double easedProgress = easeInOutCubic(progress);
+
+                currentHeight = startHeight + (int)(heightDifference * easedProgress);
+
+                revalidate();
+                repaint();
+
+                if (progress >= 1.0) {
+                    currentHeight = targetHeight;
+                    stopAnimation();
+                    revalidate();
+                    repaint();
+                }
+            });
+            animationTimer.start();
+        }
+
+        /**
+         * Stops any running animation.
+         */
+        private void stopAnimation() {
+            if (animationTimer != null && animationTimer.isRunning()) {
+                animationTimer.stop();
+            }
+        }
+
+        /**
+         * Easing function for smoother animation (ease-in-out cubic).
+         */
+        private double easeInOutCubic(double t) {
+            if (t < 0.5) {
+                return 4 * t * t * t;
+            }
+            else {
+                double f = 2 * t - 2;
+                return 1 + f * f * f / 2;
+            }
         }
     }
 }

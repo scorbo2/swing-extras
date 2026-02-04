@@ -26,6 +26,11 @@ import java.util.List;
 
 /**
  * To show off the new ActionPanel component.
+ * New in swing-extras 2.8, the ActionPanel is a great way to group related
+ * actions together into collapsible sections. This is great for presenting otherwise
+ * long and complex navigation menus in a compact way.
+ * There are many styling options! This demo panel shows off some of the things
+ * you can do with ActionPanel.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.8
@@ -60,6 +65,8 @@ public class ActionPanelDemoPanel extends PanelBuilder {
         }
     }
 
+    private static final Color STEEL_BLUE = new Color(70, 130, 180);
+
     private ComboField<BorderOption> actionPanelBorderField;
     private ComboField<String> useLabelsField;
     private CheckBoxField sortGroupsByNameField;
@@ -71,6 +78,7 @@ public class ActionPanelDemoPanel extends PanelBuilder {
     private NumberField externalPaddingField;
     private NumberField internalPaddingField;
     private NumberField actionIndentField;
+    private ComboField<String> animationField;
     private ComboField<String> stylingField;
     private ColorField actionForegroundField;
     private ColorField actionBackgroundField;
@@ -114,6 +122,11 @@ public class ActionPanelDemoPanel extends PanelBuilder {
         containerField.getMargins().setTop(24); // Move it away from the example panel a bit
         formPanel.add(containerField);
 
+        // Set initial styling options based on default field values:
+        actionPanel.setGroupHeaderBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+        styleFieldChanged();
+        actionPanel.setActionIndent(4);
+
         return formPanel;
     }
 
@@ -125,7 +138,7 @@ public class ActionPanelDemoPanel extends PanelBuilder {
                 f -> actionPanel.setBorder(actionPanelBorderField.getSelectedItem().getBorder()));
         formPanel.add(actionPanelBorderField);
 
-        headerBorderField = new ComboField<>("Header border:", Arrays.asList(BorderOption.values()), 0);
+        headerBorderField = new ComboField<>("Header border:", Arrays.asList(BorderOption.values()), 1);
         headerBorderField.addValueChangedListener(
                 f -> actionPanel.setGroupHeaderBorder(headerBorderField.getSelectedItem().getBorder()));
         formPanel.add(headerBorderField);
@@ -163,52 +176,78 @@ public class ActionPanelDemoPanel extends PanelBuilder {
                 f -> actionPanel.setInternalPadding(internalPaddingField.getCurrentValue().intValue()));
         formPanel.add(internalPaddingField);
 
-        actionIndentField = new NumberField("Action left indent:", 0, 0, 32, 1);
+        actionIndentField = new NumberField("Action left indent:", 4, 0, 32, 1);
         actionIndentField.addValueChangedListener(
                 f -> actionPanel.setActionIndent(actionIndentField.getCurrentValue().intValue()));
         formPanel.add(actionIndentField);
 
-        List<String> options = List.of("Show actions as clickable labels", "Show actions as buttons");
+        List<String> options = List.of("No animation (instant)",
+                                       "Slow animation",
+                                       "Medium animation",
+                                       "Fast animation");
+        animationField = new ComboField<>("Expand/collapse animation:", options, 2);
+        animationField.addValueChangedListener(f -> {
+            switch (animationField.getSelectedIndex()) {
+                case 0 -> actionPanel.setAnimationEnabled(false);
+                case 1 -> {
+                    actionPanel.setAnimationEnabled(true);
+                    actionPanel.setAnimationDurationMs(400);
+                }
+                case 2 -> {
+                    actionPanel.setAnimationEnabled(true);
+                    actionPanel.setAnimationDurationMs(200);
+                }
+                case 3 -> {
+                    actionPanel.setAnimationEnabled(true);
+                    actionPanel.setAnimationDurationMs(100);
+                }
+            }
+        });
+        formPanel.add(animationField);
+
+        options = List.of("Show actions as clickable labels", "Show actions as buttons");
         useLabelsField = new ComboField<>("Action style:", options, 0);
         useLabelsField.addValueChangedListener(f -> {
             if (useLabelsField.getSelectedIndex() == 0) {
+                // Re-enable left indent for labels, if it was set:
+                actionIndentField.setEnabled(true);
+                actionPanel.setActionIndent(actionIndentField.getCurrentValue().intValue());
                 actionPanel.setUseLabels();
             }
             else {
+                // Left indent only makes sense for labels, disable it for buttons:
+                actionIndentField.setEnabled(false);
+                actionPanel.setActionIndent(0);
                 actionPanel.setUseButtons();
             }
         });
         formPanel.add(useLabelsField);
 
         options = List.of("Use Look and Feel defaults", "Override with custom styling");
-        stylingField = new ComboField<>("Styling:", options, 0);
+        stylingField = new ComboField<>("Styling:", options, 1);
         stylingField.addValueChangedListener(f -> styleFieldChanged());
         formPanel.add(stylingField);
 
         actionForegroundField = new ColorField("Action foreground:", ColorSelectionType.SOLID);
-        actionForegroundField.setEnabled(false);
         actionForegroundField.setColor(Color.BLACK);
         actionForegroundField.getMargins().setLeft(16); // indent a bit to show that these are styling options
         actionForegroundField.addValueChangedListener(f -> styleFieldChanged());
         formPanel.add(actionForegroundField);
 
         actionBackgroundField = new ColorField("Action background:", ColorSelectionType.SOLID);
-        actionBackgroundField.setEnabled(false);
         actionBackgroundField.setColor(Color.LIGHT_GRAY);
         actionBackgroundField.getMargins().setLeft(16);
         actionBackgroundField.addValueChangedListener(f -> styleFieldChanged());
         formPanel.add(actionBackgroundField);
 
         groupHeaderForegroundField = new ColorField("Group header foreground:", ColorSelectionType.SOLID);
-        groupHeaderForegroundField.setEnabled(false);
         groupHeaderForegroundField.setColor(Color.WHITE);
         groupHeaderForegroundField.getMargins().setLeft(16);
         groupHeaderForegroundField.addValueChangedListener(f -> styleFieldChanged());
         formPanel.add(groupHeaderForegroundField);
 
         groupHeaderBackgroundField = new ColorField("Group header background:", ColorSelectionType.SOLID);
-        groupHeaderBackgroundField.setEnabled(false);
-        groupHeaderBackgroundField.setColor(new Color(70, 130, 180)); // steel blue
+        groupHeaderBackgroundField.setColor(STEEL_BLUE);
         groupHeaderBackgroundField.getMargins().setLeft(16);
         groupHeaderBackgroundField.addValueChangedListener(f -> styleFieldChanged());
         formPanel.add(groupHeaderBackgroundField);
@@ -291,8 +330,9 @@ public class ActionPanelDemoPanel extends PanelBuilder {
                 new ExampleAction("Example action", icon, "Actions can be sorted",
                                   "<html>By default, actions are shown in the order they are added.<br>"
                                           + "but you can choose to have them sorted by name instead.<br>"
-                                          + "Try it out with the controls above, and you'll see that<br>"
-                                          + "this action (added first) will be sorted after the others (alphabetically).</html>"),
+                                          + "Try it out with the \"sort actions by name\" option below,<br>" +
+                                          "and you'll see that this action (added first) will be sorted after<br>" +
+                                          "the others (alphabetically).</html>"),
                 new ExampleAction("Action A", icon, "Action A", "You clicked Action A!"),
                 new ExampleAction("Action B", icon, "Action B", "You clicked Action B!")
         ));
