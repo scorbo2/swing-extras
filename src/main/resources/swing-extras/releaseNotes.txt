@@ -2,7 +2,8 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
-  TODO release notes for 2.8 release go here
+  #330 - New UI component: ActionPanel
+  #327 - KeyStrokeManager: add multiple window support
 
 Version 2.7.0 [2026-01-25] - Maintenance release
   #317 - FormPanel: help labels can now be toggled dynamically
