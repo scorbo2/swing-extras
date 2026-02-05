@@ -399,6 +399,30 @@ public class ImageUtil {
     }
 
     /**
+     * Returns a scaled version of the input icon, if it is not already at the
+     * given size (assuming square icons). If the input icon is null, null is returned.
+     *
+     * @param imageIcon Any ImageIcon instance that contains a BufferedImage.
+     * @param size      The requested size (assuming square icons).
+     * @return A scaled ImageIcon instance, or null if the input icon was null or did not contain a BufferedImage.
+     */
+    public static ImageIcon scaleIcon(ImageIcon imageIcon, int size) {
+        BufferedImage image = null;
+        if (imageIcon != null) {
+            if (imageIcon.getImage() == null || !(imageIcon.getImage() instanceof BufferedImage)) {
+                return null; // can't scale non-BufferedImage icons
+            }
+
+            image = (BufferedImage)imageIcon.getImage();
+            if (image.getHeight() != size || image.getWidth() != size) {
+                // Resize the image to match the specified size (assuming square icons):
+                image = generateThumbnailWithTransparency(image, size, size);
+            }
+        }
+        return image == null ? null : new ImageIcon(image);
+    }
+
+    /**
      * Generates an image thumbnail for the given image using the given dimensions.
      * The image will be resized proportionally to fit into the specified width and height.
      *

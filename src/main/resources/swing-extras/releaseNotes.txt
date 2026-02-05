@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
+  #332 - ActionPanel: many usability improvements
   #330 - New UI component: ActionPanel
   #327 - KeyStrokeManager: add multiple window support
 
