@@ -37,7 +37,7 @@ public final class SwingFormsResources extends ResourceLoader {
     /**
      * The native size (width and height) of all swing-forms icons.
      */
-    static final int NATIVE_SIZE = 48;
+    public static final int NATIVE_SIZE = 48;
 
     /**
      * This is just here as a safeguard, and will likely never be used outside of unit tests.

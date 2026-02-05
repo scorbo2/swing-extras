@@ -1,28 +1,36 @@
 package ca.corbett.extras.demo.panels;
 
-import ca.corbett.extras.ActionPanel;
 import ca.corbett.extras.EnhancedAction;
+import ca.corbett.extras.actionpanel.ActionPanel;
+import ca.corbett.extras.actionpanel.ExpandListener;
 import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.SwingFormsResources;
 import ca.corbett.forms.fields.CheckBoxField;
-import ca.corbett.forms.fields.CollapsiblePanelField;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
 
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * To show off the new ActionPanel component.
@@ -35,58 +43,90 @@ import java.util.List;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.8
  */
-public class ActionPanelDemoPanel extends PanelBuilder {
+public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener {
 
-    private enum BorderOption {
-        NONE("None", null),
-        THIN_BLACK_LINE("Thin black line border", BorderFactory.createLineBorder(Color.BLACK, 1)),
-        THICK_BLACK_LINE("Thick black line border", BorderFactory.createLineBorder(Color.BLACK, 3)),
-        THIN_WHITE_LINE("Thin white line border", BorderFactory.createLineBorder(Color.WHITE, 1)),
-        THICK_WHITE_LINE("Thick white line border", BorderFactory.createLineBorder(Color.WHITE, 3)),
-        ETCHED("Etched border", BorderFactory.createEtchedBorder()),
-        RAISED_BEVELED("Raised beveled border", BorderFactory.createRaisedBevelBorder()),
-        LOWERED_BEVELED("Lowered beveled border", BorderFactory.createLoweredBevelBorder());
+    private static final Logger log = Logger.getLogger(ActionPanelDemoPanel.class.getName());
 
-        private final String label;
-        private final Border border;
-
-        BorderOption(String label, Border border) {
-            this.label = label;
-            this.border = border;
-        }
-
-        @Override
-        public String toString() {
-            return label;
-        }
-
-        public Border getBorder() {
-            return border;
-        }
-    }
-
+    // A nice example header background color:
     private static final Color STEEL_BLUE = new Color(70, 130, 180);
 
+    // Sound effects, just for fun:
+    private static final String EXPAND_CLIP = "/swing-extras/audio/swish.wav";
+    private static final String COLLAPSE_CLIP = "/swing-extras/audio/splok.wav";
+
+    // Our action names will double as lookups for their form panel contents:
+    private static final String TAB_INTRO = "Intro to ActionPanel";
+    private static final String TAB_COMPONENTS = "Buttons or labels?";
+    private static final String TAB_COLORS = "Colors";
+    private static final String TAB_FONTS = "Fonts";
+    private static final String TAB_BORDERS = "Borders";
+    private static final String TAB_ICONS = "Icons";
+    private static final String TAB_SORTING = "Sorting";
+    private static final String TAB_MARGINS = "Margins/Padding";
+    private static final String TAB_EXPAND = "Expand/Collapse options";
+    private static final String TAB_ANIMATION = "Animation options";
+
+    // We'll have an ActionPanel on the left and a content panel on the right:
+    private ActionPanel actionPanel;
+    private final JPanel contentPanel = new JPanel(new BorderLayout());
+
+    // And we'll use a map of action names to form panels for showing content:
+    private final Map<String, FormPanel> panelMap = new HashMap<>();
+
+    private Clip expandClip;
+    private Clip collapseClip;
     private ComboField<BorderOption> actionPanelBorderField;
     private ComboField<String> useLabelsField;
     private CheckBoxField sortGroupsByNameField;
     private CheckBoxField sortActionsByNameField;
     private CheckBoxField showGroupHeaderIconsField;
     private CheckBoxField showActionIconsField;
+    private NumberField headerIconSizeField;
+    private NumberField actionIconSizeField;
     private ComboField<BorderOption> groupBorderField;
     private ComboField<BorderOption> headerBorderField;
     private NumberField externalPaddingField;
     private NumberField internalPaddingField;
     private NumberField actionIndentField;
     private ComboField<String> animationField;
-    private ComboField<String> stylingField;
+    private ComboField<String> colorSourceField;
+    private ComboField<String> fontSourceField;
     private ColorField actionPanelBackgroundField;
     private ColorField actionForegroundField;
     private ColorField actionBackgroundField;
     private ColorField groupHeaderForegroundField;
     private ColorField groupHeaderBackgroundField;
-    private ActionPanel actionPanel;
-    private JPanel exampleContentPanel;
+    private FontField headerFontField;
+    private FontField actionFontField;
+
+    public ActionPanelDemoPanel() {
+        panelMap.put(TAB_INTRO, buildIntroPanel());
+        panelMap.put(TAB_COMPONENTS, buildComponentTypePanel());
+        panelMap.put(TAB_COLORS, buildColorPanel());
+        panelMap.put(TAB_FONTS, buildFontPanel());
+        panelMap.put(TAB_BORDERS, buildBorderPanel());
+        panelMap.put(TAB_ICONS, buildIconPanel());
+        panelMap.put(TAB_SORTING, buildSortingPanel());
+        panelMap.put(TAB_MARGINS, buildMarginsPanel());
+        panelMap.put(TAB_EXPAND, buildExpandCollapsePanel());
+        panelMap.put(TAB_ANIMATION, buildAnimationPanel());
+
+        // Start with the Welcome tab:
+        contentPanel.setBorder(BorderFactory.createLoweredBevelBorder());
+        contentPanel.add(PropertiesDialog.buildScrollPane(panelMap.get(TAB_INTRO)), BorderLayout.CENTER);
+
+        // Just for fun, load some sound effects:
+        try {
+            expandClip = AudioSystem.getClip();
+            expandClip.open(AudioSystem.getAudioInputStream(getClass().getResourceAsStream(EXPAND_CLIP)));
+            collapseClip = AudioSystem.getClip();
+            collapseClip.open(AudioSystem.getAudioInputStream(getClass().getResourceAsStream(COLLAPSE_CLIP)));
+        }
+        catch (Exception e) {
+            // No fun for you!
+            log.log(Level.SEVERE, "Could not load sound effects :(", e);
+        }
+    }
 
     @Override
     public String getTitle() {
@@ -104,170 +144,29 @@ public class ActionPanelDemoPanel extends PanelBuilder {
         labelField.getMargins().setTop(12).setBottom(16);
         formPanel.add(labelField);
 
-        // Put the ActionPanel above the control panel because the control panel will be quite tall:
+        // We'll use a PanelField to show the ActionPanel and the content panel side-by-side:
         actionPanel = new ActionPanel();
-        exampleContentPanel = new JPanel(new BorderLayout());
         populateActionPanel();
         PanelField exampleContainer = new PanelField(new BorderLayout());
         exampleContainer.setShouldExpand(true);
         exampleContainer.getPanel().add(actionPanel, BorderLayout.WEST);
-        exampleContainer.getPanel().add(exampleContentPanel, BorderLayout.CENTER);
+        exampleContainer.getPanel().add(contentPanel, BorderLayout.CENTER);
         formPanel.add(exampleContainer);
 
-        // Display the control panel in a collapsible panel, and start it collapsed:
-        CollapsiblePanelField containerField = new CollapsiblePanelField("Configuration options",
-                                                                         false,
-                                                                         new BorderLayout());
-        containerField.getPanel().add(buildControlPanel(), BorderLayout.CENTER);
-        containerField.setShouldExpandHorizontally(true);
-        containerField.getMargins().setTop(24); // Move it away from the example panel a bit
-        formPanel.add(containerField);
-
-        // Set initial styling options based on default field values:
+        // Set initial styling options for the ActionPanel based on default field values:
         actionPanel.setGroupHeaderBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        styleFieldChanged();
+        colorSourceFieldChanged(); // set our cool custom colors
         actionPanel.setActionIndent(4);
 
         return formPanel;
     }
 
-    private FormPanel buildControlPanel() {
-        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
-
-        actionPanelBorderField = new ComboField<>("ActionPanel border:", Arrays.asList(BorderOption.values()), 0);
-        actionPanelBorderField.addValueChangedListener(
-                f -> actionPanel.setBorder(actionPanelBorderField.getSelectedItem().getBorder()));
-        formPanel.add(actionPanelBorderField);
-
-        headerBorderField = new ComboField<>("Header border:", Arrays.asList(BorderOption.values()), 1);
-        headerBorderField.addValueChangedListener(
-                f -> actionPanel.setGroupHeaderBorder(headerBorderField.getSelectedItem().getBorder()));
-        formPanel.add(headerBorderField);
-
-        groupBorderField = new ComboField<>("Group border:", Arrays.asList(BorderOption.values()), 0);
-        groupBorderField.addValueChangedListener(
-                f -> actionPanel.setGroupBorder(groupBorderField.getSelectedItem().getBorder()));
-        formPanel.add(groupBorderField);
-
-        sortGroupsByNameField = new CheckBoxField("Sort groups by name", false);
-        sortGroupsByNameField.addValueChangedListener(f -> setGroupComparator());
-        formPanel.add(sortGroupsByNameField);
-
-        sortActionsByNameField = new CheckBoxField("Sort actions by name", false);
-        sortActionsByNameField.addValueChangedListener(f -> setActionComparator());
-        formPanel.add(sortActionsByNameField);
-
-        showActionIconsField = new CheckBoxField("Show action icons", true);
-        showActionIconsField.addValueChangedListener(
-                f -> actionPanel.setShowActionIcons(showActionIconsField.isChecked()));
-        formPanel.add(showActionIconsField);
-
-        showGroupHeaderIconsField = new CheckBoxField("Show group header icons", true);
-        showGroupHeaderIconsField.addValueChangedListener(
-                f -> actionPanel.setShowGroupIcons(showGroupHeaderIconsField.isChecked()));
-        formPanel.add(showGroupHeaderIconsField);
-
-        externalPaddingField = new NumberField("External padding:", ActionPanel.DEFAULT_EXTERNAL_PADDING, 0, 32, 1);
-        externalPaddingField.addValueChangedListener(
-                f -> actionPanel.setExternalPadding(externalPaddingField.getCurrentValue().intValue()));
-        formPanel.add(externalPaddingField);
-
-        internalPaddingField = new NumberField("Internal padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32, 1);
-        internalPaddingField.addValueChangedListener(
-                f -> actionPanel.setInternalPadding(internalPaddingField.getCurrentValue().intValue()));
-        formPanel.add(internalPaddingField);
-
-        actionIndentField = new NumberField("Action left indent:", 4, 0, 32, 1);
-        actionIndentField.addValueChangedListener(
-                f -> actionPanel.setActionIndent(actionIndentField.getCurrentValue().intValue()));
-        formPanel.add(actionIndentField);
-
-        List<String> options = List.of("No animation (instant)",
-                                       "Slow animation",
-                                       "Medium animation",
-                                       "Fast animation");
-        animationField = new ComboField<>("Expand/collapse animation:", options, 2);
-        animationField.addValueChangedListener(f -> {
-            switch (animationField.getSelectedIndex()) {
-                case 0 -> actionPanel.setAnimationEnabled(false);
-                case 1 -> {
-                    actionPanel.setAnimationEnabled(true);
-                    actionPanel.setAnimationDurationMs(400);
-                }
-                case 2 -> {
-                    actionPanel.setAnimationEnabled(true);
-                    actionPanel.setAnimationDurationMs(200);
-                }
-                case 3 -> {
-                    actionPanel.setAnimationEnabled(true);
-                    actionPanel.setAnimationDurationMs(100);
-                }
-            }
-        });
-        formPanel.add(animationField);
-
-        options = List.of("Show actions as clickable labels", "Show actions as buttons");
-        useLabelsField = new ComboField<>("Action style:", options, 0);
-        useLabelsField.addValueChangedListener(f -> {
-            if (useLabelsField.getSelectedIndex() == 0) {
-                // Re-enable left indent for labels, if it was set:
-                actionIndentField.setEnabled(true);
-                actionPanel.setActionIndent(actionIndentField.getCurrentValue().intValue());
-                actionPanel.setUseLabels();
-            }
-            else {
-                // Left indent only makes sense for labels, disable it for buttons:
-                actionIndentField.setEnabled(false);
-                actionPanel.setActionIndent(0);
-                actionPanel.setUseButtons();
-            }
-        });
-        formPanel.add(useLabelsField);
-
-        options = List.of("Use Look and Feel defaults", "Override with custom styling");
-        stylingField = new ComboField<>("Styling:", options, 1);
-        stylingField.addValueChangedListener(f -> styleFieldChanged());
-        formPanel.add(stylingField);
-
-        actionPanelBackgroundField = new ColorField("Panel background:", ColorSelectionType.SOLID);
-        actionPanelBackgroundField.setColor(Color.DARK_GRAY);
-        actionPanelBackgroundField.getMargins().setLeft(16); // indent a bit to show that these are styling options
-        actionPanelBackgroundField.addValueChangedListener(f -> styleFieldChanged());
-        formPanel.add(actionPanelBackgroundField);
-
-        actionForegroundField = new ColorField("Action foreground:", ColorSelectionType.SOLID);
-        actionForegroundField.setColor(Color.BLACK);
-        actionForegroundField.getMargins().setLeft(16); // indent a bit to show that these are styling options
-        actionForegroundField.addValueChangedListener(f -> styleFieldChanged());
-        formPanel.add(actionForegroundField);
-
-        actionBackgroundField = new ColorField("Action background:", ColorSelectionType.SOLID);
-        actionBackgroundField.setColor(Color.LIGHT_GRAY);
-        actionBackgroundField.getMargins().setLeft(16);
-        actionBackgroundField.addValueChangedListener(f -> styleFieldChanged());
-        formPanel.add(actionBackgroundField);
-
-        groupHeaderForegroundField = new ColorField("Group header foreground:", ColorSelectionType.SOLID);
-        groupHeaderForegroundField.setColor(Color.WHITE);
-        groupHeaderForegroundField.getMargins().setLeft(16);
-        groupHeaderForegroundField.addValueChangedListener(f -> styleFieldChanged());
-        formPanel.add(groupHeaderForegroundField);
-
-        groupHeaderBackgroundField = new ColorField("Group header background:", ColorSelectionType.SOLID);
-        groupHeaderBackgroundField.setColor(STEEL_BLUE);
-        groupHeaderBackgroundField.getMargins().setLeft(16);
-        groupHeaderBackgroundField.addValueChangedListener(f -> styleFieldChanged());
-        formPanel.add(groupHeaderBackgroundField);
-
-        return formPanel;
-    }
-
     /**
-     * Enable or disable the custom styling fields based on selection.
+     * Enable or disable the custom color fields based on selection.
      * Also applies the selected colors to the ActionPanel.
      */
-    private void styleFieldChanged() {
-        boolean isCustom = stylingField.getSelectedIndex() == 1;
+    private void colorSourceFieldChanged() {
+        boolean isCustom = colorSourceField.getSelectedIndex() == 1;
         actionPanelBackgroundField.setEnabled(isCustom);
         actionForegroundField.setEnabled(isCustom);
         actionBackgroundField.setEnabled(isCustom);
@@ -278,6 +177,18 @@ public class ActionPanelDemoPanel extends PanelBuilder {
         actionPanel.setActionBackground(isCustom ? actionBackgroundField.getColor() : null);
         actionPanel.setGroupHeaderForeground(isCustom ? groupHeaderForegroundField.getColor() : null);
         actionPanel.setGroupHeaderBackground(isCustom ? groupHeaderBackgroundField.getColor() : null);
+    }
+
+    /**
+     * Enable or disable the custom font fields based on selection.
+     * Also applies the selected fonts to the ActionPanel.
+     */
+    private void fontSourceFieldChanged() {
+        boolean isCustom = fontSourceField.getSelectedIndex() == 1;
+        headerFontField.setEnabled(isCustom);
+        actionFontField.setEnabled(isCustom);
+        actionPanel.setGroupHeaderFont(isCustom ? headerFontField.getSelectedFont() : null);
+        actionPanel.setActionFont(isCustom ? actionFontField.getSelectedFont() : null);
     }
 
     /**
@@ -313,86 +224,491 @@ public class ActionPanelDemoPanel extends PanelBuilder {
      * Adds some example actions to our action panel.
      */
     private void populateActionPanel() {
-        Icon icon = SwingFormsResources.getCopyIcon(16);
-        actionPanel.addAll("First group", List.of(
-                new ExampleAction("Intro to ActionPanel", icon,
-                                  "Intro to ActionPanel",
-                                  "<html>The supplied actions can do anything your application wants!<br>"
-                                          + "In this example, clicking the actions on the left will update<br>"
-                                          + "this panel with example text. This can be used as a navigation menu.<br><br>"
-                                          + "But in a real application, these actions could launch dialogs,<br>"
-                                          + "start long-running processes, or do anything you need.</html>"),
-                new ExampleAction("Styling options", icon,
-                                  "Styling options",
-                                  "<html>Use the configuration options panel below to customize<br>"
-                                          + "the appearance and behavior of the ActionPanel on the left.<br>"
-                                          + "You can change borders, padding, sorting, colors, and more!</html>"),
-                new ExampleAction("Reduce clutter!", icon,
-                                  "Reduce clutter!",
-                                  "<html>ActionPanel is great for reducing UI clutter, because each<br>"
-                                          + "action group can be collapsed or expanded as needed.<br>"
-                                          + "Try it out!</html>")
-        ));
-        actionPanel.setGroupIcon("First group", SwingFormsResources.getValidIcon(16));
+        actionPanel.add("Welcome to ActionPanel!", new NavigationAction(TAB_INTRO));
+        actionPanel.add("Welcome to ActionPanel!", new NavigationAction(TAB_COMPONENTS));
+        actionPanel.add("Styling options", new NavigationAction(TAB_COLORS));
+        actionPanel.add("Styling options", new NavigationAction(TAB_FONTS));
+        actionPanel.add("Styling options", new NavigationAction(TAB_BORDERS));
+        actionPanel.add("Styling options", new NavigationAction(TAB_ICONS));
+        actionPanel.add("Layout options", new NavigationAction(TAB_MARGINS));
+        actionPanel.add("Layout options", new NavigationAction(TAB_SORTING));
+        actionPanel.add("Behavior options", new NavigationAction(TAB_EXPAND));
+        actionPanel.add("Behavior options", new NavigationAction(TAB_ANIMATION));
 
-        actionPanel.addAll("Second group", List.of(
-                new ExampleAction("Example action", icon, "Actions can be sorted",
-                                  "<html>By default, actions are shown in the order they are added.<br>"
-                                          + "but you can choose to have them sorted by name instead.<br>"
-                                          + "Try it out with the \"sort actions by name\" option below,<br>" +
-                                          "and you'll see that this action (added first) will be sorted after<br>" +
-                                          "the others (alphabetically).</html>"),
-                new ExampleAction("Action A", icon, "Action A", "You clicked Action A!"),
-                new ExampleAction("Action B", icon, "Action B", "You clicked Action B!")
-        ));
-        actionPanel.setGroupIcon("Second group", SwingFormsResources.getValidIcon(16));
-
-        actionPanel.addAll("Another group", List.of(
-                new ExampleAction("Last action", icon, "Last action", "You clicked the last action!")
-        ));
-        actionPanel.setGroupIcon("Another group", SwingFormsResources.getValidIcon(16));
-
-        populateExamplePanel("ActionPanel demo",
-                             "<html>Click an action in the ActionPanel to the left to see it in action!<br>"
-                                     + "Use the configuration options panel below to customize it.</html>");
+        // Add header icons for demonstration:
+        final int size = SwingFormsResources.NATIVE_SIZE;
+        actionPanel.setGroupIcon("Welcome to ActionPanel!", SwingFormsResources.getValidIcon(size));
+        actionPanel.setGroupIcon("Styling options", SwingFormsResources.getValidIcon(size));
+        actionPanel.setGroupIcon("Layout options", SwingFormsResources.getValidIcon(size));
+        actionPanel.setGroupIcon("Behavior options", SwingFormsResources.getValidIcon(size));
     }
 
     /**
-     * Throws some static text into our example content panel.
+     * Builds the Intro to ActionPanel content panel.
      */
-    private void populateExamplePanel(String title, String text) {
-        exampleContentPanel.removeAll();
-        FormPanel panel = new FormPanel(Alignment.TOP_LEFT);
-        panel.setBorderMargin(12);
-        LabelField headerLabel = LabelField.createBoldHeaderLabel(title, 16, 0, 6);
-        headerLabel.getMargins().setTop(0);
-        panel.add(headerLabel);
-        panel.add(new LabelField(text));
-        exampleContentPanel.add(panel, BorderLayout.CENTER);
-        exampleContentPanel.revalidate();
-        exampleContentPanel.repaint();
+    private FormPanel buildIntroPanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Intro to ActionPanel"));
+        String label = """
+                <html>The <b>ActionPanel</b> component provides a way to<br>
+                very easily group actions into customizable, expandable<br>
+                groups within a vertically-stacked list.<br><br>
+                ActionPanel is extremely customizable!<br><br>
+                Navigate through the settings in the left to see all<br>
+                the ways in which you can modify the appearance and<br>
+                behavior of the ActionPanel component!</html>
+                """;
+        formPanel.add(new LabelField(label));
+        formPanel.add(new LabelField("")); // Cheesy spacer for aesthetics
+
+        return formPanel;
+    }
+
+    private FormPanel buildComponentTypePanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Buttons or labels?"));
+        String label = """
+                <html>ActionPanel can display each action either as a<br>
+                clickable label, or as a button.<br><br>
+                You can choose the style that best fits<br>
+                your application's UI!</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        List<String> options = List.of("Show actions as clickable labels", "Show actions as buttons");
+        useLabelsField = new ComboField<>("Action style:", options, 0);
+        useLabelsField.addValueChangedListener(f -> {
+            if (useLabelsField.getSelectedIndex() == 0) {
+                // Re-enable left indent for labels, if it was set:
+                actionIndentField.setEnabled(true);
+                actionPanel.setActionIndent(actionIndentField.getCurrentValue().intValue());
+                actionPanel.setUseLabels();
+            }
+            else {
+                // Left indent only makes sense for labels, disable it for buttons:
+                actionIndentField.setEnabled(false);
+                actionPanel.setActionIndent(0);
+                actionPanel.setUseButtons();
+            }
+        });
+        formPanel.add(useLabelsField);
+
+        return formPanel;
     }
 
     /**
-     * A very simple action implementation that just populates the example panel
-     * with some static text when invoked.
+     * Builds a form panel for messing with color options.
      */
-    private class ExampleAction extends EnhancedAction {
+    private FormPanel buildColorPanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Color options"));
+        String label = """
+                <html>You can rely on the current Look and Feel,<br>
+                so that ActionPanel fits in well with the rest of<br>
+                your application's UI, or you can customize<br>
+                the colors used in the ActionPanel to suit<br>
+                your application's theme!<br><br>
+                The ActionPanel to the left has been styled with<br>
+                custom colors. Try customizing it with<br>
+                the controls below!</html>
+                """;
+        formPanel.add(new LabelField(label));
 
-        private final String exampleTitle;
-        private final String exampleText;
+        List<String> options = List.of("Use Look and Feel defaults", "Override with custom styling");
+        colorSourceField = new ComboField<>("Styling:", options, 1);
+        colorSourceField.addValueChangedListener(f -> colorSourceFieldChanged());
+        formPanel.add(colorSourceField);
 
-        public ExampleAction(String name, Icon icon, String exampleTitle, String exampleText) {
+        actionPanelBackgroundField = new ColorField("Panel background:", ColorSelectionType.SOLID);
+        actionPanelBackgroundField.setColor(Color.DARK_GRAY);
+        actionPanelBackgroundField.getMargins().setLeft(16); // indent a bit to show that these are styling options
+        actionPanelBackgroundField.addValueChangedListener(f -> colorSourceFieldChanged());
+        formPanel.add(actionPanelBackgroundField);
+
+        actionForegroundField = new ColorField("Action foreground:", ColorSelectionType.SOLID);
+        actionForegroundField.setColor(Color.BLACK);
+        actionForegroundField.getMargins().setLeft(16); // indent a bit to show that these are styling options
+        actionForegroundField.addValueChangedListener(f -> colorSourceFieldChanged());
+        formPanel.add(actionForegroundField);
+
+        actionBackgroundField = new ColorField("Action background:", ColorSelectionType.SOLID);
+        actionBackgroundField.setColor(Color.LIGHT_GRAY);
+        actionBackgroundField.getMargins().setLeft(16);
+        actionBackgroundField.addValueChangedListener(f -> colorSourceFieldChanged());
+        formPanel.add(actionBackgroundField);
+
+        groupHeaderForegroundField = new ColorField("Header foreground:", ColorSelectionType.SOLID);
+        groupHeaderForegroundField.setColor(Color.WHITE);
+        groupHeaderForegroundField.getMargins().setLeft(16);
+        groupHeaderForegroundField.addValueChangedListener(f -> colorSourceFieldChanged());
+        formPanel.add(groupHeaderForegroundField);
+
+        groupHeaderBackgroundField = new ColorField("Header background:", ColorSelectionType.SOLID);
+        groupHeaderBackgroundField.setColor(STEEL_BLUE);
+        groupHeaderBackgroundField.getMargins().setLeft(16);
+        groupHeaderBackgroundField.addValueChangedListener(f -> colorSourceFieldChanged());
+        formPanel.add(groupHeaderBackgroundField);
+
+        return formPanel;
+    }
+
+    /**
+     * Builds a form panel for messing with font options.
+     */
+    private FormPanel buildFontPanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Font options"));
+        String label = """
+                <html>Similar to the color options, you can either<br>
+                rely on the Look and Feel defaults, or set your own<br>
+                custom fonts for use in the header and for actions.</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        List<String> options = List.of("Use Look and Feel defaults", "Override with custom styling");
+        fontSourceField = new ComboField<>("Styling:", options, 0);
+        fontSourceField.addValueChangedListener(f -> fontSourceFieldChanged());
+        formPanel.add(fontSourceField);
+
+        Font starterFont = new Font(Font.DIALOG, Font.BOLD, 12);
+        headerFontField = new FontField("Header font:", starterFont);
+        headerFontField.setShowSizeField(true);
+        headerFontField.setEnabled(false);
+        headerFontField.addValueChangedListener(f -> fontSourceFieldChanged());
+        formPanel.add(headerFontField);
+
+        starterFont = starterFont.deriveFont(Font.PLAIN);
+        actionFontField = new FontField("Action font:", starterFont);
+        actionFontField.setShowSizeField(true);
+        actionFontField.setEnabled(false);
+        actionFontField.addValueChangedListener(f -> fontSourceFieldChanged());
+        formPanel.add(actionFontField);
+
+        return formPanel;
+    }
+
+    /**
+     * Builds a form panel for messing with border options.
+     */
+    private FormPanel buildBorderPanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Border options"));
+        String label = """
+                <html>You can set optional borders around various<br>
+                components within an ActionPanel.<br>
+                Try it out below!</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        actionPanelBorderField = new ComboField<>("ActionPanel border:", Arrays.asList(BorderOption.values()), 0);
+        actionPanelBorderField.addValueChangedListener(
+                f -> actionPanel.setBorder(actionPanelBorderField.getSelectedItem().getBorder()));
+        formPanel.add(actionPanelBorderField);
+
+        headerBorderField = new ComboField<>("Header border:", Arrays.asList(BorderOption.values()), 1);
+        headerBorderField.addValueChangedListener(
+                f -> actionPanel.setGroupHeaderBorder(headerBorderField.getSelectedItem().getBorder()));
+        formPanel.add(headerBorderField);
+
+        groupBorderField = new ComboField<>("Group border:", Arrays.asList(BorderOption.values()), 0);
+        groupBorderField.addValueChangedListener(
+                f -> actionPanel.setGroupBorder(groupBorderField.getSelectedItem().getBorder()));
+        formPanel.add(groupBorderField);
+
+        return formPanel;
+    }
+
+    /**
+     * Builds a form panel for messing with icon options.
+     */
+    private FormPanel buildIconPanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Icon options"));
+        String label = """
+                <html>You can assign option icons for both<br>
+                the header of each group, and for each<br>
+                individual action.<br><br>
+                Additionally, you can change the size of<br>
+                icons, or disable them entirely.</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        showActionIconsField = new CheckBoxField("Show action icons", true);
+        showActionIconsField.addValueChangedListener(
+                f -> actionPanel.setShowActionIcons(showActionIconsField.isChecked()));
+        formPanel.add(showActionIconsField);
+
+        showGroupHeaderIconsField = new CheckBoxField("Show group header icons", true);
+        showGroupHeaderIconsField.addValueChangedListener(
+                f -> actionPanel.setShowGroupIcons(showGroupHeaderIconsField.isChecked()));
+        formPanel.add(showGroupHeaderIconsField);
+
+        actionIconSizeField = new NumberField("Action icon size:", ActionPanel.DEFAULT_ICON_SIZE, 8, 64, 1);
+        actionIconSizeField.addValueChangedListener(
+                f -> actionPanel.setActionIconSize(actionIconSizeField.getCurrentValue().intValue()));
+        formPanel.add(actionIconSizeField);
+
+        headerIconSizeField = new NumberField("Header icon size:", ActionPanel.DEFAULT_ICON_SIZE, 8, 64, 1);
+        headerIconSizeField.addValueChangedListener(
+                f -> actionPanel.setHeaderIconSize(headerIconSizeField.getCurrentValue().intValue()));
+        formPanel.add(headerIconSizeField);
+
+        ComboField<String> expandCollapseIconField = new ComboField<>("Expand/collapse icon style:",
+                                                                      List.of("Plus/minus", "Arrow up/down"),
+                                                                      0);
+        expandCollapseIconField.addValueChangedListener(f -> {
+            if (expandCollapseIconField.getSelectedIndex() == 0) {
+                actionPanel.setExpandIcon(SwingFormsResources.getPlusIcon(SwingFormsResources.NATIVE_SIZE));
+                actionPanel.setCollapseIcon(SwingFormsResources.getMinusIcon(SwingFormsResources.NATIVE_SIZE));
+            }
+            else {
+                actionPanel.setExpandIcon(SwingFormsResources.getMoveDownIcon(SwingFormsResources.NATIVE_SIZE));
+                actionPanel.setCollapseIcon(SwingFormsResources.getMoveUpIcon(SwingFormsResources.NATIVE_SIZE));
+            }
+        });
+        formPanel.add(expandCollapseIconField);
+
+        return formPanel;
+    }
+
+    /**
+     * Builds a panel to show off the different sorting options.
+     */
+    private FormPanel buildSortingPanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Sorting options"));
+        String label = """
+                <html>By default, actions and groups are<br>
+                presented in the order they are added.<br><br>
+                You can opt to keep groups sorted by name,<br>
+                and you can provide a custom Comparator<br>
+                for keeping actions sorted as well.<br><br>
+                Try it out below!</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        sortGroupsByNameField = new CheckBoxField("Sort groups by name", false);
+        sortGroupsByNameField.addValueChangedListener(f -> setGroupComparator());
+        formPanel.add(sortGroupsByNameField);
+
+        sortActionsByNameField = new CheckBoxField("Sort actions by name", false);
+        sortActionsByNameField.addValueChangedListener(f -> setActionComparator());
+        formPanel.add(sortActionsByNameField);
+
+        return formPanel;
+    }
+
+    /**
+     * Builds a panel to show how to customize margins and padding.
+     */
+    private FormPanel buildMarginsPanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Margins and padding options"));
+        String label = """
+                <html>You can assign option icons for both<br>
+                the header of each group, and for each<br>
+                individual action.<br><br>
+                Additionally, you can change the size of<br>
+                icons, or disable them entirely.</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        externalPaddingField = new NumberField("External padding:", ActionPanel.DEFAULT_EXTERNAL_PADDING, 0, 32, 1);
+        externalPaddingField.addValueChangedListener(
+                f -> actionPanel.setExternalPadding(externalPaddingField.getCurrentValue().intValue()));
+        externalPaddingField.setHelpText("<html>Sets the space between the each group and the edges<br>" +
+                                                 "of the panel, and also the space between groups.</html>");
+        formPanel.add(externalPaddingField);
+
+        internalPaddingField = new NumberField("Internal padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32, 1);
+        internalPaddingField.addValueChangedListener(
+                f -> actionPanel.setInternalPadding(internalPaddingField.getCurrentValue().intValue()));
+        internalPaddingField.setHelpText("<html>Sets the space between components in each group,<br>" +
+                                                 "as well as the space between components and the inner edge of the group.</html>");
+        formPanel.add(internalPaddingField);
+
+        actionIndentField = new NumberField("Action left indent:", 4, 0, 32, 1);
+        actionIndentField.addValueChangedListener(
+                f -> actionPanel.setActionIndent(actionIndentField.getCurrentValue().intValue()));
+        actionIndentField.setHelpText("<html>When using labels instead of buttons, you can<br>" +
+                                              "set a left indent for the action labels to give them a bit<br>" +
+                                              "of separation from the group header.</html>");
+        formPanel.add(actionIndentField);
+
+        return formPanel;
+    }
+
+    /**
+     * Builds a panel to show how to customize expand/collapse options.
+     */
+    private FormPanel buildExpandCollapsePanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Expand/collapse options"));
+        String label = """
+                <html>By default, each group in an ActionPanel<br>
+                is expandable and collapsible.<br><br>
+                You can prevent groups from being collapsed,<br>
+                or start with certain groups expanded or<br>
+                collapsed by default.</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        CheckBoxField allowCollapseField = new CheckBoxField("Allow groups to be collapsed", true);
+        allowCollapseField.addValueChangedListener(f -> actionPanel.setExpandable(allowCollapseField.isChecked()));
+        formPanel.add(allowCollapseField);
+
+        CheckBoxField allowDoubleClickField = new CheckBoxField(
+                "Allow double-click on header to toggle expand/collapse", false);
+        allowDoubleClickField.addValueChangedListener(
+                f -> actionPanel.setAllowHeaderDoubleClick(allowDoubleClickField.isChecked()));
+        formPanel.add(allowDoubleClickField);
+
+        return formPanel;
+    }
+
+    /**
+     * Builds a panel to show how to customize animation options.
+     */
+    private FormPanel buildAnimationPanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Animation options"));
+        String label = """
+                <html>The expand/collapse of groups, if enabled,<br>
+                is animated by default, for a smooth experience.<br><br>
+                You can customize the animation speed, or disable<br>
+                animation entirely.</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        List<String> options = List.of("No animation (instant)",
+                                       "Slow animation",
+                                       "Medium animation",
+                                       "Fast animation");
+        animationField = new ComboField<>("Expand/collapse animation:", options, 2);
+        animationField.addValueChangedListener(f -> {
+            switch (animationField.getSelectedIndex()) {
+                case 0 -> actionPanel.setAnimationEnabled(false);
+                case 1 -> {
+                    actionPanel.setAnimationEnabled(true);
+                    actionPanel.setAnimationDurationMs(600);
+                }
+                case 2 -> {
+                    actionPanel.setAnimationEnabled(true);
+                    actionPanel.setAnimationDurationMs(200);
+                }
+                case 3 -> {
+                    actionPanel.setAnimationEnabled(true);
+                    actionPanel.setAnimationDurationMs(100);
+                }
+            }
+        });
+        formPanel.add(animationField);
+
+        CheckBoxField playSoundField = new CheckBoxField("Play sound effects on expand/collapse", false);
+        playSoundField.addValueChangedListener(f -> {
+            if (playSoundField.isChecked()) {
+                actionPanel.addExpandListener(this);
+            }
+            else {
+                actionPanel.removeExpandListener(this);
+            }
+        });
+        formPanel.add(playSoundField);
+
+        return formPanel;
+    }
+
+    /**
+     * Invoked from ActionPanel when a group is expanded or collapsed.
+     * We'll play a sound effect if available, just for fun.
+     *
+     * @param groupName  The name of the group that changed.
+     * @param isExpanded True if the group is now expanded, false if collapsed.
+     */
+    @Override
+    public void groupExpandedChanged(String groupName, boolean isExpanded) {
+        if (expandClip == null || collapseClip == null) {
+            return; // no sound effects loaded
+        }
+        if (isExpanded) {
+            expandClip.setFramePosition(0); // rewind
+            expandClip.start();
+        }
+        else {
+            collapseClip.setFramePosition(0); // rewind
+            collapseClip.start();
+        }
+    }
+
+    /**
+     * A very simple action implementation that looks up the content panel for whatever
+     * action was clicked, and populates the content panel with it.
+     */
+    private class NavigationAction extends EnhancedAction {
+
+        public NavigationAction(String name) {
             super(name);
-            this.exampleTitle = exampleTitle;
-            this.exampleText = exampleText;
-            setIcon(icon);
+            setIcon(SwingFormsResources.getCopyIcon(16));
             // No tooltip for this demo
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            populateExamplePanel(exampleTitle, exampleText);
+            String actionName = e.getActionCommand() == null ? "" : e.getActionCommand();
+            contentPanel.removeAll();
+            FormPanel panel = panelMap.get(actionName);
+            if (panel == null) {
+                panel = getErrorPanel();
+            }
+            contentPanel.add(PropertiesDialog.buildScrollPane(panel), BorderLayout.CENTER);
+            contentPanel.revalidate();
+            contentPanel.repaint();
+        }
+
+        /**
+         * Hopefully this is never needed, but just in case...
+         */
+        private FormPanel getErrorPanel() {
+            FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+            formPanel.setBorderMargin(8);
+            formPanel.add(LabelField.createBoldHeaderLabel("Oops! Something went wrong."));
+            formPanel.add(new LabelField("There is no content available for this action."));
+            return formPanel;
+        }
+    }
+
+    /**
+     * Represents a few different options for setting borders.
+     * These are just examples - you can of course create your own borders
+     * and set them on the ActionPanel as desired.
+     */
+    private enum BorderOption {
+        NONE("None", null),
+        THIN_BLACK_LINE("Thin black line border", BorderFactory.createLineBorder(Color.BLACK, 1)),
+        THICK_BLACK_LINE("Thick black line border", BorderFactory.createLineBorder(Color.BLACK, 3)),
+        THIN_WHITE_LINE("Thin white line border", BorderFactory.createLineBorder(Color.WHITE, 1)),
+        THICK_WHITE_LINE("Thick white line border", BorderFactory.createLineBorder(Color.WHITE, 3)),
+        THIN_BLUE_LINE("Thin blue line border", BorderFactory.createLineBorder(Color.BLUE, 1)),
+        THICK_BLUE_LINE("Thick blue line border", BorderFactory.createLineBorder(Color.BLUE, 3)),
+        ETCHED("Etched border", BorderFactory.createEtchedBorder()),
+        RAISED_BEVELED("Raised beveled border", BorderFactory.createRaisedBevelBorder()),
+        LOWERED_BEVELED("Lowered beveled border", BorderFactory.createLoweredBevelBorder());
+
+        private final String label;
+        private final Border border;
+
+        BorderOption(String label, Border border) {
+            this.label = label;
+            this.border = border;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+        public Border getBorder() {
+            return border;
         }
     }
 }

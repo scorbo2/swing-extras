@@ -1,5 +1,6 @@
 package ca.corbett.extras;
 
+import ca.corbett.extras.actionpanel.ActionPanel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
