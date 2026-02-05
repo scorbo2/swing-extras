@@ -22,7 +22,7 @@ import java.util.List;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.8
  */
-public class ActionContainer extends JPanel {
+class ActionContainer extends JPanel {
 
     private final ActionPanel actionPanel;
     private final ActionGroup actionGroup;
