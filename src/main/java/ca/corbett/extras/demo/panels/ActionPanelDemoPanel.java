@@ -254,7 +254,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 very easily group actions into customizable, expandable<br>
                 groups within a vertically-stacked list.<br><br>
                 ActionPanel is extremely customizable!<br><br>
-                Navigate through the settings in the left to see all<br>
+                Navigate through the ActionPanel to the left to see all<br>
                 the ways in which you can modify the appearance and<br>
                 behavior of the ActionPanel component!</html>
                 """;
@@ -425,7 +425,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.add(LabelField.createBoldHeaderLabel("Icon options"));
         String label = """
-                <html>You can assign option icons for both<br>
+                <html>You can assign optional icons for both<br>
                 the header of each group, and for each<br>
                 individual action.<br><br>
                 Additionally, you can change the size of<br>
@@ -505,11 +505,9 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.add(LabelField.createBoldHeaderLabel("Margins and padding options"));
         String label = """
-                <html>You can assign option icons for both<br>
-                the header of each group, and for each<br>
-                individual action.<br><br>
-                Additionally, you can change the size of<br>
-                icons, or disable them entirely.</html>
+                <html>You can control the spacing around each<br>
+                action group, and the spacing around the actions<br>
+                themselves.</html>
                 """;
         formPanel.add(new LabelField(label));
 
@@ -523,7 +521,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         internalPaddingField = new NumberField("Internal padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32, 1);
         internalPaddingField.addValueChangedListener(
                 f -> actionPanel.setInternalPadding(internalPaddingField.getCurrentValue().intValue()));
-        internalPaddingField.setHelpText("<html>Sets the space between components in each group,<br>" +
+        internalPaddingField.setHelpText("<html>Sets the space between components within each group,<br>" +
                                                  "as well as the space between components and the inner edge of the group.</html>");
         formPanel.add(internalPaddingField);
 

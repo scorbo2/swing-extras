@@ -992,6 +992,11 @@ public class ActionPanel extends JPanel {
         return this;
     }
 
+    /**
+     * Returns the external padding between action groups and the edges of the ActionPanel.
+     *
+     * @return The external padding in pixels.
+     */
     public int getExternalPadding() {
         return externalPadding;
     }
@@ -1136,6 +1141,7 @@ public class ActionPanel extends JPanel {
      */
     public ActionPanel setAnimationEnabled(boolean animationEnabled) {
         this.animationEnabled = animationEnabled;
+        rebuild();
         return this;
     }
 
