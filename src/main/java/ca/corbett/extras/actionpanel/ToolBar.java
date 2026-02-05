@@ -15,6 +15,6 @@ import javax.swing.JPanel;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.8
  */
-public class ToolBar extends JPanel {
+class ToolBar extends JPanel {
     // TODO this feature is not yet implemented... followup ticket needed
 }
