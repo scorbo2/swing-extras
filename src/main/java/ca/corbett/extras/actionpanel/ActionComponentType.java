@@ -10,7 +10,7 @@ public enum ActionComponentType {
     LABELS("Show actions as clickable labels"),
     BUTTONS("Show actions as buttons");
 
-    private String label;
+    private final String label;
 
     ActionComponentType(String label) {
         this.label = label;
