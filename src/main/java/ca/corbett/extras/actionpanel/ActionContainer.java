@@ -17,7 +17,7 @@ import java.util.List;
  * <p>
  * This class is package-private, so callers do not
  * interact with it directly. Use the ActionPanel API instead.
- * /p>
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.8
