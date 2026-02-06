@@ -1010,14 +1010,16 @@ public abstract class ExtensionManager<T extends AppExtension> {
                             sortedJars.add(matched);
                         }
                     } else {
-                        // Multiple matches - use the first one alphabetically and log a warning
+                        // Multiple matches - use the first one alphabetically and log a warning.
+                        // Alphabetical ordering provides deterministic behavior when patterns are too vague.
+                        // Users should make their patterns more specific to avoid ambiguity.
                         matches.sort(Comparator.comparing(File::getName));
                         File matched = matches.get(0);
                         if (!sortedJars.contains(matched)) {
                             logger.log(Level.FINE,
                                        "ExtensionManager: multiple jars match load order entry '" + line 
                                        + "' (found " + matches.size() + " matches). Using first match alphabetically: " 
-                                       + matched.getName());
+                                       + matched.getName() + ". Make pattern more specific to avoid ambiguity.");
                             unsortedJars.remove(matched);
                             sortedJars.add(matched);
                         }
