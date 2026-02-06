@@ -149,7 +149,7 @@ class KeyStrokePropertyTest extends AbstractPropertyBaseTests {
         // WHEN we now tell it to generate a form field:
         KeyStrokeField field = (KeyStrokeField)property.generateFormField();
 
-        // And WHEN we try to set the reserved keystrokes on that field:
+        // And WHEN we try to set the field's keystroke to that reserved keystroke:
         field.setKeyStroke(reservedKeyStroke);
 
         // THEN the field should be in an invalid state:
