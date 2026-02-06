@@ -918,19 +918,31 @@ public abstract class ExtensionManager<T extends AppExtension> {
      * <p>
      * <b>Formatting the load order file</b><br>
      * Blank lines and lines starting with a hash character are ignored. All other lines in the file are
-     * assumed to be the name (without path) of a single jar file. The order in which those jars are listed
-     * in this file is the order that the extension jars will be loaded. An example file might look like this:
+     * assumed to be either the exact name (without path) of a single jar file, or a partial name that
+     * matches the start of a jar filename. The order in which those jars are listed in this file is the
+     * order that the extension jars will be loaded.
+     * </p>
+     * <p>
+     * <b>Best practice:</b> Use partial filename matches (without version numbers) rather than exact
+     * filenames. This makes the load order file resilient to extension version upgrades. For example,
+     * use "extension7" instead of "extension7-1.0.0.jar" so the load order continues to work when
+     * the extension is upgraded to version 2.0.0. The matching logic first attempts an exact match,
+     * then falls back to partial matching using String.startsWith(). If multiple jars match a partial
+     * pattern, the first match alphabetically is selected.
+     * </p>
+     * <p>
+     * An example file might look like this:
      * </p>
      * <pre>
      * # Extension load order for MyApplication:
      *
      * # Extension 7 is super important, so let's load it first:
-     * extension7-1.0.0.jar
+     * extension7
      *
-     * extension2-1.0.0.jar
+     * extension2
      *
      * # Extension 1 is not so important, so let's load it last:
-     * extension1-1.0.0.jar
+     * extension1
      * </pre>
      * <p>
      * <b>SPECIAL NOTE:</b> the load order for application built-in extensions can't be overridden
