@@ -963,10 +963,13 @@ public abstract class ExtensionManager<T extends AppExtension> {
         // Do we have a load order control file?
         File loadOrderFile = new File(directory, LOAD_ORDER_FILE);
         if (loadOrderFile.exists() && loadOrderFile.isFile() && loadOrderFile.canRead()) {
+            logger.log(Level.FINE, "ExtensionManager: found load order file: " + loadOrderFile.getAbsolutePath());
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(loadOrderFile));
                 String line;
+                int lineNumber = 0;
                 while ((line = reader.readLine()) != null) {
+                    lineNumber++;
                     line = line.trim();
 
                     // Skip blank lines and comment lines:
@@ -974,15 +977,50 @@ public abstract class ExtensionManager<T extends AppExtension> {
                         continue;
                     }
 
-                    // Assume anything else will be a jar file name:
-                    File candidate = new File(directory, line);
+                    logger.log(Level.FINE, "ExtensionManager: processing load order entry: '" + line + "'");
 
-                    // If it exists and hasn't yet been sorted, do it:
+                    // First, try exact match (original behavior):
+                    File candidate = new File(directory, line);
                     if (candidate.exists() && unsortedJars.contains(candidate) && !sortedJars.contains(candidate)) {
                         logger.log(Level.FINE,
-                                   "ExtensionManager: detected sort priority for jar: " + candidate.getName());
+                                   "ExtensionManager: detected sort priority for jar (exact match): " + candidate.getName());
                         unsortedJars.remove(candidate);
                         sortedJars.add(candidate);
+                        continue;
+                    }
+
+                    // If exact match didn't work, try partial matching:
+                    List<File> matches = new ArrayList<>();
+                    for (File jarFile : unsortedJars) {
+                        if (jarFile.getName().startsWith(line)) {
+                            matches.add(jarFile);
+                        }
+                    }
+
+                    if (matches.isEmpty()) {
+                        logger.log(Level.FINE, "ExtensionManager: no jar file found matching load order entry '" 
+                                   + line + "' at line " + lineNumber);
+                    } else if (matches.size() == 1) {
+                        File matched = matches.get(0);
+                        if (!sortedJars.contains(matched)) {
+                            logger.log(Level.FINE,
+                                       "ExtensionManager: detected sort priority for jar (partial match): " 
+                                       + matched.getName() + " (matched by '" + line + "')");
+                            unsortedJars.remove(matched);
+                            sortedJars.add(matched);
+                        }
+                    } else {
+                        // Multiple matches - use the first one alphabetically and log a warning
+                        matches.sort(Comparator.comparing(File::getName));
+                        File matched = matches.get(0);
+                        if (!sortedJars.contains(matched)) {
+                            logger.log(Level.FINE,
+                                       "ExtensionManager: multiple jars match load order entry '" + line 
+                                       + "' (found " + matches.size() + " matches). Using first match alphabetically: " 
+                                       + matched.getName());
+                            unsortedJars.remove(matched);
+                            sortedJars.add(matched);
+                        }
                     }
                 }
             }
