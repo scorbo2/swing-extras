@@ -976,8 +976,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
         File loadOrderFile = new File(directory, LOAD_ORDER_FILE);
         if (loadOrderFile.exists() && loadOrderFile.isFile() && loadOrderFile.canRead()) {
             logger.log(Level.FINE, "ExtensionManager: found load order file: " + loadOrderFile.getAbsolutePath());
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(loadOrderFile));
+            try (BufferedReader reader = new BufferedReader(new FileReader(loadOrderFile))) {
                 String line;
                 int lineNumber = 0;
                 while ((line = reader.readLine()) != null) {
