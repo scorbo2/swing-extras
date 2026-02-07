@@ -183,6 +183,9 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
         }
         if (scrollPane != null) {
             scrollPane.setBackground(color);
+            if (scrollPane.getViewport() != null) {
+                scrollPane.getViewport().setBackground(color);
+            }
         }
     }
 
