@@ -10,6 +10,9 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -666,17 +669,17 @@ class KeyStrokeManagerTest {
     /**
      * Custom log handler for testing warning messages.
      */
-    static class TestLogHandler extends java.util.logging.Handler {
-        private final List<java.util.logging.LogRecord> records = new ArrayList<>();
+    static class TestLogHandler extends Handler {
+        private final List<LogRecord> records = new ArrayList<>();
 
         @Override
-        public void publish(java.util.logging.LogRecord record) {
+        public void publish(LogRecord record) {
             records.add(record);
         }
 
         public boolean hasWarningContaining(String message) {
             return records.stream()
-                          .anyMatch(r -> r.getLevel() == java.util.logging.Level.WARNING &&
+                          .anyMatch(r -> r.getLevel() == Level.WARNING &&
                                   r.getMessage().contains(message));
         }
 
