@@ -3,8 +3,10 @@ package ca.corbett.extras.image.animation;
 import javax.swing.JComponent;
 import javax.swing.JLayer;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 import javax.swing.plaf.LayerUI;
 import java.awt.AWTEvent;
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -25,6 +27,7 @@ import java.util.Arrays;
  * <b>USAGE:</b> Create a JLayer with an instance of this BlurLayerUI,
  * wrapping the JPanel you want to blur. Call setBlurred(true) to
  * enable the blur effect, and setBlurred(false) to disable it.
+ * Alternatively, use blurOut() and blurIn() for animated transitions.
  * </p>
  * <pre>
  *     JPanel contentPanel = ...;
@@ -37,8 +40,16 @@ import java.util.Arrays;
  *     blurLayerUI.setBlurIntensity(BlurLayerUI.BlurIntensity.STRONG);
  *
  *     // Then, in a button handler or whatever:
- *     blurLayerUI.setBlurred(true); // to enable blur
- *     blurLayerUI.setBlurred(false); // to disable blur
+ *     blurLayerUI.setBlurred(true); // to enable blur instantly
+ *     blurLayerUI.setBlurred(false); // to disable blur instantly
+ *
+ *     // Or use animated blur:
+ *     blurLayerUI.blurOut(() -&gt; {
+ *         // Callback after blur completes
+ *     });
+ *     blurLayerUI.blurIn(() -&gt; {
+ *         // Callback after unblur completes
+ *     });
  * </pre>
  * <p>
  * <b>Side note:</b> To give credit where credit is due, claude.ai wrote
@@ -56,6 +67,8 @@ public class BlurLayerUI extends LayerUI<JPanel> {
     public static final int TEXT_MINIMUM_SIZE = 6;
     public static final int TEXT_MAXIMUM_SIZE = 72;
     public static final Color DEFAULT_TEXT_COLOR = Color.BLACK;
+    public static final AnimationDuration DEFAULT_ANIMATION_DURATION = AnimationDuration.Medium;
+    public static final AnimationSpeed DEFAULT_ANIMATION_SPEED = AnimationSpeed.Medium;
 
     private static final int BLUR_ALPHA = 100;
 
@@ -86,6 +99,77 @@ public class BlurLayerUI extends LayerUI<JPanel> {
         }
     }
 
+    /**
+     * Controls the total duration of the blur animation.
+     */
+    public enum AnimationDuration {
+        VeryShort(100),
+        Short(200),
+        Medium(400),
+        Long(600),
+        VeryLong(1000);
+
+        private final int milliseconds;
+
+        AnimationDuration(int ms) {
+            this.milliseconds = ms;
+        }
+
+        public int getDurationMS() {
+            return milliseconds;
+        }
+
+        @Override
+        public String toString() {
+            return name() + ": " + milliseconds + "ms";
+        }
+
+        public static AnimationDuration fromLabel(String label) {
+            for (AnimationDuration candidate : values()) {
+                if (candidate.toString().equals(label)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Controls the speed of the animation frames, in terms of the delay between frames.
+     * The toString() method provides both the delay in milliseconds and the roughly equivalent FPS.
+     */
+    public enum AnimationSpeed {
+        VerySlow(100),
+        Slow(60),
+        Medium(40),
+        Fast(25),
+        VeryFast(16);
+
+        private final int timerDelay;
+
+        AnimationSpeed(int delay) {
+            this.timerDelay = delay;
+        }
+
+        public int getDelayMS() {
+            return timerDelay;
+        }
+
+        @Override
+        public String toString() {
+            return name() + ": " + timerDelay + "ms = " + (1000 / timerDelay) + "FPS";
+        }
+
+        public static AnimationSpeed fromLabel(String label) {
+            for (AnimationSpeed candidate : values()) {
+                if (candidate.toString().equals(label)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
+    }
+
     private boolean blurred = false;
     private BufferedImage blurredImage;
     private Color blurOverlayColor;
@@ -93,6 +177,15 @@ public class BlurLayerUI extends LayerUI<JPanel> {
     private int overlayTextSize;
     private Color overlayTextColor;
     private BlurIntensity blurIntensity;
+    
+    // Animation support
+    private float blurOpacity = 0f;
+    private Timer timer;
+    private boolean animating = false;
+    private Runnable onComplete;
+    private JLayer<JPanel> layer;
+    private AnimationDuration animationDuration;
+    private AnimationSpeed animationSpeed;
 
     /**
      * Creates a new BlurLayerUI instance with no blur applied initially
@@ -105,14 +198,18 @@ public class BlurLayerUI extends LayerUI<JPanel> {
         this.blurIntensity = DEFAULT_INTENSITY;
         this.overlayTextSize = DEFAULT_TEXT_SIZE;
         this.overlayTextColor = DEFAULT_TEXT_COLOR;
+        this.animationDuration = DEFAULT_ANIMATION_DURATION;
+        this.animationSpeed = DEFAULT_ANIMATION_SPEED;
     }
 
     /**
-     * Sets whether the panel should be blurred.
+     * Sets whether the panel should be blurred instantly (without animation).
+     * For animated blur transitions, use blurOut() and blurIn() instead.
      */
     public void setBlurred(boolean blurred) {
         boolean oldValue = this.blurred;
         this.blurred = blurred;
+        this.blurOpacity = blurred ? 1f : 0f;
         if (!blurred) {
             blurredImage = null; // Clear cached image
         }
@@ -126,6 +223,36 @@ public class BlurLayerUI extends LayerUI<JPanel> {
      */
     public boolean isBlurred() {
         return blurred;
+    }
+
+    /**
+     * Gets the configured animation duration.
+     */
+    public AnimationDuration getAnimationDuration() {
+        return animationDuration;
+    }
+
+    /**
+     * Sets the animation duration for blur transitions.
+     */
+    public BlurLayerUI setAnimationDuration(AnimationDuration animationDuration) {
+        this.animationDuration = animationDuration;
+        return this;
+    }
+
+    /**
+     * Gets the configured animation speed.
+     */
+    public AnimationSpeed getAnimationSpeed() {
+        return animationSpeed;
+    }
+
+    /**
+     * Sets the animation speed for blur transitions.
+     */
+    public BlurLayerUI setAnimationSpeed(AnimationSpeed animationSpeed) {
+        this.animationSpeed = animationSpeed;
+        return this;
     }
 
     /**
@@ -224,12 +351,103 @@ public class BlurLayerUI extends LayerUI<JPanel> {
         return this;
     }
 
+    /**
+     * Performs a "blur out" animation, gradually applying the blur effect.
+     * Optionally, you can provide a Runnable that will be executed when the blur
+     * animation completes.
+     *
+     * @param onComplete An optional Runnable to invoke when the blur completes (may be null).
+     */
+    public void blurOut(Runnable onComplete) {
+        if (animating) { return; }
+
+        this.onComplete = onComplete;
+        this.blurred = true;
+        this.blurOpacity = 0f;
+        this.animating = true;
+
+        float increment = (float)animationSpeed.getDelayMS() / animationDuration.getDurationMS();
+
+        timer = new Timer(animationSpeed.getDelayMS(), e -> {
+            blurOpacity += increment;
+            if (blurOpacity >= 1f) {
+                blurOpacity = 1f;
+                timer.stop();
+                animating = false;
+                // Force a final repaint at full opacity before executing callback
+                if (layer != null) {
+                    layer.repaint();
+                    // Use invokeLater to ensure repaint completes before callback
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        if (this.onComplete != null) {
+                            this.onComplete.run();
+                        }
+                    });
+                }
+                else if (this.onComplete != null) {
+                    this.onComplete.run();
+                }
+            }
+            else if (layer != null) {
+                layer.repaint();
+            }
+        });
+        timer.start();
+    }
+
+    /**
+     * Performs a "blur in" animation, gradually removing the blur effect.
+     * Optionally, you can provide a Runnable that will be executed when the blur
+     * removal animation completes.
+     *
+     * @param onComplete An optional Runnable to invoke when the unblur completes (may be null).
+     */
+    public void blurIn(Runnable onComplete) {
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
+
+        this.onComplete = onComplete;
+        this.blurOpacity = 1f;
+        this.animating = true;
+
+        float decrement = (float)animationSpeed.getDelayMS() / animationDuration.getDurationMS();
+
+        timer = new Timer(animationSpeed.getDelayMS(), e -> {
+            blurOpacity -= decrement;
+            if (blurOpacity <= 0f) {
+                blurOpacity = 0f;
+                timer.stop();
+                animating = false;
+                this.blurred = false;
+                blurredImage = null; // Clear cached image
+                // Force a final repaint at zero opacity before executing callback
+                if (layer != null) {
+                    layer.repaint();
+                    // Use invokeLater to ensure repaint completes before callback
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        if (this.onComplete != null) {
+                            this.onComplete.run();
+                        }
+                    });
+                }
+                else if (this.onComplete != null) {
+                    this.onComplete.run();
+                }
+            }
+            else if (layer != null) {
+                layer.repaint();
+            }
+        });
+        timer.start();
+    }
+
     @Override
     public void paint(Graphics g, JComponent c) {
         // Paint the component normally first
         super.paint(g, c);
 
-        if (blurred) {
+        if (blurred || blurOpacity > 0f) {
             // Create blurred overlay
             if (blurredImage == null ||
                     blurredImage.getWidth() != c.getWidth() ||
@@ -238,12 +456,18 @@ public class BlurLayerUI extends LayerUI<JPanel> {
                 blurredImage = createBlurredImage(c);
             }
 
-            // Draw the blurred image over the component
-            g.drawImage(blurredImage, 0, 0, null);
+            // Draw the blurred image over the component with opacity
+            Graphics2D g2 = (Graphics2D)g.create();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, blurOpacity));
+            g2.drawImage(blurredImage, 0, 0, null);
+            g2.dispose();
 
-            // Add semi-transparent white overlay
+            // Add semi-transparent overlay
             g.setColor(blurOverlayColor);
-            g.fillRect(0, 0, c.getWidth(), c.getHeight());
+            Graphics2D g2d = (Graphics2D)g.create();
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, blurOpacity));
+            g2d.fillRect(0, 0, c.getWidth(), c.getHeight());
+            g2d.dispose();
 
             if (overlayText != null && !overlayText.isBlank()) {
                 g.setColor(overlayTextColor);
@@ -253,11 +477,12 @@ public class BlurLayerUI extends LayerUI<JPanel> {
                 int y = c.getHeight() / 2;
 
                 // Enable antialiasing for smoother text
-                Graphics2D g2d = (Graphics2D)g;
-                g2d.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
+                Graphics2D g2text = (Graphics2D)g.create();
+                g2text.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
                                      java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-                g.drawString(overlayText, x, y);
+                g2text.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, blurOpacity));
+                g2text.drawString(overlayText, x, y);
+                g2text.dispose();
             }
         }
     }
@@ -302,36 +527,50 @@ public class BlurLayerUI extends LayerUI<JPanel> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void installUI(JComponent c) {
         super.installUI(c);
-        // Ensure the layer receives all mouse events
-        ((JLayer<?>)c).setLayerEventMask(
-                AWTEvent.MOUSE_EVENT_MASK |
-                        AWTEvent.MOUSE_MOTION_EVENT_MASK |
-                        AWTEvent.KEY_EVENT_MASK
-        );
+        if (c instanceof JLayer) {
+            layer = (JLayer<JPanel>)c;
+            // Ensure the layer receives all mouse events
+            ((JLayer<JPanel>)c).setLayerEventMask(
+                    AWTEvent.MOUSE_EVENT_MASK |
+                            AWTEvent.MOUSE_MOTION_EVENT_MASK |
+                            AWTEvent.KEY_EVENT_MASK
+            );
+        }
+    }
+
+    @Override
+    public void uninstallUI(JComponent c) {
+        super.uninstallUI(c);
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
+        layer = null;
+        blurredImage = null;
     }
 
     @Override
     protected void processMouseEvent(MouseEvent e, JLayer<? extends JPanel> l) {
-        // Block mouse events when blurred
-        if (blurred) {
+        // Block mouse events when blurred or animating
+        if (blurred || animating) {
             e.consume();
         }
     }
 
     @Override
     protected void processMouseMotionEvent(MouseEvent e, JLayer<? extends JPanel> l) {
-        // Block mouse motion events when blurred
-        if (blurred) {
+        // Block mouse motion events when blurred or animating
+        if (blurred || animating) {
             e.consume();
         }
     }
 
     @Override
     protected void processKeyEvent(KeyEvent e, JLayer<? extends JPanel> l) {
-        // Block keyboard events when blurred
-        if (blurred) {
+        // Block keyboard events when blurred or animating
+        if (blurred || animating) {
             e.consume();
         }
     }

@@ -64,6 +64,9 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
     private ShortTextField overlayTextField;
     private NumberField overlayTextSizeField;
     private ColorField overlayTextColorField;
+    private CheckBoxField blurAnimateCheckBox;
+    private ComboField<BlurLayerUI.AnimationDuration> blurDurationField;
+    private ComboField<BlurLayerUI.AnimationSpeed> blurSpeedField;
 
     private PanelField snowPanel;
     private SnowLayerUI snowLayerUI;
@@ -198,6 +201,9 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
      *     <li><b>Overlay text</b> - optional text to show over the blurred panel.</li>
      *     <li><b>Overlay text size</b> - choose the font size for the overlay text.</li>
      *     <li><b>Overlay text color</b> - choose the font color for the overlay text.</li>
+     *     <li><b>Animate</b> - enable animated blur transitions.</li>
+     *     <li><b>Animation duration</b> - controls the total duration of the blur animation.</li>
+     *     <li><b>Animation speed</b> - controls the FPS of the animation - faster values use more CPU!</li>
      * </ul>
      */
     private PanelField buildBlurPanel() {
@@ -229,6 +235,24 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
                 .setColor(BlurLayerUI.DEFAULT_TEXT_COLOR);
         overlayTextColorField.addValueChangedListener(e -> blurOptionsChanged());
         formPanel.add(overlayTextColorField);
+        
+        blurAnimateCheckBox = new CheckBoxField("Animate blur:", false);
+        blurAnimateCheckBox.addValueChangedListener(e -> {
+            boolean animate = blurAnimateCheckBox.isChecked();
+            blurDurationField.setEnabled(animate);
+            blurSpeedField.setEnabled(animate);
+        });
+        formPanel.add(blurAnimateCheckBox);
+        
+        blurDurationField = new ComboField<>("Blur duration:",
+                                             List.of(BlurLayerUI.AnimationDuration.values()), 2);
+        blurDurationField.setEnabled(false);
+        formPanel.add(blurDurationField);
+        
+        blurSpeedField = new ComboField<>("Blur speed:",
+                                          List.of(BlurLayerUI.AnimationSpeed.values()), 2);
+        blurSpeedField.setEnabled(false);
+        formPanel.add(blurSpeedField);
 
         ButtonField buttonField = new ButtonField(List.of(new BlurAction()));
         buttonField.setButtonPreferredSize(new Dimension(110, 25));
@@ -347,7 +371,8 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
 
     /**
      * A quick example action to blur the current sample panel, or unblur it if
-     * it was already blurred.
+     * it was already blurred. If the animate checkbox is selected, the blur
+     * transition will be animated.
      */
     private class BlurAction extends AbstractAction {
 
@@ -363,13 +388,32 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
             containerPanel.revalidate();
             containerPanel.repaint();
 
+            blurLayerUI.setOverlayText(overlayTextField.getText());
+            blurLayerUI.setBlurIntensity(blurIntensityField.getSelectedItem());
+
             if (!blurLayerUI.isBlurred()) {
-                blurLayerUI.setOverlayText(overlayTextField.getText());
-                blurLayerUI.setBlurIntensity(blurIntensityField.getSelectedItem());
-                blurLayerUI.setBlurred(true);
+                if (blurAnimateCheckBox.isChecked()) {
+                    // Use animated blur
+                    blurLayerUI.setAnimationDuration(blurDurationField.getSelectedItem());
+                    blurLayerUI.setAnimationSpeed(blurSpeedField.getSelectedItem());
+                    blurLayerUI.blurOut(null);
+                }
+                else {
+                    // Instant blur
+                    blurLayerUI.setBlurred(true);
+                }
             }
             else {
-                blurLayerUI.setBlurred(false);
+                if (blurAnimateCheckBox.isChecked()) {
+                    // Use animated unblur
+                    blurLayerUI.setAnimationDuration(blurDurationField.getSelectedItem());
+                    blurLayerUI.setAnimationSpeed(blurSpeedField.getSelectedItem());
+                    blurLayerUI.blurIn(null);
+                }
+                else {
+                    // Instant unblur
+                    blurLayerUI.setBlurred(false);
+                }
             }
         }
     }
