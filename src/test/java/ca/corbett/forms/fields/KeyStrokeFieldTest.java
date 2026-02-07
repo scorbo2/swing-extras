@@ -208,4 +208,94 @@ class KeyStrokeFieldTest extends FormFieldBaseTests {
         assertEquals(customMessage, result.getMessage());
     }
 
+    @Test
+    public void addReservedKeyStrokes_withAdditionalKeyStrokes_shouldAddThem() {
+        // GIVEN a KeyStrokeField with one reserved keystroke:
+        KeyStrokeField keyStrokeField = (KeyStrokeField)actual;
+        KeyStroke reserved1 = KeyStrokeManager.parseKeyStroke("Ctrl+S");
+        keyStrokeField.setReservedKeyStrokes(List.of(reserved1));
+
+        // WHEN we add additional reserved keystrokes:
+        KeyStroke reserved2 = KeyStrokeManager.parseKeyStroke("Ctrl+O");
+        KeyStroke reserved3 = KeyStrokeManager.parseKeyStroke("Ctrl+Q");
+        keyStrokeField.addReservedKeyStrokes(List.of(reserved2, reserved3));
+
+        // THEN all three should be in the reserved list:
+        List<KeyStroke> reserved = keyStrokeField.getReservedKeyStrokes();
+        assertEquals(3, reserved.size());
+        assertTrue(reserved.contains(reserved1));
+        assertTrue(reserved.contains(reserved2));
+        assertTrue(reserved.contains(reserved3));
+    }
+
+    @Test
+    public void addReservedKeyStrokes_withDuplicates_shouldPruneThem() {
+        // GIVEN a KeyStrokeField with one reserved keystroke:
+        KeyStrokeField keyStrokeField = (KeyStrokeField)actual;
+        KeyStroke reserved1 = KeyStrokeManager.parseKeyStroke("Ctrl+S");
+        keyStrokeField.setReservedKeyStrokes(List.of(reserved1));
+
+        // WHEN we add the same keystroke again plus a new one:
+        KeyStroke reserved2 = KeyStrokeManager.parseKeyStroke("Ctrl+O");
+        keyStrokeField.addReservedKeyStrokes(List.of(reserved1, reserved2));
+
+        // THEN only two unique keystrokes should be in the list:
+        List<KeyStroke> reserved = keyStrokeField.getReservedKeyStrokes();
+        assertEquals(2, reserved.size());
+        assertTrue(reserved.contains(reserved1));
+        assertTrue(reserved.contains(reserved2));
+    }
+
+    @Test
+    public void addReservedKeyStrokes_withNullList_shouldNotThrowException() {
+        // GIVEN a KeyStrokeField with one reserved keystroke:
+        KeyStrokeField keyStrokeField = (KeyStrokeField)actual;
+        KeyStroke reserved1 = KeyStrokeManager.parseKeyStroke("Ctrl+S");
+        keyStrokeField.setReservedKeyStrokes(List.of(reserved1));
+
+        // WHEN we add null:
+        keyStrokeField.addReservedKeyStrokes(null);
+
+        // THEN the original reserved keystroke should still be there:
+        List<KeyStroke> reserved = keyStrokeField.getReservedKeyStrokes();
+        assertEquals(1, reserved.size());
+        assertTrue(reserved.contains(reserved1));
+    }
+
+    @Test
+    public void clearReservedKeyStrokes_shouldRemoveAllReservedKeyStrokes() {
+        // GIVEN a KeyStrokeField with multiple reserved keystrokes:
+        KeyStrokeField keyStrokeField = (KeyStrokeField)actual;
+        KeyStroke reserved1 = KeyStrokeManager.parseKeyStroke("Ctrl+S");
+        KeyStroke reserved2 = KeyStrokeManager.parseKeyStroke("Ctrl+O");
+        keyStrokeField.setReservedKeyStrokes(List.of(reserved1, reserved2));
+
+        // WHEN we clear the reserved keystrokes:
+        keyStrokeField.clearReservedKeyStrokes();
+
+        // THEN the list should be empty:
+        List<KeyStroke> reserved = keyStrokeField.getReservedKeyStrokes();
+        assertEquals(0, reserved.size());
+    }
+
+    @Test
+    public void clearReservedKeyStrokes_shouldBeSameAsSettingEmptyList() {
+        // GIVEN a KeyStrokeField with multiple reserved keystrokes:
+        KeyStrokeField keyStrokeField1 = (KeyStrokeField)actual;
+        KeyStroke reserved1 = KeyStrokeManager.parseKeyStroke("Ctrl+S");
+        KeyStroke reserved2 = KeyStrokeManager.parseKeyStroke("Ctrl+O");
+        keyStrokeField1.setReservedKeyStrokes(List.of(reserved1, reserved2));
+
+        // AND GIVEN another KeyStrokeField with the same reserved keystrokes:
+        KeyStrokeField keyStrokeField2 = new KeyStrokeField("Test 2", null);
+        keyStrokeField2.setReservedKeyStrokes(List.of(reserved1, reserved2));
+
+        // WHEN we clear one using clearReservedKeyStrokes() and the other using setReservedKeyStrokes(List.of()):
+        keyStrokeField1.clearReservedKeyStrokes();
+        keyStrokeField2.setReservedKeyStrokes(List.of());
+
+        // THEN both should have the same empty list:
+        assertEquals(keyStrokeField1.getReservedKeyStrokes(), keyStrokeField2.getReservedKeyStrokes());
+    }
+
 }
