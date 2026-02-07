@@ -64,6 +64,7 @@ public class KeyStrokeManager {
     private Set<Window> windows = new HashSet<>();
     private final Map<KeyStroke, List<Action>> keyMap = new ConcurrentHashMap<>();
     private boolean isEnabled;
+    private boolean warnIfMultipleHandlers = false;
     private final KeyEventDispatcher keyDispatcher = new CustomKeyDispatcher();
 
     /**
@@ -138,6 +139,30 @@ public class KeyStrokeManager {
      */
     public boolean isEnabled() {
         return isEnabled;
+    }
+
+    /**
+     * Returns whether this KeyStrokeManager will warn when multiple handlers
+     * are registered for the same keystroke.
+     *
+     * @return true if warnings are enabled, false otherwise
+     */
+    public boolean isWarnIfMultipleHandlers() {
+        return warnIfMultipleHandlers;
+    }
+
+    /**
+     * Sets whether this KeyStrokeManager should warn when multiple handlers
+     * are registered for the same keystroke. When enabled, a warning will be
+     * logged if registerHandler is called for a keystroke that already has
+     * at least one handler registered.
+     *
+     * @param warnIfMultipleHandlers true to enable warnings, false to disable
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager setWarnIfMultipleHandlers(boolean warnIfMultipleHandlers) {
+        this.warnIfMultipleHandlers = warnIfMultipleHandlers;
+        return this;
     }
 
     /**
@@ -298,6 +323,23 @@ public class KeyStrokeManager {
     }
 
     /**
+     * Returns a list of all keystrokes that have more than one handler registered.
+     * This can be used to programmatically detect and handle duplicate handler assignments.
+     * An empty list is returned if no keystrokes have multiple handlers.
+     *
+     * @return A List of KeyStrokes that have more than one handler registered. Empty if none found.
+     */
+    public List<KeyStroke> checkForMultipleHandlers() {
+        List<KeyStroke> result = new ArrayList<>();
+        for (Map.Entry<KeyStroke, List<Action>> entry : keyMap.entrySet()) {
+            if (entry.getValue() != null && entry.getValue().size() > 1) {
+                result.add(entry.getKey());
+            }
+        }
+        return result;
+    }
+
+    /**
      * Registers a keyboard shortcut with an action.
      * Accepts shortcuts in the format: "ctrl+P", "alt+F4", "ctrl+shift+S", etc.
      * If the given shortcut already has an action registered, the new action will be added
@@ -338,8 +380,19 @@ public class KeyStrokeManager {
             throw new IllegalArgumentException("registerHandler: keyStroke and action must not be null.");
         }
 
+        // Check if this keystroke already has handlers
+        List<Action> existingHandlers = keyMap.get(keyStroke);
+        boolean alreadyHasHandlers = existingHandlers != null && !existingHandlers.isEmpty();
+
         // Okay, we can register it now.
         keyMap.computeIfAbsent(keyStroke, k -> new ArrayList<>()).add(action);
+
+        // If warning is enabled and we just added a second (or more) handler, log a warning
+        if (warnIfMultipleHandlers && alreadyHasHandlers) {
+            String keyStrokeStr = keyStrokeToString(keyStroke);
+            log.warning("Multiple handlers registered for keystroke: " + keyStrokeStr + 
+                       " (now has " + keyMap.get(keyStroke).size() + " handlers)");
+        }
 
         // Store the accelerator in the Action so menu items can access it
         action.putValue(Action.ACCELERATOR_KEY, keyStroke);
