@@ -173,6 +173,7 @@ public class KeyStrokeProperty extends AbstractProperty {
         allowBlank = props.getBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
         String reservedStr = props.getString(fullyQualifiedName + ".reservedKeyStrokes",
                                              listToString(reservedKeyStrokes));
+        reservedKeyStrokes.clear();
         reservedKeyStrokes.addAll(stringToList(reservedStr));
         reservedKeyStrokeMsg = props.getString(fullyQualifiedName + ".reservedKeyStrokeMsg", reservedKeyStrokeMsg);
 
