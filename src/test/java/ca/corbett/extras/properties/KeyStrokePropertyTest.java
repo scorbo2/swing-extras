@@ -122,4 +122,45 @@ class KeyStrokePropertyTest extends AbstractPropertyBaseTests {
         assertEquals(reservedKeyStrokes, keyStrokeField.getReservedKeyStrokes());
         assertEquals("This shortcut is reserved.", keyStrokeField.getReservedKeyStrokeMsg());
     }
+
+    /**
+     * Red/green test for issue #322
+     */
+    @Test
+    public void generateFormFieldAfterLoad_withReservedKeyStrokes_shouldRespectReservedKeystrokes() {
+        // GIVEN a reserved keystroke:
+        final KeyStroke reservedKeyStroke = KeyStrokeManager.parseKeyStroke("Alt+F4");
+
+        // AND GIVEN a KeyStrokeProperty with that reserved keystroke set:
+        KeyStrokeProperty property = new KeyStrokeProperty("test.property",
+                                                           "Test Property",
+                                                           KeyStrokeManager.parseKeyStroke("Ctrl+F3"));
+        List<KeyStroke> reservedKeyStrokes = List.of(reservedKeyStroke);
+        property.setReservedKeyStrokes(reservedKeyStrokes);
+
+        // WHEN we invoke load() on the property before generating a form field:
+        // (This simulates what happens in ExtensionManager/AppProperties when generating an app settings dialog)
+        // By giving it an empty Properties object here, the expected behavior is that it should use defaults
+        // for any value not explicitly set, BUT should also preserve any value that WAS explicitly set.
+        // The default value for the reserved keystroke list is an empty list, but we explicitly set one above
+        // which should be preserved.
+        property.loadFromProps(new Properties());
+
+        // WHEN we now tell it to generate a form field:
+        KeyStrokeField field = (KeyStrokeField)property.generateFormField();
+
+        // And WHEN we try to set the field's keystroke to that reserved keystroke:
+        field.setKeyStroke(reservedKeyStroke);
+
+        // THEN the field should be in an invalid state:
+        // (this was the failure in #322 - the form field would never hear about the reserved keystrokes!)
+        assertFalse(field.isValid());
+
+        // WHEN we now try to load that field's value back into the property:
+        property.loadFromFormField(field);
+
+        // THEN the property's value should not change, because the field is in an invalid state:
+        // (new behavior after the fix for #322 - we now double-check field validity before accepting it)
+        assertEquals(KeyStrokeManager.parseKeyStroke("Ctrl+F3"), property.getKeyStroke());
+    }
 }

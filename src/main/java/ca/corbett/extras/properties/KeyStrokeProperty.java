@@ -171,9 +171,9 @@ public class KeyStrokeProperty extends AbstractProperty {
     @Override
     public void loadFromProps(Properties props) {
         allowBlank = props.getBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
-        reservedKeyStrokes.clear();
         String reservedStr = props.getString(fullyQualifiedName + ".reservedKeyStrokes",
                                              listToString(reservedKeyStrokes));
+        reservedKeyStrokes.clear();
         reservedKeyStrokes.addAll(stringToList(reservedStr));
         reservedKeyStrokeMsg = props.getString(fullyQualifiedName + ".reservedKeyStrokeMsg", reservedKeyStrokeMsg);
 
@@ -215,14 +215,24 @@ public class KeyStrokeProperty extends AbstractProperty {
 
     @Override
     public void loadFromFormField(FormField field) {
+        // Make sure the field is of the expected type and matches our identifier:
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
                 || !(field instanceof KeyStrokeField)) {
-            log.log(Level.SEVERE, "KeyStrokeField.loadFromFormField: received the wrong field \"{0}\"",
+            log.log(Level.SEVERE, "KeyStrokeProperty.loadFromFormField: received the wrong field \"{0}\"",
                     field.getIdentifier());
             return;
         }
 
+        // Make sure the field is in a valid state:
+        // (best practice is to prevent invalid form submissions, but poorly-coded clients can ignore this)
+        if (!field.isValid()) {
+            log.log(Level.WARNING, "KeyStrokeProperty.loadFromFormField: received an invalid field \"{0}\"",
+                    field.getIdentifier());
+            return;
+        }
+
+        // We're good at this point, so we can safely load the value:
         keyStroke = ((KeyStrokeField)field).getKeyStroke();
     }
 
