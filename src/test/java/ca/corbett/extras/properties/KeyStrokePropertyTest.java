@@ -253,4 +253,22 @@ class KeyStrokePropertyTest extends AbstractPropertyBaseTests {
         // THEN both should have the same empty list:
         assertEquals(property1.getReservedKeyStrokes(), property2.getReservedKeyStrokes());
     }
+
+    @Test
+    public void saveToProps_withReservedKeyStrokes_shouldPersistInSortedOrder() {
+        // GIVEN a KeyStrokeProperty with multiple reserved keystrokes in non-alphabetical order:
+        KeyStrokeProperty property = (KeyStrokeProperty)actual;
+        KeyStroke ctrlZ = KeyStrokeManager.parseKeyStroke("Ctrl+Z");
+        KeyStroke ctrlA = KeyStrokeManager.parseKeyStroke("Ctrl+A");
+        KeyStroke ctrlM = KeyStrokeManager.parseKeyStroke("Ctrl+M");
+        property.setReservedKeyStrokes(List.of(ctrlZ, ctrlA, ctrlM));
+
+        // WHEN we save to properties:
+        Properties props = new Properties();
+        property.saveToProps(props);
+
+        // THEN the reserved keystrokes should be persisted in sorted order (by their string representation):
+        String savedReservedStr = props.getString(property.getFullyQualifiedName() + ".reservedKeyStrokes", "");
+        assertEquals("Ctrl+A, Ctrl+M, Ctrl+Z", savedReservedStr);
+    }
 }

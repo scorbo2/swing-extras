@@ -7,6 +7,7 @@ import ca.corbett.forms.fields.KeyStrokeField;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -185,7 +186,12 @@ public class KeyStrokeProperty extends AbstractProperty {
     public void saveToProps(Properties props) {
         props.setString(fullyQualifiedName + ".keyStroke", getKeyStrokeString());
         props.setBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
-        props.setString(fullyQualifiedName + ".reservedKeyStrokes", listToString(new ArrayList<>(reservedKeyStrokes)));
+        
+        // Sort the reserved keystrokes by their string representation for consistent ordering
+        List<KeyStroke> sortedReserved = new ArrayList<>(reservedKeyStrokes);
+        sortedReserved.sort(Comparator.comparing(KeyStrokeManager::keyStrokeToString));
+        props.setString(fullyQualifiedName + ".reservedKeyStrokes", listToString(sortedReserved));
+        
         props.setString(fullyQualifiedName + ".reservedKeyStrokeMsg", reservedKeyStrokeMsg);
     }
 
