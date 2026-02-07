@@ -176,10 +176,10 @@ public class HyperlinkUtil {
      * <pre>
      * // Creates an action with a name equal to the URI string:
      * HyperlinkUtil.BrowseAction browseAction =
-     *       HyperlinkUtil.BrowseAction.of(new URI("http://www.example.com"));
+     *       HyperlinkUtil.BrowseAction.of(new URI(someValidUrl));
      *
      * // Update the name to something more user-friendly:
-     * browseAction.setName("Visit Example.com");
+     * browseAction.setName("Visit our website!");
      * </pre>
      */
     public static class BrowseAction extends AbstractAction {
