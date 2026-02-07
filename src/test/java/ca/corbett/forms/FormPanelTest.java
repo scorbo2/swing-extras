@@ -1,6 +1,6 @@
 package ca.corbett.forms;
 
-import ca.corbett.forms.fields.AlwaysFalseValidator;
+import ca.corbett.extras.testutils.AlwaysFalseValidator;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.ShortTextField;

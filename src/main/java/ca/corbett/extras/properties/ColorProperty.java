@@ -120,22 +120,37 @@ public class ColorProperty extends AbstractProperty {
             return;
         }
 
-        ColorField cField = (ColorField)field;
-        //@formatter:off
-        switch (colorSelectionType) {
-            case SOLID:    setSolidColor(cField.getColor()); break;
-            case GRADIENT: setGradient(cField.getGradient()); break;
-
-            default:
-                Object something = cField.getSelectedValue();
-                if (something instanceof Color) {
-                    setSolidColor((Color) something);
-                }
-                else {
-                    setGradient((Gradient) something);
-                }
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "ColorProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
         }
-        //@formatter:on
+
+        ColorField cField = (ColorField)field;
+        switch (colorSelectionType) {
+            case SOLID -> setSolidColor(cField.getColor());
+            case GRADIENT -> setGradient(cField.getGradient());
+            default -> acceptRawValue(cField.getSelectedValue());
+        }
     }
 
+    /**
+     * Invoked internally to take the raw Object value from a candidate ColorField
+     * and apply it intelligently to this Property.
+     *
+     * @param value Either a Color or a Gradient, depending on what the user selected in the ColorField.
+     */
+    private void acceptRawValue(Object value) {
+        if (value instanceof Color c) {
+            setSolidColor(c);
+        }
+        else if (value instanceof Gradient g) {
+            setGradient(g);
+        }
+        else {
+            // Should never happen, but log it just in case something goes wrong in the ColorField implementation:
+            logger.log(Level.WARNING, "ColorProperty.loadFromFormField: received an unexpected value of type {0}",
+                       value == null ? "null" : value.getClass().getName());
+        }
+    }
 }

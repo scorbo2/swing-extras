@@ -1,4 +1,4 @@
-package ca.corbett.extras.io;
+package ca.corbett.extras.testutils;
 
 /**
  * Constants used in unit tests.
