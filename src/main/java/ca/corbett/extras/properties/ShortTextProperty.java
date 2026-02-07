@@ -78,13 +78,13 @@ public class ShortTextProperty extends AbstractProperty {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
                 || !(field instanceof ShortTextField)) {
-            logger.log(Level.SEVERE, "TextProperty.loadFromFormField: received the wrong field \"{0}\"",
+            logger.log(Level.SEVERE, "ShortTextProperty.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
             return;
         }
 
         if (!field.isValid()) {
-            logger.log(Level.WARNING, "TextProperty.loadFromFormField: received an invalid field \"{0}\"",
+            logger.log(Level.WARNING, "ShortTextProperty.loadFromFormField: received an invalid field \"{0}\"",
                        field.getIdentifier());
             return;
         }

@@ -31,9 +31,16 @@ public class HtmlLabelProperty extends AbstractProperty {
         super(name, fieldLabel);
         this.html = labelHtml;
         this.linkAction = linkAction;
+    }
 
-        // Most properties generate FormField instances that allow user input, but we do not:
-        allowsUserInput = false;
+    /**
+     * Most properties generate FormField instances that allow user input, but we do not:
+     *
+     * @return false, to indicate that we are effectively read-only.
+     */
+    @Override
+    public boolean isAllowsUserInput() {
+        return false;
     }
 
     public Action getLinkAction() {

@@ -357,7 +357,7 @@ public abstract class AbstractPropertyBaseTests {
     }
 
     @Test
-    public void testLoadFromFormField_withInvalidFormField_shouldNotAcceptValues() {
+    public void testLoadFromFormField_withInvalidFormField_shouldLogWarning() {
         // This test only applies to AbstractProperty implementations that
         // generate FormFields that allow user input. Not all of them do.
         // For example, static labels, or PanelFields, and so on.
@@ -381,7 +381,14 @@ public abstract class AbstractPropertyBaseTests {
             actual.loadFromFormField(invalidFormField);
 
             // THEN we should see a warning containing any complaint about "valid" in the logs:
-            // TODO this will fail for some fields that don't load data from form fields, like labels...
+            // (dev note: this is not a great test. We're expecting a specific log message,
+            //  which an implementing class might not actually log, or might log with different wording.
+            //  It would be MUCH better to assert that the property's values did not change after the load
+            //  above, but we can't do that at this abstract level, because we have no idea what
+            //  the property actually stores. To do this properly, we'd have to have a test
+            //  in each individual implementation class's test suite. For now, this
+            //  is better than nothing, and at least it works with all the property classes
+            //  contained here in swing-extras).
             assertTrue(logHandler.hasWarningContaining("valid"),
                        "Expected a warning about an invalid FormField, but didn't see one in the logs.");
         }

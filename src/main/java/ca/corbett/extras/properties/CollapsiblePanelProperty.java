@@ -48,9 +48,17 @@ public class CollapsiblePanelProperty extends AbstractProperty {
     public CollapsiblePanelProperty(String id, String fieldLabel, LayoutManager layoutManager) {
         super(id, fieldLabel);
         this.layoutManager = layoutManager;
+    }
 
-        // Most properties generate FormField instances that allow user input, but we do not:
-        allowsUserInput = false;
+
+    /**
+     * Most properties generate FormField instances that allow user input, but we do not:
+     *
+     * @return false, to indicate that we are effectively read-only.
+     */
+    @Override
+    public boolean isAllowsUserInput() {
+        return false;
     }
 
     public LayoutManager getLayoutManager() {

@@ -29,9 +29,16 @@ public class ButtonProperty extends AbstractProperty {
 
     public ButtonProperty(String fullyQualifiedName, String propertyLabel) {
         super(fullyQualifiedName, propertyLabel);
+    }
 
-        // Most properties generate FormField instances that allow user input, but we do not:
-        allowsUserInput = false;
+    /**
+     * Most properties generate FormField instances that allow user input, but we do not:
+     *
+     * @return false, to indicate that we are effectively read-only.
+     */
+    @Override
+    public boolean isAllowsUserInput() {
+        return false;
     }
 
     /**

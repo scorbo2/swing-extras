@@ -137,6 +137,7 @@ public class LongTextProperty extends AbstractProperty {
         if (!field.isValid()) {
             logger.log(Level.WARNING, "LongTextProperty.loadFromFormField: received an invalid field \"{0}\"",
                        field.getIdentifier());
+            return;
         }
 
         value = longTextField.getText();

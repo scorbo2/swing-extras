@@ -330,6 +330,7 @@ public class ListProperty<T> extends AbstractProperty {
         if (!field.isValid()) {
             logger.log(Level.WARNING, "ListProperty.loadFromFormField: field \"{0}\" is not valid -- ignoring",
                        field.getIdentifier());
+            return;
         }
 
         selectedIndexes = listField.getSelectedIndexes();
