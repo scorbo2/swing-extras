@@ -145,22 +145,26 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     }
 
     /**
-     * Provides access to the TreeCellRenderer in the underlying JTree.
-     * The default renderer is a standard DefaultTreeCellRenderer with all icons set to null.
+     * Provides access to the {@link TreeCellRenderer} in the underlying {@link JTree}.
+     * By default, the renderer is whatever the current Look and Feel installs on the tree. During
+     * construction, if that default renderer is a {@link DefaultTreeCellRenderer}, {@code DirTree}
+     * clears its icons (sets them to {@code null}) to avoid showing per-node icons.
      *
-     * @return The TreeCellRenderer used by the underlying JTree.
+     * @return The {@link TreeCellRenderer} used by the underlying {@link JTree}.
      */
     public TreeCellRenderer getTreeCellRenderer() {
         return tree.getCellRenderer();
     }
 
     /**
-     * Allow setting a custom TreeCellRenderer on the underlying JTree. Note that the default renderer is a
-     * DefaultTreeCellRenderer with all icons set to null, so if you want to preserve that behavior, you will
-     * need to set the icons to null on your custom renderer as well.
+     * Allow setting a custom {@link TreeCellRenderer} on the underlying {@link JTree}. By default, {@code DirTree}
+     * uses the renderer installed by the current Look and Feel and, if that renderer is a
+     * {@link DefaultTreeCellRenderer}, it clears its icons (sets them to {@code null}) to avoid showing per-node
+     * icons. If you replace the renderer and still want an iconless appearance, you should configure your custom
+     * renderer accordingly (for example, by setting icons to {@code null} on a {@link DefaultTreeCellRenderer}).
      *
-     * @param renderer The TreeCellRenderer to use for rendering tree nodes.
-     * @return This DirTree instance, for chaining.
+     * @param renderer The {@link TreeCellRenderer} to use for rendering tree nodes.
+     * @return This {@code DirTree} instance, for chaining.
      */
     public DirTree setTreeCellRenderer(TreeCellRenderer renderer) {
         tree.setCellRenderer(renderer);
