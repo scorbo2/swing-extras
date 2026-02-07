@@ -9,6 +9,7 @@ Version 2.8.0 [TODO release date]
   #327 - KeyStrokeManager: add multiple window support
   #325 - KeyStrokeManager: warn on multiple handlers per keystroke
   #322 - KeyStrokeProperty: fix bug regarding reserved keystrokes
+  #321 - KeyStrokeManager: add many new handy key aliases
 
 Version 2.7.0 [2026-01-25] - Maintenance release
   #317 - FormPanel: help labels can now be toggled dynamically
