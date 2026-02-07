@@ -403,6 +403,8 @@ public class BlurLayerUI extends LayerUI<JPanel> {
      * @param onComplete An optional Runnable to invoke when the unblur completes (may be null).
      */
     public void blurIn(Runnable onComplete) {
+        if (animating) { return; }
+        
         if (timer != null && timer.isRunning()) {
             timer.stop();
         }
