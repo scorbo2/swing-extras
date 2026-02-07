@@ -14,6 +14,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -141,6 +142,48 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     @Deprecated(since = "swing-extras 2.7", forRemoval = true)
     public static DirTree createDirTree(File dir) {
         return new DirTree(dir);
+    }
+
+    /**
+     * Provides access to the TreeCellRenderer in the underlying JTree.
+     * The default renderer is a standard DefaultTreeCellRenderer with all icons set to null.
+     *
+     * @return The TreeCellRenderer used by the underlying JTree.
+     */
+    public TreeCellRenderer getTreeCellRenderer() {
+        return tree.getCellRenderer();
+    }
+
+    /**
+     * Allow setting a custom TreeCellRenderer on the underlying JTree. Note that the default renderer is a
+     * DefaultTreeCellRenderer with all icons set to null, so if you want to preserve that behavior, you will
+     * need to set the icons to null on your custom renderer as well.
+     *
+     * @param renderer The TreeCellRenderer to use for rendering tree nodes.
+     * @return This DirTree instance, for chaining.
+     */
+    public DirTree setTreeCellRenderer(TreeCellRenderer renderer) {
+        tree.setCellRenderer(renderer);
+        return this;
+    }
+
+    /**
+     * This is overridden so that we can ensure the underlying JTree will pick
+     * up the desired background color. If you've changed the background, and you want
+     * to revert to letting the current Look and Feel choose the color selection for you,
+     * you can use LookAndFeelManager.getLafColor() with "Tree.background" as the key name.
+     *
+     * @param color the desired background <code>Color</code>.
+     */
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (tree != null) {
+            tree.setBackground(color);
+        }
+        if (scrollPane != null) {
+            scrollPane.setBackground(color);
+        }
     }
 
     /**

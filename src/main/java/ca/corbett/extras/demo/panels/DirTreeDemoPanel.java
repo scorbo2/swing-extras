@@ -1,18 +1,24 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.dirtree.DirTreeListener;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
+import ca.corbett.forms.fields.ComboField;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.LongTextField;
+import ca.corbett.forms.fields.ValueChangedListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -88,6 +94,9 @@ public class DirTreeDemoPanel extends PanelBuilder {
         });
         formPanel.add(checkBoxField);
 
+        // Starting in swing-extras 2.8, you can customize DirTree cosmetic properties:
+        formPanel.add(buildColorCustomizerField());
+
         // And another checkbox for showing/hiding hidden directories: (new in swing-extras 2.7!)
         checkBoxField = new CheckBoxField("Show hidden directories", true);
         checkBoxField.addValueChangedListener(field -> {
@@ -132,6 +141,92 @@ public class DirTreeDemoPanel extends PanelBuilder {
         formPanel.add(listenerTextArea);
 
         return formPanel;
+    }
+
+    /**
+     * Builds and returns a color scheme chooser, just for fun.
+     * Best practice is to let the Look and Feel decide on colors, so that the DirTree
+     * can blend in with the rest of the application. But if your application is doing
+     * something highly custom, here's an example of how you can customize it!
+     */
+    private FormField buildColorCustomizerField() {
+        List<String> options = List.of(
+                "Use Look and Feel defaults",
+                "Matrix - green on black",
+                "Got the blues",
+                "Hot dog stand!"
+        );
+        ComboField<String> comboField = new ComboField("Color scheme:", options, 0);
+        comboField.addValueChangedListener(new ValueChangedListener() {
+            @Override
+            public void formFieldValueChanged(FormField field) {
+                ComboField<?> combo = (ComboField<?>)field;
+                switch (combo.getSelectedIndex()) {
+                    case 0 -> restoreDefaultColors();
+                    case 1 -> setMatrixColors();
+                    case 2 -> setBluesColors();
+                    case 3 -> setHotDogStandColors();
+                }
+            }
+        });
+        return comboField;
+    }
+
+    /**
+     * Restore our DirTree to using Look and Feel defaults.
+     * This is easy to do with the LookAndFeelManager utility class.
+     */
+    private void restoreDefaultColors() {
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getTreeCellRenderer();
+        renderer.setBackground(LookAndFeelManager.getLafColor("Tree.background", Color.WHITE));
+        renderer.setBackgroundSelectionColor(LookAndFeelManager.getLafColor("Tree.selectionBackground", Color.BLUE));
+        renderer.setBackgroundNonSelectionColor(LookAndFeelManager.getLafColor("Tree.textBackground", Color.WHITE));
+        renderer.setTextSelectionColor(LookAndFeelManager.getLafColor("Tree.selectionForeground", Color.WHITE));
+        renderer.setTextNonSelectionColor(LookAndFeelManager.getLafColor("Tree.textForeground", Color.BLACK));
+        dirTree.setBackground(LookAndFeelManager.getLafColor("Tree.background", Color.WHITE));
+        dirTree.repaint();
+    }
+
+    /**
+     * Sets a green-on-black "Matrix" color scheme, just for fun.
+     */
+    private void setMatrixColors() {
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getTreeCellRenderer();
+        renderer.setBackground(Color.BLACK);
+        renderer.setBackgroundSelectionColor(Color.GREEN.darker());
+        renderer.setBackgroundNonSelectionColor(Color.BLACK);
+        renderer.setTextSelectionColor(Color.GREEN.brighter());
+        renderer.setTextNonSelectionColor(Color.GREEN);
+        dirTree.setBackground(Color.BLACK);
+        dirTree.repaint();
+    }
+
+    /**
+     * Sets a blue color scheme, just for fun.
+     */
+    private void setBluesColors() {
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getTreeCellRenderer();
+        renderer.setBackground(new Color(0xE0F7FA));
+        renderer.setBackgroundSelectionColor(new Color(0x0288D1));
+        renderer.setBackgroundNonSelectionColor(new Color(0xE0F7FA));
+        renderer.setTextSelectionColor(Color.WHITE);
+        renderer.setTextNonSelectionColor(new Color(0x01579B));
+        dirTree.setBackground(new Color(0xE0F7FA));
+        dirTree.repaint();
+    }
+
+    /**
+     * Sets a hot dog stand color scheme, just for fun. Because who doesn't like a good hot dog stand?
+     */
+    private void setHotDogStandColors() {
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getTreeCellRenderer();
+        renderer.setBackground(new Color(0xFFF3E0));
+        renderer.setBackgroundSelectionColor(new Color(0xFF5722));
+        renderer.setBackgroundNonSelectionColor(new Color(0xFFF3E0));
+        renderer.setTextSelectionColor(Color.WHITE);
+        renderer.setTextNonSelectionColor(new Color(0xBF360C));
+        dirTree.setBackground(new Color(0xFFF3E0));
+        dirTree.repaint();
     }
 
     /**
