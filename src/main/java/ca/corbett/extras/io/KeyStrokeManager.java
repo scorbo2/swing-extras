@@ -61,7 +61,7 @@ public class KeyStrokeManager {
     private static final Logger log = Logger.getLogger(KeyStrokeManager.class.getName());
 
     private boolean isDisposed = false;
-    private Set<Window> windows = new HashSet<>();
+    private final Set<Window> windows = new HashSet<>();
     private final Map<KeyStroke, List<Action>> keyMap = new ConcurrentHashMap<>();
     private boolean isEnabled;
     private boolean warnIfMultipleHandlers = false;
@@ -562,7 +562,7 @@ public class KeyStrokeManager {
             }
         }
 
-        // Handle special keys
+        // Handle special keys:
         return switch (keyName) {
             case "enter" -> KeyEvent.VK_ENTER;
             case "escape", "esc" -> KeyEvent.VK_ESCAPE;
@@ -571,14 +571,43 @@ public class KeyStrokeManager {
             case "backspace" -> KeyEvent.VK_BACK_SPACE;
             case "delete", "del" -> KeyEvent.VK_DELETE;
             case "insert", "ins" -> KeyEvent.VK_INSERT;
+            case "pause" -> KeyEvent.VK_PAUSE;
             case "home" -> KeyEvent.VK_HOME;
             case "end" -> KeyEvent.VK_END;
-            case "pageup" -> KeyEvent.VK_PAGE_UP;
-            case "pagedown" -> KeyEvent.VK_PAGE_DOWN;
+            case "pageup", "pgup" -> KeyEvent.VK_PAGE_UP;
+            case "pagedown", "pgdn", "pgdwn", "pgdown" -> KeyEvent.VK_PAGE_DOWN;
             case "up" -> KeyEvent.VK_UP;
             case "down" -> KeyEvent.VK_DOWN;
             case "left" -> KeyEvent.VK_LEFT;
             case "right" -> KeyEvent.VK_RIGHT;
+            case "comma" -> KeyEvent.VK_COMMA;
+            case "dot", "period" -> KeyEvent.VK_PERIOD;
+            case "minus", "dash" -> KeyEvent.VK_MINUS;
+            case "equals", "equal" -> KeyEvent.VK_EQUALS;
+            case "slash", "forwardslash" -> KeyEvent.VK_SLASH;
+            case "backslash" -> KeyEvent.VK_BACK_SLASH;
+            case "semicolon" -> KeyEvent.VK_SEMICOLON;
+            case "plus" -> KeyEvent.VK_PLUS;
+            case "numpad0", "num0", "numpad_0" -> KeyEvent.VK_NUMPAD0;
+            case "numpad1", "num1", "numpad_1" -> KeyEvent.VK_NUMPAD1;
+            case "numpad2", "num2", "numpad_2" -> KeyEvent.VK_NUMPAD2;
+            case "numpad3", "num3", "numpad_3" -> KeyEvent.VK_NUMPAD3;
+            case "numpad4", "num4", "numpad_4" -> KeyEvent.VK_NUMPAD4;
+            case "numpad5", "num5", "numpad_5" -> KeyEvent.VK_NUMPAD5;
+            case "numpad6", "num6", "numpad_6" -> KeyEvent.VK_NUMPAD6;
+            case "numpad7", "num7", "numpad_7" -> KeyEvent.VK_NUMPAD7;
+            case "numpad8", "num8", "numpad_8" -> KeyEvent.VK_NUMPAD8;
+            case "numpad9", "num9", "numpad_9" -> KeyEvent.VK_NUMPAD9;
+            case "numpad_divide", "numdivide" -> KeyEvent.VK_DIVIDE;
+            case "numpad_multiply", "nummultiply" -> KeyEvent.VK_MULTIPLY;
+            case "numpad_subtract", "numsubtract" -> KeyEvent.VK_SUBTRACT;
+            case "numpad_add", "numadd" -> KeyEvent.VK_ADD;
+            case "numpad_dot", "numdecimal" -> KeyEvent.VK_DECIMAL;
+            case "numlock" -> KeyEvent.VK_NUM_LOCK;
+            case "scrolllock", "scrlk" -> KeyEvent.VK_SCROLL_LOCK;
+            case "printscreen", "prtsc" -> KeyEvent.VK_PRINTSCREEN;
+            case "windows", "win", "meta" -> KeyEvent.VK_WINDOWS;
+            case "backtick" -> KeyEvent.VK_BACK_QUOTE;
             default -> KeyEvent.VK_UNDEFINED;
         };
     }
@@ -641,6 +670,8 @@ public class KeyStrokeManager {
                 return "Delete";
             case KeyEvent.VK_INSERT:
                 return "Insert";
+            case KeyEvent.VK_PAUSE:
+                return "Pause";
             case KeyEvent.VK_HOME:
                 return "Home";
             case KeyEvent.VK_END:
@@ -657,6 +688,62 @@ public class KeyStrokeManager {
                 return "Left";
             case KeyEvent.VK_RIGHT:
                 return "Right";
+            case KeyEvent.VK_COMMA:
+                return "Comma";
+            case KeyEvent.VK_PERIOD:
+                return "Dot";
+            case KeyEvent.VK_MINUS:
+                return "Minus";
+            case KeyEvent.VK_EQUALS:
+                return "Equals";
+            case KeyEvent.VK_SLASH:
+                return "Slash";
+            case KeyEvent.VK_BACK_SLASH:
+                return "Backslash";
+            case KeyEvent.VK_SEMICOLON:
+                return "Semicolon";
+            case KeyEvent.VK_PLUS:
+                return "Plus";
+            case KeyEvent.VK_NUMPAD0:
+                return "Numpad0";
+            case KeyEvent.VK_NUMPAD1:
+                return "Numpad1";
+            case KeyEvent.VK_NUMPAD2:
+                return "Numpad2";
+            case KeyEvent.VK_NUMPAD3:
+                return "Numpad3";
+            case KeyEvent.VK_NUMPAD4:
+                return "Numpad4";
+            case KeyEvent.VK_NUMPAD5:
+                return "Numpad5";
+            case KeyEvent.VK_NUMPAD6:
+                return "Numpad6";
+            case KeyEvent.VK_NUMPAD7:
+                return "Numpad7";
+            case KeyEvent.VK_NUMPAD8:
+                return "Numpad8";
+            case KeyEvent.VK_NUMPAD9:
+                return "Numpad9";
+            case KeyEvent.VK_DIVIDE:
+                return "NumpadDivide";
+            case KeyEvent.VK_MULTIPLY:
+                return "NumpadMultiply";
+            case KeyEvent.VK_SUBTRACT:
+                return "NumpadSubtract";
+            case KeyEvent.VK_ADD:
+                return "NumpadAdd";
+            case KeyEvent.VK_DECIMAL:
+                return "NumpadDot";
+            case KeyEvent.VK_NUM_LOCK:
+                return "NumLock";
+            case KeyEvent.VK_SCROLL_LOCK:
+                return "ScrollLock";
+            case KeyEvent.VK_PRINTSCREEN:
+                return "PrintScreen";
+            case KeyEvent.VK_WINDOWS:
+                return "Windows";
+            case KeyEvent.VK_BACK_QUOTE:
+                return "Backtick";
         }
 
         // Handle function keys (check after special keys to avoid conflicts)
