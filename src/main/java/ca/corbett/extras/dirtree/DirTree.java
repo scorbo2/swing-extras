@@ -14,6 +14,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -141,6 +142,55 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     @Deprecated(since = "swing-extras 2.7", forRemoval = true)
     public static DirTree createDirTree(File dir) {
         return new DirTree(dir);
+    }
+
+    /**
+     * Provides access to the {@link TreeCellRenderer} in the underlying {@link JTree}.
+     * By default, the renderer is whatever the current Look and Feel installs on the tree. During
+     * construction, if that default renderer is a {@link DefaultTreeCellRenderer}, {@code DirTree}
+     * clears its icons (sets them to {@code null}) to avoid showing per-node icons.
+     *
+     * @return The {@link TreeCellRenderer} used by the underlying {@link JTree}.
+     */
+    public TreeCellRenderer getTreeCellRenderer() {
+        return tree.getCellRenderer();
+    }
+
+    /**
+     * Allow setting a custom {@link TreeCellRenderer} on the underlying {@link JTree}. By default, {@code DirTree}
+     * uses the renderer installed by the current Look and Feel and, if that renderer is a
+     * {@link DefaultTreeCellRenderer}, it clears its icons (sets them to {@code null}) to avoid showing per-node
+     * icons. If you replace the renderer and still want an iconless appearance, you should configure your custom
+     * renderer accordingly (for example, by setting icons to {@code null} on a {@link DefaultTreeCellRenderer}).
+     *
+     * @param renderer The {@link TreeCellRenderer} to use for rendering tree nodes.
+     * @return This {@code DirTree} instance, for chaining.
+     */
+    public DirTree setTreeCellRenderer(TreeCellRenderer renderer) {
+        tree.setCellRenderer(renderer);
+        return this;
+    }
+
+    /**
+     * This is overridden so that we can ensure the underlying JTree will pick
+     * up the desired background color. If you've changed the background, and you want
+     * to revert to letting the current Look and Feel choose the color selection for you,
+     * you can use LookAndFeelManager.getLafColor() with "Tree.background" as the key name.
+     *
+     * @param color the desired background <code>Color</code>.
+     */
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (tree != null) { // this shouldn't be possible, yet I actually saw an NPE here once
+            tree.setBackground(color);
+        }
+        if (scrollPane != null) {
+            scrollPane.setBackground(color);
+            if (scrollPane.getViewport() != null) {
+                scrollPane.getViewport().setBackground(color);
+            }
+        }
     }
 
     /**
@@ -309,7 +359,13 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
             return this;
         }
 
-        reload(); // force a reload to apply the new setting
+        notificationsEnabled = false; // be silent about it
+        try {
+            reload(); // force a reload to apply the new setting
+        }
+        finally {
+            notificationsEnabled = true;
+        }
         fireHiddenFilesChangedEvent(); // notify listeners of the change
         return this;
     }
@@ -321,15 +377,22 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     public void reload() {
         File currentDir = getCurrentDir();
 
-        // If we're locked, we need to reload the locked directory:
-        if (lockNode != null) {
-            lock(lockNode.getDir(), true);
+        notificationsEnabled = false; // be silent about it
+        try {
+            // If we're locked, we need to reload the locked directory:
+            if (lockNode != null) {
+                lock(lockNode.getDir(), true);
+            }
+
+            // Otherwise, just unlock with forceReload to reload the entire tree:
+            else {
+                unlock(true);
+            }
+        }
+        finally {
+            notificationsEnabled = true;
         }
 
-        // Otherwise, just unlock with forceReload to reload the entire tree:
-        else {
-            unlock(true);
-        }
 
         // Re-select the previously selected directory (if any):
         if (currentDir != null) {
@@ -442,10 +505,14 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
         if (roots.length == 1) {
             // Don't send a lockEvent!
             notificationsEnabled = false;
-            lock(roots[0], forceReload);
-            notificationsEnabled = true;
-            if (oldNode != null) {
-                selectAndScrollTo(oldNode.getDir());
+            try {
+                lock(roots[0], forceReload);
+                if (oldNode != null) {
+                    selectAndScrollTo(oldNode.getDir());
+                }
+            }
+            finally {
+                notificationsEnabled = true;
             }
             fireUnlockEvent(); // Technically, we are locked, but from the user's perspective we are unlocked
             return;
