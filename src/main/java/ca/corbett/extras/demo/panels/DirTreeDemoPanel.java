@@ -40,10 +40,16 @@ public class DirTreeDemoPanel extends PanelBuilder {
     private final DirTreeListener loggingDirTreeListener;
     private final DirTreeListener annoyingDirTreeListener;
     private LongTextField listenerTextArea;
+    private CheckBoxField listenForEventsCheckBox;
+    private ComboField<String> colorSchemeField;
 
     public DirTreeDemoPanel() {
         loggingDirTreeListener = new LoggingDirTreeListener();
         annoyingDirTreeListener = new AnnoyingPromptListener();
+
+        // Listen for Look and Feel changes, so that we can hide our custom color
+        // options for Look and Feels that don't work well with our code:
+        LookAndFeelManager.addChangeListener(e -> updateColorSchemeVisibility());
     }
 
     @Override
@@ -78,6 +84,12 @@ public class DirTreeDemoPanel extends PanelBuilder {
         LabelField labelField = LabelField.createPlainHeaderLabel(sb, 14);
         labelField.getMargins().setTop(12).setBottom(16);
         formPanel.add(labelField);
+
+        // Create this first so we can "log" messages to it as needed:
+        listenerTextArea = LongTextField.ofDynamicSizingMultiLine("", 8);
+        listenerTextArea.getTextArea().setEditable(false);
+        listenerTextArea.getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 10));
+        listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
 
         // Demonstrate the ability to select and scroll to any arbitrary path, even
         // if that path has not yet been lazy-loaded in the tree:
@@ -119,28 +131,37 @@ public class DirTreeDemoPanel extends PanelBuilder {
         formPanel.add(checkBoxField);
 
         // And another checkbox option to enable or disable our LoggingDirTreeListener:
-        checkBoxField = new CheckBoxField("Listen for events", false);
-        checkBoxField.addValueChangedListener(field -> {
-            boolean isSelected = ((CheckBoxField)field).isChecked();
-            if (isSelected) {
-                dirTree.addDirTreeListener(loggingDirTreeListener);
-                listenerTextArea.setText("Listening for events..." + System.lineSeparator());
-            }
-            else {
-                dirTree.removeDirTreeListener(loggingDirTreeListener);
-                listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
-            }
-        });
-        checkBoxField.getMargins().setBottom(12);
-        formPanel.add(checkBoxField);
+        listenForEventsCheckBox = new CheckBoxField("Listen for events", false);
+        listenForEventsCheckBox.addValueChangedListener(field -> updateListenerTextArea());
+        listenForEventsCheckBox.getMargins().setBottom(12);
+        formPanel.add(listenForEventsCheckBox);
 
-        listenerTextArea = LongTextField.ofDynamicSizingMultiLine("", 8);
-        listenerTextArea.getTextArea().setEditable(false);
-        listenerTextArea.getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 10));
-        listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
+        // Now we can add the text area we created earlier:
         formPanel.add(listenerTextArea);
 
         return formPanel;
+    }
+
+    /**
+     * Sets initial text in the listener log area, and also serves to update it
+     * when the user toggles the "Listen for events" checkbox.
+     */
+    private void updateListenerTextArea() {
+        if (listenForEventsCheckBox.isChecked()) {
+            dirTree.addDirTreeListener(loggingDirTreeListener);
+            listenerTextArea.setText("Listening for events..." + System.lineSeparator());
+        }
+        else {
+            dirTree.removeDirTreeListener(loggingDirTreeListener);
+            listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
+        }
+    }
+
+    /**
+     * Handy utility method to append a message to the listener log area, with a newline.
+     */
+    private void appendToListenerTextArea(String msg) {
+        listenerTextArea.setText(listenerTextArea.getText() + msg + System.lineSeparator());
     }
 
     /**
@@ -156,12 +177,12 @@ public class DirTreeDemoPanel extends PanelBuilder {
                 "Got the blues",
                 "Hot dog stand!"
         );
-        ComboField<String> comboField = new ComboField("Color scheme:", options, 0);
-        comboField.addValueChangedListener(new ValueChangedListener() {
+        colorSchemeField = new ComboField("Color scheme:", options, 0);
+        colorSchemeField.setVisible(dirTree.getTreeCellRenderer() instanceof DefaultTreeCellRenderer);
+        colorSchemeField.addValueChangedListener(new ValueChangedListener() {
             @Override
             public void formFieldValueChanged(FormField field) {
-                ComboField<?> combo = (ComboField<?>)field;
-                switch (combo.getSelectedIndex()) {
+                switch (colorSchemeField.getSelectedIndex()) {
                     case 0 -> restoreDefaultColors();
                     case 1 -> setMatrixColors();
                     case 2 -> setBluesColors();
@@ -169,7 +190,29 @@ public class DirTreeDemoPanel extends PanelBuilder {
                 }
             }
         });
-        return comboField;
+        return colorSchemeField;
+    }
+
+    /**
+     * Our color scheme options only work when the DirTree is working with a DefaultTreeCellRenderer.
+     * Most of the time, that is the case. However, some Look and Feels might install a renderer
+     * of some other type, which will break our code. So, hide the option if we're using
+     * such a Look and Feel.
+     */
+    private void updateColorSchemeVisibility() {
+        boolean isOkay = dirTree.getTreeCellRenderer() instanceof DefaultTreeCellRenderer;
+        colorSchemeField.setVisible(isOkay);
+        if (!isOkay) {
+            // Try to revert it as best we can:
+            dirTree.setBackground(LookAndFeelManager.getLafColor("Tree.background", Color.WHITE));
+
+            // Let the user know about this sad state of affairs:
+            appendToListenerTextArea("Custom color schemes not supported on this Look and Feel :(");
+        }
+        else {
+            // clear previous sad messages to avoid confusion:
+            updateListenerTextArea();
+        }
     }
 
     /**
@@ -274,26 +317,24 @@ public class DirTreeDemoPanel extends PanelBuilder {
 
         @Override
         public void selectionChanged(DirTree source, File selectedDir) {
-            String msg = "selectionChanged: new dir is " + selectedDir.getAbsolutePath();
-            listenerTextArea.setText(listenerTextArea.getText() + msg + "\n");
+            appendToListenerTextArea("selectionChanged: new dir is " + selectedDir.getAbsolutePath());
         }
 
         @Override
         public void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles) {
-            String msg = "showHiddenFilesChanged: now " + (showHiddenFiles ? "showing" : "hiding") + " hidden files";
-            listenerTextArea.setText(listenerTextArea.getText() + msg + "\n");
+            appendToListenerTextArea("showHiddenFilesChanged: now "
+                                             + (showHiddenFiles ? "showing" : "hiding")
+                                             + " hidden files");
         }
 
         @Override
         public void treeLocked(DirTree source, File lockDir) {
-            String msg = "treeLocked: lock dir is " + lockDir.getAbsolutePath();
-            listenerTextArea.setText(listenerTextArea.getText() + msg + "\n");
+            appendToListenerTextArea("treeLocked: lock dir is " + lockDir.getAbsolutePath());
         }
 
         @Override
         public void treeUnlocked(DirTree source) {
-            String msg = "treeUnlocked";
-            listenerTextArea.setText(listenerTextArea.getText() + msg + "\n");
+            appendToListenerTextArea("treeUnlocked");
         }
     }
 

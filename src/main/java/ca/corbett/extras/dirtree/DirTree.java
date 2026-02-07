@@ -182,7 +182,9 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     @Override
     public void setBackground(Color color) {
         super.setBackground(color);
-        tree.setBackground(color);
+        if (tree != null) { // this shouldn't be possible, yet I actually saw an NPE here once
+            tree.setBackground(color);
+        }
         if (scrollPane != null) {
             scrollPane.setBackground(color);
             if (scrollPane.getViewport() != null) {
@@ -357,7 +359,13 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
             return this;
         }
 
-        reload(); // force a reload to apply the new setting
+        notificationsEnabled = false; // be silent about it
+        try {
+            reload(); // force a reload to apply the new setting
+        }
+        finally {
+            notificationsEnabled = true;
+        }
         fireHiddenFilesChangedEvent(); // notify listeners of the change
         return this;
     }
@@ -369,15 +377,22 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     public void reload() {
         File currentDir = getCurrentDir();
 
-        // If we're locked, we need to reload the locked directory:
-        if (lockNode != null) {
-            lock(lockNode.getDir(), true);
+        notificationsEnabled = false; // be silent about it
+        try {
+            // If we're locked, we need to reload the locked directory:
+            if (lockNode != null) {
+                lock(lockNode.getDir(), true);
+            }
+
+            // Otherwise, just unlock with forceReload to reload the entire tree:
+            else {
+                unlock(true);
+            }
+        }
+        finally {
+            notificationsEnabled = true;
         }
 
-        // Otherwise, just unlock with forceReload to reload the entire tree:
-        else {
-            unlock(true);
-        }
 
         // Re-select the previously selected directory (if any):
         if (currentDir != null) {
@@ -490,10 +505,14 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
         if (roots.length == 1) {
             // Don't send a lockEvent!
             notificationsEnabled = false;
-            lock(roots[0], forceReload);
-            notificationsEnabled = true;
-            if (oldNode != null) {
-                selectAndScrollTo(oldNode.getDir());
+            try {
+                lock(roots[0], forceReload);
+                if (oldNode != null) {
+                    selectAndScrollTo(oldNode.getDir());
+                }
+            }
+            finally {
+                notificationsEnabled = true;
             }
             fireUnlockEvent(); // Technically, we are locked, but from the user's perspective we are unlocked
             return;
