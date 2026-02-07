@@ -7,7 +7,9 @@ import ca.corbett.forms.fields.KeyStrokeField;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +33,7 @@ public class KeyStrokeProperty extends AbstractProperty {
     private static final Logger log = Logger.getLogger(KeyStrokeProperty.class.getName());
 
     private String reservedKeyStrokeMsg = KeyStrokeField.RESERVED_MSG;
-    private final List<KeyStroke> reservedKeyStrokes = new ArrayList<>();
+    private final Set<KeyStroke> reservedKeyStrokes = new HashSet<>();
     private boolean allowBlank;
     private KeyStroke keyStroke;
     private final Action action;
@@ -136,6 +138,25 @@ public class KeyStrokeProperty extends AbstractProperty {
     }
 
     /**
+     * Adds additional reserved KeyStrokes to the list of KeyStrokes that cannot be assigned.
+     * Duplicates are automatically pruned. This method does not affect the reserved KeyStroke message.
+     */
+    public KeyStrokeProperty addReservedKeyStrokes(List<KeyStroke> additionalKeyStrokes) {
+        if (additionalKeyStrokes != null && !additionalKeyStrokes.isEmpty()) {
+            this.reservedKeyStrokes.addAll(additionalKeyStrokes);
+        }
+        return this;
+    }
+
+    /**
+     * Clears the list of reserved KeyStrokes, allowing all KeyStrokes to be assigned.
+     */
+    public KeyStrokeProperty clearReservedKeyStrokes() {
+        this.reservedKeyStrokes.clear();
+        return this;
+    }
+
+    /**
      * Returns the list of reserved KeyStrokes that cannot be assigned to this property.
      */
     public List<KeyStroke> getReservedKeyStrokes() {
@@ -164,7 +185,7 @@ public class KeyStrokeProperty extends AbstractProperty {
     public void saveToProps(Properties props) {
         props.setString(fullyQualifiedName + ".keyStroke", getKeyStrokeString());
         props.setBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
-        props.setString(fullyQualifiedName + ".reservedKeyStrokes", listToString(reservedKeyStrokes));
+        props.setString(fullyQualifiedName + ".reservedKeyStrokes", listToString(new ArrayList<>(reservedKeyStrokes)));
         props.setString(fullyQualifiedName + ".reservedKeyStrokeMsg", reservedKeyStrokeMsg);
     }
 
@@ -172,7 +193,7 @@ public class KeyStrokeProperty extends AbstractProperty {
     public void loadFromProps(Properties props) {
         allowBlank = props.getBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
         String reservedStr = props.getString(fullyQualifiedName + ".reservedKeyStrokes",
-                                             listToString(reservedKeyStrokes));
+                                             listToString(new ArrayList<>(reservedKeyStrokes)));
         reservedKeyStrokes.clear();
         reservedKeyStrokes.addAll(stringToList(reservedStr));
         reservedKeyStrokeMsg = props.getString(fullyQualifiedName + ".reservedKeyStrokeMsg", reservedKeyStrokeMsg);
@@ -208,7 +229,7 @@ public class KeyStrokeProperty extends AbstractProperty {
     protected FormField generateFormFieldImpl() {
         KeyStrokeField field = new KeyStrokeField(propertyLabel, getKeyStroke());
         field.setAllowBlank(allowBlank);
-        field.setReservedKeyStrokes(reservedKeyStrokes);
+        field.setReservedKeyStrokes(new ArrayList<>(reservedKeyStrokes));
         field.setReservedKeyStrokeMsg(reservedKeyStrokeMsg);
         return field;
     }
