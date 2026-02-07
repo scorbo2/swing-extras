@@ -184,14 +184,19 @@ public class FontProperty extends AbstractProperty {
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
-                || !(field instanceof FontField)) {
+                || !(field instanceof FontField fontField)) {
             logger.log(Level.SEVERE, "FontProperty.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
             return;
         }
 
-        FontField fontField = (FontField)field;
-        font = ((FontField)field).getSelectedFont();
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "FontProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
+        font = fontField.getSelectedFont();
         textColor = fontField.getTextColor();
         bgColor = fontField.getBgColor();
     }

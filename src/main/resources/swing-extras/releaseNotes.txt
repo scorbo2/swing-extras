@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
+  #341 - AbstractProperty: don't accept input from invalid form fields
   #340 - KeyStrokeField/KeyStrokeProperty: add/clear reserved keystrokes
   #337 - ExtensionManager: improved ext-load-order.txt pattern matching
   #333 - DirTree: add styling options, just because.

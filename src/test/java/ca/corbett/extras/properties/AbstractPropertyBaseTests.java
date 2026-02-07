@@ -1,5 +1,6 @@
 package ca.corbett.extras.properties;
 
+import ca.corbett.extras.testutils.AlwaysFalseValidator;
 import ca.corbett.forms.Margins;
 import ca.corbett.forms.fields.FormField;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,6 +8,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -22,6 +27,12 @@ public abstract class AbstractPropertyBaseTests {
         actual = createTestObject("TestCategory.TestSubcategory.TestPropertyName", "TestLabel");
     }
 
+    /**
+     * Descendant test classes MUST implement this method to return an instance of the specific
+     * property type under test, with the given fully qualified name and label.
+     * This base test class will then run basic tests on the common functionality provided.
+     * The returned property must be non-null!
+     */
     protected abstract AbstractProperty createTestObject(String fullyQualifiedName, String label);
 
     @Test
@@ -343,5 +354,75 @@ public abstract class AbstractPropertyBaseTests {
         assertEquals(30, formField.getMargins().getBottom());
         assertEquals(40, formField.getMargins().getRight());
         assertEquals(50, formField.getMargins().getInternalSpacing());
+    }
+
+    @Test
+    public void testLoadFromFormField_withInvalidFormField_shouldNotAcceptValues() {
+        // This test only applies to AbstractProperty implementations that
+        // generate FormFields that allow user input. Not all of them do.
+        // For example, static labels, or PanelFields, and so on.
+        // We can safely skip this test if the property signals that user
+        // input is not allowed:
+        if (!actual.isAllowsUserInput()) {
+            return;
+        }
+
+        // GIVEN a compatible FormField in an invalid state:
+        FormField invalidFormField = actual.generateFormField();
+        invalidFormField.addFieldValidator(new AlwaysFalseValidator()); // force it into invalid state
+
+        // And GIVEN a custom log handler that traps warning messages:
+        TestLogHandler logHandler = new TestLogHandler();
+        Logger testLogger = Logger.getLogger(actual.getClass().getName());
+        testLogger.addHandler(logHandler);
+        try {
+
+            // WHEN we try to load from that FormField:
+            actual.loadFromFormField(invalidFormField);
+
+            // THEN we should see a warning containing any complaint about "valid" in the logs:
+            // TODO this will fail for some fields that don't load data from form fields, like labels...
+            assertTrue(logHandler.hasWarningContaining("valid"),
+                       "Expected a warning about an invalid FormField, but didn't see one in the logs.");
+        }
+        finally {
+            // Clean up our log handler so it doesn't interfere with other tests:
+            testLogger.removeHandler(logHandler);
+        }
+    }
+
+    /**
+     * Custom log handler for testing warning messages.
+     */
+    static class TestLogHandler extends Handler {
+        private final List<LogRecord> records = new ArrayList<>();
+
+        @Override
+        public void publish(LogRecord record) {
+            records.add(record);
+        }
+
+        /**
+         * We'll consider anything logged at WARNING or SEVERE to be a "warning"
+         * message for our purposes.
+         */
+        public boolean hasWarningContaining(String message) {
+            return records.stream()
+                          .anyMatch(r ->
+                                            (r.getLevel() == Level.WARNING || r.getLevel() == Level.SEVERE)
+                                                    && r.getMessage().contains(message));
+        }
+
+        public void clear() {
+            records.clear();
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
     }
 }

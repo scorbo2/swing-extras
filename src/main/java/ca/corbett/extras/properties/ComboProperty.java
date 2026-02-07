@@ -104,13 +104,19 @@ public class ComboProperty<T> extends AbstractProperty {
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
-                || !(field instanceof ComboField)) {
+                || !(field instanceof ComboField<?>)) {
             logger.log(Level.SEVERE, "ComboProperty.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
             return;
         }
 
-        selectedIndex = ((ComboField<T>)field).getSelectedIndex();
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "ComboProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
+        selectedIndex = ((ComboField<?>)field).getSelectedIndex();
     }
 
 }

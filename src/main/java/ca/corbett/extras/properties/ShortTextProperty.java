@@ -83,6 +83,12 @@ public class ShortTextProperty extends AbstractProperty {
             return;
         }
 
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "TextProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         value = ((ShortTextField)field).getText();
     }
 }

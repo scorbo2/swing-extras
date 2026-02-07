@@ -517,12 +517,17 @@ public final class LogoProperty extends AbstractProperty {
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
-                || !(field instanceof LogoFormField)) {
+                || !(field instanceof LogoFormField logoField)) {
             logger.log(Level.SEVERE, "LogoProperty.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
             return;
         }
-        LogoFormField logoField = (LogoFormField)field;
+
+        if (!logoField.isValid()) {
+            logger.log(Level.WARNING, "LogoProperty.loadFromFormField: received invalid form field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
 
         bgColorType = logoField.getBackgroundColor() instanceof Color ? ColorType.SOLID : ColorType.GRADIENT;
         if (bgColorType == ColorType.SOLID) {

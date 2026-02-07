@@ -7,6 +7,7 @@ package ca.corbett.extras.properties;
  * FormField B based on the selected value in FormField A, or to enable/disable certain
  * FormFields based on the value(s) of some other FormField(s).
  */
+@FunctionalInterface
 public interface PropertyFormFieldChangeListener {
 
     /**
