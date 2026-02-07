@@ -506,6 +506,8 @@ public class KeyStrokeManager {
                 case "meta":
                 case "cmd":
                 case "command":
+                case "win":
+                case "windows":
                     modifiers |= KeyEvent.META_DOWN_MASK;
                     break;
                 default:
@@ -598,15 +600,14 @@ public class KeyStrokeManager {
             case "numpad7", "num7", "numpad_7" -> KeyEvent.VK_NUMPAD7;
             case "numpad8", "num8", "numpad_8" -> KeyEvent.VK_NUMPAD8;
             case "numpad9", "num9", "numpad_9" -> KeyEvent.VK_NUMPAD9;
-            case "numpad_divide", "numdivide" -> KeyEvent.VK_DIVIDE;
-            case "numpad_multiply", "nummultiply" -> KeyEvent.VK_MULTIPLY;
-            case "numpad_subtract", "numsubtract" -> KeyEvent.VK_SUBTRACT;
-            case "numpad_add", "numadd" -> KeyEvent.VK_ADD;
-            case "numpad_dot", "numdecimal" -> KeyEvent.VK_DECIMAL;
+            case "numpaddivide", "numpad_divide", "numdivide" -> KeyEvent.VK_DIVIDE;
+            case "numpadmultiple", "numpad_multiply", "nummultiply" -> KeyEvent.VK_MULTIPLY;
+            case "numpadsubstract", "numpad_subtract", "numsubtract" -> KeyEvent.VK_SUBTRACT;
+            case "numpadadd", "numpad_add", "numadd" -> KeyEvent.VK_ADD;
+            case "numpaddot", "numpad_dot", "numdecimal" -> KeyEvent.VK_DECIMAL;
             case "numlock" -> KeyEvent.VK_NUM_LOCK;
             case "scrolllock", "scrlk" -> KeyEvent.VK_SCROLL_LOCK;
             case "printscreen", "prtsc" -> KeyEvent.VK_PRINTSCREEN;
-            case "windows", "win", "meta" -> KeyEvent.VK_WINDOWS;
             case "backtick" -> KeyEvent.VK_BACK_QUOTE;
             default -> KeyEvent.VK_UNDEFINED;
         };
@@ -740,8 +741,6 @@ public class KeyStrokeManager {
                 return "ScrollLock";
             case KeyEvent.VK_PRINTSCREEN:
                 return "PrintScreen";
-            case KeyEvent.VK_WINDOWS:
-                return "Windows";
             case KeyEvent.VK_BACK_QUOTE:
                 return "Backtick";
         }
