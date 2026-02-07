@@ -7,7 +7,7 @@ Version 2.8.0 [TODO release date]
   #332 - ActionPanel: many usability improvements
   #330 - New UI component: ActionPanel
   #327 - KeyStrokeManager: add multiple window support
-  #325 - KeyStrokeManager: warn about multiple handlers per keystroke
+  #325 - KeyStrokeManager: warn on multiple handlers per keystroke
   #322 - KeyStrokeProperty: fix bug regarding reserved keystrokes
 
 Version 2.7.0 [2026-01-25] - Maintenance release
