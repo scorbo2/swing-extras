@@ -602,8 +602,9 @@ public class KeyStrokeManager {
             case "numpad9", "num9", "numpad_9" -> KeyEvent.VK_NUMPAD9;
             case "numpaddivide", "numpad_divide", "numdivide" -> KeyEvent.VK_DIVIDE;
             case "numpadmultiple", "numpad_multiply", "nummultiply" -> KeyEvent.VK_MULTIPLY;
-            case "numpadsubstract", "numpad_subtract", "numsubtract" -> KeyEvent.VK_SUBTRACT;
-            case "numpadadd", "numpad_add", "numadd" -> KeyEvent.VK_ADD;
+            case "numpadsubstract", "numpad_subtract", "numsubtract", "numpad_minus", "numpadminus" ->
+                    KeyEvent.VK_SUBTRACT;
+            case "numpadadd", "numpad_add", "numadd", "numpad_plus", "numpadplus" -> KeyEvent.VK_ADD;
             case "numpaddot", "numpad_dot", "numdecimal" -> KeyEvent.VK_DECIMAL;
             case "numlock" -> KeyEvent.VK_NUM_LOCK;
             case "scrolllock", "scrlk" -> KeyEvent.VK_SCROLL_LOCK;
@@ -730,9 +731,9 @@ public class KeyStrokeManager {
             case KeyEvent.VK_MULTIPLY:
                 return "NumpadMultiply";
             case KeyEvent.VK_SUBTRACT:
-                return "NumpadSubtract";
+                return "NumpadMinus";
             case KeyEvent.VK_ADD:
-                return "NumpadAdd";
+                return "NumpadPlus";
             case KeyEvent.VK_DECIMAL:
                 return "NumpadDot";
             case KeyEvent.VK_NUM_LOCK:
