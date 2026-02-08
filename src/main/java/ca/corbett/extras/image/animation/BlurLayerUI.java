@@ -163,8 +163,15 @@ public class BlurLayerUI extends LayerUI<JPanel> {
 
     /**
      * Sets the animation duration for blur transitions.
+     *
+     * @param animationDuration the animation duration to use; must not be {@code null}
+     * @return this {@link BlurLayerUI} instance for chaining
+     * @throws IllegalArgumentException if {@code animationDuration} is {@code null}
      */
     public BlurLayerUI setAnimationDuration(AnimationDuration animationDuration) {
+        if (animationDuration == null) {
+            throw new IllegalArgumentException("animationDuration must not be null");
+        }
         this.animationDuration = animationDuration;
         return this;
     }
