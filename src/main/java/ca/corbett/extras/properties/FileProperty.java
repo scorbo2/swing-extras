@@ -131,6 +131,12 @@ public class FileProperty extends AbstractProperty {
             return;
         }
 
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "FileProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         file = ((FileField)field).getFile();
     }
 

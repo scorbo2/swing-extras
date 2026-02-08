@@ -1,6 +1,20 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.8.0 [TODO release date]
+  #350 - New UI component: TextInputDialog
+  #348 - BlurLayerUI: add animation options
+  #341 - AbstractProperty: don't accept input from invalid form fields
+  #340 - KeyStrokeField/KeyStrokeProperty: add/clear reserved keystrokes
+  #337 - ExtensionManager: improved ext-load-order.txt pattern matching
+  #333 - DirTree: add styling options, just because.
+  #332 - ActionPanel: many usability improvements
+  #330 - New UI component: ActionPanel
+  #327 - KeyStrokeManager: add multiple window support
+  #325 - KeyStrokeManager: warn on multiple handlers per keystroke
+  #322 - KeyStrokeProperty: fix bug regarding reserved keystrokes
+  #321 - KeyStrokeManager: add many new handy key aliases
+
 Version 2.7.0 [2026-01-25] - Maintenance release
   #317 - FormPanel: help labels can now be toggled dynamically
   #315 - Bug: KeyStrokeManager.clear() was not removing accelerators

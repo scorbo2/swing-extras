@@ -276,6 +276,164 @@ public class ExtensionManagerTest {
     }
 
     @Test
+    public void testSortExtensionJars_withPartialNameMatch_shouldMatch() throws Exception {
+        // Issue #337 - Support partial name matching in load order file
+        Path tmpDir = Files.createTempDirectory("testSortExtensionJars");
+        try {
+            Set<File> jarSet = new HashSet<>(3);
+            File jar1 = new File(tmpDir.toFile(), "ext-iv-quick-access-2.3.0.jar");
+            File jar2 = new File(tmpDir.toFile(), "ext-other-1.0.0.jar");
+            File jar3 = new File(tmpDir.toFile(), "ext-another-3.5.1.jar");
+            jar1.createNewFile();
+            jar2.createNewFile();
+            jar3.createNewFile();
+            jarSet.add(jar1);
+            jarSet.add(jar2);
+            jarSet.add(jar3);
+
+            // Load order file uses partial names (without version numbers)
+            createLoadOrderFile(new File(tmpDir.toFile(), "ext-load-order.txt"),
+                                List.of("ext-iv-quick-access"));
+
+            List<File> sortedJars = extManager.sortExtensionJarSet(tmpDir.toFile(), jarSet);
+
+            assertEquals(3, sortedJars.size());
+            assertEquals("ext-iv-quick-access-2.3.0.jar", sortedJars.get(0).getName());
+            assertEquals("ext-another-3.5.1.jar", sortedJars.get(1).getName());
+            assertEquals("ext-other-1.0.0.jar", sortedJars.get(2).getName());
+        }
+        finally {
+            deleteDirectory(tmpDir.toFile());
+        }
+    }
+
+    @Test
+    public void testSortExtensionJars_withPartialNameAndVersionUpgrade_shouldMatch() throws Exception {
+        // Issue #337 - Should work even when extension version changes
+        Path tmpDir = Files.createTempDirectory("testSortExtensionJars");
+        try {
+            Set<File> jarSet = new HashSet<>(2);
+            File jar1 = new File(tmpDir.toFile(), "ext-iv-quick-access-2.4.0.jar"); // Upgraded from 2.3.0
+            File jar2 = new File(tmpDir.toFile(), "ext-other-1.0.0.jar");
+            jar1.createNewFile();
+            jar2.createNewFile();
+            jarSet.add(jar1);
+            jarSet.add(jar2);
+
+            // Load order file still has the partial name (no version)
+            createLoadOrderFile(new File(tmpDir.toFile(), "ext-load-order.txt"),
+                                List.of("ext-iv-quick-access"));
+
+            List<File> sortedJars = extManager.sortExtensionJarSet(tmpDir.toFile(), jarSet);
+
+            assertEquals(2, sortedJars.size());
+            assertEquals("ext-iv-quick-access-2.4.0.jar", sortedJars.get(0).getName());
+            assertEquals("ext-other-1.0.0.jar", sortedJars.get(1).getName());
+        }
+        finally {
+            deleteDirectory(tmpDir.toFile());
+        }
+    }
+
+    @Test
+    public void testSortExtensionJars_withMultiplePartialMatches_shouldUseFirstAlphabetically() throws Exception {
+        // Issue #337 - Edge case: multiple jars match a vague pattern
+        Path tmpDir = Files.createTempDirectory("testSortExtensionJars");
+        try {
+            Set<File> jarSet = new HashSet<>(3);
+            File jar1 = new File(tmpDir.toFile(), "ext-iv-quick-access-2.3.0.jar");
+            File jar2 = new File(tmpDir.toFile(), "ext-iv-another-1.0.0.jar");
+            File jar3 = new File(tmpDir.toFile(), "ext-other-3.5.1.jar");
+            jar1.createNewFile();
+            jar2.createNewFile();
+            jar3.createNewFile();
+            jarSet.add(jar1);
+            jarSet.add(jar2);
+            jarSet.add(jar3);
+
+            // Load order file has a vague pattern that matches two jars
+            createLoadOrderFile(new File(tmpDir.toFile(), "ext-load-order.txt"),
+                                List.of("ext-iv"));
+
+            List<File> sortedJars = extManager.sortExtensionJarSet(tmpDir.toFile(), jarSet);
+
+            assertEquals(3, sortedJars.size());
+            // Should pick first alphabetically when multiple matches: ext-iv-another comes before ext-iv-quick-access
+            assertEquals("ext-iv-another-1.0.0.jar", sortedJars.get(0).getName());
+            assertEquals("ext-iv-quick-access-2.3.0.jar", sortedJars.get(1).getName());
+            assertEquals("ext-other-3.5.1.jar", sortedJars.get(2).getName());
+        }
+        finally {
+            deleteDirectory(tmpDir.toFile());
+        }
+    }
+
+    @Test
+    public void testSortExtensionJars_withNoMatchingJars_shouldIgnoreEntry() throws Exception {
+        // Issue #337 - Edge case: load order entry doesn't match any jars
+        Path tmpDir = Files.createTempDirectory("testSortExtensionJars");
+        try {
+            Set<File> jarSet = new HashSet<>(2);
+            File jar1 = new File(tmpDir.toFile(), "ext-other-1.0.0.jar");
+            File jar2 = new File(tmpDir.toFile(), "ext-another-3.5.1.jar");
+            jar1.createNewFile();
+            jar2.createNewFile();
+            jarSet.add(jar1);
+            jarSet.add(jar2);
+
+            // Load order file references a jar that doesn't exist
+            createLoadOrderFile(new File(tmpDir.toFile(), "ext-load-order.txt"),
+                                List.of("ext-nonexistent"));
+
+            List<File> sortedJars = extManager.sortExtensionJarSet(tmpDir.toFile(), jarSet);
+
+            // Should fall back to alphabetical order for all jars
+            assertEquals(2, sortedJars.size());
+            assertEquals("ext-another-3.5.1.jar", sortedJars.get(0).getName());
+            assertEquals("ext-other-1.0.0.jar", sortedJars.get(1).getName());
+        }
+        finally {
+            deleteDirectory(tmpDir.toFile());
+        }
+    }
+
+    @Test
+    public void testSortExtensionJars_withMixedExactAndPartialMatches_shouldWorkForBoth() throws Exception {
+        // Issue #337 - Should support both exact matches and partial matches in same file
+        Path tmpDir = Files.createTempDirectory("testSortExtensionJars");
+        try {
+            Set<File> jarSet = new HashSet<>(4);
+            File jar1 = new File(tmpDir.toFile(), "ext-iv-quick-access-2.3.0.jar");
+            File jar2 = new File(tmpDir.toFile(), "exact-name.jar");
+            File jar3 = new File(tmpDir.toFile(), "ext-other-1.0.0.jar");
+            File jar4 = new File(tmpDir.toFile(), "zzz-last.jar");
+            jar1.createNewFile();
+            jar2.createNewFile();
+            jar3.createNewFile();
+            jar4.createNewFile();
+            jarSet.add(jar1);
+            jarSet.add(jar2);
+            jarSet.add(jar3);
+            jarSet.add(jar4);
+
+            // Mix of exact and partial matches
+            createLoadOrderFile(new File(tmpDir.toFile(), "ext-load-order.txt"),
+                                List.of("exact-name.jar", "ext-iv-quick-access"));
+
+            List<File> sortedJars = extManager.sortExtensionJarSet(tmpDir.toFile(), jarSet);
+
+            assertEquals(4, sortedJars.size());
+            assertEquals("exact-name.jar", sortedJars.get(0).getName());
+            assertEquals("ext-iv-quick-access-2.3.0.jar", sortedJars.get(1).getName());
+            assertEquals("ext-other-1.0.0.jar", sortedJars.get(2).getName());
+            assertEquals("zzz-last.jar", sortedJars.get(3).getName());
+        }
+        finally {
+            deleteDirectory(tmpDir.toFile());
+        }
+    }
+
+    @Test
     public void testJarFileMeetsRequirements_givenOlderVersion_shouldFail() {
         AppExtensionInfo extInfo = new AppExtensionInfo.Builder("testOld")
                 .setVersion("1.0")

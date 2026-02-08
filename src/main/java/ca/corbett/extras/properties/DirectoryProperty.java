@@ -82,6 +82,12 @@ public class DirectoryProperty extends AbstractProperty {
             return;
         }
 
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "DirectoryProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         dir = ((FileField)field).getFile();
     }
 

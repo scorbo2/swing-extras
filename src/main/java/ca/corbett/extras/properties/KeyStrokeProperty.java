@@ -7,7 +7,10 @@ import ca.corbett.forms.fields.KeyStrokeField;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +34,7 @@ public class KeyStrokeProperty extends AbstractProperty {
     private static final Logger log = Logger.getLogger(KeyStrokeProperty.class.getName());
 
     private String reservedKeyStrokeMsg = KeyStrokeField.RESERVED_MSG;
-    private final List<KeyStroke> reservedKeyStrokes = new ArrayList<>();
+    private final Set<KeyStroke> reservedKeyStrokes = new HashSet<>();
     private boolean allowBlank;
     private KeyStroke keyStroke;
     private final Action action;
@@ -136,6 +139,25 @@ public class KeyStrokeProperty extends AbstractProperty {
     }
 
     /**
+     * Adds additional reserved KeyStrokes to the list of KeyStrokes that cannot be assigned.
+     * Duplicates are automatically pruned. This method does not affect the reserved KeyStroke message.
+     */
+    public KeyStrokeProperty addReservedKeyStrokes(List<KeyStroke> additionalKeyStrokes) {
+        if (additionalKeyStrokes != null && !additionalKeyStrokes.isEmpty()) {
+            this.reservedKeyStrokes.addAll(additionalKeyStrokes);
+        }
+        return this;
+    }
+
+    /**
+     * Clears the list of reserved KeyStrokes, allowing all KeyStrokes to be assigned.
+     */
+    public KeyStrokeProperty clearReservedKeyStrokes() {
+        this.reservedKeyStrokes.clear();
+        return this;
+    }
+
+    /**
      * Returns the list of reserved KeyStrokes that cannot be assigned to this property.
      */
     public List<KeyStroke> getReservedKeyStrokes() {
@@ -164,16 +186,21 @@ public class KeyStrokeProperty extends AbstractProperty {
     public void saveToProps(Properties props) {
         props.setString(fullyQualifiedName + ".keyStroke", getKeyStrokeString());
         props.setBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
-        props.setString(fullyQualifiedName + ".reservedKeyStrokes", listToString(reservedKeyStrokes));
+        
+        // Sort the reserved keystrokes by their string representation for consistent ordering
+        List<KeyStroke> sortedReserved = new ArrayList<>(reservedKeyStrokes);
+        sortedReserved.sort(Comparator.comparing(KeyStrokeManager::keyStrokeToString));
+        props.setString(fullyQualifiedName + ".reservedKeyStrokes", listToString(sortedReserved));
+        
         props.setString(fullyQualifiedName + ".reservedKeyStrokeMsg", reservedKeyStrokeMsg);
     }
 
     @Override
     public void loadFromProps(Properties props) {
         allowBlank = props.getBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
-        reservedKeyStrokes.clear();
         String reservedStr = props.getString(fullyQualifiedName + ".reservedKeyStrokes",
-                                             listToString(reservedKeyStrokes));
+                                             listToString(new ArrayList<>(reservedKeyStrokes)));
+        reservedKeyStrokes.clear();
         reservedKeyStrokes.addAll(stringToList(reservedStr));
         reservedKeyStrokeMsg = props.getString(fullyQualifiedName + ".reservedKeyStrokeMsg", reservedKeyStrokeMsg);
 
@@ -208,21 +235,31 @@ public class KeyStrokeProperty extends AbstractProperty {
     protected FormField generateFormFieldImpl() {
         KeyStrokeField field = new KeyStrokeField(propertyLabel, getKeyStroke());
         field.setAllowBlank(allowBlank);
-        field.setReservedKeyStrokes(reservedKeyStrokes);
+        field.setReservedKeyStrokes(new ArrayList<>(reservedKeyStrokes));
         field.setReservedKeyStrokeMsg(reservedKeyStrokeMsg);
         return field;
     }
 
     @Override
     public void loadFromFormField(FormField field) {
+        // Make sure the field is of the expected type and matches our identifier:
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
                 || !(field instanceof KeyStrokeField)) {
-            log.log(Level.SEVERE, "KeyStrokeField.loadFromFormField: received the wrong field \"{0}\"",
+            log.log(Level.SEVERE, "KeyStrokeProperty.loadFromFormField: received the wrong field \"{0}\"",
                     field.getIdentifier());
             return;
         }
 
+        // Make sure the field is in a valid state:
+        // (best practice is to prevent invalid form submissions, but poorly-coded clients can ignore this)
+        if (!field.isValid()) {
+            log.log(Level.WARNING, "KeyStrokeProperty.loadFromFormField: received an invalid field \"{0}\"",
+                    field.getIdentifier());
+            return;
+        }
+
+        // We're good at this point, so we can safely load the value:
         keyStroke = ((KeyStrokeField)field).getKeyStroke();
     }
 

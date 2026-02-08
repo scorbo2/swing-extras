@@ -25,5 +25,4 @@ class BooleanPropertyTest extends AbstractPropertyBaseTests {
         // THEN we should receive change events on it:
         Mockito.verify(listener, Mockito.times(1)).valueChanged(Mockito.any());
     }
-
 }

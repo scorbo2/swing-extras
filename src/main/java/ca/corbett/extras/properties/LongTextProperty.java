@@ -2,7 +2,6 @@ package ca.corbett.extras.properties;
 
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LongTextField;
-import ca.corbett.forms.fields.ShortTextField;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -129,12 +128,18 @@ public class LongTextProperty extends AbstractProperty {
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
-                || !(field instanceof ShortTextField)) {
-            logger.log(Level.SEVERE, "TextProperty.loadFromFormField: received the wrong field \"{0}\"",
+                || !(field instanceof LongTextField longTextField)) {
+            logger.log(Level.SEVERE, "LongTextProperty.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
             return;
         }
 
-        value = ((ShortTextField)field).getText();
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "LongTextProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
+        value = longTextField.getText();
     }
 }

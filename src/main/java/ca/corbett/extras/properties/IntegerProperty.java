@@ -118,6 +118,12 @@ public class IntegerProperty extends AbstractProperty {
             return;
         }
 
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "IntegerProperty.loadFromFormField: received an invalid value from field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         value = ((NumberField)field).getCurrentValue().intValue();
     }
 

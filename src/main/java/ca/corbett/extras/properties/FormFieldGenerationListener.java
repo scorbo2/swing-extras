@@ -13,6 +13,7 @@ import ca.corbett.forms.fields.FormField;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.5
  */
+@FunctionalInterface
 public interface FormFieldGenerationListener {
 
     /**
@@ -31,7 +32,7 @@ public interface FormFieldGenerationListener {
      * instead, because that hook will give your listener additional context that you won't
      * get here, such as the FormPanel on which the FormField is located. This hook is
      * intended more for cosmetic tweaks on the generated FormField that you can't make
-     * via the wrapper methods in AbstractProperty.
+     * via the wrapper methods in AbstractProperty, such as setting custom colors/fonts, etc.
      * </p>
      *
      * @param property  The AbstractProperty implementation that has generated the FormField.
