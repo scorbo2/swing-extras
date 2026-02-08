@@ -478,6 +478,14 @@ public class BlurLayerUI extends LayerUI<JPanel> {
         if (timer != null && timer.isRunning()) {
             timer.stop();
         }
+        // Reset animation and blur state so this UI instance can be safely reused
+        animating = false;
+        onComplete = null;
+        blurred = false;
+        blurOpacity = 0.0f;
+        if (c instanceof JLayer) {
+            ((JLayer<?>) c).setLayerEventMask(0);
+        }
         layer = null;
         blurredImage = null;
     }
