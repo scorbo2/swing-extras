@@ -43,6 +43,7 @@ public class TextInputDialog extends JDialog {
     protected LongTextField longTextField;
     protected JButton okButton;
     protected JButton cancelButton;
+    protected String result;
 
     public TextInputDialog() {
         this(null, "Input", InputType.SingleLine);
@@ -101,6 +102,36 @@ public class TextInputDialog extends JDialog {
         if (owner != null) {
             setLocationRelativeTo(owner);
         }
+    }
+
+    /**
+     * Returns the text input by the user, or null if the user canceled.
+     *
+     * @return The user-entered text, or null if cancel was selected.
+     */
+    public String getResult() {
+        return result;
+    }
+
+    /**
+     * Static convenience method to show a TextInputDialog and return the result in one line of code.
+     *
+     * @param owner      the parent window to center this dialog on (can be null)
+     * @param title      the title to show on the dialog
+     * @param inputType  the type of input to allow (single-line or multi-line)
+     * @param allowBlank whether to allow blank values (true to allow, false to disallow)
+     * @param validators optional FieldValidators to apply to the input (can be empty)
+     * @return the text input by the user, or null if the user canceled or if validation failed
+     */
+    public static String showDialog(Window owner, String title, InputType inputType, boolean allowBlank,
+                                    FieldValidator<FormField>... validators) {
+        TextInputDialog dialog = new TextInputDialog(owner, title, inputType);
+        dialog.setAllowBlank(allowBlank);
+        for (FieldValidator<FormField> validator : validators) {
+            dialog.addValidator(validator);
+        }
+        dialog.setVisible(true);
+        return dialog.getResult();
     }
 
     /**
@@ -228,10 +259,14 @@ public class TextInputDialog extends JDialog {
     protected void handleButtonClick(boolean isOkButton) {
         if (isOkButton) {
             if (!formPanel.isFormValid()) {
-                return; // Can't OK it until you pass all validation rules
+                return; // Can't close this dialog until you pass all validation rules (or cancel)
             }
+            result = inputType == InputType.SingleLine ? shortTextField.getText() : longTextField.getText();
+            dispose();
+            return;
         }
 
+        result = null; // user canceled
         dispose();
     }
 }
