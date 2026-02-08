@@ -134,8 +134,16 @@ public class BlurLayerUI extends LayerUI<JPanel> {
     /**
      * Sets whether the panel should be blurred instantly (without animation).
      * For animated blur transitions, use blurOut() and blurIn() instead.
+     * If an animation is currently running, it will be stopped and cleaned up.
      */
     public void setBlurred(boolean blurred) {
+        // Stop and clean up any running animation
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
+        animating = false;
+        onComplete = null;
+        
         boolean oldValue = this.blurred;
         this.blurred = blurred;
         this.blurOpacity = blurred ? 1f : 0f;
