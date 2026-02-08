@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.8.0 [TODO release date]
   #340 - KeyStrokeField/KeyStrokeProperty: add/clear reserved keystrokes
   #337 - ExtensionManager: improved ext-load-order.txt pattern matching
+  #335 - ActionPanel: add ToolBar
   #333 - DirTree: add styling options, just because.
   #332 - ActionPanel: many usability improvements
   #330 - New UI component: ActionPanel
