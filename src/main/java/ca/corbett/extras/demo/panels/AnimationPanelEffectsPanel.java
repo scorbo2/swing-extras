@@ -1,6 +1,8 @@
 package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.gradient.ColorSelectionType;
+import ca.corbett.extras.image.animation.AnimationDuration;
+import ca.corbett.extras.image.animation.AnimationSpeed;
 import ca.corbett.extras.image.animation.BlurLayerUI;
 import ca.corbett.extras.image.animation.FadeLayerUI;
 import ca.corbett.extras.image.animation.SnowLayerUI;
@@ -54,8 +56,8 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
     private PanelField fadePanel;
     private FadeLayerUI fadeLayerUI;
     private ColorField fadeColorField;
-    private ComboField<FadeLayerUI.AnimationDuration> fadeDurationField;
-    private ComboField<FadeLayerUI.AnimationSpeed> fadeSpeedField;
+    private ComboField<AnimationDuration> fadeDurationField;
+    private ComboField<AnimationSpeed> fadeSpeedField;
 
     private PanelField blurPanel;
     private BlurLayerUI blurLayerUI;
@@ -65,8 +67,8 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
     private NumberField overlayTextSizeField;
     private ColorField overlayTextColorField;
     private CheckBoxField blurAnimateCheckBox;
-    private ComboField<BlurLayerUI.AnimationDuration> blurDurationField;
-    private ComboField<BlurLayerUI.AnimationSpeed> blurSpeedField;
+    private ComboField<AnimationDuration> blurDurationField;
+    private ComboField<AnimationSpeed> blurSpeedField;
 
     private PanelField snowPanel;
     private SnowLayerUI snowLayerUI;
@@ -178,10 +180,10 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
                 .setColor(FadeLayerUI.DEFAULT_FADE_COLOR);
         formPanel.add(fadeColorField);
         fadeDurationField = new ComboField<>("Fade duration:",
-                                             List.of(FadeLayerUI.AnimationDuration.values()), 2);
+                                             List.of(AnimationDuration.values()), 2);
         formPanel.add(fadeDurationField);
         fadeSpeedField = new ComboField<>("Fade speed:",
-                                          List.of(FadeLayerUI.AnimationSpeed.values()), 2);
+                                          List.of(AnimationSpeed.values()), 2);
         formPanel.add(fadeSpeedField);
 
         ButtonField buttonField = new ButtonField(List.of(new FadeAction()));
@@ -245,12 +247,12 @@ public class AnimationPanelEffectsPanel extends PanelBuilder {
         formPanel.add(blurAnimateCheckBox);
         
         blurDurationField = new ComboField<>("Blur duration:",
-                                             List.of(BlurLayerUI.AnimationDuration.values()), 2);
+                                             List.of(AnimationDuration.values()), 2);
         blurDurationField.setEnabled(false);
         formPanel.add(blurDurationField);
         
         blurSpeedField = new ComboField<>("Blur speed:",
-                                          List.of(BlurLayerUI.AnimationSpeed.values()), 2);
+                                          List.of(AnimationSpeed.values()), 2);
         blurSpeedField.setEnabled(false);
         formPanel.add(blurSpeedField);
 
