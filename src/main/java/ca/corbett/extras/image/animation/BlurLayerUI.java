@@ -185,8 +185,15 @@ public class BlurLayerUI extends LayerUI<JPanel> {
 
     /**
      * Sets the animation speed for blur transitions.
+     *
+     * @param animationSpeed the animation speed to use; must not be {@code null}
+     * @return this {@link BlurLayerUI} instance for method chaining
+     * @throws IllegalArgumentException if {@code animationSpeed} is {@code null}
      */
     public BlurLayerUI setAnimationSpeed(AnimationSpeed animationSpeed) {
+        if (animationSpeed == null) {
+            throw new IllegalArgumentException("animationSpeed must not be null");
+        }
         this.animationSpeed = animationSpeed;
         return this;
     }
