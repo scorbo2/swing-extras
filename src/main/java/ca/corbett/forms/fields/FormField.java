@@ -278,6 +278,12 @@ public abstract class FormField {
 
     /**
      * Enables or disables all components in this field.
+     * <p>
+     * <b>Note:</b> The help label is intentionally not disabled when the field is disabled.
+     * This is because the help label should always be visible and accessible to the user,
+     * even when the field itself is disabled. Descendant classes can override
+     * {@code setEnabled()} to implement their own handling if needed.
+     * </p>
      *
      * @param enabled whether to enable or disable the components.
      */
@@ -288,7 +294,6 @@ public abstract class FormField {
             fieldComponent.setEnabled(enabled);
         }
         validationLabel.setEnabled(enabled);
-        helpLabel.setEnabled(enabled);
         return this;
     }
 

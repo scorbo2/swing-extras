@@ -36,9 +36,6 @@ public abstract class FormFieldBaseTests {
         if (actual.hasFieldLabel()) {
             assertTrue(actual.getFieldLabel().isEnabled());
         }
-        if (actual.hasHelpLabel()) {
-            assertTrue(actual.getHelpLabel().isEnabled());
-        }
         if (actual.hasValidationLabel()) {
             assertTrue(actual.getValidationLabel().isEnabled());
         }
@@ -48,9 +45,6 @@ public abstract class FormFieldBaseTests {
         assertFalse(actual.getFieldComponent().isEnabled());
         if (actual.hasFieldLabel()) {
             assertFalse(actual.getFieldLabel().isEnabled());
-        }
-        if (actual.hasHelpLabel()) {
-            assertFalse(actual.getHelpLabel().isEnabled());
         }
         if (actual.hasValidationLabel()) {
             assertFalse(actual.getValidationLabel().isEnabled());
@@ -62,12 +56,27 @@ public abstract class FormFieldBaseTests {
         if (actual.hasFieldLabel()) {
             assertTrue(actual.getFieldLabel().isEnabled());
         }
-        if (actual.hasHelpLabel()) {
-            assertTrue(actual.getHelpLabel().isEnabled());
-        }
         if (actual.hasValidationLabel()) {
             assertTrue(actual.getValidationLabel().isEnabled());
         }
+    }
+
+    @Test
+    public void testSetEnabled_helpLabelShouldNotBeDisabled() {
+        // Help label should always remain enabled, even when the field is disabled.
+        // This ensures that users can still access help text for disabled fields.
+        // See: https://github.com/scorbo2/swing-extras/issues/324
+        actual.setHelpText("Some help text");
+        assertTrue(actual.hasHelpLabel());
+        assertTrue(actual.getHelpLabel().isEnabled());
+
+        actual.setEnabled(false);
+        assertFalse(actual.isEnabled());
+        assertTrue(actual.getHelpLabel().isEnabled(), "Help label should remain enabled when field is disabled");
+
+        actual.setEnabled(true);
+        assertTrue(actual.isEnabled());
+        assertTrue(actual.getHelpLabel().isEnabled());
     }
 
     @Test
