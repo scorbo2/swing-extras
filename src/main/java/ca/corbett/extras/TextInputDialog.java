@@ -16,7 +16,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Window;
-import java.util.logging.Logger;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Provides an easy way to get text input from the user, very similar to JOptionPane's showInputDialog method,
@@ -27,7 +28,6 @@ import java.util.logging.Logger;
  */
 public class TextInputDialog extends JDialog {
 
-    private static final Logger log = Logger.getLogger(TextInputDialog.class.getName());
     private static final int DEFAULT_COLS = 20;
     private static final int DEFAULT_ROWS = 10;
     private static final String DEFAULT_CONFIRM_LABEL = "OK";
@@ -77,6 +77,8 @@ public class TextInputDialog extends JDialog {
         setSize(dim);
         setResizable(inputType == InputType.MultiLine);
         setMinimumSize(new Dimension(350, 150));
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        addWindowListener(new WindowCloseListener()); // make sure our cancel path is hit if window is closed
 
         // Our text area only resizes horizontally, not vertically, so
         // I want to set a maximum height on the dialog to prevent pointless
@@ -121,13 +123,13 @@ public class TextInputDialog extends JDialog {
      * @param inputType  the type of input to allow (single-line or multi-line)
      * @param allowBlank whether to allow blank values (true to allow, false to disallow)
      * @param validators optional FieldValidators to apply to the input (can be empty)
-     * @return the text input by the user, or null if the user canceled or if validation failed
+     * @return the text input by the user, or null if the user canceled or closed the dialog manually.
      */
     public static String showDialog(Window owner, String title, InputType inputType, boolean allowBlank,
-                                    FieldValidator<FormField>... validators) {
+                                    FieldValidator<? extends FormField>... validators) {
         TextInputDialog dialog = new TextInputDialog(owner, title, inputType);
         dialog.setAllowBlank(allowBlank);
-        for (FieldValidator<FormField> validator : validators) {
+        for (FieldValidator<? extends FormField> validator : validators) {
             dialog.addValidator(validator);
         }
         dialog.setVisible(true);
@@ -161,11 +163,16 @@ public class TextInputDialog extends JDialog {
      * validation rules you want to enforce on the input. You can add as many validators as you like,
      * and they will all be applied when the user clicks the confirm button. If any validator fails,
      * the dialog will remain open and will show validation messages to the user.
+     * <p>
+     *     The given validator can be typed to any subclass of FormField.
+     *     This lets you use some of the built-in text validators in swing-extras,
+     *     from the ca.corbett.forms.validators package, which are typed to ShortTextField or LongTextField.
+     * </p>
      *
      * @param validator the FieldValidator to add to the text field.
      * @return this dialog, for method chaining.
      */
-    public TextInputDialog addValidator(FieldValidator<FormField> validator) {
+    public TextInputDialog addValidator(FieldValidator<? extends FormField> validator) {
         shortTextField.addFieldValidator(validator);
         longTextField.addFieldValidator(validator);
         return this;
@@ -268,5 +275,16 @@ public class TextInputDialog extends JDialog {
 
         result = null; // user canceled
         dispose();
+    }
+
+    /**
+     * Listens for window close events and treats them the same way we handle "cancel".
+     * This ensures our cancel path is hit even if the user manually closes our dialog.
+     */
+    private class WindowCloseListener extends WindowAdapter {
+        @Override
+        public void windowClosing(WindowEvent e) {
+            handleButtonClick(false); // treat closing the dialog as canceling
+        }
     }
 }

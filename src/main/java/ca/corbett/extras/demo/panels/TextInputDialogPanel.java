@@ -40,7 +40,7 @@ public class TextInputDialogPanel extends PanelBuilder {
         String sb = "<html>The TextInputDialog class allows you to prompt the user for<br>" +
                 "single-line or multi-line text input, with optional validation<br>" +
                 "to ensure the input is valid before allowing the user to confirm." +
-                "<br><br>Try it out!<html>";
+                "<br><br>Try it out!</html>";
         LabelField labelField = LabelField.createPlainHeaderLabel(sb, 14);
         labelField.getMargins().setTop(12).setBottom(12);
         formPanel.add(labelField);
@@ -55,7 +55,7 @@ public class TextInputDialogPanel extends PanelBuilder {
         sb = "<html>You can add whatever validation rules you like!<br>" +
                 "Let's try setting a minimum and maximum length,<br>" +
                 "and also rejecting any input that contains<br>" +
-                "the word \"foobar\" (just as an example).<html>";
+                "the word \"foobar\" (just as an example).</html>";
         labelField = LabelField.createPlainHeaderLabel(sb, 14);
         labelField.getMargins().setTop(12).setBottom(12);
         formPanel.add(labelField);
