@@ -6,6 +6,12 @@ import javax.swing.ImageIcon;
 
 /**
  * An abstract base class for actions that are intended to be added to a ToolBar.
+ * The principal difference between this class and the parent EnhancedAction class
+ * is that we insist on an icon, and we ignore the action name.
+ * Tooltips are recommended but not required. Instances of this class are also
+ * linked to an ActionPanel, and more specifically to a named ActionGroup within
+ * that panel. This provides context for the implementing classes so that they
+ * can act on the correct ActionGroup when triggered.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.8

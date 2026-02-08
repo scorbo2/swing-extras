@@ -152,6 +152,8 @@ public class ActionPanel extends JPanel {
     private ImageIcon collapseIcon;
     private int headerIconSize;
     private int actionIconSize;
+    private boolean isToolBarEnabled;
+    private final ToolBarOptions toolBarOptions;
 
     public ActionPanel() {
         this.actionGroups = new ArrayList<>();
@@ -180,6 +182,8 @@ public class ActionPanel extends JPanel {
         this.collapseIcon = SwingFormsResources.getMinusIcon(DEFAULT_ICON_SIZE);
         this.headerIconSize = DEFAULT_ICON_SIZE;
         this.actionIconSize = DEFAULT_ICON_SIZE;
+        this.isToolBarEnabled = false; // hide the ToolBar by default.
+        this.toolBarOptions = new ToolBarOptions(); // moved to its own class to reduce clutter here
     }
 
     /**
@@ -1168,6 +1172,45 @@ public class ActionPanel extends JPanel {
         this.animationDurationMs = animationDurationMs;
         rebuild(); // do we seriously need to rebuild for this?
         return this;
+    }
+
+    /**
+     * Reports whether the ToolBar is enabled. When enabled, the ToolBar is shown at the bottom of each ActionGroup.
+     * It contains buttons related to the actions in that group. To configure the ToolBar,
+     * use the ToolBarOptions object accessible via getToolBarOptions().
+     *
+     * @return True if the ToolBar is enabled, false otherwise.
+     */
+    public boolean isToolBarEnabled() {
+        return isToolBarEnabled;
+    }
+
+    /**
+     * Enables or disables the ToolBar, which is shown at the bottom of each ActionGroup and contains
+     * buttons related to the actions in that group. To configure the ToolBar, use the ToolBarOptions
+     * object accessible via getToolBarOptions().
+     *
+     * @param enabled True to enable the ToolBar, false to disable it.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setToolBarEnabled(boolean enabled) {
+        this.isToolBarEnabled = enabled;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Options related to the ToolBar accessed via the ToolBarOptions class.
+     * Developer note: yeah, they could all live here in this class, but this class
+     * is already unreasonably large, and the ToolBar has a somewhat complicated
+     * setup, so they were all moved over there. The only first-class ToolBar
+     * option still in ActionPanel is isToolBarEnabled(), which is the master
+     * switch that controls whether the ToolBar is shown at all.
+     *
+     * @return The ToolBarOptions instance containing options related to the ToolBar.
+     */
+    public ToolBarOptions getToolBarOptions() {
+        return toolBarOptions;
     }
 
     /**

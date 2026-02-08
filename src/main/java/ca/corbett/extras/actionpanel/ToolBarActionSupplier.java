@@ -1,10 +1,19 @@
 package ca.corbett.extras.actionpanel;
 
 /**
- * A simple Supplier-like interface for supplying ToolBarActions for an ActionPanel. This is used to
- * generate ToolBar buttons for each ActionGroup in an ActionPanel.
+ * A simple Supplier-like interface for supplying ToolBarActions for an ActionPanel.
+ * This can be used to add custom actions to the ToolBar for an ActionGroup within an ActionPanel,
+ * without needing to subclass ActionPanel or modify the existing code.
+ * Implementations of this interface can be registered with an ActionPanel via the ToolBarOptions class:
+ * <pre>
+ *     myActionPanel.getToolBarOptions().addCustomActionSupplier(...);
+ * </pre>
+ * <p>
+ * This is useful for augmenting or replacing the built-in actions offered by ToolBarOptions.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since swing-extras 2.8
  */
 @FunctionalInterface
 public interface ToolBarActionSupplier {
