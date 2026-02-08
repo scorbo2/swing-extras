@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 
+import static ca.corbett.extras.testutils.TestConstants.TEST_DOMAIN;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -21,7 +22,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static ca.corbett.extras.io.TestConstants.TEST_DOMAIN;
 
 /**
  * Unit tests for HyperlinkUtil.

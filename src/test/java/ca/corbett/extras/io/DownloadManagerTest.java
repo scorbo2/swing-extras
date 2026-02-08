@@ -9,10 +9,10 @@ import org.mockito.Mockito;
 import java.io.File;
 import java.net.URL;
 
+import static ca.corbett.extras.testutils.TestConstants.TEST_DOMAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static ca.corbett.extras.io.TestConstants.TEST_DOMAIN;
 
 class DownloadManagerTest {
 

@@ -126,13 +126,18 @@ public class LookAndFeelProperty extends AbstractProperty {
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
-                || !(field instanceof ComboField)) {
+                || !(field instanceof ComboField<?> comboField)) {
             logger.log(Level.SEVERE, "LookAndFeelProperty.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
             return;
         }
 
-        //noinspection unchecked
-        selectedIndex = ((ComboField<String>)field).getSelectedIndex();
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "LookAndFeelProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
+        selectedIndex = comboField.getSelectedIndex();
     }
 }
