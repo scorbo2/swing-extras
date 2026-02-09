@@ -1,5 +1,6 @@
 package ca.corbett.extras;
 
+import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
@@ -8,6 +9,7 @@ import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.ShortTextField;
 import ca.corbett.forms.validators.FieldValidator;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -17,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -39,6 +42,7 @@ public class TextInputDialog extends JDialog {
     }
 
     protected final InputType inputType;
+    protected final KeyStrokeManager keyStrokeManager;
     protected FormPanel formPanel;
     protected ShortTextField shortTextField;
     protected LongTextField longTextField;
@@ -65,6 +69,7 @@ public class TextInputDialog extends JDialog {
     public TextInputDialog(Window owner, String title, InputType inputType) {
         super(owner, title, ModalityType.APPLICATION_MODAL);
         this.inputType = inputType;
+        this.keyStrokeManager = new KeyStrokeManager(this);
 
         formPanel = new FormPanel(Alignment.TOP_CENTER);
         formPanel.setBorderMargin(12);
@@ -101,6 +106,7 @@ public class TextInputDialog extends JDialog {
         setLayout(new BorderLayout());
         add(PropertiesDialog.buildScrollPane(formPanel), BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
+        configureKeyboardShortcuts();
 
         if (owner != null) {
             setLocationRelativeTo(owner);
@@ -305,13 +311,51 @@ public class TextInputDialog extends JDialog {
     }
 
     /**
+     * Invoked internally to configure keyboard shortcuts for this dialog.
+     * By default, this registers "esc" to trigger the cancel button,
+     * and if in single-line mode, it also registers "enter" to trigger the confirm button.
+     */
+    protected void configureKeyboardShortcuts() {
+        // Treat "esc" as a click on the cancel button:
+        keyStrokeManager.registerHandler("esc", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleButtonClick(false);
+            }
+        });
+
+        // If in single-line mode, hijack "enter" to trigger the confirm button:
+        // (DON'T do this in multi-line mode, because that would be really painful for typing stuff)
+        if (inputType == InputType.SingleLine) {
+            keyStrokeManager.registerHandler("enter", new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    handleButtonClick(true);
+                }
+            });
+        }
+    }
+
+    /**
      * Listens for window close events and treats them the same way we handle "cancel".
      * This ensures our cancel path is hit even if the user manually closes our dialog.
      */
-    private class WindowCloseListener extends WindowAdapter {
+    protected class WindowCloseListener extends WindowAdapter {
         @Override
         public void windowClosing(WindowEvent e) {
             handleButtonClick(false); // treat closing the dialog as canceling
+            if (keyStrokeManager != null) {
+                // make sure to clean up our keystrokes even if the user closes the dialog manually
+                keyStrokeManager.dispose();
+            }
+        }
+
+        @Override
+        public void windowClosed(WindowEvent e) {
+            if (keyStrokeManager != null) {
+                // make sure to clean up our keystrokes even if the user closes the dialog manually
+                keyStrokeManager.dispose();
+            }
         }
     }
 }
