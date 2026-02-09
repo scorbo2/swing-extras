@@ -148,16 +148,23 @@ class ToolBarGroupEditDialog extends JDialog {
         nameField.addFieldValidator(new NameFieldValidator(actionPanel, groupName));
         formPanel.add(nameField);
 
-        formPanel.add(LabelField.createPlainHeaderLabel("Drag+drop or ctrl+up/ctrl+down to reorder, DEL to remove"));
+        boolean allowReorder = options.isAllowItemReorder();
+        boolean allowRemoval = options.isAllowItemRemoval();
+        formPanel.add(LabelField.createPlainHeaderLabel(buildHeaderLabelText(allowReorder, allowRemoval)));
         listField = new ListField<>("", group.getActions());
         listField.setCellRenderer(new EnhancedActionRenderer());
         listField.setVisibleRowCount(10);
         listField.setShouldExpand(true);
         JList<EnhancedAction> list = listField.getList();
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list.setDragEnabled(true);
-        list.setDropMode(DropMode.INSERT);
-        list.setTransferHandler(new ListReorderTransferHandler(this));
+        list.setDragEnabled(allowReorder);
+        if (allowReorder) {
+            list.setDropMode(DropMode.INSERT);
+            list.setTransferHandler(new ListReorderTransferHandler(this));
+        }
+        else {
+            list.setTransferHandler(null);
+        }
         formPanel.add(listField);
         formPanel.add(buildListOptionsPanel());
 
@@ -223,6 +230,20 @@ class ToolBarGroupEditDialog extends JDialog {
         }
         listField.getListModel().remove(selected[0]); // single select list
         listModified = true;
+    }
+
+    private static String buildHeaderLabelText(boolean allowReorder, boolean allowRemoval) {
+        String text = "";
+        if (allowReorder) {
+            text = "Drag+drop or ctrl+up/ctrl+down to reorder";
+        }
+        if (allowRemoval) {
+            if (!text.isEmpty()) {
+                text += ", ";
+            }
+            text += "DEL to remove";
+        }
+        return text;
     }
 
     private void sortByName() {

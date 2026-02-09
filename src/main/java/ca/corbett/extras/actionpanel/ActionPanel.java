@@ -506,10 +506,13 @@ public class ActionPanel extends JPanel {
             return false;
         }
 
-        // Make sure the new name is not already taken (case-insensitive):
-        boolean newNameInUse = getGroupNames().stream()
-                                              .map(String::toLowerCase)
-                                              .anyMatch(name -> name.equals(newName.toLowerCase()));
+        // Make sure the new name is not already taken by a *different* group (case-insensitive):
+        String newNameLower = newName.toLowerCase();
+        boolean newNameInUse = actionGroups.stream()
+                                           .filter(g -> g != group) // exclude group in question
+                                           .map(ActionGroup::getName)
+                                           .filter(name -> name != null)
+                                           .anyMatch(name -> name.equalsIgnoreCase(newNameLower));
         if (newNameInUse) {
             return false;
         }

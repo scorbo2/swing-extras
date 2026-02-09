@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -146,5 +148,81 @@ class ActionPanelTest {
         });
 
         assertTrue(latch.await(5, TimeUnit.SECONDS), "Test should complete within 5 seconds");
+    }
+
+    @Test
+    public void renameGroup_withNonExistingGroup_shouldFail() {
+        // GIVEN an action panel with no content
+        // WHEN we try to rename a group:
+        boolean result = actionPanel.renameGroup("Well hello there, this group does not exist", "group1");
+
+        // THEN the method should return false to indicate failure:
+        assertFalse(result, "renameGroup should return false when the original group does not exist");
+    }
+
+    @Test
+    public void renameGroup_withExistingGroup_shouldSucceed() {
+        // GIVEN an action panel with a group named "group1":
+        actionPanel.add("group1", createTestAction("Action 1"));
+
+        try {
+            // WHEN we try to rename that group:
+            boolean result = actionPanel.renameGroup("group1", "new name");
+
+            // THEN the method should return true to indicate success, and the group should be renamed:
+            assertTrue(result, "renameGroup should return true when the original group exists");
+            assertNotNull(actionPanel.getGroup("new name"), "The group should be renamed to 'new name'");
+            assertNull(actionPanel.getGroup("group1"), "The old group name should no longer exist");
+        }
+        finally {
+            actionPanel.clear(true); // clean up after the test so it doesn't affect other tests
+        }
+    }
+
+    @Test
+    public void renameGroup_newNameDiffersOnlyInCase_shouldRename() {
+        // GIVEN a group named "group1":
+        actionPanel.add("group1", createTestAction("Action 1"));
+
+        try {
+            // WHEN we try to rename that group to "GROUP1" (same name, different case):
+            boolean result = actionPanel.renameGroup("group1", "GROUP1");
+
+            // THEN the method should return true to indicate success, and the group should be renamed:
+            assertTrue(result, "renameGroup should return true when the new name differs only in case");
+            assertNotNull(actionPanel.getGroup("GROUP1"), "The group should be renamed to 'GROUP1'");
+
+            // AND the group should still be accessible by the old name, because group names are case-insensitive:
+            assertNotNull(actionPanel.getGroup("group1"), "The old group name should still exist.");
+
+            // but if we examine the underlying ActionGroup directly, we should see the case-sensitive change:
+            ActionGroup actionGroup = actionPanel.getGroup("group1");
+            assertNotNull(actionGroup, "The group should still be accessible by the old name");
+            assertEquals("GROUP1", actionGroup.getName(),
+                         "The ActionGroup's name should be updated to 'GROUP1' with the new case");
+        }
+        finally {
+            actionPanel.clear(true); // clean up after the test so it doesn't affect other tests
+        }
+    }
+
+    @Test
+    public void renameGroup_destinationNameInUse_shouldFail() {
+        // GIVEN an action panel with groups named "group1" and "group2":
+        actionPanel.add("group1", createTestAction("Action 1"));
+        actionPanel.add("group2", createTestAction("Action 2"));
+
+        try {
+            // WHEN we try to rename one to the name of the other:
+            boolean result = actionPanel.renameGroup("group1", "group2");
+
+            // THEN the method should return false to indicate failure, and neither group should be renamed:
+            assertFalse(result, "renameGroup should return false when the new name is already in use");
+            assertNotNull(actionPanel.getGroup("group1"), "The original group 'group1' should still exist");
+            assertNotNull(actionPanel.getGroup("group2"), "The original group 'group2' should still exist");
+        }
+        finally {
+            actionPanel.clear(true); // clean up after the test so it doesn't affect other tests
+        }
     }
 }

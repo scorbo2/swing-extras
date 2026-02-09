@@ -236,12 +236,12 @@ public final class ToolBarOptions {
     }
 
     /**
-     * Returns the ToolBarNewItemSuppplier responsible for supplying new ToolBarActions when the
+     * Returns the ToolBarNewItemSupplier responsible for supplying new ToolBarActions when the
      * user clicks the "Add item" button in the toolbar. If no Supplier is given, then this will return null.
      * If a supplier is present, and the isAllowItemAdd option is true, then an "Add item" button will be shown
      * in the toolbar, and clicking it will invoke the Supplier to get a new action to add.
      *
-     * @return a ToolBarNewItemSuppplier instance, or null if one is not set.
+     * @return a ToolBarNewItemSupplier instance, or null if one is not set.
      */
     public ToolBarNewItemSupplier getNewActionSupplier() {
         return newItemSupplier;
@@ -313,9 +313,9 @@ public final class ToolBarOptions {
 
     /**
      * If true, then an "Edit group" button will be shown in the toolbar for each ActionGroup, which allows the user
-     * to reorder and remove items from that group.
+     * to reorder items from that group.
      *
-     * @param allowItemReorder Whether to allow reordering and removing items in the toolbar. Must also call setAllowItemRemoval() to allow item removal!
+     * @param allowItemReorder Whether to show the "edit group" button in the toolbar.
      * @return this ToolBarOptions instance, for method chaining.
      */
     public ToolBarOptions setAllowItemReorder(boolean allowItemReorder) {
@@ -325,10 +325,10 @@ public final class ToolBarOptions {
     }
 
     /**
-     * If true, then a "Remove item" button will be shown in the toolbar for each ActionGroup, which allows the user
-     * to remove items from that group.
+     * If true, then a "Rename group" button will be shown in the toolbar for each ActionGroup, which allows the user
+     * to rename the group.
      *
-     * @param allowGroupRename Whether to allow removing items in the toolbar. Must also call setAllowItemReorder() to allow item reordering!
+     * @param allowGroupRename Whether to allow renaming groups in the toolbar.
      * @return this ToolBarOptions instance, for method chaining.
      */
     public ToolBarOptions setAllowGroupRename(boolean allowGroupRename) {
@@ -338,10 +338,10 @@ public final class ToolBarOptions {
     }
 
     /**
-     * If true, then a "Remove item" button will be shown in the toolbar for each ActionGroup, which allows the user
+     * If true, then an "Edit group" button will be shown in the toolbar for each ActionGroup, which allows the user
      * to remove items from that group.
      *
-     * @param allowItemRemoval Whether to allow removing items in the toolbar. Must also call setAllowItemReorder() to allow item reordering!
+     * @param allowItemRemoval Whether to allow removing items in the toolbar.
      * @return this ToolBarOptions instance, for method chaining.
      */
     public ToolBarOptions setAllowItemRemoval(boolean allowItemRemoval) {

@@ -90,7 +90,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private NumberField toolBarIconSizeField;
     private CheckBoxField toolBarAllowAddField;
     private CheckBoxField toolBarAllowRenameField;
-    private CheckBoxField toolBarAllowEditField;
+    private CheckBoxField toolBarAllowItemReorderField;
+    private CheckBoxField toolBarAllowItemRemovalField;
     private CheckBoxField toolBarAllowRemoveField;
     private CheckBoxField sortGroupsByNameField;
     private CheckBoxField sortActionsByNameField;
@@ -194,7 +195,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         toolBarIconSizeField.setEnabled(isEnabled);
         toolBarAllowAddField.setEnabled(isEnabled);
         toolBarAllowRenameField.setEnabled(isEnabled);
-        toolBarAllowEditField.setEnabled(isEnabled);
+        toolBarAllowItemReorderField.setEnabled(isEnabled);
+        toolBarAllowItemRemovalField.setEnabled(isEnabled);
         toolBarAllowRemoveField.setEnabled(isEnabled);
     }
 
@@ -384,15 +386,17 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         toolBarAllowRenameField.setEnabled(false);
         formPanel.add(toolBarAllowRenameField);
 
-        toolBarAllowEditField = new CheckBoxField("Allow editing groups", true);
-        toolBarAllowEditField.addValueChangedListener(f -> {
-            // We treat "group edit" as a toggle for this pair of permissions,
-            // but they *could* be handled separately:
-            actionPanel.getToolBarOptions().setAllowItemReorder(toolBarAllowEditField.isChecked());
-            actionPanel.getToolBarOptions().setAllowItemRemoval(toolBarAllowEditField.isChecked());
-        });
-        toolBarAllowEditField.setEnabled(false);
-        formPanel.add(toolBarAllowEditField);
+        toolBarAllowItemReorderField = new CheckBoxField("Allow reordering actions within groups", true);
+        toolBarAllowItemReorderField.addValueChangedListener(
+                f -> actionPanel.getToolBarOptions().setAllowItemReorder(toolBarAllowItemReorderField.isChecked()));
+        toolBarAllowItemReorderField.setEnabled(false);
+        formPanel.add(toolBarAllowItemReorderField);
+
+        toolBarAllowItemRemovalField = new CheckBoxField("Allow removing actions from groups", true);
+        toolBarAllowItemRemovalField.addValueChangedListener(
+                f -> actionPanel.getToolBarOptions().setAllowItemRemoval(toolBarAllowItemRemovalField.isChecked()));
+        toolBarAllowItemRemovalField.setEnabled(false);
+        formPanel.add(toolBarAllowItemRemovalField);
 
         toolBarAllowRemoveField = new CheckBoxField("Allow removing groups", false);
         toolBarAllowRemoveField.setHelpText("<html><b>Use with caution!</b><br>" +

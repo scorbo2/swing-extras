@@ -6,8 +6,8 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 /**
- * An action that shows a dialog for editing the ActionGroup. This will only be visible if allowGroupEdit
- * is true in the ToolBarOptions for the ActionPanel. Otherwise, this action does nothing.
+ * An action that shows a dialog for editing the ActionGroup. This will only be visible if allowItemReorder
+ * or allowItemRemoval are true in the ToolBarOptions for the ActionPanel. Otherwise, this action does nothing.
  * There are three actions possible in the edit dialog, each with their own permission:
  * <ul>
  *     <li><b>Rename group</b> - (related permission: allowGroupRename) - this allows the user to change the
@@ -24,7 +24,8 @@ import java.awt.event.ActionEvent;
  * </p>
  * <pre>
  *     // Enabled by default, but you can turn it off if unneeded:
- *     myActionPanel.getToolBarOptions().setAllowGroupEdit(false);
+ *     myActionPanel.getToolBarOptions().setAllowItemReorder(false);
+ *     myActionPanel.getToolBarOptions().setAllowItemRemoval(false);
  *
  *     // To supply your own custom group edit action if you don't like the built-in one:
  *     myActionPanel.getToolBarOptions().addCustomActionSupplier(...);
@@ -51,11 +52,10 @@ class ToolBarGroupEditAction extends ToolBarAction {
         ToolBarGroupEditDialog dialog = new ToolBarGroupEditDialog(owner, actionPanel, groupName);
         dialog.setVisible(true);
         if (dialog.wasOkayed()) {
+            String groupName = this.groupName;
             if (dialog.groupWasRenamed()) {
                 actionPanel.renameGroup(groupName, dialog.getModifiedGroupName());
-            }
-            else {
-                System.out.println("You didn't rename nothing!");
+                groupName = dialog.getModifiedGroupName(); // so the below code can work properly
             }
 
             if (dialog.listWasModified()) {
@@ -65,13 +65,7 @@ class ToolBarGroupEditAction extends ToolBarAction {
                     actionGroup.addAll(dialog.getModifiedList());
                     actionPanel.rebuild();
                 }
-                else {
-                    System.out.println("That group ain't exist!");
-                }
             }
-        }
-        else {
-            System.out.println("Canceled!");
         }
     }
 }

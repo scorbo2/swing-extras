@@ -1,8 +1,5 @@
 package ca.corbett.extras.actionpanel;
 
-import ca.corbett.extras.image.ImageUtil;
-
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import java.awt.Dimension;
@@ -82,10 +79,7 @@ class ToolBar extends JPanel {
         button.setBackground(actionPanel.getActionBackground());
 
         button.setPreferredSize(new Dimension(buttonSize, buttonSize)); // ignored in Stretch mode
-        if (action.getIcon() != null && action.getIcon() instanceof ImageIcon) {
-            ImageIcon scaledIcon = ImageUtil.scaleIcon((ImageIcon)action.getIcon(), options.getIconSize());
-            button.setIcon(scaledIcon);
-        }
+        button.setIcon(action.getIcon());
         button.setToolTipText(action.getTooltip());
         add(button);
     }

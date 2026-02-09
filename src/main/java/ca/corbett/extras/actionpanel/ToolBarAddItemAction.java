@@ -16,11 +16,11 @@ import java.util.logging.Logger;
  * </p>
  * <pre>
  *     // It's enabled by default, so normally you won't need this:
- *     myActionPanel.getToolBarOptions().setAllowAddItem(true);
+ *     myActionPanel.getToolBarOptions().setAllowItemAdd(true);
  *
  *     // But you MUST provide a ToolBarNewItemSupplier for the button to appear!
  *     // No supplier means no button, and the action does nothing if triggered.
- *     myActionPanel.getToolBarOptions().setNewItemSupplier(...);
+ *     myActionPanel.getToolBarOptions().setNewActionSupplier(...);
  * </pre>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>

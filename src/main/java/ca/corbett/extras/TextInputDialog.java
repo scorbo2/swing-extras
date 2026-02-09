@@ -166,6 +166,12 @@ public class TextInputDialog extends JDialog {
      * @return this dialog, for method chaining.
      */
     public TextInputDialog setInitialText(String text) {
+        if (text == null) {
+            // Not necessarily an error - some callers may assume setInitialText(null) means "no text".
+            // Our text fields actually handle this without issue.
+            // But we invoke length() on it below, so let's avoid NPEs:
+            text = "";
+        }
         shortTextField.setText(text);
         longTextField.setText(text);
 
