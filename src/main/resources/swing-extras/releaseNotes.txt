@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
+  #355 - TextInputDialog: better keyboard support
   #350 - New UI component: TextInputDialog
   #348 - BlurLayerUI: add animation options
   #341 - AbstractProperty: don't accept input from invalid form fields
