@@ -433,6 +433,9 @@ public abstract class FormField {
             //noinspection unchecked
             FieldValidator<FormField> theValidator = (FieldValidator<FormField>)validator;
             ValidationResult validationResult = theValidator.validate(this);
+            if (validationResult == null) {
+                validationResult = ValidationResult.valid();
+            }
             isValid = isValid && validationResult.isValid();
             if (!validationResult.isValid()) {
                 validationMessages.add(validationResult.getMessage());

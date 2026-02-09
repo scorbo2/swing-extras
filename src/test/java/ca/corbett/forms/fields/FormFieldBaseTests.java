@@ -172,6 +172,13 @@ public abstract class FormFieldBaseTests {
     }
 
     @Test
+    public void validate_withNullReturningValidator_shouldTreatAsValid() {
+        actual.addFieldValidator(field -> null);
+        assertTrue(actual.isValid());
+        assertNull(actual.getValidationLabel().getToolTipText());
+    }
+
+    @Test
     public void testExtraAttributes() {
         assertNull(actual.getExtraAttribute("test"));
         actual.setExtraAttribute("test", "value");
