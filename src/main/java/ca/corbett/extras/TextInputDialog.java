@@ -106,11 +106,28 @@ public class TextInputDialog extends JDialog {
         setLayout(new BorderLayout());
         add(PropertiesDialog.buildScrollPane(formPanel), BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
-        configureKeyboardShortcuts();
 
         if (owner != null) {
             setLocationRelativeTo(owner);
         }
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible) {
+            // Ensure the text field gets focus when the dialog is opened:
+            if (inputType == InputType.SingleLine) {
+                shortTextField.getTextField().requestFocusInWindow();
+            }
+            else {
+                longTextField.getTextArea().requestFocusInWindow();
+            }
+
+            // Configure our keyboard shortcuts when the dialog is shown:
+            // (want to avoid doing this in the constructor as it is overridable)
+            configureKeyboardShortcuts();
+        }
+        super.setVisible(visible);
     }
 
     /**
@@ -344,18 +361,14 @@ public class TextInputDialog extends JDialog {
         @Override
         public void windowClosing(WindowEvent e) {
             handleButtonClick(false); // treat closing the dialog as canceling
-            if (keyStrokeManager != null) {
-                // make sure to clean up our keystrokes even if the user closes the dialog manually
-                keyStrokeManager.dispose();
-            }
+            // make sure to clean up our keystrokes even if the user closes the dialog manually
+            keyStrokeManager.dispose(); // idempotent, we can call this safely from multiple locations
         }
 
         @Override
         public void windowClosed(WindowEvent e) {
-            if (keyStrokeManager != null) {
-                // make sure to clean up our keystrokes even if the user closes the dialog manually
-                keyStrokeManager.dispose();
-            }
+            // make sure to clean up our keystrokes even if the user closes the dialog manually
+            keyStrokeManager.dispose(); // idempotent, we can call this safely from multiple locations
         }
     }
 }
