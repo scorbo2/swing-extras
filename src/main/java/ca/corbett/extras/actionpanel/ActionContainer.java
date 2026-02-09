@@ -35,6 +35,7 @@ class ActionContainer extends JPanel {
         setLayout(new BorderLayout());
 
         JPanel actionsPanel = new JPanel();
+        actionsPanel.setBackground(actionPanel.getActionBackground());
         actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
         setAlignmentX(Component.LEFT_ALIGNMENT);
 
