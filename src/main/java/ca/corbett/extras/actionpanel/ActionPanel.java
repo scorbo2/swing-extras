@@ -152,6 +152,8 @@ public class ActionPanel extends JPanel {
     private ImageIcon collapseIcon;
     private int headerIconSize;
     private int actionIconSize;
+    private boolean isToolBarEnabled;
+    private final ToolBarOptions toolBarOptions;
 
     public ActionPanel() {
         this.actionGroups = new ArrayList<>();
@@ -180,6 +182,11 @@ public class ActionPanel extends JPanel {
         this.collapseIcon = SwingFormsResources.getMinusIcon(DEFAULT_ICON_SIZE);
         this.headerIconSize = DEFAULT_ICON_SIZE;
         this.actionIconSize = DEFAULT_ICON_SIZE;
+        this.isToolBarEnabled = false; // hide the ToolBar by default.
+        this.toolBarOptions = new ToolBarOptions(); // moved to its own class to reduce clutter here
+        this.toolBarOptions.addListener(() -> { // rebuild when our toolbar changes
+            if (isToolBarEnabled) { rebuild(); }
+        });
     }
 
     /**
@@ -450,6 +457,18 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Invoked internally to retrieve the actual ActionGroup instance for the given group name (case-insensitive).
+     * This returns null if no group with the given name exists.
+     * This is package-protected for internal package use only.
+     *
+     * @param groupName The name of the group to find. Case-insensitive.
+     * @return The ActionGroup instance for the given group name, or null if no such group exists.
+     */
+    ActionGroup getGroup(String groupName) {
+        return findGroup(groupName);
+    }
+
+    /**
      * Removes the specified action group entirely, along with all its actions.
      * If the named group does not exist, no action is taken.
      * Group names are case-insensitive.
@@ -464,6 +483,44 @@ public class ActionPanel extends JPanel {
             rebuild();
         }
         return this;
+    }
+
+    /**
+     * Attempts to rename the given group to the new name.
+     * This may fail, if the old name does not reference any existing group.
+     * It may also fail if the given new name is already in use by another group.
+     * Group names are case-insensitive.
+     *
+     * @param oldName The current name of the group to rename. Case-insensitive.
+     * @param newName The new name for the group. Case-insensitive. Cannot be null or empty.
+     * @return True if the rename was successful, false otherwise (e.g. if oldName does not exist, or newName is already in use).
+     */
+    public boolean renameGroup(String oldName, String newName) {
+        if (newName == null || newName.isEmpty()) {
+            throw new IllegalArgumentException("New group name cannot be null or empty.");
+        }
+
+        // Make sure the requested group exists:
+        ActionGroup group = findGroup(oldName);
+        if (group == null) {
+            return false;
+        }
+
+        // Make sure the new name is not already taken by a *different* group (case-insensitive):
+        String newNameLower = newName.toLowerCase();
+        boolean newNameInUse = actionGroups.stream()
+                                           .filter(g -> g != group) // exclude group in question
+                                           .map(ActionGroup::getName)
+                                           .filter(name -> name != null)
+                                           .anyMatch(name -> name.equalsIgnoreCase(newNameLower));
+        if (newNameInUse) {
+            return false;
+        }
+
+        // All good:
+        group.renameTo(newName);
+        rebuild();
+        return true;
     }
 
     /**
@@ -514,6 +571,16 @@ public class ActionPanel extends JPanel {
         }
         rebuild();
         return this;
+    }
+
+    /**
+     * Returns the Comparator that is used to auto-sort the list of actions within each action group.
+     * If null, actions are presented in the order in which they were added to the group.
+     *
+     * @return The Comparator used for sorting actions, or null if actions are presented in add order.
+     */
+    public Comparator<EnhancedAction> getActionComparator() {
+        return actionComparator;
     }
 
     /**
@@ -1171,6 +1238,45 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Reports whether the ToolBar is enabled. When enabled, the ToolBar is shown at the bottom of each ActionGroup.
+     * It contains buttons related to the actions in that group. To configure the ToolBar,
+     * use the ToolBarOptions object accessible via getToolBarOptions().
+     *
+     * @return True if the ToolBar is enabled, false otherwise.
+     */
+    public boolean isToolBarEnabled() {
+        return isToolBarEnabled;
+    }
+
+    /**
+     * Enables or disables the ToolBar, which is shown at the bottom of each ActionGroup and contains
+     * buttons related to the actions in that group. To configure the ToolBar, use the ToolBarOptions
+     * object accessible via getToolBarOptions().
+     *
+     * @param enabled True to enable the ToolBar, false to disable it.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setToolBarEnabled(boolean enabled) {
+        this.isToolBarEnabled = enabled;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Options related to the ToolBar are accessed via the ToolBarOptions class.
+     * Developer note: yeah, they could all live here in this class, but this class
+     * is already unreasonably large, and the ToolBar has a somewhat complicated
+     * setup, so they were all moved over there. The only first-class ToolBar
+     * option still in ActionPanel is isToolBarEnabled(), which is the master
+     * switch that controls whether the ToolBar is shown at all.
+     *
+     * @return The ToolBarOptions instance containing options related to the ToolBar.
+     */
+    public ToolBarOptions getToolBarOptions() {
+        return toolBarOptions;
+    }
+
+    /**
      * You can listen for group expand/collapse events by adding an ExpandListener.
      */
     public ActionPanel addExpandListener(ExpandListener listener) {
@@ -1254,7 +1360,7 @@ public class ActionPanel extends JPanel {
      * Rebuilds the UI by clearing all components and re-rendering
      * all action groups based on current configuration.
      */
-    private void rebuild() {
+    void rebuild() {
         // Clear existing components
         removeAll();
 
