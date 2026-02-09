@@ -184,6 +184,9 @@ public class ActionPanel extends JPanel {
         this.actionIconSize = DEFAULT_ICON_SIZE;
         this.isToolBarEnabled = false; // hide the ToolBar by default.
         this.toolBarOptions = new ToolBarOptions(); // moved to its own class to reduce clutter here
+        this.toolBarOptions.addListener(() -> { // rebuild when our toolbar changes
+            if (isToolBarEnabled) { rebuild(); }
+        });
     }
 
     /**
@@ -454,6 +457,18 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Invoked internally to retrieve the actual ActionGroup instance for the given group name (case-insensitive).
+     * This returns null if no group with the given name exists.
+     * This is package-protected for internal package use only.
+     *
+     * @param groupName The name of the group to find. Case-insensitive.
+     * @return The ActionGroup instance for the given group name, or null if no such group exists.
+     */
+    ActionGroup getGroup(String groupName) {
+        return findGroup(groupName);
+    }
+
+    /**
      * Removes the specified action group entirely, along with all its actions.
      * If the named group does not exist, no action is taken.
      * Group names are case-insensitive.
@@ -468,6 +483,41 @@ public class ActionPanel extends JPanel {
             rebuild();
         }
         return this;
+    }
+
+    /**
+     * Attempts to rename the given group to the new name.
+     * This may fail, if the old name does not reference any existing group.
+     * It may also fail if the given new name is already in use by another group.
+     * Group names are case-insensitive.
+     *
+     * @param oldName The current name of the group to rename. Case-insensitive.
+     * @param newName The new name for the group. Case-insensitive. Cannot be null or empty.
+     * @return True if the rename was successful, false otherwise (e.g. if oldName does not exist, or newName is already in use).
+     */
+    public boolean renameGroup(String oldName, String newName) {
+        if (newName == null || newName.isEmpty()) {
+            throw new IllegalArgumentException("New group name cannot be null or empty.");
+        }
+
+        // Make sure the requested group exists:
+        ActionGroup group = findGroup(oldName);
+        if (group == null) {
+            return false;
+        }
+
+        // Make sure the new name is not already taken (case-insensitive):
+        boolean newNameInUse = getGroupNames().stream()
+                                              .map(String::toLowerCase)
+                                              .anyMatch(name -> name.equals(newName.toLowerCase()));
+        if (newNameInUse) {
+            return false;
+        }
+
+        // All good:
+        group.renameTo(newName);
+        rebuild();
+        return true;
     }
 
     /**
@@ -518,6 +568,16 @@ public class ActionPanel extends JPanel {
         }
         rebuild();
         return this;
+    }
+
+    /**
+     * Returns the Comparator that is used to auto-sort the list of actions within each action group.
+     * If null, actions are presented in the order in which they were added to the group.
+     *
+     * @return The Comparator used for sorting actions, or null if actions are presented in add order.
+     */
+    public Comparator<EnhancedAction> getActionComparator() {
+        return actionComparator;
     }
 
     /**
@@ -1200,7 +1260,7 @@ public class ActionPanel extends JPanel {
     }
 
     /**
-     * Options related to the ToolBar accessed via the ToolBarOptions class.
+     * Options related to the ToolBar are accessed via the ToolBarOptions class.
      * Developer note: yeah, they could all live here in this class, but this class
      * is already unreasonably large, and the ToolBar has a somewhat complicated
      * setup, so they were all moved over there. The only first-class ToolBar
@@ -1297,7 +1357,7 @@ public class ActionPanel extends JPanel {
      * Rebuilds the UI by clearing all components and re-rendering
      * all action groups based on current configuration.
      */
-    private void rebuild() {
+    void rebuild() {
         // Clear existing components
         removeAll();
 

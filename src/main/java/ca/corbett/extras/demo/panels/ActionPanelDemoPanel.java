@@ -1,8 +1,12 @@
 package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.EnhancedAction;
+import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.TextInputDialog;
 import ca.corbett.extras.actionpanel.ActionPanel;
 import ca.corbett.extras.actionpanel.ExpandListener;
+import ca.corbett.extras.actionpanel.ToolBarOptions;
+import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.Alignment;
@@ -13,13 +17,17 @@ import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
+import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
+import ca.corbett.forms.fields.ShortTextField;
+import ca.corbett.forms.validators.ValidationResult;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -57,6 +65,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     // Our action names will double as lookups for their form panel contents:
     private static final String TAB_INTRO = "Intro to ActionPanel";
     private static final String TAB_COMPONENTS = "Buttons or labels?";
+    private static final String TAB_TOOLBAR = "Toolbar options";
     private static final String TAB_COLORS = "Colors";
     private static final String TAB_FONTS = "Fonts";
     private static final String TAB_BORDERS = "Borders";
@@ -77,6 +86,12 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private Clip collapseClip;
     private ComboField<BorderOption> actionPanelBorderField;
     private ComboField<String> useLabelsField;
+    private ComboField<ToolBarOptions.ButtonPosition> toolBarButtonPositionField;
+    private NumberField toolBarIconSizeField;
+    private CheckBoxField toolBarAllowAddField;
+    private CheckBoxField toolBarAllowRenameField;
+    private CheckBoxField toolBarAllowEditField;
+    private CheckBoxField toolBarAllowRemoveField;
     private CheckBoxField sortGroupsByNameField;
     private CheckBoxField sortActionsByNameField;
     private CheckBoxField showGroupHeaderIconsField;
@@ -102,6 +117,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     public ActionPanelDemoPanel() {
         panelMap.put(TAB_INTRO, buildIntroPanel());
         panelMap.put(TAB_COMPONENTS, buildComponentTypePanel());
+        panelMap.put(TAB_TOOLBAR, buildToolBarOptionsPanel());
         panelMap.put(TAB_COLORS, buildColorPanel());
         panelMap.put(TAB_FONTS, buildFontPanel());
         panelMap.put(TAB_BORDERS, buildBorderPanel());
@@ -126,6 +142,12 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
             // No fun for you!
             log.log(Level.SEVERE, "Could not load sound effects :(", e);
         }
+
+        LookAndFeelManager.addChangeListener(e -> {
+            for (FormPanel fp : panelMap.values()) {
+                SwingUtilities.updateComponentTreeUI(fp);
+            }
+        });
     }
 
     @Override
@@ -146,6 +168,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
 
         // We'll use a PanelField to show the ActionPanel and the content panel side-by-side:
         actionPanel = new ActionPanel();
+        actionPanel.getToolBarOptions().setAllowGroupRemoval(false); // disabled by default as we have no "undo" for it.
+        configureToolBarAdd(true); // enabled by default to show off the feature
         populateActionPanel();
         PanelField exampleContainer = new PanelField(new BorderLayout());
         exampleContainer.setShouldExpand(true);
@@ -159,6 +183,19 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         actionPanel.setActionIndent(4);
 
         return formPanel;
+    }
+
+    /**
+     * Enable or disable the toolbar options fields based on whether the toolbar is enabled.
+     */
+    private void toolBarEnabledChanged(boolean isEnabled) {
+        actionPanel.setToolBarEnabled(isEnabled);
+        toolBarButtonPositionField.setEnabled(isEnabled);
+        toolBarIconSizeField.setEnabled(isEnabled);
+        toolBarAllowAddField.setEnabled(isEnabled);
+        toolBarAllowRenameField.setEnabled(isEnabled);
+        toolBarAllowEditField.setEnabled(isEnabled);
+        toolBarAllowRemoveField.setEnabled(isEnabled);
     }
 
     /**
@@ -226,6 +263,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private void populateActionPanel() {
         actionPanel.add("Welcome to ActionPanel!", new NavigationAction(TAB_INTRO));
         actionPanel.add("Welcome to ActionPanel!", new NavigationAction(TAB_COMPONENTS));
+        actionPanel.add("Welcome to ActionPanel!", new NavigationAction(TAB_TOOLBAR));
         actionPanel.add("Styling options", new NavigationAction(TAB_COLORS));
         actionPanel.add("Styling options", new NavigationAction(TAB_FONTS));
         actionPanel.add("Styling options", new NavigationAction(TAB_BORDERS));
@@ -264,6 +302,9 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         return formPanel;
     }
 
+    /**
+     * Builds a demo panel for switching between button and label styles for actions.
+     */
     private FormPanel buildComponentTypePanel() {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.add(LabelField.createBoldHeaderLabel("Buttons or labels?"));
@@ -292,6 +333,76 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
             }
         });
         formPanel.add(useLabelsField);
+
+        return formPanel;
+    }
+
+    /**
+     * Builds a demo panel for showing off the optional toolbar within each action group,
+     * and the various options for customizing it.
+     */
+    private FormPanel buildToolBarOptionsPanel() {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel("Toolbar options"));
+        String label = """
+                <html>Each action group can optionally have a toolbar<br>
+                with buttons for adding, removing, and reordering<br>
+                actions within the group, as well as buttons for<br>
+                renaming or removing the group itself.<br><br>
+                You can enable or disable any of these buttons,<br>
+                and you can even add your own custom buttons!<br><br>
+                Try it out with the options below!</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        CheckBoxField enableField = new CheckBoxField("Enable toolbar", false);
+        enableField.addValueChangedListener(f -> toolBarEnabledChanged(enableField.isChecked()));
+        formPanel.add(enableField);
+
+        toolBarButtonPositionField = new ComboField<>("Button position:",
+                                                      Arrays.asList(ToolBarOptions.ButtonPosition.values()),
+                                                      3);
+        toolBarButtonPositionField.setEnabled(false);
+        toolBarButtonPositionField.addValueChangedListener(
+                f -> actionPanel.getToolBarOptions().setButtonPosition(toolBarButtonPositionField.getSelectedItem()));
+        formPanel.add(toolBarButtonPositionField);
+
+        toolBarIconSizeField = new NumberField("Icon size:", ActionPanel.DEFAULT_ICON_SIZE, 8, 64, 1);
+        toolBarIconSizeField.addValueChangedListener(
+                f -> actionPanel.getToolBarOptions().setIconSize(toolBarIconSizeField.getCurrentValue().intValue()));
+        toolBarIconSizeField.setEnabled(false);
+        formPanel.add(toolBarIconSizeField);
+
+        toolBarAllowAddField = new CheckBoxField("Allow creation of new actions per group", true);
+        toolBarAllowAddField.addValueChangedListener(f -> configureToolBarAdd(toolBarAllowAddField.isChecked()));
+        toolBarAllowAddField.setEnabled(false);
+        formPanel.add(toolBarAllowAddField);
+
+        toolBarAllowRenameField = new CheckBoxField("Allow renaming groups", true);
+        toolBarAllowRenameField.addValueChangedListener(
+                f -> actionPanel.getToolBarOptions().setAllowGroupRename(toolBarAllowRenameField.isChecked()));
+        toolBarAllowRenameField.setEnabled(false);
+        formPanel.add(toolBarAllowRenameField);
+
+        toolBarAllowEditField = new CheckBoxField("Allow editing groups", true);
+        toolBarAllowEditField.addValueChangedListener(f -> {
+            // We treat "group edit" as a toggle for this pair of permissions,
+            // but they *could* be handled separately:
+            actionPanel.getToolBarOptions().setAllowItemReorder(toolBarAllowEditField.isChecked());
+            actionPanel.getToolBarOptions().setAllowItemRemoval(toolBarAllowEditField.isChecked());
+        });
+        toolBarAllowEditField.setEnabled(false);
+        formPanel.add(toolBarAllowEditField);
+
+        toolBarAllowRemoveField = new CheckBoxField("Allow removing groups", false);
+        toolBarAllowRemoveField.setHelpText("<html><b>Use with caution!</b><br>" +
+                                                    "This demo app doesn't have an \"undo\" for this option.<br>" +
+                                                    "You'll have to restart the demo app to restore removed groups.<br>" +
+                                                    "(Client applications can of course implement their own \"undo\".)</html>");
+        toolBarAllowRemoveField.addValueChangedListener(
+                f -> actionPanel.getToolBarOptions().setAllowGroupRemoval(toolBarAllowRemoveField.isChecked()));
+        toolBarAllowRemoveField.setEnabled(false);
+        formPanel.add(toolBarAllowRemoveField);
 
         return formPanel;
     }
@@ -636,6 +747,59 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
             collapseClip.setFramePosition(0); // rewind
             collapseClip.start();
         }
+    }
+
+    private void configureToolBarAdd(boolean allowAdd) {
+        actionPanel.getToolBarOptions().setAllowItemAdd(allowAdd);
+        if (allowAdd) {
+            actionPanel.getToolBarOptions().setNewActionSupplier((a, g) -> {
+                TextInputDialog dialog = new TextInputDialog(DemoApp.getInstance(), "New action");
+                dialog.setAllowBlank(false);
+                // Ensure our name is unique:
+                dialog.addValidator(field -> {
+                    String newName;
+                    if (field instanceof ShortTextField) {
+                        newName = ((ShortTextField)field).getText();
+                    }
+                    else {
+                        newName = ((LongTextField)field).getText();
+                    }
+                    if (panelMap.containsKey(newName)) {
+                        return ValidationResult.invalid("That name is already in use.");
+                    }
+                    return ValidationResult.valid();
+                });
+                dialog.setInitialText("New action");
+                dialog.setVisible(true);
+                String actionName = dialog.getResult();
+                if (actionName != null) {
+                    panelMap.put(actionName, buildExampleNewItemPanel(actionName));
+                    return new NavigationAction(actionName);
+                }
+                return null;
+            });
+        }
+        else {
+            actionPanel.getToolBarOptions().setNewActionSupplier(null);
+        }
+    }
+
+    private FormPanel buildExampleNewItemPanel(String name) {
+        FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
+        formPanel.add(LabelField.createBoldHeaderLabel(name));
+        String label = """
+                <html>You can enable the creation of new items in an ActionPanel<br>
+                by providing a supplier for new actions.<br><br>
+                In this demo, you just created an example action that<br>
+                brings you to this panel when clicked. This is just<br>
+                one simple example of what you can do - your<br>
+                application could pop a custom dialog to gather information<br>
+                for the new action, or it could pull one from a database<br>
+                or external service of some kind. Whatever you need!</html>
+                """;
+        formPanel.add(new LabelField(label));
+
+        return formPanel;
     }
 
     /**

@@ -12,6 +12,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -156,6 +157,26 @@ public class TextInputDialog extends JDialog {
      */
     public boolean isAllowBlank() {
         return shortTextField.isAllowBlank();
+    }
+
+    /**
+     * Sets the text that should appear in the text field when the dialog is first shown. By default, this is blank.
+     *
+     * @param text the initial text to show in the text field when the dialog is first displayed.
+     * @return this dialog, for method chaining.
+     */
+    public TextInputDialog setInitialText(String text) {
+        shortTextField.setText(text);
+        longTextField.setText(text);
+
+        // Preselect the text in each component so that typing will immediately replace it:
+        JTextComponent textComponent = inputType == InputType.SingleLine
+                ? shortTextField.getTextField()
+                : longTextField.getTextArea();
+        textComponent.setCaretPosition(0);
+        textComponent.moveCaretPosition(text.length());
+
+        return this;
     }
 
     /**

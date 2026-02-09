@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * An ActionContainer holds and displays the actions for a specific ActionGroup
  * within an ActionPanel. It also holds the optional ToolBar for the group.
- * (That may seem as though it should be separate, but we want it to be included
+ * (That may seem as though it should be separate, but we want the toolbar to be included
  * with the "collapse" feature, instead of leaving it visible when the actions are hidden.)
  * <p>
  * This class is package-private, so callers do not
@@ -26,12 +26,16 @@ class ActionContainer extends JPanel {
 
     private final ActionPanel actionPanel;
     private final ActionGroup actionGroup;
+    private final ToolBar toolBar;
 
     public ActionContainer(ActionPanel actionPanel, ActionGroup actionGroup) {
         this.actionPanel = actionPanel;
         this.actionGroup = actionGroup;
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
+
+        JPanel actionsPanel = new JPanel();
+        actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
         setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // Get the group actions (will be sorted if comparator is set)
@@ -43,10 +47,20 @@ class ActionContainer extends JPanel {
             JPanel wrapperPanel = createComponentWrapperPanel(isFirst ? actionPanel.getInternalPadding() : 0);
             Component actionComponent = ActionComponentFactory.create(actionPanel, action);
             wrapperPanel.add(actionComponent, BorderLayout.CENTER);
-            add(wrapperPanel);
+            actionsPanel.add(wrapperPanel);
         }
 
-        // TODO toolbar not yet implemented
+        add(actionsPanel, BorderLayout.CENTER);
+
+        // Add the toolbar if enabled:
+        if (actionPanel.isToolBarEnabled()) {
+            toolBar = new ToolBar(actionPanel, actionGroup.getName());
+            toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
+            add(toolBar, BorderLayout.SOUTH);
+        }
+        else {
+            toolBar = null;
+        }
     }
 
     private JPanel createComponentWrapperPanel(int topMargin) {

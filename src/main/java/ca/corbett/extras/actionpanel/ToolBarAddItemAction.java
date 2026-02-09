@@ -4,6 +4,7 @@ import ca.corbett.extras.EnhancedAction;
 import ca.corbett.forms.SwingFormsResources;
 
 import java.awt.event.ActionEvent;
+import java.util.logging.Logger;
 
 /**
  * An action for adding a new item to an ActionGroup. This will only be visible if allowItemAdd
@@ -27,6 +28,7 @@ import java.awt.event.ActionEvent;
  */
 class ToolBarAddItemAction extends ToolBarAction {
 
+    private static final Logger log = Logger.getLogger(ToolBarAddItemAction.class.getName());
     private ToolBarNewItemSupplier newItemSupplier;
 
     public ToolBarAddItemAction(ActionPanel actionPanel, String groupName) {
@@ -47,11 +49,13 @@ class ToolBarAddItemAction extends ToolBarAction {
         // won't even be shown, so in theory, this action could never fire.
         // But let's be defensive and check just in case:
         if (!actionPanel.getToolBarOptions().isAllowItemAdd()) {
+            log.fine("ToolBarAddItemAction.actionPerformed() - rejected because not allowed.");
             return;
         }
 
         // If we have no supplier, then there's nothing we can do, so we're done here:
         if (newItemSupplier == null) {
+            log.fine("ToolBarAddItemAction.actionPerformed() - rejected because no supplier.");
             return;
         }
 
@@ -62,10 +66,12 @@ class ToolBarAddItemAction extends ToolBarAction {
         // to the user, and the user selected to cancel. This is not a big deal.
         // We will just abort the add action and do nothing in this case:
         if (newAction == null) {
+            log.fine("ToolBarAddItemAction.actionPerformed() - supplier returned null, action canceled.");
             return;
         }
 
         // Add the new action to the ActionPanel in the right group - it will get sorted as needed:
+        log.fine("ToolBarAddItemAction: adding new action from supplier: \"" + newAction.getTooltip() + "\"");
         actionPanel.add(groupName, newAction);
     }
 }

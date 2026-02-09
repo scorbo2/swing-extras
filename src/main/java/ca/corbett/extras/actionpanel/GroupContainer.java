@@ -13,6 +13,7 @@ import java.awt.Component;
  * Use the ActionPanel API instead.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since swing-extras 2.8
  */
 class GroupContainer extends JPanel {
 

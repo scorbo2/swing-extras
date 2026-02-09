@@ -7,6 +7,7 @@ import javax.swing.ImageIcon;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 /**
  * This class only exists to relieve some clutter from the ActionPanel class,
@@ -39,15 +40,33 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *     as many suppliers as you want, and they will be invoked in the order they were added.
  *     Your custom ToolBarActions must supply icons! Our buttons are icon-based and do not show text.
  * </p>
+ * <p>
+ *     <b>Excluding "special" groups</b> - sometimes you have a group that contains actions that relate
+ *     to the ActionPanel as a whole. For example, actions for adding new groups, or managing groups,
+ *     or selecting the source of your groups. Such "special" groups probably shouldn't have a toolbar,
+ *     as the toolbar actions wouldn't make sense for them. So, you can use the addExcludedGroup() method
+ *     to exclude a group by name (case-insensitive) from having a toolbar.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.8
  */
 public final class ToolBarOptions {
 
+    private static final Logger log = Logger.getLogger(ToolBarOptions.class.getName());
+
+    /**
+     * ActionPanel can listen for changes to the ToolBarOptions so that it can
+     * rebuild/rerender itself when options are changed.
+     */
+    @FunctionalInterface
+    public interface OptionsListener {
+        void optionsChanged();
+    }
+
     /**
      * Our buttons are placed in a container panel at the bottom of each ActionGroup.
-     * We can align them FlowLayout-style left, right, or center, or we can put them in a BoxLayout to
+     * We can align them FlowLayout-style left, right, or center, or we can put them in a GridLayout to
      * stretch them evenly across the entire width of the container. If the ButtonPosition is
      * anything other than Stretch, then you can also control the spacing between buttons
      * via the ActionPanel's setInternalPadding() method. In Stretch mode, the internal padding
@@ -81,6 +100,9 @@ public final class ToolBarOptions {
     // General options:
     private int iconSize;
     private ButtonPosition buttonPosition;
+    private final List<String> excludedGroups = new CopyOnWriteArrayList<>();
+
+    private final List<OptionsListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
      * Should only be instantiated by ActionPanel.
@@ -111,6 +133,32 @@ public final class ToolBarOptions {
     }
 
     /**
+     * You can listen for changes to the ToolBarOptions by adding an OptionsListener.
+     * This is used internally by ActionPanel to know when to rebuild/rerender itself
+     *
+     * @param listener The OptionsListener to add. Cannot be null.
+     */
+    public void addListener(OptionsListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException("listener cannot be null");
+        }
+        listeners.add(listener);
+    }
+
+    /**
+     * You can stop listening for changes to the ToolBarOptions by removing an
+     * OptionsListener that was previously added via addListener().
+     *
+     * @param listener The OptionsListener to remove. Cannot be null.
+     */
+    public void removeListener(OptionsListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException("listener cannot be null");
+        }
+        listeners.remove(listener);
+    }
+
+    /**
      * Returns the current ButtonPosition for this toolbar.
      * This controls how the buttons are aligned within their container panel.
      *
@@ -127,11 +175,13 @@ public final class ToolBarOptions {
      * @param buttonPosition The ButtonPosition to use for this toolbar. Cannot be null.
      * @return this ToolBarOptions instance, for method chaining.
      */
-    public ToolBarOptions getButtonPosition(ButtonPosition buttonPosition) {
+    public ToolBarOptions setButtonPosition(ButtonPosition buttonPosition) {
         if (buttonPosition == null) {
+            log.fine("ToolBarOptions.setButtonPosition(null) rejected.");
             throw new IllegalArgumentException("buttonPosition cannot be null");
         }
         this.buttonPosition = buttonPosition;
+        fireOptionsChanged();
         return this;
     }
 
@@ -154,9 +204,11 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setIconSize(int iconSize) {
         if (iconSize <= 0) {
+            log.fine("ToolBarOptions.setIconSize(" + iconSize + ") rejected.");
             throw new IllegalArgumentException("iconSize must be a positive integer");
         }
         this.iconSize = iconSize;
+        fireOptionsChanged();
         return this;
     }
 
@@ -179,7 +231,20 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setNewActionSupplier(ToolBarNewItemSupplier newActionSupplier) {
         this.newItemSupplier = newActionSupplier;
+        fireOptionsChanged();
         return this;
+    }
+
+    /**
+     * Returns the ToolBarNewItemSuppplier responsible for supplying new ToolBarActions when the
+     * user clicks the "Add item" button in the toolbar. If no Supplier is given, then this will return null.
+     * If a supplier is present, and the isAllowItemAdd option is true, then an "Add item" button will be shown
+     * in the toolbar, and clicking it will invoke the Supplier to get a new action to add.
+     *
+     * @return a ToolBarNewItemSuppplier instance, or null if one is not set.
+     */
+    public ToolBarNewItemSupplier getNewActionSupplier() {
+        return newItemSupplier;
     }
 
     /**
@@ -194,9 +259,11 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions addCustomActionSupplier(ToolBarActionSupplier actionSupplier) {
         if (actionSupplier == null) {
+            log.fine("ToolBarOptions.addCustomActionSupplier(null) rejected.");
             throw new IllegalArgumentException("actionSupplier cannot be null");
         }
         this.actionSuppliers.add(actionSupplier);
+        fireOptionsChanged();
         return this;
     }
 
@@ -210,9 +277,11 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions removeCustomActionSupplier(ToolBarActionSupplier actionSupplier) {
         if (actionSupplier == null) {
+            log.fine("ToolBarOptions.removeCustomActionSupplier(null) rejected.");
             throw new IllegalArgumentException("actionSupplier cannot be null");
         }
         this.actionSuppliers.remove(actionSupplier);
+        fireOptionsChanged();
         return this;
     }
 
@@ -223,6 +292,7 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions clearCustomActionSuppliers() {
         this.actionSuppliers.clear();
+        fireOptionsChanged();
         return this;
     }
 
@@ -237,6 +307,7 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setAllowItemAdd(boolean allowItemAdd) {
         this.allowItemAdd = allowItemAdd;
+        fireOptionsChanged();
         return this;
     }
 
@@ -249,6 +320,7 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setAllowItemReorder(boolean allowItemReorder) {
         this.allowItemReorder = allowItemReorder;
+        fireOptionsChanged();
         return this;
     }
 
@@ -261,6 +333,7 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setAllowGroupRename(boolean allowGroupRename) {
         this.allowGroupRename = allowGroupRename;
+        fireOptionsChanged();
         return this;
     }
 
@@ -273,6 +346,7 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setAllowItemRemoval(boolean allowItemRemoval) {
         this.allowItemRemoval = allowItemRemoval;
+        fireOptionsChanged();
         return this;
     }
 
@@ -285,6 +359,7 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setAllowGroupRemoval(boolean allowGroupRemoval) {
         this.allowGroupRemoval = allowGroupRemoval;
+        fireOptionsChanged();
         return this;
     }
 
@@ -297,9 +372,11 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setAddItemIcon(ImageIcon addItemIcon) {
         if (addItemIcon == null) {
+            log.fine("ToolBarOptions.setAddItemIcon(null) rejected.");
             throw new IllegalArgumentException("addItemIcon cannot be null");
         }
         this.addItemIcon = addItemIcon;
+        fireOptionsChanged();
         return this;
     }
 
@@ -312,9 +389,11 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setRenameIcon(ImageIcon renameIcon) {
         if (renameIcon == null) {
+            log.fine("ToolBarOptions.setRenameIcon(null) rejected.");
             throw new IllegalArgumentException("renameIcon cannot be null");
         }
         this.groupRenameIcon = renameIcon;
+        fireOptionsChanged();
         return this;
     }
 
@@ -327,9 +406,11 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setEditIcon(ImageIcon editIcon) {
         if (editIcon == null) {
+            log.fine("ToolBarOptions.setEditIcon(null) rejected.");
             throw new IllegalArgumentException("editIcon cannot be null");
         }
         this.groupEditIcon = editIcon;
+        fireOptionsChanged();
         return this;
     }
 
@@ -342,9 +423,11 @@ public final class ToolBarOptions {
      */
     public ToolBarOptions setRemoveIcon(ImageIcon removeIcon) {
         if (removeIcon == null) {
+            log.fine("ToolBarOptions.setRemoveIcon(null) rejected.");
             throw new IllegalArgumentException("removeIcon cannot be null");
         }
         this.groupRemoveIcon = removeIcon;
+        fireOptionsChanged();
         return this;
     }
 
@@ -388,8 +471,84 @@ public final class ToolBarOptions {
      *
      * @return Whether the built-in "Edit group" action for reordering and removing items is enabled.
      */
+    public boolean isAllowItemRemoval() {
+        return allowItemRemoval;
+    }
+
+    /**
+     * Indicates whether the built-in "Edit group" action for reordering and removing items is enabled.
+     * If true, then an "Edit group" button will be shown for each ActionGroup, which allows the user
+     * to reorder and remove items from that group.
+     *
+     * @return Whether the built-in "Edit group" action for reordering and removing items is enabled.
+     */
     public boolean isAllowGroupRemoval() {
         return allowGroupRemoval;
+    }
+
+    /**
+     * All ActionGroups get a ToolBar by default, if the ToolBar is enabled for the ActionPanel.
+     * But, sometimes you have a "special" group that should not get a toolbar. An example of when
+     * you would do this is if you have a group that contains actions that relate to the ActionPanel
+     * itself instead of to a particular group. For example, an action that adds a new group,
+     * or an action that allows you to select the source of your groups. Such "special" groups
+     * probably shouldn't have the same toolbar as all other groups. So, you can use
+     * this method to exclude a group by name (case-insensitive). The named group will not
+     * receive a toolbar, even if the toolbar is enabled for the ActionPanel, and even if you
+     * have supplied custom toolbar actions.
+     * <p>
+     * <b>Renaming groups</b> - if a group is renamed, this list of excluded groups may fall
+     * out of sync with what's in ActionPanel. We don't actually check for group renames here,
+     * because the only way (currently) to rename a group is to go through the "rename group"
+     * action on the toolbar. If a group has no toolbar, then there's no way to rename it.
+     * But if your application offers some other way to rename groups, you have to be diligent
+     * about keeping this excluded group list in sync with what's in the ActionPanel.
+     * </p>
+     *
+     * @param groupName The name of the group to exclude from having a toolbar (case-insensitive). Cannot be null.
+     * @return this ToolBarOptions instance, for method chaining.
+     */
+    public ToolBarOptions addExcludedGroup(String groupName) {
+        if (groupName == null) {
+            log.fine("ToolBarOptions.addExcludedGroup(null) rejected.");
+            throw new IllegalArgumentException("groupName cannot be null");
+        }
+        this.excludedGroups.add(groupName.toLowerCase());
+        fireOptionsChanged();
+        return this;
+    }
+
+    /**
+     * Removes a group from the "toolbar excluded" list, if it was previously added
+     * via the addExcludedGroup() method.
+     * If the given group name was not previously added, then this method does nothing.
+     *
+     * @param groupName The name of the group to remove from the "toolbar excluded" list (case-insensitive). Cannot be null.
+     * @return this ToolBarOptions instance, for method chaining.
+     */
+    public ToolBarOptions removeExcludedGroup(String groupName) {
+        if (groupName == null) {
+            log.fine("ToolBarOptions.removeExcludedGroup(null) rejected.");
+            throw new IllegalArgumentException("groupName cannot be null");
+        }
+        this.excludedGroups.remove(groupName.toLowerCase());
+        fireOptionsChanged();
+        return this;
+    }
+
+    /**
+     * Reports whether the named group (case-insensitive) is on the "toolbar excluded" list,
+     * meaning that it should not receive a toolbar even if the toolbar is enabled for the ActionPanel.
+     *
+     * @param groupName The name of the group to check (case-insensitive). Cannot be null.
+     * @return true if the named group is on the "toolbar excluded" list, meaning that it should not receive a toolbar; false otherwise.
+     */
+    public boolean isGroupExcluded(String groupName) {
+        if (groupName == null) {
+            log.fine("ToolBarOptions.isGroupExcluded(null) rejected.");
+            throw new IllegalArgumentException("groupName cannot be null");
+        }
+        return excludedGroups.contains(groupName.toLowerCase());
     }
 
     /**
@@ -402,6 +561,7 @@ public final class ToolBarOptions {
      */
     public ToolBarAction createItemAddAction(ActionPanel actionPanel, String groupName) {
         if (!allowItemAdd || newItemSupplier == null) {
+            log.fine("ToolBarOptions.createItemAddAction() rejected because not allowed or no supplier.");
             return null; // Not allowed or no supplier, so no action.
         }
         ToolBarAddItemAction addAction = new ToolBarAddItemAction(actionPanel, groupName);
@@ -423,6 +583,7 @@ public final class ToolBarOptions {
      */
     public ToolBarAction createRenameGroupAction(ActionPanel actionPanel, String groupName) {
         if (!allowGroupRename) {
+            log.fine("ToolBarOptions.createRenameGroupAction() rejected because not allowed.");
             return null; // Not allowed, so no action.
         }
         ImageIcon scaledIcon = ImageUtil.scaleIcon(groupRenameIcon, iconSize); // Scale the current rename group icon
@@ -439,6 +600,7 @@ public final class ToolBarOptions {
      */
     public ToolBarAction createEditGroupAction(ActionPanel actionPanel, String groupName) {
         if (!allowItemReorder && !allowItemRemoval) {
+            log.fine("ToolBarOptions.createEditGroupAction() rejected because not allowed.");
             return null; // Not allowed, so no action.
         }
         ImageIcon scaledIcon = ImageUtil.scaleIcon(groupEditIcon, iconSize); // Scale the current edit group icon
@@ -455,6 +617,7 @@ public final class ToolBarOptions {
      */
     public ToolBarAction createRemoveGroupAction(ActionPanel actionPanel, String groupName) {
         if (!allowGroupRemoval) {
+            log.fine("ToolBarOptions.createRemoveGroupAction() rejected because not allowed.");
             return null; // Not allowed, so no action.
         }
         ImageIcon scaledIcon = ImageUtil.scaleIcon(groupRemoveIcon, iconSize); // Scale the current remove group icon
@@ -480,5 +643,14 @@ public final class ToolBarOptions {
             }
         }
         return customActions;
+    }
+
+    /**
+     * Invoked internally to let listeners know that something here has changed.
+     */
+    private void fireOptionsChanged() {
+        for (OptionsListener listener : listeners) {
+            listener.optionsChanged();
+        }
     }
 }

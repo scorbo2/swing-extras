@@ -22,7 +22,7 @@ import java.util.Objects;
  * @since swing-extras 2.8
  */
 class ActionGroup {
-    private final String name;
+    private String name;
     private Comparator<EnhancedAction> comparator;
     private final List<EnhancedAction> actionsAsAdded; // Maintain insertion order
     private final List<EnhancedAction> actionsSorted; // Maintain sorted order
@@ -50,10 +50,38 @@ class ActionGroup {
         this.animatedWrapper = null;
     }
 
+    /**
+     * Returns the name of this action group. This is used as the header text in the UI.
+     * Group names are case-insensitive.
+     *
+     * @return The name of this action group.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Renames this action group to the given new name.
+     * The only constraint is that the new name cannot be null or empty.
+     * It is recommended that groups in an ActionPanel should have unique names,
+     * but it is up to calling code to enforce that recommendation.
+     *
+     * @param newName The new name for this action group. Must be a non-empty string.
+     * @return This ActionGroup instance, for chaining. The name is changed in-place (no new group is created).
+     */
+    public ActionGroup renameTo(String newName) {
+        if (newName == null || newName.isBlank()) {
+            throw new IllegalArgumentException("ActionGroup name cannot be null or empty");
+        }
+        this.name = newName; // We assume caller checked this name for uniqueness.
+        return this; // for chaining
+    }
+
+    /**
+     * Returns the Comparator used for sorting actions in this group, or null if no Comparator is set.
+     *
+     * @return The Comparator used for sorting actions in this group, or null if no Comparator is set.
+     */
     public Comparator<EnhancedAction> getComparator() {
         return comparator;
     }
