@@ -76,11 +76,11 @@ class ToolBar extends JPanel {
         final int buttonSize = options.getIconSize() + 4; // arbitrary padding to make sure icons fit comfortably
         JButton button = new JButton(action);
         button.setText(""); // our buttons are icons-only
-        //button.setFocusPainted(false);
-        //button.setBorderPainted(false);
-        //button.setContentAreaFilled(false);
-        //button.setOpaque(false); // should respect our background color, otherwise it looks jarring
+
+        // The ext-iv-ice code that this was based on used to set up transparent buttons with no border,
+        // but I find just setting the bg color properly is a better approach (I like the button borders):
         button.setBackground(actionPanel.getActionBackground());
+
         button.setPreferredSize(new Dimension(buttonSize, buttonSize)); // ignored in Stretch mode
         if (action.getIcon() != null && action.getIcon() instanceof ImageIcon) {
             ImageIcon scaledIcon = ImageUtil.scaleIcon((ImageIcon)action.getIcon(), options.getIconSize());
