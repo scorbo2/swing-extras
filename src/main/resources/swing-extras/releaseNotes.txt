@@ -3,6 +3,7 @@ Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
   #355 - TextInputDialog: better keyboard support
+  #354 - FormField: avoid NPEs from poorly-coded FieldValidators
   #350 - New UI component: TextInputDialog
   #348 - BlurLayerUI: add animation options
   #341 - AbstractProperty: don't accept input from invalid form fields
@@ -14,6 +15,7 @@ Version 2.8.0 [TODO release date]
   #330 - New UI component: ActionPanel
   #327 - KeyStrokeManager: add multiple window support
   #325 - KeyStrokeManager: warn on multiple handlers per keystroke
+  #324 - FormField: don't disable help icon when disabling field
   #322 - KeyStrokeProperty: fix bug regarding reserved keystrokes
   #321 - KeyStrokeManager: add many new handy key aliases
 

@@ -145,7 +145,6 @@ public abstract class AbstractPropertyBaseTests {
             FormField formField = actual.generateFormField();
             assertFalse(formField.getFieldLabel().isEnabled());
             assertFalse(formField.getFieldComponent().isEnabled());
-            assertFalse(formField.getHelpLabel().isEnabled());
             assertFalse(formField.getValidationLabel().isEnabled());
         }
         catch (UnsupportedOperationException ignored) {
