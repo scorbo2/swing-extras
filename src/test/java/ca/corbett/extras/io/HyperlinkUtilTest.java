@@ -39,7 +39,13 @@ class HyperlinkUtilTest {
     void setUp() {
         // Make a note of whatever is currently in the system clipboard,
         // because some of these tests will copy stuff to it:
-        clipboardContents = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+        try {
+            clipboardContents = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+        }
+        catch (IllegalStateException ignored) {
+            // Clipboard is currently unavailable; treat as no prior contents.
+            clipboardContents = null;
+        }
 
         mockBrowser = Mockito.mock(HyperlinkUtil.DesktopBrowser.class);
         HyperlinkUtil.setDesktopBrowser(mockBrowser);
