@@ -875,7 +875,7 @@ public class ActionPanel extends JPanel {
      */
     public ActionPanel setHeaderInternalPadding(int padding) {
         if (padding < 0) {
-            throw new IllegalArgumentException("Internal padding cannot be negative.");
+            throw new IllegalArgumentException("Header padding cannot be negative.");
         }
         headerInternalPadding = padding;
         rebuild();
@@ -899,7 +899,7 @@ public class ActionPanel extends JPanel {
      */
     public ActionPanel setActionInternalPadding(int padding) {
         if (padding < 0) {
-            throw new IllegalArgumentException("Internal padding cannot be negative.");
+            throw new IllegalArgumentException("Action padding cannot be negative.");
         }
         actionInternalPadding = padding;
         rebuild();
@@ -927,7 +927,7 @@ public class ActionPanel extends JPanel {
      */
     public ActionPanel setToolBarInternalPadding(int padding) {
         if (padding < 0) {
-            throw new IllegalArgumentException("Internal padding cannot be negative.");
+            throw new IllegalArgumentException("ToolBar padding cannot be negative.");
         }
         toolBarInternalPadding = padding;
         rebuild();
