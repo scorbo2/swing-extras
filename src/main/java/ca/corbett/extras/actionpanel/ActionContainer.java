@@ -45,7 +45,7 @@ class ActionContainer extends JPanel {
         // Add each action component:
         boolean isFirst = true;
         for (EnhancedAction action : actions) {
-            JPanel wrapperPanel = createComponentWrapperPanel(isFirst ? actionPanel.getInternalPadding() : 0);
+            JPanel wrapperPanel = createComponentWrapperPanel(isFirst ? actionPanel.getActionInternalPadding() : 0);
             Component actionComponent = ActionComponentFactory.create(actionPanel, action);
             wrapperPanel.add(actionComponent, BorderLayout.CENTER);
             actionsPanel.add(wrapperPanel);
@@ -69,8 +69,8 @@ class ActionContainer extends JPanel {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // Apply internal padding and action indent if set:
-        if (actionPanel.getInternalPadding() > 0 || actionPanel.getActionIndent() > 0) {
-            int pad = actionPanel.getInternalPadding();
+        if (actionPanel.getActionInternalPadding() > 0 || actionPanel.getActionIndent() > 0) {
+            int pad = actionPanel.getActionInternalPadding();
             int indent = actionPanel.getActionIndent();
             panel.setBorder(BorderFactory.createEmptyBorder(topMargin, pad + indent, pad, pad));
         }

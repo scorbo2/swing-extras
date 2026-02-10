@@ -105,7 +105,7 @@ class ActionPanelTest {
                 .setAnimationEnabled(false)
                 .setAnimationDurationMs(300)
                 .setUseButtons()
-                .setInternalPadding(5)
+                .setHeaderInternalPadding(5)
                 .setExternalPadding(10);
 
         assertSame(actionPanel, result, "Methods should return the same ActionPanel instance for chaining");

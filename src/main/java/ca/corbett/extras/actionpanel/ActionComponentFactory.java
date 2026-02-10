@@ -52,7 +52,7 @@ class ActionComponentFactory {
         JLabel label = new JLabel("<html>" + action.getName() + "</html>");
         if (action.getIcon() != null && actionPanel.isShowActionIcons()) {
             label.setIcon(ImageUtil.scaleIcon((ImageIcon)action.getIcon(), actionPanel.getActionIconSize()));
-            label.setIconTextGap(actionPanel.getInternalPadding());
+            label.setIconTextGap(actionPanel.getActionInternalPadding());
         }
         if (action.getTooltip() != null) {
             label.setToolTipText(action.getTooltip());

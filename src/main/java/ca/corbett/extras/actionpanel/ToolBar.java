@@ -34,7 +34,7 @@ class ToolBar extends JPanel {
         this.setBackground(actionPanel.getActionBackground());
 
         // Set our alignment:
-        int pad = actionPanel.getInternalPadding();
+        int pad = actionPanel.getToolBarInternalPadding();
         switch (options.getButtonPosition()) {
             case AlignRight -> setLayout(new FlowLayout(FlowLayout.RIGHT, pad, pad));
             case Center -> setLayout(new FlowLayout(FlowLayout.CENTER, pad, pad));
