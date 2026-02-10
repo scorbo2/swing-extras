@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.awt.Component;
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -14,6 +17,7 @@ import static ca.corbett.extras.testutils.TestConstants.TEST_DOMAIN;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,11 +33,30 @@ import static org.mockito.Mockito.when;
 class HyperlinkUtilTest {
 
     private HyperlinkUtil.DesktopBrowser mockBrowser;
+    private Transferable clipboardContents;
 
     @BeforeEach
     void setUp() {
+        // Make a note of whatever is currently in the system clipboard,
+        // because some of these tests will copy stuff to it:
+        clipboardContents = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+
         mockBrowser = Mockito.mock(HyperlinkUtil.DesktopBrowser.class);
         HyperlinkUtil.setDesktopBrowser(mockBrowser);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        // Restore the original clipboard contents after each test:
+        if (clipboardContents != null) {
+            try {
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(clipboardContents, null);
+            }
+            catch (IllegalStateException ignored) {
+                // Clipboard is currently unavailable
+                // just ignore this.
+            }
+        }
     }
 
     @AfterEach
@@ -154,7 +177,7 @@ class HyperlinkUtilTest {
     }
 
     @Test
-    void testOpenHyperlink_whenBrowsingNotSupported_copiestoClipboard() throws Exception {
+    void testOpenHyperlink_whenBrowsingNotSupported_copiesToClipboard() throws Exception {
         when(mockBrowser.isBrowsingSupported()).thenReturn(false);
         URI testUri = URI.create("https://" + TEST_DOMAIN);
 
@@ -162,6 +185,12 @@ class HyperlinkUtilTest {
         HyperlinkUtil.openHyperlink(testUri, null);
 
         verify(mockBrowser, never()).browse(any());
+
+        // The test URL should now be in the system clipboard as a String:
+        Object something = Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+        assertInstanceOf(String.class, something);
+        String clipboardText = (String)something;
+        assertEquals(testUri.toString(), clipboardText);
     }
 
     @Test
