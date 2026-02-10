@@ -102,7 +102,9 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private ComboField<BorderOption> groupBorderField;
     private ComboField<BorderOption> headerBorderField;
     private NumberField externalPaddingField;
-    private NumberField internalPaddingField;
+    private NumberField headerInternalPaddingField;
+    private NumberField actionInternalPaddingField;
+    private NumberField toolBarInternalPaddingField;
     private NumberField actionIndentField;
     private ComboField<String> animationField;
     private ComboField<String> colorSourceField;
@@ -633,12 +635,31 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                                                  "of the panel, and also the space between groups.</html>");
         formPanel.add(externalPaddingField);
 
-        internalPaddingField = new NumberField("Internal padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32, 1);
-        internalPaddingField.addValueChangedListener(
-                f -> actionPanel.setInternalPadding(internalPaddingField.getCurrentValue().intValue()));
-        internalPaddingField.setHelpText("<html>Sets the space between components within each group,<br>" +
-                                                 "as well as the space between components and the inner edge of the group.</html>");
-        formPanel.add(internalPaddingField);
+        headerInternalPaddingField = new NumberField("Header padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32, 1);
+        headerInternalPaddingField.addValueChangedListener(
+                f -> actionPanel.setHeaderInternalPadding(headerInternalPaddingField.getCurrentValue().intValue()));
+        headerInternalPaddingField.setHelpText(
+                "<html>Sets the space between components within the header of an ActionGroup,<br>" +
+                        "as well as the space between those components and the inner edge of the group.</html>");
+        formPanel.add(headerInternalPaddingField);
+
+        actionInternalPaddingField = new NumberField("Action padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32, 1);
+        actionInternalPaddingField.addValueChangedListener(
+                f -> actionPanel.setActionInternalPadding(actionInternalPaddingField.getCurrentValue().intValue()));
+        actionInternalPaddingField.setHelpText(
+                "<html>Sets the space between action buttons/labels in an ActionGroup,<br>" +
+                        "as well as the space between those components and the inner edge of the group.</html>");
+        formPanel.add(actionInternalPaddingField);
+
+        toolBarInternalPaddingField = new NumberField("Toolbar padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32,
+                                                      1);
+        toolBarInternalPaddingField.addValueChangedListener(
+                f -> actionPanel.setToolBarInternalPadding(toolBarInternalPaddingField.getCurrentValue().intValue()));
+        toolBarInternalPaddingField.setHelpText(
+                "<html>Sets the space between components within the toolbar of an ActionGroup,<br>" +
+                        "as well as the space between those components and the inner edge of the group.<br>" +
+                        "(ToolBar must be enabled and not in \"Stretch\" mode for this value to work).</html>");
+        formPanel.add(toolBarInternalPaddingField);
 
         actionIndentField = new NumberField("Action left indent:", 4, 0, 32, 1);
         actionIndentField.addValueChangedListener(

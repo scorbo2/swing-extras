@@ -134,7 +134,9 @@ public class ActionPanel extends JPanel {
     private Border groupHeaderBorder;
     private Font actionFont;
     private Font groupHeaderFont;
-    private int internalPadding;
+    private int headerInternalPadding;
+    private int actionInternalPadding;
+    private int toolBarInternalPadding;
     private int externalPadding;
     private int actionIndent;
     private Color panelBackground;
@@ -169,7 +171,9 @@ public class ActionPanel extends JPanel {
         this.actionBackground = null; // Use L&F default
         this.groupHeaderForeground = null; // Use L&F default
         this.groupHeaderBackground = null; // Use L&F default
-        this.internalPadding = DEFAULT_INTERNAL_PADDING;
+        this.headerInternalPadding = DEFAULT_INTERNAL_PADDING;
+        this.actionInternalPadding = DEFAULT_INTERNAL_PADDING;
+        this.toolBarInternalPadding = DEFAULT_INTERNAL_PADDING;
         this.externalPadding = DEFAULT_EXTERNAL_PADDING;
         this.actionIndent = 0; // no indent by default
         this.showActionIcons = true; // visible by default (if the action has an icon set)
@@ -864,29 +868,83 @@ public class ActionPanel extends JPanel {
     }
 
     /**
-     * Sets the space between actions within an action group, and also the space between
-     * the actions and the edges of the ActionPanel. The default is 2 pixels.
+     * Sets the space between components within the header of an ActionGroup. The default is 2 pixels.
      *
-     * @param padding The internal padding in pixels. Must be greater than or equal to 0.
+     * @param padding The header's internal padding in pixels. Must be greater than or equal to 0.
      * @return This ActionPanel, for method chaining.
      */
-    public ActionPanel setInternalPadding(int padding) {
+    public ActionPanel setHeaderInternalPadding(int padding) {
         if (padding < 0) {
             throw new IllegalArgumentException("Internal padding cannot be negative.");
         }
-        internalPadding = padding;
+        headerInternalPadding = padding;
         rebuild();
         return this;
     }
 
     /**
-     * Returns the internal padding between actions and the edges of the ActionPanel,
-     * and also between the actions themselves.
+     * Returns the internal padding between components in the header of an ActionGroup, in pixels.
      *
      * @return The internal padding in pixels.
      */
-    public int getInternalPadding() {
-        return internalPadding;
+    public int getHeaderInternalPadding() {
+        return headerInternalPadding;
+    }
+
+    /**
+     * Sets the space between action labels/buttons in an ActionGroup. The default is 2 pixels.
+     *
+     * @param padding The internal padding between actions in pixels. Must be greater than or equal to 0.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setActionInternalPadding(int padding) {
+        if (padding < 0) {
+            throw new IllegalArgumentException("Internal padding cannot be negative.");
+        }
+        actionInternalPadding = padding;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Returns the internal padding between action labels/buttons in an ActionGroup, in pixels.
+     *
+     * @return The internal padding between actions in pixels.
+     */
+    public int getActionInternalPadding() {
+        return actionInternalPadding;
+    }
+
+    /**
+     * Sets the space between components in the ToolBar area. This is the padding that is applied
+     * around the components in the ToolBar, and between them. This only applies if the
+     * ToolBar's ButtonPosition is not Stretch. In "Stretch" mode, there is no space
+     * between ToolBarButtons, no matter what this padding is set to, because the buttons
+     * are stretched to fill all available space.
+     *
+     * @param padding The internal padding for the ToolBar in pixels. Must be greater than or equal to 0.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setToolBarInternalPadding(int padding) {
+        if (padding < 0) {
+            throw new IllegalArgumentException("Internal padding cannot be negative.");
+        }
+        toolBarInternalPadding = padding;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Returns the internal padding for the ToolBar area, in pixels. This is the padding that is applied
+     * around the components in the ToolBar, and between them. This only applies if the
+     * ToolBar's ButtonPosition is not Stretch. In "Stretch" mode, there is no space
+     * between ToolBarButtons, no matter what this padding is set to, because the buttons
+     * are stretched to fill all available space.
+     *
+     * @return The internal padding for the ToolBar in pixels.
+     */
+    public int getToolBarInternalPadding() {
+        return toolBarInternalPadding;
     }
 
     /**

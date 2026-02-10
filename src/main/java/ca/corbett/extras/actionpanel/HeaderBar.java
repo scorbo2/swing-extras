@@ -72,8 +72,8 @@ class HeaderBar extends JPanel {
 
         // Add internal padding - this is the space between the outer edge of the HeaderBar
         // and the internal components.
-        if (actionPanel.getInternalPadding() > 0) {
-            int pad = actionPanel.getInternalPadding();
+        if (actionPanel.getHeaderInternalPadding() > 0) {
+            int pad = actionPanel.getHeaderInternalPadding();
             headerPanel.setBorder(BorderFactory.createEmptyBorder(pad, pad, pad, pad));
         }
 
@@ -90,7 +90,7 @@ class HeaderBar extends JPanel {
      * If the group has an icon and group icons are enabled, adds the icon to the header panel.
      */
     private void addIcon() {
-        int pad = actionPanel.getInternalPadding();
+        int pad = actionPanel.getHeaderInternalPadding();
         if (group.getIcon() != null && actionPanel.isShowGroupIcons()) {
             Icon icon = null;
             if (group.getIcon() instanceof ImageIcon) {
@@ -158,7 +158,7 @@ class HeaderBar extends JPanel {
 
         // The headerPanel itself has padding on all sides, so we only need to pad
         // the left side of the button here, to keep it away from the label.
-        int pad = actionPanel.getInternalPadding();
+        int pad = actionPanel.getHeaderInternalPadding();
         expandCollapseButton.setBorder(BorderFactory.createEmptyBorder(0, pad, 0, 0));
 
         // The listener for the button will either trigger an animation or just
