@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -307,12 +306,11 @@ class KeyStrokeManagerTest {
     @Test
     public void registerHandler_withNullAction_shouldThrow() {
         try {
-            keyManager.registerHandler("ctrl+Q", null);
+            keyManager.registerHandler("ctrl+Q", (Action)null);
             fail("Expected IllegalArgumentException for null action, but didn't get one!");
         }
         catch (IllegalArgumentException ignored) {
             // Expected exception
-            return;
         }
     }
 
@@ -668,17 +666,24 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void registerHandler_withActionListenerAndStringShortcut_shouldRegister() throws Exception {
-        // GIVEN an ActionListener:
-        AtomicInteger invoked = new AtomicInteger(0);
-        ActionListener actionListener = e -> invoked.incrementAndGet();
+    public void registerHandler_withKeyActionAndStringShortcut_shouldRegister() throws Exception {
+        // GIVEN a KeyAction:
+        KeyAction keyAction = e -> {
+            // No-op for testing
+        };
 
         // WHEN we register it to a keystroke using the ActionListener convenience method that accepts a String:
-        keyManager.registerHandler("ctrl+L", actionListener);
+        keyManager.registerHandler("ctrl+L", keyAction);
 
         // THEN it should be registered correctly:
         List<Action> actions = keyManager.getActionsForKeyStroke("ctrl+l");
         assertEquals(1, actions.size(), "Should have one handler after register");
+
+        // AND its accelerator should be set:
+        Action registeredAction = actions.get(0);
+        KeyStroke expectedKeyStroke = KeyStrokeManager.parseKeyStroke("ctrl+L");
+        assertEquals(expectedKeyStroke, registeredAction.getValue(Action.ACCELERATOR_KEY),
+                     "Registered action should have correct accelerator key");
 
         // WHEN we clear it:
         keyManager.clear();
@@ -688,23 +693,76 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void registerHandler_withActionListenerAndKeyStrokeShortcut_shouldRegister() throws Exception {
-        // GIVEN an ActionListener:
-        AtomicInteger invoked = new AtomicInteger(0);
-        ActionListener actionListener = e -> invoked.incrementAndGet();
+    public void registerHandler_withKeyStrokeAndKeyStrokeShortcut_shouldRegister() throws Exception {
+        // GIVEN a KeyAction:
+        KeyAction keyAction = e -> {
+            // No-op for testing
+        };
 
         // WHEN we register it to a keystroke using the ActionListener convenience method that accepts a KeyStroke:
-        keyManager.registerHandler(KeyStrokeManager.parseKeyStroke("ctrl+L"), actionListener);
+        keyManager.registerHandler(KeyStrokeManager.parseKeyStroke("ctrl+L"), keyAction);
 
         // THEN it should be registered correctly:
         List<Action> actions = keyManager.getActionsForKeyStroke("ctrl+l");
         assertEquals(1, actions.size(), "Should have one handler after register");
+
+        // AND its accelerator should be set:
+        Action registeredAction = actions.get(0);
+        KeyStroke expectedKeyStroke = KeyStrokeManager.parseKeyStroke("ctrl+L");
+        assertEquals(expectedKeyStroke, registeredAction.getValue(Action.ACCELERATOR_KEY),
+                     "Registered action should have correct accelerator key");
 
         // WHEN we clear it:
         keyManager.clear();
 
         // THEN the wrapped Action should be cleaned up like any other Action:
         assertTrue(keyManager.getActionsForKeyStroke("ctrl+l").isEmpty(), "Should have no handlers after clear");
+    }
+
+    @Test
+    public void unregisterHandler_withKeyStroke_shouldUnregister() throws Exception {
+        // GIVEN a KeyAction registered with a String shortcut:
+        KeyAction keyAction = e -> {
+            // No-op for testing
+        };
+        keyManager.registerHandler("ctrl+U", keyAction);
+        List<Action> actions = keyManager.getActionsForKeyStroke("ctrl+u");
+        assertEquals(1, actions.size(), "Should have one handler after register");
+
+        // WHEN we unregister it using the convenience method that accepts a keystroke:
+        keyManager.unregisterHandler("ctrl+u");
+
+        // THEN it should be unregistered correctly:
+        assertTrue(keyManager.getActionsForKeyStroke("ctrl+u").isEmpty(), "Should have no handlers after unregister");
+    }
+
+    @Test
+    public void unregisterHandler_withMultipleHandlers_shouldRemoveAll() throws Exception {
+        // GIVEN a KeyStrokeManager with multiple handlers registered for the same keystroke:
+        Action action1 = new AbstractAction("A1") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+            }
+        };
+        Action action2 = new AbstractAction("A2") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+            }
+        };
+        Action action3 = new AbstractAction("A3") {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+            }
+        };
+        keyManager.registerHandler("shift+a", action1);
+        keyManager.registerHandler("shift+a", action2);
+        keyManager.registerHandler("shift+a", action3);
+
+        // WHEN we unregister via keystroke:
+        keyManager.unregisterHandler("shift+a");
+
+        // THEN all actions should have been removed:
+        assertTrue(keyManager.getActionsForKeyStroke("shift+a").isEmpty(), "Should have no handlers after unregister");
     }
 
     /**
