@@ -289,45 +289,34 @@ class ActionPanelTest {
 
     @Test
     void testCardActionTriggersCardLayoutShow() throws Exception {
-        CountDownLatch latch = new CountDownLatch(1);
-        
-        SwingUtilities.invokeLater(() -> {
-            try {
-                // Create a card container with CardLayout
-                JPanel cardContainer = new JPanel(new CardLayout());
-                CardLayout cardLayout = (CardLayout) cardContainer.getLayout();
-                JPanel card1 = new JPanel();
-                JPanel card2 = new JPanel();
-                cardContainer.add(card1, "card1");
-                cardContainer.add(card2, "card2");
-                
-                // Ensure card1 is shown initially
-                cardLayout.first(cardContainer);
-                
-                // Create ActionPanel with CardAction
-                ActionPanel panel = new ActionPanel();
-                panel.setCardContainer(cardContainer);
-                CardAction cardAction = new CardAction("Show Card 2", "card2");
-                panel.add("Test Group", cardAction);
-                
-                // Initially card1 should be visible (first card added)
-                assertTrue(card1.isVisible(), "Card1 should be visible initially");
-                
-                // Trigger the CardAction
-                cardAction.actionPerformed(null);
-                
-                // Now card2 should be visible
-                assertFalse(card1.isVisible(), "Card1 should not be visible after switching");
-                assertTrue(card2.isVisible(), "Card2 should be visible after triggering CardAction");
-                
-                latch.countDown();
-            }
-            catch (Exception e) {
-                fail("CardAction trigger test failed", e);
-            }
+        SwingUtilities.invokeAndWait(() -> {
+            // Create a card container with CardLayout
+            JPanel cardContainer = new JPanel(new CardLayout());
+            CardLayout cardLayout = (CardLayout) cardContainer.getLayout();
+            JPanel card1 = new JPanel();
+            JPanel card2 = new JPanel();
+            cardContainer.add(card1, "card1");
+            cardContainer.add(card2, "card2");
+
+            // Ensure card1 is shown initially
+            cardLayout.first(cardContainer);
+
+            // Create ActionPanel with CardAction
+            ActionPanel panel = new ActionPanel();
+            panel.setCardContainer(cardContainer);
+            CardAction cardAction = new CardAction("Show Card 2", "card2");
+            panel.add("Test Group", cardAction);
+
+            // Initially card1 should be visible (first card added)
+            assertTrue(card1.isVisible(), "Card1 should be visible initially");
+
+            // Trigger the CardAction
+            cardAction.actionPerformed(null);
+
+            // Now card2 should be visible
+            assertFalse(card1.isVisible(), "Card1 should not be visible after switching");
+            assertTrue(card2.isVisible(), "Card2 should be visible after triggering CardAction");
         });
-        
-        assertTrue(latch.await(5, TimeUnit.SECONDS), "Test should complete within 5 seconds");
     }
 
     @Test
