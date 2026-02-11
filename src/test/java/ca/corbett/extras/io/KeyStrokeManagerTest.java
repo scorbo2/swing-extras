@@ -672,7 +672,7 @@ class KeyStrokeManagerTest {
             // No-op for testing
         };
 
-        // WHEN we register it to a keystroke using the ActionListener convenience method that accepts a String:
+        // WHEN we register it to a keystroke using the KeyAction convenience overload that accepts a String shortcut:
         keyManager.registerHandler("ctrl+L", keyAction);
 
         // THEN it should be registered correctly:
