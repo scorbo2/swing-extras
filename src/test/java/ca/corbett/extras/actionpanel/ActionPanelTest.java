@@ -351,8 +351,8 @@ class ActionPanelTest {
         // Verify the action works with the new container
         assertNotNull(cardAction, "CardAction should exist");
         assertEquals("Show Card 1", cardAction.getValue(EnhancedAction.NAME), "Action name should be preserved");
-        assertEquals(cardContainer2, cardAction.cardContainer,
-                     "CardAction should be updated to the new card container");
+        assertSame(cardContainer2, cardAction.cardContainer,
+            "CardAction should be updated to the new card container");
     }
 
     @Test
