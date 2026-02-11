@@ -317,7 +317,6 @@ class ActionPanelTest {
                 latch.countDown();
             }
             catch (Exception e) {
-                e.printStackTrace();
                 fail("CardAction trigger test failed: " + e.getMessage());
             }
         });
