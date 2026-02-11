@@ -528,8 +528,12 @@ public class KeyStrokeManager {
      *
      * @param keyStroke The KeyStroke to unregister.
      * @return this manager, for fluent-style method chaining
+     * @throws IllegalArgumentException if the given keyStroke is null
      */
     public KeyStrokeManager unregisterHandler(KeyStroke keyStroke) {
+        if (keyStroke == null) {
+            throw new IllegalArgumentException("keyStroke must not be null");
+        }
         List<Action> actions = keyMap.remove(keyStroke);
         if (actions != null) {
             for (Action action : actions) {
