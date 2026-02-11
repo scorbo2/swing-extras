@@ -293,10 +293,14 @@ class ActionPanelTest {
             try {
                 // Create a card container with CardLayout
                 JPanel cardContainer = new JPanel(new CardLayout());
+                CardLayout cardLayout = (CardLayout) cardContainer.getLayout();
                 JPanel card1 = new JPanel();
                 JPanel card2 = new JPanel();
                 cardContainer.add(card1, "card1");
                 cardContainer.add(card2, "card2");
+                
+                // Ensure card1 is shown initially
+                cardLayout.first(cardContainer);
                 
                 // Create ActionPanel with CardAction
                 ActionPanel panel = new ActionPanel();
@@ -317,7 +321,7 @@ class ActionPanelTest {
                 latch.countDown();
             }
             catch (Exception e) {
-                fail("CardAction trigger test failed: " + e.getMessage());
+                fail("CardAction trigger test failed", e);
             }
         });
         
