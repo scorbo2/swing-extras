@@ -537,8 +537,22 @@ public class KeyStrokeManager {
         List<Action> actions = keyMap.remove(keyStroke);
         if (actions != null) {
             for (Action action : actions) {
-                // Remove the accelerator from each Action:
-                action.putValue(Action.ACCELERATOR_KEY, null);
+                // Only adjust the accelerator if it currently matches this keyStroke.
+                Object currentValue = action.getValue(Action.ACCELERATOR_KEY);
+                if (currentValue instanceof KeyStroke) {
+                    KeyStroke currentAccel = (KeyStroke) currentValue;
+                    if (keyStroke.equals(currentAccel)) {
+                        // Check remaining keystrokes for this action in this manager.
+                        List<KeyStroke> remainingKeyStrokes = getKeyStrokesForAction(action);
+                        if (remainingKeyStrokes.isEmpty()) {
+                            // No other keystrokes: clear the accelerator.
+                            action.putValue(Action.ACCELERATOR_KEY, null);
+                        } else {
+                            // Reassign accelerator to one of the remaining keystrokes.
+                            action.putValue(Action.ACCELERATOR_KEY, remainingKeyStrokes.get(0));
+                        }
+                    }
+                }
             }
         }
         return this;
