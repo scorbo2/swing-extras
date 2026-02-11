@@ -1,5 +1,6 @@
 package ca.corbett.extras.io;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.awt.KeyEventDispatcher;
@@ -362,6 +363,39 @@ public class KeyStrokeManager {
     }
 
     /**
+     * A convenience method to allow registration of simple KeyActions without having to create a whole Action object.
+     * With lambdas, this can reduce the adding of a handler to a single line, in the case where your application
+     * doesn't have a ready-made Action to use. For example:
+     * <pre>
+     *     ksm.registerHandler("Esc", e -> dispose());
+     * </pre>
+     * <p>
+     *     This is as opposed to the old way, forcing callers to create an Action or AbstractAction:
+     * </p>
+     * <pre>
+     *     ksm.registerHandler("Esc", new AbstractAction() {
+     *         @Override
+     *         public void actionPerformed(ActionEvent e) {
+     *             dispose(); // That's a lot of boilerplate!
+     *         }
+     *     });
+     * </pre>
+     * <p>
+     * The drawback of this approach is that you will be unable to invoke unregisterHandler()
+     * with your KeyAction to remove your handler later, because we wrapped it in an AbstractAction
+     * that is not exposed. However, you can use the unregisterHandler() overload that accepts a
+     * keystroke to remove all handlers for that keystroke, or you can call clear() to remove all handlers if needed.
+     * </p>
+     *
+     * @param keyStroke the String version of the KeyStroke to register
+     * @param action    the KeyAction to execute when the shortcut is pressed
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager registerHandler(String keyStroke, KeyAction action) {
+        return registerHandler(keyStroke, wrapKeyAction(action));
+    }
+
+    /**
      * Registers a keyboard shortcut with an action.
      * Accepts shortcuts in the format: "ctrl+P", "alt+F4", "ctrl+shift+S", etc.
      * If the given shortcut already has an action registered, the new action will be added
@@ -401,6 +435,58 @@ public class KeyStrokeManager {
     }
 
     /**
+     * A convenience method to allow registration of simple KeyActions without having to create a whole Action object.
+     * With lambdas, this can reduce the adding of a handler to a single line, in the case where your application
+     * doesn't have a ready-made Action to use. For example:
+     * <pre>
+     *     ksm.registerHandler("Esc", e -> dispose());
+     * </pre>
+     * <p>
+     *     This is as opposed to the old way, forcing callers to create an Action or AbstractAction:
+     * </p>
+     * <pre>
+     *     ksm.registerHandler("Esc", new AbstractAction() {
+     *         @Override
+     *         public void actionPerformed(ActionEvent e) {
+     *             dispose(); // That's a lot of boilerplate!
+     *         }
+     *     });
+     * </pre>
+     * <p>
+     * The drawback of this approach is that you will be unable to invoke unregisterHandler()
+     * with your KeyAction to remove your handler later, because we wrapped it in an AbstractAction
+     * that is not exposed. However, you can use the unregisterHandler() overload that accepts a
+     * keystroke to remove all handlers for that keystroke, or you can call clear() to remove all handlers if needed.
+     * </p>
+     *
+     * @param keyStroke the KeyStroke to register
+     * @param action    the KeyAction to execute when the shortcut is pressed
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager registerHandler(KeyStroke keyStroke, KeyAction action) {
+        return registerHandler(keyStroke, wrapKeyAction(action));
+    }
+
+    /**
+     * Invoked internally to wrap the given KeyAction in a regular AbstractAction
+     * so we can handle it like normal.
+     *
+     * @param keyAction the KeyAction to wrap. Must not be null.
+     * @return an AbstractAction that delegates to the given KeyAction when triggered.
+     */
+    private AbstractAction wrapKeyAction(KeyAction keyAction) {
+        if (keyAction == null) {
+            throw new IllegalArgumentException("KeyAction cannot be null!");
+        }
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keyAction.actionPerformed(e);
+            }
+        };
+    }
+
+    /**
      * Unregisters the given action, removing its keyboard shortcut.
      * If the named action was not found, this method does nothing.
      *
@@ -422,6 +508,57 @@ public class KeyStrokeManager {
         // Remove the accelerator from the Action:
         action.putValue(Action.ACCELERATOR_KEY, null);
 
+        return this;
+    }
+
+    /**
+     * Unregisters any handlers associated with the given KeyStroke, removing their keyboard shortcuts.
+     * If there were no handlers for the given KeyStroke, this method does nothing.
+     *
+     * @param keyStroke The KeyStroke to unregister.
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager unregisterHandler(String keyStroke) {
+        KeyStroke parsed = parseKeyStroke(keyStroke);
+        if (parsed == null) {
+            throw new IllegalArgumentException("Invalid keystroke: " + keyStroke);
+        }
+        return unregisterHandler(parsed);
+    }
+
+    /**
+     * Unregisters any handlers associated with the given KeyStroke, removing their keyboard shortcuts.
+     * If there were no handlers for the given KeyStroke, this method does nothing.
+     *
+     * @param keyStroke The KeyStroke to unregister.
+     * @return this manager, for fluent-style method chaining
+     * @throws IllegalArgumentException if the given keyStroke is null
+     */
+    public KeyStrokeManager unregisterHandler(KeyStroke keyStroke) {
+        if (keyStroke == null) {
+            throw new IllegalArgumentException("keyStroke must not be null");
+        }
+        List<Action> actions = keyMap.remove(keyStroke);
+        if (actions != null) {
+            for (Action action : actions) {
+                // Only adjust the accelerator if it currently matches this keyStroke.
+                Object currentValue = action.getValue(Action.ACCELERATOR_KEY);
+                if (currentValue instanceof KeyStroke) {
+                    KeyStroke currentAccel = (KeyStroke) currentValue;
+                    if (keyStroke.equals(currentAccel)) {
+                        // Check remaining keystrokes for this action in this manager.
+                        List<KeyStroke> remainingKeyStrokes = getKeyStrokesForAction(action);
+                        if (remainingKeyStrokes.isEmpty()) {
+                            // No other keystrokes: clear the accelerator.
+                            action.putValue(Action.ACCELERATOR_KEY, null);
+                        } else {
+                            // Reassign accelerator to one of the remaining keystrokes.
+                            action.putValue(Action.ACCELERATOR_KEY, remainingKeyStrokes.get(0));
+                        }
+                    }
+                }
+            }
+        }
         return this;
     }
 
