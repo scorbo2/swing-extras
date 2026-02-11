@@ -209,7 +209,7 @@ public class ActionPanel extends JPanel {
             throw new IllegalArgumentException("Group name and action cannot be null or empty.");
         }
         if (action instanceof CardAction cardAction) {
-            checkCardAction(groupName, cardAction);
+            checkCardAction(cardAction);
         }
         ActionGroup group = findOrCreateGroup(groupName);
         group.add(action);
