@@ -273,6 +273,8 @@ class ActionPanelTest {
         EnhancedAction action = group.getActions().get(0);
         assertTrue(action instanceof CardAction, "Action should be a CardAction");
         assertEquals("Show Card 1", action.getValue(EnhancedAction.NAME), "Action name should match");
+        assertEquals(cardContainer, ((CardAction)action).cardContainer,
+                     "CardAction should be associated with the card container");
     }
 
     @Test
@@ -349,6 +351,8 @@ class ActionPanelTest {
         // Verify the action works with the new container
         assertNotNull(cardAction, "CardAction should exist");
         assertEquals("Show Card 1", cardAction.getValue(EnhancedAction.NAME), "Action name should be preserved");
+        assertEquals(cardContainer2, cardAction.cardContainer,
+                     "CardAction should be updated to the new card container");
     }
 
     @Test
@@ -367,6 +371,20 @@ class ActionPanelTest {
         
         assertTrue(exception.getMessage().contains("Card Actions are present"),
             "Exception message should mention Card Actions");
+    }
+
+    @Test
+    void testSetCardContainerToNullWithoutCardActions_shouldNotThrow() {
+        // GIVEN an ActionPanel with a card container but no CardActions
+        Container cardContainer = new JPanel(new CardLayout());
+        actionPanel.setCardContainer(cardContainer);
+        
+        // WHEN we set the card container to null
+        actionPanel.setCardContainer(null);
+        
+        // THEN no exception should be thrown and the container should be null
+        assertNull(actionPanel.getCardContainer(),
+            "Card container should be null after setting to null");
     }
 
     @Test
