@@ -230,15 +230,23 @@ public class ActionPanel extends JPanel {
         if (groupName == null || groupName.isEmpty()) {
             throw new IllegalArgumentException("Group name cannot be null or empty.");
         }
-        ActionGroup group = findOrCreateGroup(groupName);
-        if (actions != null && !actions.isEmpty()) {
-            for (EnhancedAction action : actions) {
-                if (action instanceof CardAction cardAction) {
-                    checkCardAction(groupName, cardAction);
-                }
-                group.add(action);
+        if (actions == null || actions.isEmpty()) {
+            return this; // Just ignore
+        }
+
+        // First validate all CardActions to avoid creating groups if validation fails:
+        for (EnhancedAction action : actions) {
+            if (action instanceof CardAction cardAction) {
+                checkCardAction(cardAction);
             }
         }
+
+        // Now create the group if needed, and add the actions:
+        ActionGroup group = findOrCreateGroup(groupName);
+        for (EnhancedAction action : actions) {
+            group.add(action);
+        }
+
         rebuild();
         return this;
     }
@@ -248,7 +256,7 @@ public class ActionPanel extends JPanel {
      * You must have already invoked setCardContainer() to set a companion CardLayout container!
      * Otherwise, you will get an IllegalStateException.
      * <p>
-     * This method is shorthand for add(groupName, new CardAction(actionName, cardId);
+     * This method is shorthand for add(groupName, new CardAction(actionName, cardId));
      * </p>
      * <p>
      * <b>Note:</b> Due to the design of CardLayout, we can't validate the given cardId.
@@ -283,11 +291,10 @@ public class ActionPanel extends JPanel {
      * Invoked internally to handle validation of CardActions as they are added.
      * Namely, we ensure that a valid Card Container is set before accepting the action.
      *
-     * @param groupName  The name of the group to which the CardAction should belong.
      * @param cardAction The CardAction to add.
      * @return This ActionPanel, for method chaining.
      */
-    private void checkCardAction(String groupName, CardAction cardAction) {
+    private void checkCardAction(CardAction cardAction) {
         if (cardContainer == null) {
             throw new IllegalStateException(
                     "Cannot add CardAction without first setting a Card Container on the ActionPanel.");

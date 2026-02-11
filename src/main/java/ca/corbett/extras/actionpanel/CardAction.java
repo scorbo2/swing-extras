@@ -36,8 +36,8 @@ import java.awt.event.ActionEvent;
  */
 public class CardAction extends EnhancedAction {
 
-    public final String cardId;
-    public Container cardContainer;
+    protected final String cardId;
+    protected Container cardContainer;
 
     /**
      * Creates a CardAction with the given name and card ID.
