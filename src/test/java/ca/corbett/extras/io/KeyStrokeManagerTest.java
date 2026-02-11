@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -664,6 +665,46 @@ class KeyStrokeManagerTest {
         List<KeyStroke> result = keyManager.checkForMultipleHandlers();
         assertNotNull(result);
         assertTrue(result.isEmpty(), "Should return empty list after clear");
+    }
+
+    @Test
+    public void registerHandler_withActionListenerAndStringShortcut_shouldRegister() throws Exception {
+        // GIVEN an ActionListener:
+        AtomicInteger invoked = new AtomicInteger(0);
+        ActionListener actionListener = e -> invoked.incrementAndGet();
+
+        // WHEN we register it to a keystroke using the ActionListener convenience method that accepts a String:
+        keyManager.registerHandler("ctrl+L", actionListener);
+
+        // THEN it should be registered correctly:
+        List<Action> actions = keyManager.getActionsForKeyStroke("ctrl+l");
+        assertEquals(1, actions.size(), "Should have one handler after register");
+
+        // WHEN we clear it:
+        keyManager.clear();
+
+        // THEN the wrapped Action should be cleaned up like any other Action:
+        assertTrue(keyManager.getActionsForKeyStroke("ctrl+l").isEmpty(), "Should have no handlers after clear");
+    }
+
+    @Test
+    public void registerHandler_withActionListenerAndKeyStrokeShortcut_shouldRegister() throws Exception {
+        // GIVEN an ActionListener:
+        AtomicInteger invoked = new AtomicInteger(0);
+        ActionListener actionListener = e -> invoked.incrementAndGet();
+
+        // WHEN we register it to a keystroke using the ActionListener convenience method that accepts a KeyStroke:
+        keyManager.registerHandler(KeyStrokeManager.parseKeyStroke("ctrl+L"), actionListener);
+
+        // THEN it should be registered correctly:
+        List<Action> actions = keyManager.getActionsForKeyStroke("ctrl+l");
+        assertEquals(1, actions.size(), "Should have one handler after register");
+
+        // WHEN we clear it:
+        keyManager.clear();
+
+        // THEN the wrapped Action should be cleaned up like any other Action:
+        assertTrue(keyManager.getActionsForKeyStroke("ctrl+l").isEmpty(), "Should have no handlers after clear");
     }
 
     /**

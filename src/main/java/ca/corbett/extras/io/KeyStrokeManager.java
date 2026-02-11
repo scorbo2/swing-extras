@@ -1,11 +1,13 @@
 package ca.corbett.extras.io;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -362,6 +364,34 @@ public class KeyStrokeManager {
     }
 
     /**
+     * A convenience method to allow registration of simple ActionListeners without having to create an Action object.
+     * With lambdas, this can reduce the adding of a handler to a single line, in the case where your application
+     * doesn't have a ready-made Action to use. For example:
+     * <pre>
+     *     ksm.registerHandler("ctrl+P", e -> openFile());
+     *     ksm.registerHandler("ctrl+S", e -> saveFile());
+     * </pre>
+     * <p>
+     * The drawback of this approach is that you will be unable to invoked unregisterHandler()
+     * to remove your handler later - but you can still call clear() to remove all handlers if needed.
+     * </p>
+     *
+     * @param keyStroke the String version of the KeyStroke to register
+     * @param action    the ActionListener to execute when the shortcut is pressed
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager registerHandler(String keyStroke, ActionListener action) {
+        // Wrap this ActionListener in an anonymous AbstractAction so we can register it like normal:
+        Action wrappedAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                action.actionPerformed(e);
+            }
+        };
+        return registerHandler(keyStroke, wrappedAction);
+    }
+
+    /**
      * Registers a keyboard shortcut with an action.
      * Accepts shortcuts in the format: "ctrl+P", "alt+F4", "ctrl+shift+S", etc.
      * If the given shortcut already has an action registered, the new action will be added
@@ -398,6 +428,34 @@ public class KeyStrokeManager {
         action.putValue(Action.ACCELERATOR_KEY, keyStroke);
 
         return this;
+    }
+
+    /**
+     * A convenience method to allow registration of simple ActionListeners without having to create an Action object.
+     * With lambdas, this can reduce the adding of a handler to a single line, in the case where your application
+     * doesn't have a ready-made Action to use. For example:
+     * <pre>
+     *     ksm.registerHandler(parseKeyStroke("ctrl+P"), e -> openFile());
+     *     ksm.registerHandler(parseKeyStroke("ctrl+S"), e -> saveFile());
+     * </pre>
+     * <p>
+     * The drawback of this approach is that you will be unable to invoked unregisterHandler()
+     * to remove your handler later - but you can still call clear() to remove all handlers if needed.
+     * </p>
+     *
+     * @param keyStroke the KeyStroke to register
+     * @param listener  the ActionListener to execute when the keyStroke is pressed
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager registerHandler(KeyStroke keyStroke, ActionListener listener) {
+        // Wrap this ActionListener in an anonymous AbstractAction so we can register it like normal:
+        Action wrappedAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                listener.actionPerformed(e);
+            }
+        };
+        return registerHandler(keyStroke, wrappedAction);
     }
 
     /**
