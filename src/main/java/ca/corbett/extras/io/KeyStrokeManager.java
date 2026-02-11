@@ -372,7 +372,7 @@ public class KeyStrokeManager {
      *     ksm.registerHandler("ctrl+S", e -> saveFile());
      * </pre>
      * <p>
-     * The drawback of this approach is that you will be unable to invoked unregisterHandler()
+     * The drawback of this approach is that you will be unable to invoke unregisterHandler()
      * to remove your handler later - but you can still call clear() to remove all handlers if needed.
      * </p>
      *
@@ -439,7 +439,7 @@ public class KeyStrokeManager {
      *     ksm.registerHandler(parseKeyStroke("ctrl+S"), e -> saveFile());
      * </pre>
      * <p>
-     * The drawback of this approach is that you will be unable to invoked unregisterHandler()
+     * The drawback of this approach is that you will be unable to invoke unregisterHandler()
      * to remove your handler later - but you can still call clear() to remove all handlers if needed.
      * </p>
      *
