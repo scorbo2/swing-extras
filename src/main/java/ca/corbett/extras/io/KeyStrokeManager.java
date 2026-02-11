@@ -519,7 +519,11 @@ public class KeyStrokeManager {
      * @return this manager, for fluent-style method chaining
      */
     public KeyStrokeManager unregisterHandler(String keyStroke) {
-        return unregisterHandler(parseKeyStroke(keyStroke));
+        KeyStroke parsed = parseKeyStroke(keyStroke);
+        if (parsed == null) {
+            throw new IllegalArgumentException("Invalid keystroke: " + keyStroke);
+        }
+        return unregisterHandler(parsed);
     }
 
     /**
