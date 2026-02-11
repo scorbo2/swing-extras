@@ -5,7 +5,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Container;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -224,5 +228,172 @@ class ActionPanelTest {
         finally {
             actionPanel.clear(true); // clean up after the test so it doesn't affect other tests
         }
+    }
+
+    @Test
+    void testAddCardActionWithoutContainer_shouldThrow() {
+        CardAction cardAction = new CardAction("Test Card Action", "card1");
+        
+        IllegalStateException exception = assertThrows(IllegalStateException.class, 
+            () -> actionPanel.add("Test Group", cardAction),
+            "Adding CardAction without setting a card container should throw IllegalStateException");
+        
+        assertTrue(exception.getMessage().contains("Card Container"),
+            "Exception message should mention Card Container");
+    }
+
+    @Test
+    void testSetCardContainerWithNonCardLayout_shouldThrow() {
+        Container containerWithBorderLayout = new JPanel(new BorderLayout());
+        
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> actionPanel.setCardContainer(containerWithBorderLayout),
+            "Setting container with non-CardLayout should throw IllegalArgumentException");
+        
+        assertTrue(exception.getMessage().contains("CardLayout"),
+            "Exception message should mention CardLayout");
+    }
+
+    @Test
+    void testConvenienceAddMethodAssociatesContainer() {
+        // GIVEN a card container with CardLayout
+        Container cardContainer = new JPanel(new CardLayout());
+        cardContainer.add(new JPanel(), "card1");
+        cardContainer.add(new JPanel(), "card2");
+        
+        // WHEN we set the card container and add a CardAction using the convenience method
+        actionPanel.setCardContainer(cardContainer);
+        actionPanel.add("Test Group", "Show Card 1", "card1");
+        
+        // THEN the action should be added successfully
+        ActionGroup group = actionPanel.getGroup("Test Group");
+        assertNotNull(group, "Group should be created");
+        assertEquals(1, group.getActions().size(), "Group should have one action");
+        
+        EnhancedAction action = group.getActions().get(0);
+        assertTrue(action instanceof CardAction, "Action should be a CardAction");
+        assertEquals("Show Card 1", action.getValue(EnhancedAction.NAME), "Action name should match");
+        assertSame(cardContainer, ((CardAction)action).cardContainer,
+                "CardAction should be associated with the card container");
+    }
+
+    @Test
+    void testConvenienceAddMethodWithoutContainer_shouldThrow() {
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> actionPanel.add("Test Group", "Show Card 1", "card1"),
+            "Using convenience add method without setting a card container should throw IllegalStateException");
+        
+        assertTrue(exception.getMessage().contains("Card Container"),
+            "Exception message should mention Card Container");
+    }
+
+    @Test
+    void testCardActionTriggersCardLayoutShow() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            // Create a card container with CardLayout
+            JPanel cardContainer = new JPanel(new CardLayout());
+            CardLayout cardLayout = (CardLayout) cardContainer.getLayout();
+            JPanel card1 = new JPanel();
+            JPanel card2 = new JPanel();
+            cardContainer.add(card1, "card1");
+            cardContainer.add(card2, "card2");
+
+            // Ensure card1 is shown initially
+            cardLayout.first(cardContainer);
+
+            // Create ActionPanel with CardAction
+            ActionPanel panel = new ActionPanel();
+            panel.setCardContainer(cardContainer);
+            CardAction cardAction = new CardAction("Show Card 2", "card2");
+            panel.add("Test Group", cardAction);
+
+            // Initially card1 should be visible (first card added)
+            assertTrue(card1.isVisible(), "Card1 should be visible initially");
+
+            // Trigger the CardAction
+            cardAction.actionPerformed(null);
+
+            // Now card2 should be visible
+            assertFalse(card1.isVisible(), "Card1 should not be visible after switching");
+            assertTrue(card2.isVisible(), "Card2 should be visible after triggering CardAction");
+        });
+    }
+
+    @Test
+    void testSetCardContainerUpdatesExistingCardActions() {
+        // GIVEN a card container and ActionPanel with CardActions
+        Container cardContainer1 = new JPanel(new CardLayout());
+        cardContainer1.add(new JPanel(), "card1");
+        
+        actionPanel.setCardContainer(cardContainer1);
+        actionPanel.add("Test Group", "Show Card 1", "card1");
+        
+        // WHEN we set a new card container
+        Container cardContainer2 = new JPanel(new CardLayout());
+        cardContainer2.add(new JPanel(), "card1");
+        actionPanel.setCardContainer(cardContainer2);
+        
+        // THEN the existing CardAction should be updated with the new container
+        ActionGroup group = actionPanel.getGroup("Test Group");
+        CardAction cardAction = (CardAction) group.getActions().get(0);
+        
+        // Verify the action works with the new container
+        assertNotNull(cardAction, "CardAction should exist");
+        assertEquals("Show Card 1", cardAction.getValue(EnhancedAction.NAME), "Action name should be preserved");
+        assertSame(cardContainer2, cardAction.cardContainer,
+            "CardAction should be updated to the new card container");
+    }
+
+    @Test
+    void testSetCardContainerToNullWithCardActions_shouldThrow() {
+        // GIVEN an ActionPanel with a card container and CardActions
+        Container cardContainer = new JPanel(new CardLayout());
+        cardContainer.add(new JPanel(), "card1");
+        
+        actionPanel.setCardContainer(cardContainer);
+        actionPanel.add("Test Group", "Show Card 1", "card1");
+        
+        // WHEN we try to set the card container to null while CardActions exist
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> actionPanel.setCardContainer(null),
+            "Setting card container to null with existing CardActions should throw IllegalStateException");
+        
+        assertTrue(exception.getMessage().contains("Card Actions are present"),
+            "Exception message should mention Card Actions");
+    }
+
+    @Test
+    void testSetCardContainerToNullWithoutCardActions_shouldNotThrow() {
+        // GIVEN an ActionPanel with a card container but no CardActions
+        Container cardContainer = new JPanel(new CardLayout());
+        actionPanel.setCardContainer(cardContainer);
+        
+        // WHEN we set the card container to null
+        actionPanel.setCardContainer(null);
+        
+        // THEN no exception should be thrown and the container should be null
+        assertNull(actionPanel.getCardContainer(),
+            "Card container should be null after setting to null");
+    }
+
+    @Test
+    void testGetCardContainer() {
+        // GIVEN an ActionPanel with a card container
+        Container cardContainer = new JPanel(new CardLayout());
+        
+        // WHEN we set the card container
+        actionPanel.setCardContainer(cardContainer);
+        
+        // THEN getCardContainer should return the same container
+        assertSame(cardContainer, actionPanel.getCardContainer(),
+            "getCardContainer should return the same container that was set");
+    }
+
+    @Test
+    void testGetCardContainerWhenNotSet() {
+        // WHEN no card container is set
+        // THEN getCardContainer should return null
+        assertNull(actionPanel.getCardContainer(),
+            "getCardContainer should return null when no container is set");
     }
 }

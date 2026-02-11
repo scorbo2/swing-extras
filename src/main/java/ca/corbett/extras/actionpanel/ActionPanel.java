@@ -11,7 +11,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -130,6 +132,7 @@ public class ActionPanel extends JPanel {
     private Comparator<String> groupComparator;
     private Comparator<EnhancedAction> actionComparator;
     private ActionComponentType componentType;
+    private Container cardContainer;
     private Border groupBorder;
     private Border groupHeaderBorder;
     private Font actionFont;
@@ -162,6 +165,7 @@ public class ActionPanel extends JPanel {
         this.groupComparator = null; // Default to add order
         this.actionComparator = null; // Default to add order
         this.componentType = ActionComponentType.LABELS;
+        this.cardContainer = null;
         this.groupBorder = null;
         this.groupHeaderBorder = null;
         this.actionFont = null; // Use L&F default
@@ -204,6 +208,9 @@ public class ActionPanel extends JPanel {
         if (groupName == null || action == null || groupName.isEmpty()) {
             throw new IllegalArgumentException("Group name and action cannot be null or empty.");
         }
+        if (action instanceof CardAction cardAction) {
+            checkCardAction(cardAction);
+        }
         ActionGroup group = findOrCreateGroup(groupName);
         group.add(action);
         rebuild();
@@ -223,14 +230,76 @@ public class ActionPanel extends JPanel {
         if (groupName == null || groupName.isEmpty()) {
             throw new IllegalArgumentException("Group name cannot be null or empty.");
         }
-        ActionGroup group = findOrCreateGroup(groupName);
-        if (actions != null && !actions.isEmpty()) {
-            for (EnhancedAction action : actions) {
-                group.add(action);
+        if (actions == null || actions.isEmpty()) {
+            return this; // Just ignore
+        }
+
+        // First validate all CardActions to avoid creating groups if validation fails:
+        for (EnhancedAction action : actions) {
+            if (action instanceof CardAction cardAction) {
+                checkCardAction(cardAction);
             }
         }
+
+        // Now create the group if needed, and add the actions:
+        ActionGroup group = findOrCreateGroup(groupName);
+        for (EnhancedAction action : actions) {
+            group.add(action);
+        }
+
         rebuild();
         return this;
+    }
+
+    /**
+     * A convenience method for adding a CardAction to this ActionPanel.
+     * You must have already invoked setCardContainer() to set a companion CardLayout container!
+     * Otherwise, you will get an IllegalStateException.
+     * <p>
+     * This method is shorthand for add(groupName, new CardAction(actionName, cardId));
+     * </p>
+     * <p>
+     * <b>Note:</b> Due to the design of CardLayout, we can't validate the given cardId.
+     * If it doesn't match the name of a card that was given to your layout, then
+     * nothing will happen when the action is triggered. It's up to calling code
+     * to make sure the cardId given here matches the name of a card in the card container.
+     * </p>
+     *
+     * @param groupName  The name of the group to which the new action should belong.
+     * @param actionName The text for the action.
+     * @param cardId     The id of the card to show when the action is triggered.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel add(String groupName, String actionName, String cardId) {
+        if (cardContainer == null) {
+            throw new IllegalStateException(
+                    "Cannot add CardAction with cardId without first setting a Card Container on the ActionPanel.");
+        }
+        if (groupName == null || groupName.isEmpty()) {
+            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        }
+        if (actionName == null || actionName.isEmpty()) {
+            throw new IllegalArgumentException("Action name cannot be null or empty.");
+        }
+        if (cardId == null || cardId.isEmpty()) {
+            throw new IllegalArgumentException("Card ID cannot be null or empty.");
+        }
+        return add(groupName, new CardAction(actionName, cardId));
+    }
+
+    /**
+     * Invoked internally to handle validation of CardActions as they are added.
+     * Namely, we ensure that a valid Card Container is set before accepting the action.
+     *
+     * @param cardAction The CardAction to add.
+     * @return This ActionPanel, for method chaining.
+     */
+    private void checkCardAction(CardAction cardAction) {
+        if (cardContainer == null) {
+            throw new IllegalStateException(
+                    "Cannot add CardAction without first setting a Card Container on the ActionPanel.");
+        }
+        cardAction.setCardContainer(cardContainer);
     }
 
     /**
@@ -242,6 +311,47 @@ public class ActionPanel extends JPanel {
      */
     public ActionPanel createEmptyGroup(String groupName) {
         return addAll(groupName, null);
+    }
+
+    /**
+     * Sets an optional companion CardLayout Container for this ActionPanel.
+     * If set, you can add CardActions to this ActionPanel, or you can use the
+     * convenience methods that accept a cardId parameter.
+     * When a CardAction is triggered, the specified card will be shown in the CardLayout container.
+     * You can pass null to disassociate any existing container, but note that if you have
+     * any CardActions in this ActionPanel, you must remove them first, or you
+     * will get an IllegalStateException.
+     *
+     * @param container Any Container with a CardLayout, or null to disassociate an existing container.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setCardContainer(Container container) {
+        List<CardAction> cardActions = getCardActions();
+        if (container == null && !cardActions.isEmpty()) {
+            throw new IllegalStateException("Cannot set Card Container to null while Card Actions are present.");
+        }
+        if (container != null && !(container.getLayout() instanceof CardLayout)) {
+            throw new IllegalArgumentException("Card Container must use CardLayout.");
+        }
+
+        // Update any existing CardActions to point to the new container:
+        for (CardAction cardAction : cardActions) {
+            cardAction.setCardContainer(container);
+        }
+
+        // Accept and rebuild:
+        this.cardContainer = container;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Returns the companion CardLayout Container instance, if one is set.
+     *
+     * @return The CardLayout Container instance that is associated with this ActionPanel, or null if none is set.
+     */
+    public Container getCardContainer() {
+        return cardContainer;
     }
 
     /**
@@ -1362,6 +1472,23 @@ public class ActionPanel extends JPanel {
         for (ExpandListener listener : expandListeners) {
             listener.groupExpandedChanged(groupName, expanded);
         }
+    }
+
+    /**
+     * Invoked internally to return a flat list of all CardActions across all action groups.
+     *
+     * @return A list of all CardActions across all action groups. May be empty if there are no CardActions.
+     */
+    private List<CardAction> getCardActions() {
+        List<CardAction> cardActions = new ArrayList<>();
+        for (ActionGroup group : actionGroups) {
+            for (EnhancedAction action : group.getActions()) {
+                if (action instanceof CardAction) {
+                    cardActions.add((CardAction)action);
+                }
+            }
+        }
+        return cardActions;
     }
 
     /**

@@ -1,9 +1,9 @@
 package ca.corbett.extras.demo.panels;
 
-import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.TextInputDialog;
 import ca.corbett.extras.actionpanel.ActionPanel;
+import ca.corbett.extras.actionpanel.CardAction;
 import ca.corbett.extras.actionpanel.ExpandListener;
 import ca.corbett.extras.actionpanel.ToolBarOptions;
 import ca.corbett.extras.demo.DemoApp;
@@ -30,9 +30,9 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +77,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
 
     // We'll have an ActionPanel on the left and a content panel on the right:
     private ActionPanel actionPanel;
-    private final JPanel contentPanel = new JPanel(new BorderLayout());
+    private final JPanel cardPanel = new JPanel(new CardLayout());
 
     // And we'll use a map of action names to form panels for showing content:
     private final Map<String, FormPanel> panelMap = new HashMap<>();
@@ -129,10 +129,13 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         panelMap.put(TAB_MARGINS, buildMarginsPanel());
         panelMap.put(TAB_EXPAND, buildExpandCollapsePanel());
         panelMap.put(TAB_ANIMATION, buildAnimationPanel());
+        for (String key : panelMap.keySet()) {
+            cardPanel.add(PropertiesDialog.buildScrollPane(panelMap.get(key)), key);
+        }
 
-        // Start with the Welcome tab:
-        contentPanel.setBorder(BorderFactory.createLoweredBevelBorder());
-        contentPanel.add(PropertiesDialog.buildScrollPane(panelMap.get(TAB_INTRO)), BorderLayout.CENTER);
+        // Let's start with the Welcome tab visible:
+        cardPanel.setBorder(BorderFactory.createLoweredBevelBorder());
+        ((CardLayout)cardPanel.getLayout()).show(cardPanel, TAB_INTRO);
 
         // Just for fun, load some sound effects:
         try {
@@ -146,6 +149,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
             log.log(Level.SEVERE, "Could not load sound effects :(", e);
         }
 
+        // Register for L&F updates so we can keep our demo panels updated if the user changes L&F:
         LookAndFeelManager.addChangeListener(e -> {
             for (FormPanel fp : panelMap.values()) {
                 SwingUtilities.updateComponentTreeUI(fp);
@@ -171,13 +175,14 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
 
         // We'll use a PanelField to show the ActionPanel and the content panel side-by-side:
         actionPanel = new ActionPanel();
+        actionPanel.setCardContainer(cardPanel);
         actionPanel.getToolBarOptions().setAllowGroupRemoval(false); // disabled by default as we have no "undo" for it.
         configureToolBarAdd(true); // enabled by default to show off the feature
         populateActionPanel();
         PanelField exampleContainer = new PanelField(new BorderLayout());
         exampleContainer.setShouldExpand(true);
         exampleContainer.getPanel().add(actionPanel, BorderLayout.WEST);
-        exampleContainer.getPanel().add(contentPanel, BorderLayout.CENTER);
+        exampleContainer.getPanel().add(cardPanel, BorderLayout.CENTER);
         formPanel.add(exampleContainer);
 
         // Set initial styling options for the ActionPanel based on default field values:
@@ -265,17 +270,19 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
      * Adds some example actions to our action panel.
      */
     private void populateActionPanel() {
-        actionPanel.add("Welcome to ActionPanel!", new NavigationAction(TAB_INTRO));
-        actionPanel.add("Welcome to ActionPanel!", new NavigationAction(TAB_COMPONENTS));
-        actionPanel.add("Welcome to ActionPanel!", new NavigationAction(TAB_TOOLBAR));
-        actionPanel.add("Styling options", new NavigationAction(TAB_COLORS));
-        actionPanel.add("Styling options", new NavigationAction(TAB_FONTS));
-        actionPanel.add("Styling options", new NavigationAction(TAB_BORDERS));
-        actionPanel.add("Styling options", new NavigationAction(TAB_ICONS));
-        actionPanel.add("Layout options", new NavigationAction(TAB_MARGINS));
-        actionPanel.add("Layout options", new NavigationAction(TAB_SORTING));
-        actionPanel.add("Behavior options", new NavigationAction(TAB_EXPAND));
-        actionPanel.add("Behavior options", new NavigationAction(TAB_ANIMATION));
+        // Our action names double as cardIds for simplicity's sake,
+        // but in a real application, you can handle this however you like.
+        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_INTRO, TAB_INTRO));
+        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_COMPONENTS, TAB_COMPONENTS));
+        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_TOOLBAR, TAB_TOOLBAR));
+        actionPanel.add("Styling options", new CardAction(TAB_COLORS, TAB_COLORS));
+        actionPanel.add("Styling options", new CardAction(TAB_FONTS, TAB_FONTS));
+        actionPanel.add("Styling options", new CardAction(TAB_BORDERS, TAB_BORDERS));
+        actionPanel.add("Styling options", new CardAction(TAB_ICONS, TAB_ICONS));
+        actionPanel.add("Layout options", new CardAction(TAB_MARGINS, TAB_MARGINS));
+        actionPanel.add("Layout options", new CardAction(TAB_SORTING, TAB_SORTING));
+        actionPanel.add("Behavior options", new CardAction(TAB_EXPAND, TAB_EXPAND));
+        actionPanel.add("Behavior options", new CardAction(TAB_ANIMATION, TAB_ANIMATION));
 
         // Add header icons for demonstration:
         final int size = SwingFormsResources.NATIVE_SIZE;
@@ -799,7 +806,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 String actionName = dialog.getResult();
                 if (actionName != null) {
                     panelMap.put(actionName, buildExampleNewItemPanel(actionName));
-                    return new NavigationAction(actionName);
+                    cardPanel.add(PropertiesDialog.buildScrollPane(panelMap.get(actionName)), actionName);
+                    return new CardAction(actionName, actionName); // our actionName doubles as cardId
                 }
                 return null;
             });
@@ -825,43 +833,6 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         formPanel.add(new LabelField(label));
 
         return formPanel;
-    }
-
-    /**
-     * A very simple action implementation that looks up the content panel for whatever
-     * action was clicked, and populates the content panel with it.
-     */
-    private class NavigationAction extends EnhancedAction {
-
-        public NavigationAction(String name) {
-            super(name);
-            setIcon(SwingFormsResources.getCopyIcon(16));
-            // No tooltip for this demo
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String actionName = e.getActionCommand() == null ? "" : e.getActionCommand();
-            contentPanel.removeAll();
-            FormPanel panel = panelMap.get(actionName);
-            if (panel == null) {
-                panel = getErrorPanel();
-            }
-            contentPanel.add(PropertiesDialog.buildScrollPane(panel), BorderLayout.CENTER);
-            contentPanel.revalidate();
-            contentPanel.repaint();
-        }
-
-        /**
-         * Hopefully this is never needed, but just in case...
-         */
-        private FormPanel getErrorPanel() {
-            FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
-            formPanel.setBorderMargin(8);
-            formPanel.add(LabelField.createBoldHeaderLabel("Oops! Something went wrong."));
-            formPanel.add(new LabelField("There is no content available for this action."));
-            return formPanel;
-        }
     }
 
     /**
