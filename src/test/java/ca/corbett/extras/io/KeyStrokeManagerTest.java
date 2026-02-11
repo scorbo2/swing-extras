@@ -699,7 +699,7 @@ class KeyStrokeManagerTest {
             // No-op for testing
         };
 
-        // WHEN we register it to a keystroke using the ActionListener convenience method that accepts a KeyStroke:
+        // WHEN we register it to a keystroke using the KeyAction convenience method that accepts a KeyStroke:
         keyManager.registerHandler(KeyStrokeManager.parseKeyStroke("ctrl+L"), keyAction);
 
         // THEN it should be registered correctly:
@@ -734,6 +734,10 @@ class KeyStrokeManagerTest {
 
         // THEN it should be unregistered correctly:
         assertTrue(keyManager.getActionsForKeyStroke("ctrl+u").isEmpty(), "Should have no handlers after unregister");
+
+        // AND its accelerator should be cleared:
+        assertNull(actions.get(0).getValue(Action.ACCELERATOR_KEY),
+                   "Action accelerator should be cleared after unregister");
     }
 
     @Test
@@ -763,6 +767,11 @@ class KeyStrokeManagerTest {
 
         // THEN all actions should have been removed:
         assertTrue(keyManager.getActionsForKeyStroke("shift+a").isEmpty(), "Should have no handlers after unregister");
+
+        // AND their accelerators should be cleared:
+        assertNull(action1.getValue(Action.ACCELERATOR_KEY), "Action1 accelerator should be cleared after unregister");
+        assertNull(action2.getValue(Action.ACCELERATOR_KEY), "Action2 accelerator should be cleared after unregister");
+        assertNull(action3.getValue(Action.ACCELERATOR_KEY), "Action3 accelerator should be cleared after unregister");
     }
 
     /**
