@@ -273,8 +273,8 @@ class ActionPanelTest {
         EnhancedAction action = group.getActions().get(0);
         assertTrue(action instanceof CardAction, "Action should be a CardAction");
         assertEquals("Show Card 1", action.getValue(EnhancedAction.NAME), "Action name should match");
-        assertEquals(cardContainer, ((CardAction)action).cardContainer,
-                     "CardAction should be associated with the card container");
+        assertSame(cardContainer, ((CardAction)action).cardContainer,
+                "CardAction should be associated with the card container");
     }
 
     @Test
