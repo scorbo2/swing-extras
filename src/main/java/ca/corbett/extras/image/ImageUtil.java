@@ -692,4 +692,31 @@ public class ImageUtil {
             return "Image files (png, jpg, bmp, gif)";
         }
     }
+
+    /**
+     * Saves the specified BufferedImage to the specified file in PNG format.
+     * PNG is a lossless format that supports transparency, making it ideal for graphics,
+     * screenshots, and images that require an alpha channel.
+     *
+     * @param image The BufferedImage to save.
+     * @param file  The File to which to save.
+     * @throws IOException If the image could not be saved or if no PNG writer is available.
+     */
+    public static void savePngImage(final BufferedImage image, final File file) throws IOException {
+        Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName("png");
+        ImageWriter imageWriter = null;
+        if (iter.hasNext()) {
+            imageWriter = iter.next();
+        }
+
+        if (imageWriter == null) {
+            throw new IOException("Unable to find PNG writer on this system.");
+        }
+
+        try {
+            saveImage(image, file, imageWriter, null);
+        } finally {
+            imageWriter.dispose();
+        }
+    }
 }
