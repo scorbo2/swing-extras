@@ -278,14 +278,14 @@ public class ColorOptions extends ActionPanelOptions {
             int r = Math.max(0, baseColor.getRed() - 30);
             int g = Math.max(0, baseColor.getGreen() - 30);
             int b = Math.max(0, baseColor.getBlue() - 30);
-            return new Color(r, g, b);
+            return new Color(r, g, b, baseColor.getAlpha());
         }
 
         // Otherwise, we'll lighten it:
         int r = Math.min(255, baseColor.getRed() + 30);
         int g = Math.min(255, baseColor.getGreen() + 30);
         int b = Math.min(255, baseColor.getBlue() + 30);
-        return new Color(r, g, b);
+        return new Color(r, g, b, baseColor.getAlpha());
     }
 
 }
