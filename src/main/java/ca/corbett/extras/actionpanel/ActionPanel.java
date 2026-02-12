@@ -123,6 +123,8 @@ public class ActionPanel extends JPanel {
 
     private final List<ExpandListener> expandListeners = new CopyOnWriteArrayList<>();
     private final List<ActionGroup> actionGroups;
+    private EnhancedAction highlightedAction;
+    private boolean highlightLastAction;
     private Comparator<String> groupComparator;
     private Comparator<EnhancedAction> actionComparator;
     private ActionComponentType componentType;
@@ -151,6 +153,8 @@ public class ActionPanel extends JPanel {
         this.actionGroups = new ArrayList<>();
         this.groupComparator = null; // Default to add order
         this.actionComparator = null; // Default to add order
+        this.highlightedAction = null;
+        this.highlightLastAction = false;
         this.componentType = ActionComponentType.LABELS;
         this.cardContainer = null;
         this.actionFont = null; // Use L&F default
@@ -335,6 +339,58 @@ public class ActionPanel extends JPanel {
      */
     public Container getCardContainer() {
         return cardContainer;
+    }
+
+    /**
+     * Returns true if the given action is currently highlighted.
+     *
+     * @param action The action to check.
+     * @return True if the action is highlighted, false otherwise.
+     */
+    public boolean isHighlightedAction(EnhancedAction action) {
+        if (!highlightLastAction) {
+            return false; // no action is highlighted if the feature is disabled
+        }
+        return action == highlightedAction;
+    }
+
+    /**
+     * Sets the specified action as the currently highlighted action.
+     * Only one action can be highlighted at a time. Pass null to clear any highlighted action.
+     *
+     * @param action The action to highlight, or null to clear the highlighted action.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setHighlightedAction(EnhancedAction action) {
+        this.highlightedAction = action;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Reports whether the last action to be executed in this ActionPanel should be
+     * visually highlighted. The default is false.
+     *
+     * @return True if the last action is highlighted, false otherwise.
+     */
+    public boolean isHighlightLastActionEnabled() {
+        return highlightLastAction;
+    }
+
+    /**
+     * Enables or disables highlighting of the last action to be executed in this ActionPanel.
+     * The default is false.
+     *
+     * @param highlightLastAction True to enable highlighting of the last action, false to disable it.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setHighlightLastActionEnabled(boolean highlightLastAction) {
+        this.highlightLastAction = highlightLastAction;
+        if (!highlightLastAction) {
+            this.highlightedAction = null; // clear any highlighted action
+        }
+        rebuild();
+        return this;
     }
 
     /**
@@ -1363,6 +1419,12 @@ public class ActionPanel extends JPanel {
         ActionGroup newGroup = new ActionGroup(groupName);
         newGroup.setComparator(actionComparator); // let new groups know about our action comparator
         actionGroups.add(newGroup);
+
+        // If a group comparator is set, we need to re-sort the groups after adding the new one:
+        if (groupComparator != null) {
+            actionGroups.sort((g1, g2) -> groupComparator.compare(g1.getName(), g2.getName()));
+        }
+
         return newGroup;
     }
 
