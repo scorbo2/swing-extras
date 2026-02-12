@@ -5,6 +5,7 @@ import ca.corbett.extras.TextInputDialog;
 import ca.corbett.extras.actionpanel.ActionPanel;
 import ca.corbett.extras.actionpanel.CardAction;
 import ca.corbett.extras.actionpanel.ColorTheme;
+import ca.corbett.extras.actionpanel.ExpandCollapseOptions;
 import ca.corbett.extras.actionpanel.ExpandListener;
 import ca.corbett.extras.actionpanel.ToolBarOptions;
 import ca.corbett.extras.demo.DemoApp;
@@ -128,6 +129,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private FontField actionFontField;
 
     public ActionPanelDemoPanel() {
+        actionPanel = new ActionPanel(); // We need this before we try to build our content panels
         panelMap.put(TAB_INTRO, buildIntroPanel());
         panelMap.put(TAB_COMPONENTS, buildComponentTypePanel());
         panelMap.put(TAB_TOOLBAR, buildToolBarOptionsPanel());
@@ -184,7 +186,6 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         formPanel.add(labelField);
 
         // We'll use a PanelField to show the ActionPanel and the content panel side-by-side:
-        actionPanel = new ActionPanel();
         actionPanel.setCardContainer(cardPanel);
         actionPanel.getToolBarOptions().setAllowGroupRemoval(false); // disabled by default as we have no "undo" for it.
         configureToolBarAdd(true); // enabled by default to show off the feature
@@ -751,14 +752,15 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 """;
         formPanel.add(new LabelField(label));
 
+        final ExpandCollapseOptions options = actionPanel.getExpandCollapseOptions();
         CheckBoxField allowCollapseField = new CheckBoxField("Allow groups to be collapsed", true);
-        allowCollapseField.addValueChangedListener(f -> actionPanel.setExpandable(allowCollapseField.isChecked()));
+        allowCollapseField.addValueChangedListener(f -> options.setExpandable(allowCollapseField.isChecked()));
         formPanel.add(allowCollapseField);
 
         CheckBoxField allowDoubleClickField = new CheckBoxField(
                 "Allow double-click on header to toggle expand/collapse", false);
         allowDoubleClickField.addValueChangedListener(
-                f -> actionPanel.setAllowHeaderDoubleClick(allowDoubleClickField.isChecked()));
+                f -> options.setAllowHeaderDoubleClick(allowDoubleClickField.isChecked()));
         formPanel.add(allowDoubleClickField);
 
         return formPanel;
@@ -783,20 +785,21 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                                        "Medium animation",
                                        "Fast animation");
         animationField = new ComboField<>("Expand/collapse animation:", options, 2);
+        ExpandCollapseOptions expandOptions = actionPanel.getExpandCollapseOptions();
         animationField.addValueChangedListener(f -> {
             switch (animationField.getSelectedIndex()) {
-                case 0 -> actionPanel.setAnimationEnabled(false);
+                case 0 -> expandOptions.setAnimationEnabled(false);
                 case 1 -> {
-                    actionPanel.setAnimationEnabled(true);
-                    actionPanel.setAnimationDurationMs(600);
+                    expandOptions.setAnimationEnabled(true);
+                    expandOptions.setAnimationDurationMs(600);
                 }
                 case 2 -> {
-                    actionPanel.setAnimationEnabled(true);
-                    actionPanel.setAnimationDurationMs(200);
+                    expandOptions.setAnimationEnabled(true);
+                    expandOptions.setAnimationDurationMs(200);
                 }
                 case 3 -> {
-                    actionPanel.setAnimationEnabled(true);
-                    actionPanel.setAnimationDurationMs(100);
+                    expandOptions.setAnimationEnabled(true);
+                    expandOptions.setAnimationDurationMs(100);
                 }
             }
         });

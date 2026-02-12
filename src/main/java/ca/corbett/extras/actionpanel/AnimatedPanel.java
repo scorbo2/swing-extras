@@ -110,7 +110,7 @@ class AnimatedPanel extends JPanel {
         final int heightDifference = targetHeight - startHeight;
         final long startTime = System.currentTimeMillis();
 
-        animationTimer = new Timer(ActionPanel.ANIMATION_FRAME_DELAY_MS, e -> {
+        animationTimer = new Timer(ExpandCollapseOptions.ANIMATION_FRAME_DELAY_MS, e -> {
             long elapsed = System.currentTimeMillis() - startTime;
             double progress = Math.min(1.0, (double)elapsed / durationMs);
 

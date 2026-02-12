@@ -28,10 +28,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ActionPanelTest {
 
     private ActionPanel actionPanel;
+    private ExpandCollapseOptions options;
 
     @BeforeEach
     void setUp() {
         actionPanel = new ActionPanel();
+        options = actionPanel.getExpandCollapseOptions();
     }
 
     /**
@@ -48,36 +50,36 @@ class ActionPanelTest {
 
     @Test
     void testDefaultAnimationEnabled() {
-        assertTrue(actionPanel.isAnimationEnabled(), "Animation should be enabled by default");
+        assertTrue(options.isAnimationEnabled(), "Animation should be enabled by default");
     }
 
     @Test
     void testDefaultAnimationDuration() {
-        assertEquals(ActionPanel.DEFAULT_ANIMATION_DURATION_MS, actionPanel.getAnimationDurationMs(),
+        assertEquals(ExpandCollapseOptions.DEFAULT_ANIMATION_DURATION_MS, options.getAnimationDurationMs(),
                      "Default animation duration should be 200ms");
     }
 
     @Test
     void testSetAnimationEnabled() {
-        actionPanel.setAnimationEnabled(false);
-        assertFalse(actionPanel.isAnimationEnabled(), "Animation should be disabled");
+        options.setAnimationEnabled(false);
+        assertFalse(options.isAnimationEnabled(), "Animation should be disabled");
 
-        actionPanel.setAnimationEnabled(true);
-        assertTrue(actionPanel.isAnimationEnabled(), "Animation should be enabled");
+        options.setAnimationEnabled(true);
+        assertTrue(options.isAnimationEnabled(), "Animation should be enabled");
     }
 
     @Test
     void testSetAnimationDuration() {
-        actionPanel.setAnimationDurationMs(500);
-        assertEquals(500, actionPanel.getAnimationDurationMs(), "Animation duration should be 500ms");
+        options.setAnimationDurationMs(500);
+        assertEquals(500, options.getAnimationDurationMs(), "Animation duration should be 500ms");
     }
 
     @Test
     void testSetAnimationDurationThrowsExceptionForInvalidValue() {
-        assertThrows(IllegalArgumentException.class, () -> actionPanel.setAnimationDurationMs(0),
+        assertThrows(IllegalArgumentException.class, () -> options.setAnimationDurationMs(0),
                      "Should throw exception for duration of 0");
 
-        assertThrows(IllegalArgumentException.class, () -> actionPanel.setAnimationDurationMs(-100),
+        assertThrows(IllegalArgumentException.class, () -> options.setAnimationDurationMs(-100),
                      "Should throw exception for negative duration");
     }
 
@@ -105,16 +107,16 @@ class ActionPanelTest {
 
     @Test
     void testMethodChaining() {
+        options.setAnimationEnabled(false);
+        options.setAnimationDurationMs(300);
         ActionPanel result = actionPanel
-                .setAnimationEnabled(false)
-                .setAnimationDurationMs(300)
                 .setUseButtons()
                 .setHeaderInternalPadding(5)
                 .setExternalPadding(10);
 
         assertSame(actionPanel, result, "Methods should return the same ActionPanel instance for chaining");
-        assertFalse(actionPanel.isAnimationEnabled(), "Animation should be disabled");
-        assertEquals(300, actionPanel.getAnimationDurationMs(), "Duration should be 300ms");
+        assertFalse(options.isAnimationEnabled(), "Animation should be disabled");
+        assertEquals(300, options.getAnimationDurationMs(), "Duration should be 300ms");
     }
 
     @Test
@@ -127,7 +129,7 @@ class ActionPanelTest {
                 frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
                 ActionPanel panel = new ActionPanel();
-                panel.setAnimationEnabled(false); // Disable animation
+                panel.getExpandCollapseOptions().setAnimationEnabled(false); // Disable animation
                 panel.add("Test Group", createTestAction("Action 1"));
 
                 frame.add(panel);

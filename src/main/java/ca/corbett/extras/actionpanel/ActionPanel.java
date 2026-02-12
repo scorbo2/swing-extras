@@ -131,8 +131,6 @@ public class ActionPanel extends JPanel {
     public static final int DEFAULT_ICON_SIZE = 16;
     public static final int DEFAULT_INTERNAL_PADDING = 2;
     public static final int DEFAULT_EXTERNAL_PADDING = 8;
-    public static final int DEFAULT_ANIMATION_DURATION_MS = 200;
-    public static final int ANIMATION_FRAME_DELAY_MS = 10;
 
     private final List<ExpandListener> expandListeners = new CopyOnWriteArrayList<>();
     private final List<ActionGroup> actionGroups;
@@ -151,10 +149,6 @@ public class ActionPanel extends JPanel {
     private int actionIndent;
     private boolean showActionIcons;
     private boolean showGroupIcons;
-    private int animationDurationMs;
-    private boolean animationEnabled;
-    private boolean allowHeaderDoubleClick;
-    private boolean allowExpandCollapse;
     private ImageIcon expandIcon;
     private ImageIcon collapseIcon;
     private int headerIconSize;
@@ -162,6 +156,7 @@ public class ActionPanel extends JPanel {
     private boolean isToolBarEnabled;
     private final ColorOptions colorOptions;
     private final ToolBarOptions toolBarOptions;
+    private final ExpandCollapseOptions expandCollapseOptions;
     private boolean autoRebuildEnabled;
 
     public ActionPanel() {
@@ -181,10 +176,6 @@ public class ActionPanel extends JPanel {
         this.actionIndent = 0; // no indent by default
         this.showActionIcons = true; // visible by default (if the action has an icon set)
         this.showGroupIcons = true; // visible by default (if the group has an icon set)
-        this.animationDurationMs = DEFAULT_ANIMATION_DURATION_MS;
-        this.animationEnabled = true; // enabled by default
-        this.allowHeaderDoubleClick = false; // disabled by default
-        this.allowExpandCollapse = true; // why would you ever disable it? :)
         this.expandIcon = SwingFormsResources.getPlusIcon(DEFAULT_ICON_SIZE);
         this.collapseIcon = SwingFormsResources.getMinusIcon(DEFAULT_ICON_SIZE);
         this.headerIconSize = DEFAULT_ICON_SIZE;
@@ -196,6 +187,8 @@ public class ActionPanel extends JPanel {
         this.toolBarOptions.addListener(() -> { // rebuild when our toolbar changes
             if (isToolBarEnabled) { rebuild(); } // but only if the toolbar is enabled
         });
+        this.expandCollapseOptions = new ExpandCollapseOptions(this); // moved to its own class to reduce clutter here
+        this.expandCollapseOptions.addListener(this::rebuild);
         this.autoRebuildEnabled = true;
     }
 
@@ -818,6 +811,18 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Options related to group expansion/collapse are accessed via the ExpandCollapseOptions class.
+     * Developer note: yeah, they could all live here in this class, but this class
+     * is already unreasonably large, and there are many options related to expansion and
+     * collapse, so they were all moved over there.
+     *
+     * @return The ExpandCollapseOptions instance containing options related to expansion and collapse.
+     */
+    public ExpandCollapseOptions getExpandCollapseOptions() {
+        return expandCollapseOptions;
+    }
+
+    /**
      * We have to override this because we use a wrapper panel internally to manage
      * our BoxLayout, so we need to store the background color and apply it to
      * the wrapper panel during rebuild(). This is not at all obvious to callers,
@@ -991,38 +996,6 @@ public class ActionPanel extends JPanel {
     }
 
     /**
-     * Allows or disallows the user to expand/collapse action groups.
-     * By default, this is allowed. Note that programmatic expand/collapse
-     * via setExpanded() is always allowed regardless of this setting.
-     *
-     * @param allow True to allow expand/collapse, false to disallow.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setExpandable(boolean allow) {
-        this.allowExpandCollapse = allow;
-
-        // Force-expand any currently collapsed groups if we're disallowing expand/collapse,
-        // to avoid leaving the user with no way to see the contents of those groups.
-        if (!allow) {
-            for (ActionGroup group : actionGroups) {
-                group.setExpanded(true);
-            }
-        }
-
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Reports whether the user is allowed to expand/collapse action groups.
-     *
-     * @return True if expand/collapse is allowed, false otherwise.
-     */
-    public boolean isExpandable() {
-        return allowExpandCollapse;
-    }
-
-    /**
      * Sets the size (width and height) at which header icons are rendered.
      * The default is 16 pixels. Icons will be scaled as needed.
      *
@@ -1118,30 +1091,6 @@ public class ActionPanel extends JPanel {
      */
     public ImageIcon getCollapseIcon() {
         return collapseIcon;
-    }
-
-    /**
-     * Allows or disallows double-clicking on the group header label
-     * to toggle the expanded/collapsed state of the group.
-     * By default, this is disabled.
-     *
-     * @param allow True to allow double-clicking on the header to toggle expand/collapse.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setAllowHeaderDoubleClick(boolean allow) {
-        this.allowHeaderDoubleClick = allow;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Reports whether double-clicking on the group header label
-     * is allowed to toggle the expanded/collapsed state of the group.
-     *
-     * @return True if double-clicking on the header toggles expand/collapse, false otherwise.
-     */
-    public boolean isAllowHeaderDoubleClick() {
-        return allowHeaderDoubleClick;
     }
 
     /**
@@ -1288,53 +1237,6 @@ public class ActionPanel extends JPanel {
         group.setExpanded(!group.isExpanded());
         rebuild(); // set instantly - no animation for programmatic changes
         fireExpandEvent(groupName, group.isExpanded());
-        return this;
-    }
-
-    /**
-     * Returns whether animation is enabled for expand/collapse operations.
-     *
-     * @return True if animation is enabled, false otherwise.
-     */
-    public boolean isAnimationEnabled() {
-        return animationEnabled;
-    }
-
-    /**
-     * Sets whether animation is enabled for expand/collapse operations.
-     * When disabled, groups will expand and collapse instantaneously.
-     *
-     * @param animationEnabled True to enable animation, false to disable it.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setAnimationEnabled(boolean animationEnabled) {
-        this.animationEnabled = animationEnabled;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the duration of the expand/collapse animation in milliseconds.
-     *
-     * @return The animation duration in milliseconds.
-     */
-    public int getAnimationDurationMs() {
-        return animationDurationMs;
-    }
-
-    /**
-     * Sets the duration of the expand/collapse animation in milliseconds.
-     * The default is 200ms. A longer duration will result in a slower animation.
-     *
-     * @param animationDurationMs The animation duration in milliseconds. Must be greater than 0.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setAnimationDurationMs(int animationDurationMs) {
-        if (animationDurationMs <= 0) {
-            throw new IllegalArgumentException("Animation duration must be greater than 0.");
-        }
-        this.animationDurationMs = animationDurationMs;
-        rebuild(); // do we seriously need to rebuild for this?
         return this;
     }
 
