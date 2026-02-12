@@ -44,7 +44,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>
  * Group names are case-insensitive; adding an action to group "File" is the same
  * as adding it to group "file" or "FILE". Group headers will be displayed using
- * the name as first specified when adding an action.
+ * the name as first specified when adding an action. Groups can be renamed
+ * using <code>setGroupName(String oldName, String newName)</code>, which does allow
+ * you to change the case of a group.
  * </p>
  * <p>
  * <b>Customizing action groups</b> - you can associate an icon with an action group,
@@ -72,11 +74,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <li><b>Icons</b> - if your actions have icons, they will be displayed next to the action name by default.
  *    You can disable this by calling setShowActionIcons(false). Group headers can also have icons,
  *    which can be set using setGroupIcon(). You can disable group icons with setShowGroupIcons(false).</li>
- * <li><b>Colors</b> - use <code>setActionForeground()</code>, <code>setActionBackground()</code>,
- *    <code>setGroupHeaderForeground()</code>, and <code>setGroupHeaderBackground()</code> to set foreground
- *    and background colors for actions and group headers, respectively. The ActionPanel itself also has
- *    a background color, visible if externalPadding is set to a non-zero value. The background color
- *    can be set using <code>setBackground()</code> inherited from JPanel.</li>
+ * <li><b>Colors</b> - all colors are highly customizable. These options are found in the ColorOptions
+ *    class, which you can access with getColorOptions(). Refer to ColorOptions class for more details.</li>
  * <li><b>Borders</b> - use <code>setGroupBorder()</code> to set a border around action groups.
  *    The default is no border. Use <code>setGroupHeaderBorder()</code> to set a border
  *    around the group header. The default is no border.</li>
@@ -111,6 +110,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *    Note that programmatically calling setExpanded() will always expand/collapse instantly, without animation.</li>
  * </ul>
  * <p>
+ *     <b>Toolbars</b> - call setToolBarEnabled(true) to show a toolbar with each action group.
+ *     The toolbar is highly configurable! There are built-in actions that allow you to support
+ *     adding new actions to a group, renaming a group, reordering or removing items in a group,
+ *     or removing groups. You can also supply custom actions to be displayed in the toolbar.
+ *     Refer to ToolBarOptions for details on how to customize the toolbar and the actions it contains.
+ *     Access the ToolBarOptions with getToolBarOptions().
+ * </p>
+ * <p>
  * For a complete working example of ActionPanel with all customization options, refer to the
  * demo application included with swing-extras! For more documentation and code examples,
  * refer to the <a href="https://www.corbett.ca/swing-extras-book/">swing-extras book</a>.
@@ -142,11 +149,6 @@ public class ActionPanel extends JPanel {
     private int toolBarInternalPadding;
     private int externalPadding;
     private int actionIndent;
-    private Color panelBackground;
-    private Color actionBackground;
-    private Color actionForeground;
-    private Color groupHeaderBackground;
-    private Color groupHeaderForeground;
     private boolean showActionIcons;
     private boolean showGroupIcons;
     private int animationDurationMs;
@@ -158,7 +160,9 @@ public class ActionPanel extends JPanel {
     private int headerIconSize;
     private int actionIconSize;
     private boolean isToolBarEnabled;
+    private final ColorOptions colorOptions;
     private final ToolBarOptions toolBarOptions;
+    private boolean autoRebuildEnabled;
 
     public ActionPanel() {
         this.actionGroups = new ArrayList<>();
@@ -170,11 +174,6 @@ public class ActionPanel extends JPanel {
         this.groupHeaderBorder = null;
         this.actionFont = null; // Use L&F default
         this.groupHeaderFont = null; // Use L&F default
-        this.panelBackground = null; // Use L&F default
-        this.actionForeground = null; // Use L&F default
-        this.actionBackground = null; // Use L&F default
-        this.groupHeaderForeground = null; // Use L&F default
-        this.groupHeaderBackground = null; // Use L&F default
         this.headerInternalPadding = DEFAULT_INTERNAL_PADDING;
         this.actionInternalPadding = DEFAULT_INTERNAL_PADDING;
         this.toolBarInternalPadding = DEFAULT_INTERNAL_PADDING;
@@ -191,10 +190,13 @@ public class ActionPanel extends JPanel {
         this.headerIconSize = DEFAULT_ICON_SIZE;
         this.actionIconSize = DEFAULT_ICON_SIZE;
         this.isToolBarEnabled = false; // hide the ToolBar by default.
+        this.colorOptions = new ColorOptions(); // moved to its own class to reduce clutter here
         this.toolBarOptions = new ToolBarOptions(); // moved to its own class to reduce clutter here
+        this.colorOptions.addListener(this::rebuild); // rebuild when our colors change
         this.toolBarOptions.addListener(() -> { // rebuild when our toolbar changes
-            if (isToolBarEnabled) { rebuild(); }
+            if (isToolBarEnabled) { rebuild(); } // but only if the toolbar is enabled
         });
+        this.autoRebuildEnabled = true;
     }
 
     /**
@@ -801,134 +803,65 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Options related to custom colors are accessed via the ColorOptions class.
+     * Developer note: yeah, they could all live here in this class, but this class
+     * is already unreasonably large, and there are many options related to color
+     * customization, so they were all moved over there. The only first-class color-related
+     * methods still in ActionPanel are setBackground() and getBackground(), which are
+     * overridden for internal reasons. All other color options are accessed via the
+     * ColorOptions instance returned by this method.
+     *
+     * @return The ColorOptions instance containing options related to color customization.
+     */
+    public ColorOptions getColorOptions() {
+        return colorOptions;
+    }
+
+    /**
      * We have to override this because we use a wrapper panel internally to manage
      * our BoxLayout, so we need to store the background color and apply it to
-     * the wrapper panel during rebuild(). Setting null here will revert to the
-     * Look and Feel default background color.
+     * the wrapper panel during rebuild(). This is not at all obvious to callers,
+     * who may reasonably expect to be able to do actionPanel.setBackground().
+     * So, we intercept it and do the right thing behind the scenes. All of our other
+     * color options are stored in our ColorOptions instance.
+     * <p>
+     *     Setting null here will revert to the Look and Feel default background color.
+     * </p>
      *
      * @param bg the desired background <code>Color</code>
      */
     @Override
     public void setBackground(Color bg) {
-        panelBackground = bg;
-
-        // If it's null, talk to our Look and Feel manager to get the default background color:
-        if (panelBackground == null) {
-            panelBackground = LookAndFeelManager.getLafColor("Panel.background", Color.LIGHT_GRAY);
+        // This can somehow get invoked before we are fully instantiated, in which
+        // case our colorOptions is null. In that case, just ignore the call to avoid an NPE.
+        if (colorOptions == null) {
+            return;
         }
 
-        rebuild();
+        // If it's null, talk to our Look and Feel manager to get the default background color:
+        Color newColor = bg == null ? LookAndFeelManager.getLafColor("Panel.background", Color.LIGHT_GRAY) : bg;
+        colorOptions.setPanelBackground(newColor); // will fire an optionsChanged and we will rebuild.
     }
 
     /**
      * We override to return our own stored background color. If null was passed to
      * setBackground(), this will return the Look and Feel default Panel background color.
      *
-     * @return the background <code>Color</code>
+     * @return the background <code>Color</code> of the ActionPanel itself.
      */
     @Override
     public Color getBackground() {
-        return panelBackground;
-    }
+        // This can somehow get invoked before we are fully instantiated, in which
+        // case our colorOptions is null. In that case, just return null to avoid a NullPointerException.
+        if (colorOptions == null) {
+            return null;
+        }
 
-    /**
-     * Sets the foreground color for action items. If useLabels is true, this is the text
-     * color; if useButtons is true, this is the button foreground color. This overrides
-     * the Look and Feel default color. You can pass null to revert to the L&F default.
-     *
-     * @param color The foreground color, or null to use the L&F default.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setActionForeground(Color color) {
-        actionForeground = color;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the foreground color for action items. May be null if Look and Feel defaults
-     * are in use.
-     *
-     * @return The action foreground color, or null if L&F default is in use.
-     */
-    public Color getActionForeground() {
-        return actionForeground;
-    }
-
-    /**
-     * Sets the background color for action items. This is the color that is shown
-     * in the action area, behind the labels or buttons. Our labels are transparent,
-     * but our buttons are not. So, if useLabels is false, this color will only be
-     * visible in the padding areas around the buttons. It is not currently an option
-     * to change the button background color itself.
-     * <p>
-     * This overrides the Look and Feel default color.
-     * You can pass null to revert to the L&F default.
-     * </p>
-     *
-     * @param color The background color, or null to use the L&F default.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setActionBackground(Color color) {
-        actionBackground = color;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the background color for action items. May be null if Look and Feel defaults
-     * are in use.
-     *
-     * @return The action background color, or null if L&F default is in use.
-     */
-    public Color getActionBackground() {
-        return actionBackground;
-    }
-
-    /**
-     * Sets the foreground color for group headers. This overrides the
-     * Look and Feel default color. You can pass null to revert to the L&F default.
-     *
-     * @param color The foreground color, or null to use the L&F default.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setGroupHeaderForeground(Color color) {
-        groupHeaderForeground = color;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the foreground color for group headers. May be null if Look and Feel defaults
-     * are in use.
-     *
-     * @return The group header foreground color, or null if L&F default is in use.
-     */
-    public Color getGroupHeaderForeground() {
-        return groupHeaderForeground;
-    }
-
-    /**
-     * Sets the background color for group headers. This overrides the
-     * Look and Feel default color. You can pass null to revert to the L&F default.
-     *
-     * @param color The background color, or null to use the L&F default.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setGroupHeaderBackground(Color color) {
-        groupHeaderBackground = color;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the background color for group headers. May be null if Look and Feel defaults
-     * are in use.
-     *
-     * @return The group header background color, or null if L&F default is in use.
-     */
-    public Color getGroupHeaderBackground() {
-        return groupHeaderBackground;
+        // It's possible our value is set to null, meaning we want to use the Look and Feel default background
+        // color. In that case, ask our Look and Feel manager for the default Panel background color:
+        return colorOptions.getPanelBackground() == null
+                ? LookAndFeelManager.getLafColor("Panel.background", Color.LIGHT_GRAY)
+                : colorOptions.getPanelBackground();
     }
 
     /**
@@ -1445,6 +1378,42 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Normally, ActionPanel will automatically rebuild itself whenever any option
+     * is modified. If you have multiple successive changes to make, and want to spare
+     * the thrashing of multiple rebuilds, you can disable auto-rebuild,
+     * make your changes, then re-enable auto-rebuild. Invoking setAutoRebuildEnabled(true)
+     * will immediately trigger a rebuild if auto-rebuild was previously disabled.
+     *
+     * @param enabled True to enable auto-rebuild, false to disable it.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setAutoRebuildEnabled(boolean enabled) {
+        // Do nothing if it's a no-op:
+        if (this.autoRebuildEnabled == enabled) {
+            return this;
+        }
+
+        // Accept the new value and rebuild immediately if enabling:
+        this.autoRebuildEnabled = enabled;
+        if (enabled) {
+            rebuild();
+        }
+        return this;
+    }
+
+    /**
+     * Reports whether auto-rebuild is enabled. When enabled, ActionPanel
+     * will automatically rebuild itself whenever any option is modified.
+     * When disabled, ActionPanel will not rebuild itself until
+     * setAutoRebuildEnabled(true) is invoked.
+     *
+     * @return True if auto-rebuild is enabled, false otherwise.
+     */
+    public boolean isAutoRebuildEnabled() {
+        return autoRebuildEnabled;
+    }
+
+    /**
      * You can listen for group expand/collapse events by adding an ExpandListener.
      */
     public ActionPanel addExpandListener(ExpandListener listener) {
@@ -1546,6 +1515,11 @@ public class ActionPanel extends JPanel {
      * all action groups based on current configuration.
      */
     void rebuild() {
+        // Do nothing if auto-rebuild is disabled:
+        if (!autoRebuildEnabled) {
+            return;
+        }
+
         // Clear existing components
         removeAll();
 
@@ -1574,8 +1548,8 @@ public class ActionPanel extends JPanel {
         wrapperPanel.add(Box.createVerticalGlue());
 
         // Apply panel background if set:
-        if (panelBackground != null) {
-            wrapperPanel.setBackground(panelBackground);
+        if (colorOptions.getPanelBackground() != null) {
+            wrapperPanel.setBackground(colorOptions.getPanelBackground());
             wrapperPanel.setOpaque(true);
         }
 
