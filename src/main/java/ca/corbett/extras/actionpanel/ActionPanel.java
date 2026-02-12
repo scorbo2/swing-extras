@@ -75,9 +75,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *    which can be set using setGroupIcon(). You can disable group icons with setShowGroupIcons(false).</li>
  * <li><b>Colors</b> - all colors are highly customizable. These options are found in the ColorOptions
  *    class, which you can access with getColorOptions(). Refer to ColorOptions class for more details.</li>
- * <li><b>Borders</b> - use <code>setGroupBorder()</code> to set a border around action groups.
- *    The default is no border. Use <code>setGroupHeaderBorder()</code> to set a border
- *    around the group header. The default is no border.</li>
+ * <li><b>Borders</b> - all borders are highly customizable. These options are found in the BorderOptions
+ *    class, which you can access with getBorderOptions().Refer to BorderOptions class for more details.</li>
  * <li><b>Spacing</b> - you can control the spacing both within and around action groups:
  *    use <code>setInternalPadding()</code> to control the space between actions and the
  *    edges of the ActionPanel, and also between the actions themselves.
@@ -85,14 +84,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *    space between action groups and the edge of the ActionPanel.</li>
  * <li><b>Expand/collapse state</b> - the user can expand or collapse action groups by clicking
  *    the button in the group header. All action groups are expanded initially by default.
- *    You can programmatically expand or collapse groups by calling
- *    <code>setExpanded(String groupName, boolean expanded)</code> on the desired action group.
- *    You can optionally allow double-clicking on the group header label to also toggle
- *    the expanded/collapsed state, by calling <code>setAllowHeaderDoubleClick(true)</code>.
- *    This is disabled by default. You can disable user expand/collapse entirely by calling
- *    <code>setExpandable(false)</code> on the desired action group. This will "lock" all groups
- *    into the expanded state, and will remove the expand/collapse button. By default, expand/collapse is allowed.
- *    Note that programmatic expand/collapse is still allowed even if user expand/collapse is disabled.
+ *    Options related to group expansion and collapse are found in the ExpandCollapseOptions class,
+ *    which you can access with getExpandCollapseOptions().
+ *    Refer to the ExpandCollapseOptions class for more details on how to customize expand/collapse
+ *    behavior and animation.
  *    You can listen for expand/collapse events with <code>addExpandListener(ExpandListener listener)</code>.</li>
  * <li><b>Expand/collapse button icons</b> - by default, ActionPanel supplies built-in icons for use with
  *    the expand/collapse button in each group header. These look like a + and - sign. You can supply
@@ -102,11 +97,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *    expand/collapse button) are rendered at 16x16 pixels. You can customize this size
  *    using <code>setHeaderIconSize(int size)</code> and <code>setActionIconSize(int size)</code>.
  *    The size applies to both width and height. Icons will be scaled as needed.</li>
- * <li><b>Animation</b> - by default, expand/collapse operations are animated with a smooth sliding effect.
- *    The default animation duration is 200ms. You can customize the animation speed using
- *    <code>setAnimationDurationMs(int ms)</code>, or disable animation entirely with
- *    <code>setAnimationEnabled(false)</code> to revert to instantaneous expand/collapse.
- *    Note that programmatically calling setExpanded() will always expand/collapse instantly, without animation.</li>
  * </ul>
  * <p>
  *     <b>Toolbars</b> - call setToolBarEnabled(true) to show a toolbar with each action group.
