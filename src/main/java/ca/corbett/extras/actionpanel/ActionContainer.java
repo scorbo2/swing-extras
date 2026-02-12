@@ -4,6 +4,7 @@ import ca.corbett.extras.EnhancedAction;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -54,6 +55,11 @@ class ActionContainer extends JPanel {
             Component actionComponent = ActionComponentFactory.create(actionPanel, action);
             wrapperPanel.add(actionComponent, BorderLayout.CENTER);
             actionsPanel.add(wrapperPanel);
+
+            // If this is the highlighted action, mark it visually:
+            if (actionPanel.isHighlightedAction(action) && (actionComponent instanceof JLabel)) {
+                wrapperPanel.setBackground(ColorOptions.getHighlightColor(wrapperPanel.getBackground()));
+            }
         }
 
         add(actionsPanel, BorderLayout.CENTER);

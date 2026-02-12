@@ -3,6 +3,7 @@ package ca.corbett.extras.actionpanel;
 import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.image.ImageUtil;
 
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -67,8 +68,8 @@ class ActionComponentFactory {
         }
 
         // Make it clickable and add our mouseover effects:
-        label.setCursor(Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
-        label.addMouseListener(new LabelMouseListener(label, action));
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        label.addMouseListener(new LabelMouseListener(actionPanel, label, action));
 
         // Left alignment is generally best for labels in a vertical list
         // This is not currently configurable...
@@ -84,6 +85,9 @@ class ActionComponentFactory {
         // Create a button:
         JButton button = new JButton(action);
 
+        // Spy on its action events so we can highlight it when invoked:
+        button.addActionListener(new ActionSpy(actionPanel, action));
+
         // Apply styling:
         if (actionPanel.getActionFont() != null) {
             button.setFont(actionPanel.getActionFont());
@@ -93,6 +97,11 @@ class ActionComponentFactory {
         }
         if (actionPanel.getColorOptions().getActionButtonBackground() != null) {
             button.setBackground(actionPanel.getColorOptions().getActionButtonBackground());
+        }
+
+        // If this is the highlighted action, highlight it:
+        if (actionPanel.isHighlightedAction(action)) {
+            button.setBackground(ColorOptions.getHighlightColor(button.getBackground()));
         }
 
         // Null out the icon if we're not showing icons:
@@ -123,10 +132,12 @@ class ActionComponentFactory {
      */
     private static class LabelMouseListener extends MouseAdapter {
 
+        private final ActionPanel actionPanel;
         private final JLabel label;
         private final EnhancedAction action;
 
-        public LabelMouseListener(JLabel label, EnhancedAction action) {
+        public LabelMouseListener(ActionPanel actionPanel, JLabel label, EnhancedAction action) {
+            this.actionPanel = actionPanel;
             this.label = label;
             this.action = action;
         }
@@ -135,6 +146,9 @@ class ActionComponentFactory {
         public void mouseClicked(MouseEvent e) {
             // Invoke action when clicked
             action.actionPerformed(new ActionEvent(label, ActionEvent.ACTION_PERFORMED, action.getName()));
+
+            // Notify ActionPanel to highlight this action
+            actionPanel.setHighlightedAction(action);
         }
 
         @Override
@@ -147,6 +161,26 @@ class ActionComponentFactory {
         public void mouseExited(MouseEvent e) {
             // Remove underline when mouse exits
             label.setText("<html>" + action.getName() + "</html>");
+        }
+    }
+
+    /**
+     * A "spy" action that we will use to monitor when an action is performed,
+     * so that we can notify the ActionPanel to highlight the action.
+     */
+    private static class ActionSpy extends AbstractAction {
+
+        private final ActionPanel actionPanel;
+        private final EnhancedAction action;
+
+        public ActionSpy(ActionPanel actionPanel, EnhancedAction action) {
+            this.actionPanel = actionPanel;
+            this.action = action;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            actionPanel.setHighlightedAction(action);
         }
     }
 }

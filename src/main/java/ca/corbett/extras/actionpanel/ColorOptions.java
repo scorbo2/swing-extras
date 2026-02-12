@@ -262,4 +262,30 @@ public class ColorOptions extends ActionPanelOptions {
     public Color getToolBarButtonBackground() {
         return toolBarButtonBackground;
     }
+
+    /**
+     * Given any Color, returns a highlight color that is either a lighter or darker
+     * version of the base color, depending on whether the base color is light or dark.
+     * This can be useful for hover effects, selection highlights, etc.
+     *
+     * @param baseColor The base color to derive the highlight color from.
+     * @return A highlight color that contrasts with the base color.
+     */
+    public static Color getHighlightColor(Color baseColor) {
+        // If it's already light, we'll darken it:
+        if (baseColor.getRed() > 200 && baseColor.getGreen() > 200 && baseColor.getBlue() > 200) {
+            // Simple approach: darken the base color by a fixed amount
+            int r = Math.max(0, baseColor.getRed() - 30);
+            int g = Math.max(0, baseColor.getGreen() - 30);
+            int b = Math.max(0, baseColor.getBlue() - 30);
+            return new Color(r, g, b, baseColor.getAlpha());
+        }
+
+        // Otherwise, we'll lighten it:
+        int r = Math.min(255, baseColor.getRed() + 30);
+        int g = Math.min(255, baseColor.getGreen() + 30);
+        int b = Math.min(255, baseColor.getBlue() + 30);
+        return new Color(r, g, b, baseColor.getAlpha());
+    }
+
 }

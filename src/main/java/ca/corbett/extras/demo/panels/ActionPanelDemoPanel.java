@@ -120,6 +120,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private ComboField<String> colorSourceField;
     private ComboField<String> fontSourceField;
     private ButtonField setFromThemeField;
+    private CheckBoxField highlightLastActionField;
     private ColorField actionPanelBackgroundField;
     private ColorField actionForegroundField;
     private ColorField actionBackgroundField;
@@ -314,7 +315,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         // Our action names double as cardIds for simplicity's sake,
         // but in a real application, you can handle this however you like.
         ImageIcon icon = SwingFormsResources.getCopyIcon(SwingFormsResources.NATIVE_SIZE); // arbitrary
-        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_INTRO, TAB_INTRO, icon));
+        CardAction initialAction = new CardAction(TAB_INTRO, TAB_INTRO, icon);
+        actionPanel.add("Welcome to ActionPanel!", initialAction);
         actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_COMPONENTS, TAB_COMPONENTS, icon));
         actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_TOOLBAR, TAB_TOOLBAR, icon));
         actionPanel.add("Styling options", new CardAction(TAB_COLORS, TAB_COLORS, icon));
@@ -325,6 +327,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         actionPanel.add("Layout options", new CardAction(TAB_SORTING, TAB_SORTING, icon));
         actionPanel.add("Behavior options", new CardAction(TAB_EXPAND, TAB_EXPAND, icon));
         actionPanel.add("Behavior options", new CardAction(TAB_ANIMATION, TAB_ANIMATION, icon));
+        actionPanel.setHighlightedAction(initialAction);
+        actionPanel.setHighlightLastActionEnabled(true);
 
         // Add header icons for demonstration:
         final int size = SwingFormsResources.NATIVE_SIZE;
@@ -533,6 +537,11 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         toolBarButtonsTransparentField.addValueChangedListener(f -> colorSourceFieldChanged());
         toolBarButtonsTransparentField.getMargins().setLeft(16);
         formPanel.add(toolBarButtonsTransparentField);
+
+        highlightLastActionField = new CheckBoxField("Visually highlight the current action", true);
+        highlightLastActionField.addValueChangedListener(
+                f -> actionPanel.setHighlightLastActionEnabled(highlightLastActionField.isChecked()));
+        formPanel.add(highlightLastActionField);
 
         return formPanel;
     }
