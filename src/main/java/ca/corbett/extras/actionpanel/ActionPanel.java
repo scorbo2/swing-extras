@@ -362,6 +362,16 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel setHighlightedAction(EnhancedAction action) {
+        // If highlighting is disabled, just record the last action without rebuilding the UI.
+        if (!highlightLastAction) {
+            this.highlightedAction = action;
+            return this;
+        }
+
+        // If the highlighted action is unchanged, avoid an unnecessary rebuild.
+        if (this.highlightedAction == action) {
+            return this;
+        }
         this.highlightedAction = action;
         rebuild();
         return this;
