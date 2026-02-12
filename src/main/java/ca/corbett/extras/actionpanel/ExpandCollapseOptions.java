@@ -46,17 +46,30 @@ public class ExpandCollapseOptions extends ActionPanelOptions {
 
         // Force-expand any currently collapsed groups if we're disallowing expand/collapse,
         // to avoid leaving the user with no way to see the contents of those groups.
+        final boolean previousAutoRebuildState = actionPanel.isAutoRebuildEnabled();
         actionPanel.setAutoRebuildEnabled(false);
         try {
             if (!allow) {
                 for (String groupName : actionPanel.getGroupNames()) {
-                    actionPanel.setExpanded(groupName, true);
+                    ActionGroup actionGroup = actionPanel.getGroup(groupName);
+                    if (!actionGroup.isExpanded()) {
+                        // Mark the group as expanded.
+                        // Note we don't go through actionPanel.setExpanded(),
+                        // because that would fire off expansion events.
+                        // We want to just do this silently.
+                        actionGroup.setExpanded(true);
+                    }
                 }
             }
         }
         finally {
             // Only rebuild once after all groups are rebuilt.
-            actionPanel.setAutoRebuildEnabled(true);
+            // Note: if auto-rebuild was disabled before we came along,
+            //       then it will still be disabled after we're done.
+            //       Our changes won't be visible until whoever disabled
+            //       auto-rebuild chooses to re-enable it.
+            //       If it WAS enabled before, then this will trigger an immediate rebuild.
+            actionPanel.setAutoRebuildEnabled(previousAutoRebuildState);
         }
 
         return this;
