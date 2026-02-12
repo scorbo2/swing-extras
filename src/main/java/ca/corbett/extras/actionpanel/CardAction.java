@@ -2,7 +2,7 @@ package ca.corbett.extras.actionpanel;
 
 import ca.corbett.extras.EnhancedAction;
 
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -76,7 +76,7 @@ public class CardAction extends EnhancedAction {
      * @param cardId the name of the card to show when this action is triggered. This should match the name of a card in the card container's CardLayout.
      * @param icon   the icon to show for this action (e.g. on a button). This can be null if you don't want an icon.
      */
-    public CardAction(String name, String cardId, ImageIcon icon) {
+    public CardAction(String name, String cardId, Icon icon) {
         super(name, icon);
         this.cardId = cardId;
 

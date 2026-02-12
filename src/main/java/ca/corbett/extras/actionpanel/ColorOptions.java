@@ -12,6 +12,7 @@ import java.awt.Color;
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since swing-extras 2.8
  */
 public class ColorOptions extends ActionPanelOptions {
 

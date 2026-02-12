@@ -92,7 +92,7 @@ public enum ColorTheme {
                    new Color(128, 128, 128),  // group header background
                    new Color(255, 255, 255),  // group header foreground
                    new Color(140, 140, 140),  // action button background
-                   new Color(140, 140, 140)), // toolbar button background)
+                   new Color(140, 140, 140)), // toolbar button background
 
     HOT_DOG_STAND("Hotdog Stand", // Just for fun!
                   new Color(255, 228, 196),  // panel background

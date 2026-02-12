@@ -50,7 +50,7 @@ class ActionComponentFactory {
         // Note: we use html tags to wrap the label text, because otherwise, there's a slight
         //       vertical shift in the text when we add the underline effect on mouseover.
         JLabel label = new JLabel("<html>" + action.getName() + "</html>");
-        if (action.getIcon() != null && actionPanel.isShowActionIcons()) {
+        if (action.getIcon() != null && actionPanel.isShowActionIcons() && (action.getIcon() instanceof ImageIcon)) {
             label.setIcon(ImageUtil.scaleIcon((ImageIcon)action.getIcon(), actionPanel.getActionIconSize()));
             label.setIconTextGap(actionPanel.getActionInternalPadding());
         }
@@ -102,9 +102,11 @@ class ActionComponentFactory {
 
         // Otherwise, ensure the icon is scaled correctly:
         else {
-            button.setIcon(ImageUtil.scaleIcon((ImageIcon)action.getIcon(), actionPanel.getActionIconSize()));
-            button.setHorizontalTextPosition(JButton.RIGHT); // text to the right of the icon
-            button.setIconTextGap(actionPanel.getActionInternalPadding());
+            if (action.getIcon() != null && action.getIcon() instanceof ImageIcon) {
+                button.setIcon(ImageUtil.scaleIcon((ImageIcon)action.getIcon(), actionPanel.getActionIconSize()));
+                button.setHorizontalTextPosition(JButton.RIGHT); // text to the right of the icon
+                button.setIconTextGap(actionPanel.getActionInternalPadding());
+            }
         }
 
         // Left alignment is generally best for buttons in a vertical list

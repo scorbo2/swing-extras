@@ -802,6 +802,17 @@ public class ActionPanel extends JPanel {
         return groupHeaderFont;
     }
 
+    /**
+     * Options related to custom colors are accessed via the ColorOptions class.
+     * Developer note: yeah, they could all live here in this class, but this class
+     * is already unreasonably large, and there are many options related to color
+     * customization, so they were all moved over there. The only first-class color-related
+     * methods still in ActionPanel are setBackground() and getBackground(), which are
+     * overridden for internal reasons. All other color options are accessed via the
+     * ColorOptions instance returned by this method.
+     *
+     * @return The ColorOptions instance containing options related to color customization.
+     */
     public ColorOptions getColorOptions() {
         return colorOptions;
     }
@@ -842,7 +853,15 @@ public class ActionPanel extends JPanel {
     public Color getBackground() {
         // This can somehow get invoked before we are fully instantiated, in which
         // case our colorOptions is null. In that case, just return null to avoid a NullPointerException.
-        return colorOptions == null ? null : colorOptions.getPanelBackground();
+        if (colorOptions == null) {
+            return null;
+        }
+
+        // It's possible our value is set to null, meaning we want to use the Look and Feel default background
+        // color. In that case, ask our Look and Feel manager for the default Panel background color:
+        return colorOptions.getPanelBackground() == null
+                ? LookAndFeelManager.getLafColor("Panel.background", Color.LIGHT_GRAY)
+                : colorOptions.getPanelBackground();
     }
 
     /**
