@@ -1430,11 +1430,6 @@ public class ActionPanel extends JPanel {
         newGroup.setComparator(actionComparator); // let new groups know about our action comparator
         actionGroups.add(newGroup);
 
-        // If a group comparator is set, we need to re-sort the groups after adding the new one:
-        if (groupComparator != null) {
-            actionGroups.sort((g1, g2) -> groupComparator.compare(g1.getName(), g2.getName()));
-        }
-
         return newGroup;
     }
 
