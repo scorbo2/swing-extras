@@ -4,15 +4,16 @@ Author: Steve Corbett
 Version 2.8.0 [TODO release date]
   #371 - ImageUtil: add savePngImage convenience method
   #370 - KeyStrokeManager: new convenience methods
+  #367 - ActionPanel: extract ColorOptions
   #362 - ActionPanel: add CardLayout integration
   #359 - ActionPanel: more padding options
   #355 - TextInputDialog: better keyboard support
   #354 - FormField: avoid NPEs from poorly-coded FieldValidators
   #350 - New UI component: TextInputDialog
   #348 - BlurLayerUI: add animation options
-  #341 - AbstractProperty: don't accept input from invalid form fields
-  #340 - KeyStrokeField/KeyStrokeProperty: add/clear reserved keystrokes
-  #337 - ExtensionManager: improved ext-load-order.txt pattern matching
+  #341 - AbstractProperty: reject input from invalid form fields
+  #340 - KeyStrokeField/Property: add/clear reserved keystrokes
+  #337 - ExtensionManager: better ext-load-order.txt handling
   #335 - ActionPanel: add ToolBar
   #333 - DirTree: add styling options, just because.
   #332 - ActionPanel: many usability improvements

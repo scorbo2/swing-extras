@@ -4,6 +4,7 @@ import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.TextInputDialog;
 import ca.corbett.extras.actionpanel.ActionPanel;
 import ca.corbett.extras.actionpanel.CardAction;
+import ca.corbett.extras.actionpanel.ColorTheme;
 import ca.corbett.extras.actionpanel.ExpandListener;
 import ca.corbett.extras.actionpanel.ToolBarOptions;
 import ca.corbett.extras.demo.DemoApp;
@@ -12,6 +13,7 @@ import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.SwingFormsResources;
+import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
@@ -25,7 +27,10 @@ import ca.corbett.forms.validators.ValidationResult;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -33,6 +38,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -109,11 +115,15 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private ComboField<String> animationField;
     private ComboField<String> colorSourceField;
     private ComboField<String> fontSourceField;
+    private ButtonField setFromThemeField;
     private ColorField actionPanelBackgroundField;
     private ColorField actionForegroundField;
     private ColorField actionBackgroundField;
+    private ColorField actionButtonBackgroundField;
     private ColorField groupHeaderForegroundField;
     private ColorField groupHeaderBackgroundField;
+    private CheckBoxField toolBarButtonsTransparentField;
+    private ColorField toolBarButtonBackgroundField;
     private FontField headerFontField;
     private FontField actionFontField;
 
@@ -213,16 +223,43 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
      */
     private void colorSourceFieldChanged() {
         boolean isCustom = colorSourceField.getSelectedIndex() == 1;
+        setFromThemeField.setEnabled(isCustom);
         actionPanelBackgroundField.setEnabled(isCustom);
         actionForegroundField.setEnabled(isCustom);
         actionBackgroundField.setEnabled(isCustom);
+        actionButtonBackgroundField.setEnabled(isCustom);
         groupHeaderForegroundField.setEnabled(isCustom);
         groupHeaderBackgroundField.setEnabled(isCustom);
         actionPanel.setBackground(isCustom ? actionPanelBackgroundField.getColor() : null);
-        actionPanel.setActionForeground(isCustom ? actionForegroundField.getColor() : null);
-        actionPanel.setActionBackground(isCustom ? actionBackgroundField.getColor() : null);
-        actionPanel.setGroupHeaderForeground(isCustom ? groupHeaderForegroundField.getColor() : null);
-        actionPanel.setGroupHeaderBackground(isCustom ? groupHeaderBackgroundField.getColor() : null);
+        actionPanel.getColorOptions().setActionForeground(isCustom ? actionForegroundField.getColor() : null);
+        actionPanel.getColorOptions().setActionBackground(isCustom ? actionBackgroundField.getColor() : null);
+        actionPanel.getColorOptions()
+                   .setActionButtonBackground(isCustom ? actionButtonBackgroundField.getColor() : null);
+        actionPanel.getColorOptions().setGroupHeaderForeground(isCustom ? groupHeaderForegroundField.getColor() : null);
+        actionPanel.getColorOptions().setGroupHeaderBackground(isCustom ? groupHeaderBackgroundField.getColor() : null);
+
+        // ToolBar button customization has an extra layer of enabled/disabled:
+        if (isCustom) {
+            toolBarButtonsTransparentField.setEnabled(true);
+            toolBarButtonBackgroundField.setEnabled(!toolBarButtonsTransparentField.isChecked());
+        }
+        else {
+            toolBarButtonsTransparentField.setEnabled(false);
+            toolBarButtonBackgroundField.setEnabled(false);
+        }
+
+        // And special handling for updating the toolbar button color:
+        if (!isCustom) {
+            actionPanel.getColorOptions().setToolBarButtonBackground(null);
+        }
+        else {
+            if (toolBarButtonsTransparentField.isChecked()) {
+                actionPanel.getColorOptions().setToolBarButtonsTransparent();
+            }
+            else {
+                actionPanel.getColorOptions().setToolBarButtonBackground(toolBarButtonBackgroundField.getColor());
+            }
+        }
     }
 
     /**
@@ -272,17 +309,18 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private void populateActionPanel() {
         // Our action names double as cardIds for simplicity's sake,
         // but in a real application, you can handle this however you like.
-        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_INTRO, TAB_INTRO));
-        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_COMPONENTS, TAB_COMPONENTS));
-        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_TOOLBAR, TAB_TOOLBAR));
-        actionPanel.add("Styling options", new CardAction(TAB_COLORS, TAB_COLORS));
-        actionPanel.add("Styling options", new CardAction(TAB_FONTS, TAB_FONTS));
-        actionPanel.add("Styling options", new CardAction(TAB_BORDERS, TAB_BORDERS));
-        actionPanel.add("Styling options", new CardAction(TAB_ICONS, TAB_ICONS));
-        actionPanel.add("Layout options", new CardAction(TAB_MARGINS, TAB_MARGINS));
-        actionPanel.add("Layout options", new CardAction(TAB_SORTING, TAB_SORTING));
-        actionPanel.add("Behavior options", new CardAction(TAB_EXPAND, TAB_EXPAND));
-        actionPanel.add("Behavior options", new CardAction(TAB_ANIMATION, TAB_ANIMATION));
+        ImageIcon icon = SwingFormsResources.getCopyIcon(SwingFormsResources.NATIVE_SIZE); // arbitrary
+        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_INTRO, TAB_INTRO, icon));
+        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_COMPONENTS, TAB_COMPONENTS, icon));
+        actionPanel.add("Welcome to ActionPanel!", new CardAction(TAB_TOOLBAR, TAB_TOOLBAR, icon));
+        actionPanel.add("Styling options", new CardAction(TAB_COLORS, TAB_COLORS, icon));
+        actionPanel.add("Styling options", new CardAction(TAB_FONTS, TAB_FONTS, icon));
+        actionPanel.add("Styling options", new CardAction(TAB_BORDERS, TAB_BORDERS, icon));
+        actionPanel.add("Styling options", new CardAction(TAB_ICONS, TAB_ICONS, icon));
+        actionPanel.add("Layout options", new CardAction(TAB_MARGINS, TAB_MARGINS, icon));
+        actionPanel.add("Layout options", new CardAction(TAB_SORTING, TAB_SORTING, icon));
+        actionPanel.add("Behavior options", new CardAction(TAB_EXPAND, TAB_EXPAND, icon));
+        actionPanel.add("Behavior options", new CardAction(TAB_ANIMATION, TAB_ANIMATION, icon));
 
         // Add header icons for demonstration:
         final int size = SwingFormsResources.NATIVE_SIZE;
@@ -431,17 +469,19 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 so that ActionPanel fits in well with the rest of<br>
                 your application's UI, or you can customize<br>
                 the colors used in the ActionPanel to suit<br>
-                your application's theme!<br><br>
-                The ActionPanel to the left has been styled with<br>
-                custom colors. Try customizing it with<br>
-                the controls below!</html>
+                your application's theme!</html>
                 """;
         formPanel.add(new LabelField(label));
 
         List<String> options = List.of("Use Look and Feel defaults", "Override with custom styling");
-        colorSourceField = new ComboField<>("Styling:", options, 1);
+        colorSourceField = new ComboField<>("ActionPanel styling:", options, 1);
         colorSourceField.addValueChangedListener(f -> colorSourceFieldChanged());
         formPanel.add(colorSourceField);
+
+        setFromThemeField = new ButtonField(List.of(new SetFromThemeAction()));
+        setFromThemeField.getFieldLabel().setText("Set from theme:");
+        setFromThemeField.getMargins().setLeft(16); // indent a bit to show that these are styling options
+        formPanel.add(setFromThemeField);
 
         actionPanelBackgroundField = new ColorField("Panel background:", ColorSelectionType.SOLID);
         actionPanelBackgroundField.setColor(Color.DARK_GRAY);
@@ -461,6 +501,12 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         actionBackgroundField.addValueChangedListener(f -> colorSourceFieldChanged());
         formPanel.add(actionBackgroundField);
 
+        actionButtonBackgroundField = new ColorField("Action buttons:", ColorSelectionType.SOLID);
+        actionButtonBackgroundField.setColor(new Color(180, 180, 180)); // arbitrary, but I like it
+        actionButtonBackgroundField.getMargins().setLeft(16);
+        actionButtonBackgroundField.addValueChangedListener(f -> colorSourceFieldChanged());
+        formPanel.add(actionButtonBackgroundField);
+
         groupHeaderForegroundField = new ColorField("Header foreground:", ColorSelectionType.SOLID);
         groupHeaderForegroundField.setColor(Color.WHITE);
         groupHeaderForegroundField.getMargins().setLeft(16);
@@ -472,6 +518,17 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         groupHeaderBackgroundField.getMargins().setLeft(16);
         groupHeaderBackgroundField.addValueChangedListener(f -> colorSourceFieldChanged());
         formPanel.add(groupHeaderBackgroundField);
+
+        toolBarButtonBackgroundField = new ColorField("Toolbar buttons:", ColorSelectionType.SOLID);
+        toolBarButtonBackgroundField.setColor(new Color(160, 160, 160)); // arbitrary, but I like it
+        toolBarButtonBackgroundField.getMargins().setLeft(16);
+        toolBarButtonBackgroundField.addValueChangedListener(f -> colorSourceFieldChanged());
+        formPanel.add(toolBarButtonBackgroundField);
+
+        toolBarButtonsTransparentField = new CheckBoxField("Make toolbar buttons transparent", false);
+        toolBarButtonsTransparentField.addValueChangedListener(f -> colorSourceFieldChanged());
+        toolBarButtonsTransparentField.getMargins().setLeft(16);
+        formPanel.add(toolBarButtonsTransparentField);
 
         return formPanel;
     }
@@ -630,15 +687,15 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         formPanel.add(LabelField.createBoldHeaderLabel("Margins and padding options"));
         String label = """
                 <html>You can control the spacing around each<br>
-                action group, and the spacing around the actions<br>
-                themselves.</html>
+                action group, and the spacing around the<br>
+                actions themselves.</html>
                 """;
         formPanel.add(new LabelField(label));
 
         externalPaddingField = new NumberField("External padding:", ActionPanel.DEFAULT_EXTERNAL_PADDING, 0, 32, 1);
         externalPaddingField.addValueChangedListener(
                 f -> actionPanel.setExternalPadding(externalPaddingField.getCurrentValue().intValue()));
-        externalPaddingField.setHelpText("<html>Sets the space between the each group and the edges<br>" +
+        externalPaddingField.setHelpText("<html>Sets the space between each group and the edges<br>" +
                                                  "of the panel, and also the space between groups.</html>");
         formPanel.add(externalPaddingField);
 
@@ -867,6 +924,48 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
 
         public Border getBorder() {
             return border;
+        }
+    }
+
+    /**
+     * A simple action to show an input dialog to select one of our built-in color themes and
+     * apply it to all the relevant color fields at once.
+     */
+    private class SetFromThemeAction extends AbstractAction {
+        public SetFromThemeAction() {
+            super("Choose...");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Object input = JOptionPane.showInputDialog(DemoApp.getInstance(),
+                                                       "Select color theme:",
+                                                       "Choose theme",
+                                                       JOptionPane.PLAIN_MESSAGE,
+                                                       null,
+                                                       ColorTheme.values(),
+                                                       ColorTheme.values()[0]);
+            if (input != null) {
+                ColorTheme selectedTheme = (ColorTheme)input;
+                actionPanel.setAutoRebuildEnabled(false);
+                try {
+                    // Each one of these would trigger a full rebuild of our ActionPanel,
+                    // because of the change listeners attached to our form fields.
+                    // We can avoid a lot of unnecessary rebuilds by temporarily disabling auto-rebuild
+                    // while we set all the colors:
+                    actionPanelBackgroundField.setColor(selectedTheme.getPanelBackground());
+                    actionBackgroundField.setColor(selectedTheme.getActionBackground());
+                    actionForegroundField.setColor(selectedTheme.getActionForeground());
+                    groupHeaderBackgroundField.setColor(selectedTheme.getGroupHeaderBackground());
+                    groupHeaderForegroundField.setColor(selectedTheme.getGroupHeaderForeground());
+                    actionButtonBackgroundField.setColor(selectedTheme.getActionButtonBackground());
+                    toolBarButtonBackgroundField.setColor(selectedTheme.getToolBarButtonBackground());
+                }
+                finally {
+                    // Re-enabling auto-rebuild will trigger a single rebuild now that all colors are set:
+                    actionPanel.setAutoRebuildEnabled(true);
+                }
+            }
         }
     }
 }

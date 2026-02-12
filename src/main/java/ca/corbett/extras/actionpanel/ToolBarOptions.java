@@ -51,18 +51,9 @@ import java.util.logging.Logger;
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.8
  */
-public final class ToolBarOptions {
+public final class ToolBarOptions extends ActionPanelOptions {
 
     private static final Logger log = Logger.getLogger(ToolBarOptions.class.getName());
-
-    /**
-     * ActionPanel can listen for changes to the ToolBarOptions so that it can
-     * rebuild/rerender itself when options are changed.
-     */
-    @FunctionalInterface
-    public interface OptionsListener {
-        void optionsChanged();
-    }
 
     /**
      * Our buttons are placed in a container panel at the bottom of each ActionGroup.
@@ -102,10 +93,9 @@ public final class ToolBarOptions {
     private ButtonPosition buttonPosition;
     private final List<String> excludedGroups = new CopyOnWriteArrayList<>();
 
-    private final List<OptionsListener> listeners = new CopyOnWriteArrayList<>();
-
     /**
      * Should only be instantiated by ActionPanel.
+     * Access via ActionPanel.getToolBarOptions().
      */
     ToolBarOptions() {
         // Add item is enabled by default, but will not appear in the ToolBar
@@ -130,32 +120,6 @@ public final class ToolBarOptions {
         // General options:
         iconSize = ActionPanel.DEFAULT_ICON_SIZE;
         buttonPosition = ButtonPosition.Stretch;
-    }
-
-    /**
-     * You can listen for changes to the ToolBarOptions by adding an OptionsListener.
-     * This is used internally by ActionPanel to know when to rebuild/rerender itself
-     *
-     * @param listener The OptionsListener to add. Cannot be null.
-     */
-    public void addListener(OptionsListener listener) {
-        if (listener == null) {
-            throw new IllegalArgumentException("listener cannot be null");
-        }
-        listeners.add(listener);
-    }
-
-    /**
-     * You can stop listening for changes to the ToolBarOptions by removing an
-     * OptionsListener that was previously added via addListener().
-     *
-     * @param listener The OptionsListener to remove. Cannot be null.
-     */
-    public void removeListener(OptionsListener listener) {
-        if (listener == null) {
-            throw new IllegalArgumentException("listener cannot be null");
-        }
-        listeners.remove(listener);
     }
 
     /**
@@ -643,14 +607,5 @@ public final class ToolBarOptions {
             }
         }
         return customActions;
-    }
-
-    /**
-     * Invoked internally to let listeners know that something here has changed.
-     */
-    private void fireOptionsChanged() {
-        for (OptionsListener listener : listeners) {
-            listener.optionsChanged();
-        }
     }
 }

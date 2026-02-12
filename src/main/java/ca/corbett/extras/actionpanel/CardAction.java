@@ -2,6 +2,7 @@ package ca.corbett.extras.actionpanel;
 
 import ca.corbett.extras.EnhancedAction;
 
+import javax.swing.ImageIcon;
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -54,6 +55,29 @@ public class CardAction extends EnhancedAction {
      */
     public CardAction(String name, String cardId) {
         super(name);
+        this.cardId = cardId;
+
+        if (cardId == null || cardId.isBlank()) {
+            throw new IllegalArgumentException("Card ID cannot be null or blank");
+        }
+    }
+
+    /**
+     * Creates a CardAction with the given name, card ID, and icon.
+     * The card ID is the name of the card to show when this action is triggered.
+     * <p>
+     * <b>Note:</b> Due to the design of CardLayout, we can't validate the given cardId.
+     * If it doesn't match the name of a card that was given to your layout, then
+     * nothing will happen when the action is triggered. It's up to calling code
+     * to make sure the cardId given here matches the name of a card in the card container.
+     * </p>
+     *
+     * @param name   the name of this action (e.g. the text to show on a button)
+     * @param cardId the name of the card to show when this action is triggered. This should match the name of a card in the card container's CardLayout.
+     * @param icon   the icon to show for this action (e.g. on a button). This can be null if you don't want an icon.
+     */
+    public CardAction(String name, String cardId, ImageIcon icon) {
+        super(name, icon);
         this.cardId = cardId;
 
         if (cardId == null || cardId.isBlank()) {

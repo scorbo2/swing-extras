@@ -31,7 +31,7 @@ class ToolBar extends JPanel {
         this.actionPanel = actionPanel;
         this.groupName = groupName;
         this.options = actionPanel.getToolBarOptions();
-        this.setBackground(actionPanel.getActionBackground());
+        this.setBackground(actionPanel.getColorOptions().getActionBackground());
 
         // Set our alignment:
         int pad = actionPanel.getToolBarInternalPadding();
@@ -75,8 +75,10 @@ class ToolBar extends JPanel {
         button.setText(""); // our buttons are icons-only
 
         // The ext-iv-ice code that this was based on used to set up transparent buttons with no border,
-        // but I find just setting the bg color properly is a better approach (I like the button borders):
-        button.setBackground(actionPanel.getActionBackground());
+        // but in this code, the button background color is configurable. There is a convenience
+        // method in ColorOptions to set the button background to transparent, so you can mimic the old look.
+        // We don't disable borders, though, because I find this approach works better across L&Fs.
+        button.setBackground(actionPanel.getColorOptions().getToolBarButtonBackground());
 
         button.setPreferredSize(new Dimension(buttonSize, buttonSize)); // ignored in Stretch mode
         button.setIcon(action.getIcon());

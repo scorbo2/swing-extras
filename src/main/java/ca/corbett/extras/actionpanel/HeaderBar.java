@@ -78,8 +78,8 @@ class HeaderBar extends JPanel {
         }
 
         // Apply background color if set:
-        if (actionPanel.getGroupHeaderBackground() != null) {
-            headerPanel.setBackground(actionPanel.getGroupHeaderBackground());
+        if (actionPanel.getColorOptions().getGroupHeaderBackground() != null) {
+            headerPanel.setBackground(actionPanel.getColorOptions().getGroupHeaderBackground());
             headerPanel.setOpaque(true);
         }
 
@@ -125,8 +125,8 @@ class HeaderBar extends JPanel {
         }
 
         // Set the foreground color:
-        if (actionPanel.getGroupHeaderForeground() != null) {
-            nameLabel.setForeground(actionPanel.getGroupHeaderForeground());
+        if (actionPanel.getColorOptions().getGroupHeaderForeground() != null) {
+            nameLabel.setForeground(actionPanel.getColorOptions().getGroupHeaderForeground());
         }
 
         // If double-click is allowed to toggle expand/collapse, set that up:

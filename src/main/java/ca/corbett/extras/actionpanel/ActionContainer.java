@@ -35,7 +35,7 @@ class ActionContainer extends JPanel {
         setLayout(new BorderLayout());
 
         JPanel actionsPanel = new JPanel();
-        actionsPanel.setBackground(actionPanel.getActionBackground());
+        actionsPanel.setBackground(actionPanel.getColorOptions().getActionBackground());
         actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
         setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -76,8 +76,8 @@ class ActionContainer extends JPanel {
         }
 
         // Apply action background color if set:
-        if (actionPanel.getActionBackground() != null) {
-            panel.setBackground(actionPanel.getActionBackground());
+        if (actionPanel.getColorOptions().getActionBackground() != null) {
+            panel.setBackground(actionPanel.getColorOptions().getActionBackground());
         }
 
         return panel;

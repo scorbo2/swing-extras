@@ -62,8 +62,8 @@ class ActionComponentFactory {
         if (actionPanel.getActionFont() != null) {
             label.setFont(actionPanel.getActionFont());
         }
-        if (actionPanel.getActionForeground() != null) {
-            label.setForeground(actionPanel.getActionForeground());
+        if (actionPanel.getColorOptions().getActionForeground() != null) {
+            label.setForeground(actionPanel.getColorOptions().getActionForeground());
         }
 
         // Make it clickable and add our mouseover effects:
@@ -88,13 +88,23 @@ class ActionComponentFactory {
         if (actionPanel.getActionFont() != null) {
             button.setFont(actionPanel.getActionFont());
         }
-        if (actionPanel.getActionForeground() != null) {
-            button.setForeground(actionPanel.getActionForeground());
+        if (actionPanel.getColorOptions().getActionForeground() != null) {
+            button.setForeground(actionPanel.getColorOptions().getActionForeground());
+        }
+        if (actionPanel.getColorOptions().getActionButtonBackground() != null) {
+            button.setBackground(actionPanel.getColorOptions().getActionButtonBackground());
         }
 
         // Null out the icon if we're not showing icons:
         if (!actionPanel.isShowActionIcons()) {
             button.setIcon(null);
+        }
+
+        // Otherwise, ensure the icon is scaled correctly:
+        else {
+            button.setIcon(ImageUtil.scaleIcon((ImageIcon)action.getIcon(), actionPanel.getActionIconSize()));
+            button.setHorizontalTextPosition(JButton.RIGHT); // text to the right of the icon
+            button.setIconTextGap(actionPanel.getActionInternalPadding());
         }
 
         // Left alignment is generally best for buttons in a vertical list
