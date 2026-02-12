@@ -5,7 +5,7 @@ import javax.swing.border.Border;
 /**
  * Encapsulates all border-related options for an ActionPanel. In addition to setting a border
  * around the ActionPanel itself, which can be done through the usual means, the following
- * additional border options are supported for the action groups within the ActionPanel::
+ * additional border options are supported for the action groups within the ActionPanel:
  * <ul>
  *     <li><b>Group border</b> - extends around the entire action group.</li>
  *     <li><b>Header border</b> - extends around the header section of an action group.</li>
