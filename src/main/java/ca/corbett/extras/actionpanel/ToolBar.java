@@ -33,6 +33,11 @@ class ToolBar extends JPanel {
         this.options = actionPanel.getToolBarOptions();
         this.setBackground(actionPanel.getColorOptions().getActionBackground());
 
+        // Set border if defined:
+        if (actionPanel.getBorderOptions().getToolBarBorder() != null) {
+            setBorder(actionPanel.getBorderOptions().getToolBarBorder());
+        }
+
         // Set our alignment:
         int pad = actionPanel.getToolBarInternalPadding();
         switch (options.getButtonPosition()) {

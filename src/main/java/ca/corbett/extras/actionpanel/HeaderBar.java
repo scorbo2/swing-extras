@@ -51,8 +51,8 @@ class HeaderBar extends JPanel {
 
         // Apply header border if set. Note that for margin reasons, we set this border
         // on the HeaderBar itself, not the internal headerPanel.
-        if (actionPanel.getGroupHeaderBorder() != null) {
-            setBorder(actionPanel.getGroupHeaderBorder());
+        if (actionPanel.getBorderOptions().getHeaderBorder() != null) {
+            setBorder(actionPanel.getBorderOptions().getHeaderBorder());
         }
 
         headerPanel = createHeaderPanel();

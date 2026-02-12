@@ -3,6 +3,7 @@ package ca.corbett.extras.demo.panels;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.TextInputDialog;
 import ca.corbett.extras.actionpanel.ActionPanel;
+import ca.corbett.extras.actionpanel.BorderOptions;
 import ca.corbett.extras.actionpanel.CardAction;
 import ca.corbett.extras.actionpanel.ColorTheme;
 import ca.corbett.extras.actionpanel.ExpandCollapseOptions;
@@ -108,6 +109,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private NumberField actionIconSizeField;
     private ComboField<BorderOption> groupBorderField;
     private ComboField<BorderOption> headerBorderField;
+    private ComboField<BorderOption> actionTrayBorderField;
+    private ComboField<BorderOption> toolBarBorderField;
     private NumberField externalPaddingField;
     private NumberField headerInternalPaddingField;
     private NumberField actionInternalPaddingField;
@@ -197,7 +200,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         formPanel.add(exampleContainer);
 
         // Set initial styling options for the ActionPanel based on default field values:
-        actionPanel.setGroupHeaderBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+        actionPanel.getBorderOptions().setHeaderBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         colorSourceFieldChanged(); // set our cool custom colors
         actionPanel.setActionIndent(4);
 
@@ -587,15 +590,26 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 f -> actionPanel.setBorder(actionPanelBorderField.getSelectedItem().getBorder()));
         formPanel.add(actionPanelBorderField);
 
-        headerBorderField = new ComboField<>("Header border:", Arrays.asList(BorderOption.values()), 1);
-        headerBorderField.addValueChangedListener(
-                f -> actionPanel.setGroupHeaderBorder(headerBorderField.getSelectedItem().getBorder()));
-        formPanel.add(headerBorderField);
-
+        final BorderOptions borderOptions = actionPanel.getBorderOptions();
         groupBorderField = new ComboField<>("Group border:", Arrays.asList(BorderOption.values()), 0);
         groupBorderField.addValueChangedListener(
-                f -> actionPanel.setGroupBorder(groupBorderField.getSelectedItem().getBorder()));
+                f -> borderOptions.setGroupBorder(groupBorderField.getSelectedItem().getBorder()));
         formPanel.add(groupBorderField);
+
+        headerBorderField = new ComboField<>("Header border:", Arrays.asList(BorderOption.values()), 1);
+        headerBorderField.addValueChangedListener(
+                f -> borderOptions.setHeaderBorder(headerBorderField.getSelectedItem().getBorder()));
+        formPanel.add(headerBorderField);
+
+        actionTrayBorderField = new ComboField<>("Action tray border:", Arrays.asList(BorderOption.values()), 0);
+        actionTrayBorderField.addValueChangedListener(
+                f -> borderOptions.setActionTrayBorder(actionTrayBorderField.getSelectedItem().getBorder()));
+        formPanel.add(actionTrayBorderField);
+
+        toolBarBorderField = new ComboField<>("Toolbar border:", Arrays.asList(BorderOption.values()), 0);
+        toolBarBorderField.addValueChangedListener(
+                f -> borderOptions.setToolBarBorder(toolBarBorderField.getSelectedItem().getBorder()));
+        formPanel.add(toolBarBorderField);
 
         return formPanel;
     }

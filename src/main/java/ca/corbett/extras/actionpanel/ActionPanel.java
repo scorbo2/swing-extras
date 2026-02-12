@@ -9,7 +9,6 @@ import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import javax.swing.border.Border;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -138,8 +137,6 @@ public class ActionPanel extends JPanel {
     private Comparator<EnhancedAction> actionComparator;
     private ActionComponentType componentType;
     private Container cardContainer;
-    private Border groupBorder;
-    private Border groupHeaderBorder;
     private Font actionFont;
     private Font groupHeaderFont;
     private int headerInternalPadding;
@@ -157,6 +154,7 @@ public class ActionPanel extends JPanel {
     private final ColorOptions colorOptions;
     private final ToolBarOptions toolBarOptions;
     private final ExpandCollapseOptions expandCollapseOptions;
+    private final BorderOptions borderOptions;
     private boolean autoRebuildEnabled;
 
     public ActionPanel() {
@@ -165,8 +163,6 @@ public class ActionPanel extends JPanel {
         this.actionComparator = null; // Default to add order
         this.componentType = ActionComponentType.LABELS;
         this.cardContainer = null;
-        this.groupBorder = null;
-        this.groupHeaderBorder = null;
         this.actionFont = null; // Use L&F default
         this.groupHeaderFont = null; // Use L&F default
         this.headerInternalPadding = DEFAULT_INTERNAL_PADDING;
@@ -183,12 +179,14 @@ public class ActionPanel extends JPanel {
         this.isToolBarEnabled = false; // hide the ToolBar by default.
         this.colorOptions = new ColorOptions(); // moved to its own class to reduce clutter here
         this.toolBarOptions = new ToolBarOptions(); // moved to its own class to reduce clutter here
+        this.expandCollapseOptions = new ExpandCollapseOptions(this); // moved to its own class to reduce clutter here
+        this.borderOptions = new BorderOptions(); // moved to its own class to reduce clutter here
         this.colorOptions.addListener(this::rebuild); // rebuild when our colors change
         this.toolBarOptions.addListener(() -> { // rebuild when our toolbar changes
             if (isToolBarEnabled) { rebuild(); } // but only if the toolbar is enabled
         });
-        this.expandCollapseOptions = new ExpandCollapseOptions(this); // moved to its own class to reduce clutter here
         this.expandCollapseOptions.addListener(this::rebuild);
+        this.borderOptions.addListener(this::rebuild);
         this.autoRebuildEnabled = true;
     }
 
@@ -823,6 +821,18 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Options related to borders are accessed via the BorderOptions class.
+     * Developer note: yeah, they could all live here in this class, but this class
+     * is already unreasonably large, and there are many options related to borders,
+     * so they were all moved over there.
+     *
+     * @return The BorderOptions instance containing options related to border customization.
+     */
+    public BorderOptions getBorderOptions() {
+        return borderOptions;
+    }
+
+    /**
      * We have to override this because we use a wrapper panel internally to manage
      * our BoxLayout, so we need to store the background color and apply it to
      * the wrapper panel during rebuild(). This is not at all obvious to callers,
@@ -867,52 +877,6 @@ public class ActionPanel extends JPanel {
         return colorOptions.getPanelBackground() == null
                 ? LookAndFeelManager.getLafColor("Panel.background", Color.LIGHT_GRAY)
                 : colorOptions.getPanelBackground();
-    }
-
-    /**
-     * Sets the border for action group headers.
-     *
-     * @param border The border to use, or null for no border.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setGroupHeaderBorder(Border border) {
-        groupHeaderBorder = border;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the border for action group headers, or null if no border is set.
-     * This border is applied to the header area of each action group, which includes the group name and the
-     * expand/collapse button. The default is no border.
-     *
-     * @return A Border to use for group headers, or null for no border.
-     */
-    public Border getGroupHeaderBorder() {
-        return groupHeaderBorder;
-    }
-
-    /**
-     * Sets the border for action groups.
-     *
-     * @param border The border to use, or null for no border.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setGroupBorder(Border border) {
-        groupBorder = border;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the border for action groups, or null if no border is set.
-     * This border is applied around the entire area of each action group,
-     * including the group header and all actions within the group. The default is no border.
-     *
-     * @return A Border to use for action groups, or null for no border.
-     */
-    public Border getGroupBorder() {
-        return groupBorder;
     }
 
     /**
