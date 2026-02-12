@@ -39,6 +39,11 @@ class ActionContainer extends JPanel {
         actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.Y_AXIS));
         setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // Set border if defined:
+        if (actionPanel.getBorderOptions().getActionTrayBorder() != null) {
+            actionsPanel.setBorder(actionPanel.getBorderOptions().getActionTrayBorder());
+        }
+
         // Get the group actions (will be sorted if comparator is set)
         List<EnhancedAction> actions = actionGroup.getActions();
 

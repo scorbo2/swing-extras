@@ -30,8 +30,8 @@ class GroupContainer extends JPanel {
         groupPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // Apply group border if set
-        if (actionPanel.getGroupBorder() != null) {
-            groupPanel.setBorder(actionPanel.getGroupBorder());
+        if (actionPanel.getBorderOptions().getGroupBorder() != null) {
+            groupPanel.setBorder(actionPanel.getBorderOptions().getGroupBorder());
         }
 
         // Create and add the group header

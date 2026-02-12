@@ -4,6 +4,24 @@ package ca.corbett.extras.actionpanel;
  * Encapsulates all expand/collapse related options for an ActionPanel,
  * including animation options.
  * <p>
+ *     You can control whether the user is allowed to expand/collapse action groups at all using
+ *     <code>setExpandable(boolean allow)</code>. When disallowed, the user will not be able to
+ *     expand/collapse groups, and all groups will be forced to be expanded. Note that programmatic
+ *     expand/collapse via setExpanded() is always allowed regardless of this setting.
+ * </p>
+ * <p>
+ *     You can optionally allow double-clicking on the group header label to toggle the expanded/collapsed
+ *     state of the group, in addition to the provided expand/collapse toggle button.
+ *     Double-clicking is disabled by default, but can be enabled with <code>setAllowHeaderDoubleClick(true)</code>.
+ * </p>
+ * <p>
+ *     <b>Animation</b> - by default, expand/collapse operations are animated with a smooth sliding effect.
+ *     The default animation duration is 200ms. You can customize the animation speed using
+ *     <code>setAnimationDurationMs(int ms)</code>, or disable animation entirely with
+ *     <code>setAnimationEnabled(false)</code> to revert to instantaneous expand/collapse.
+ *     Note that programmatically calling setExpanded() will always expand/collapse instantly, without animation.
+ * </p>
+ * <p>
  * This class only exists to relieve some clutter from the ActionPanel class,
  * which is getting quite large.
  * </p>
