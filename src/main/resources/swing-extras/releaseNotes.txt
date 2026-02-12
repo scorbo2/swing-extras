@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
+  #375 - ActionPanel: extract expand/collapse options
   #371 - ImageUtil: add savePngImage convenience method
   #370 - KeyStrokeManager: new convenience methods
   #367 - ActionPanel: extract ColorOptions

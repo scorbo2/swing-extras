@@ -142,7 +142,8 @@ class HeaderBar extends JPanel {
      */
     private void addToggleButton() {
         // This can be disallowed by the ActionPanel:
-        if (!actionPanel.isExpandable()) {
+        ExpandCollapseOptions expandOptions = actionPanel.getExpandCollapseOptions();
+        if (!expandOptions.isExpandable()) {
             return; // no button for you!
         }
 
@@ -163,8 +164,8 @@ class HeaderBar extends JPanel {
 
         // The listener for the button will either trigger an animation or just
         // instantly expand/collapse, based on the ActionPanel settings:
-        final boolean animationEnabled = actionPanel.isAnimationEnabled();
-        final int animationDurationMs = actionPanel.getAnimationDurationMs();
+        final boolean animationEnabled = expandOptions.isAnimationEnabled();
+        final int animationDurationMs = expandOptions.getAnimationDurationMs();
         expandCollapseButton.addActionListener(e -> {
             boolean newExpandedState = !group.isExpanded();
             group.setExpanded(newExpandedState);
@@ -232,7 +233,8 @@ class HeaderBar extends JPanel {
         @Override
         public void mouseClicked(java.awt.event.MouseEvent e) {
             // This can be disabled by the ActionPanel:
-            if (!actionPanel.isAllowHeaderDoubleClick() || !actionPanel.isExpandable()) {
+            if (!actionPanel.getExpandCollapseOptions().isAllowHeaderDoubleClick()
+                    || !actionPanel.getExpandCollapseOptions().isExpandable()) {
                 return;
             }
 
