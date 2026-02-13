@@ -2,9 +2,10 @@ package ca.corbett.forms;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class MarginsTest {
 
@@ -124,19 +125,22 @@ class MarginsTest {
 
     @Test
     public void testNegativeValues_shouldReject() {
-        try {
-            new Margins(-1);
-            new Margins(-1, -1, -1, -1, -1);
-            Margins actual3 = new Margins();
-            actual3.setLeft(-1);
-            actual3.setRight(-1);
-            actual3.setTop(-1);
-            actual3.setBottom(-1);
-            actual3.setInternalSpacing(-1);
-            fail("At least one of the above should have thrown an IllegalArgumentException for negative input");
-        }
-        catch (IllegalArgumentException ignored) {
-            // Expected exception
+        Margins actual1 = new Margins(-1);
+        Margins actual2 = new Margins(-1, -1, -1, -1, -1);
+        Margins actual3 = new Margins();
+        actual3.setLeft(-1);
+        actual3.setRight(-1);
+        actual3.setTop(-1);
+        actual3.setBottom(-1);
+        actual3.setInternalSpacing(-1);
+
+        List<Margins> margins = List.of(actual1, actual2, actual3);
+        for (Margins margin : margins) {
+            assertEquals(0, margin.getInternalSpacing());
+            assertEquals(0, margin.getLeft());
+            assertEquals(0, margin.getRight());
+            assertEquals(0, margin.getTop());
+            assertEquals(0, margin.getBottom());
         }
     }
 

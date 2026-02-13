@@ -3,6 +3,7 @@ package ca.corbett.forms;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 /**
  * Can be used to specify margins and padding around and inside a FormField,
@@ -39,6 +40,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @since swing-extras 2.4
  */
 public class Margins {
+
+    private static final Logger log = Logger.getLogger(Margins.class.getName());
 
     /**
      * A very simple interface that can be used to listen for changes to a Margins instance.
@@ -96,16 +99,14 @@ public class Margins {
      * this call does nothing.
      */
     public Margins copy(Margins other) {
-        if (other == null) {
-            throw new IllegalArgumentException("Margins to copy may not be null.");
+        if (other != null) {
+            this.left = validateInput(other.left);
+            this.top = validateInput(other.top);
+            this.right = validateInput(other.right);
+            this.bottom = validateInput(other.bottom);
+            this.internalSpacing = validateInput(other.internalSpacing);
+            fireChangeEvent(); // Just fire one event for this
         }
-
-        this.left = validateInput(other.left);
-        this.top = validateInput(other.top);
-        this.right = validateInput(other.right);
-        this.bottom = validateInput(other.bottom);
-        this.internalSpacing = validateInput(other.internalSpacing);
-        fireChangeEvent(); // Just fire one event for this
         return this;
     }
 
@@ -174,7 +175,8 @@ public class Margins {
 
     private int validateInput(int input) {
         if (input < 0) {
-            throw new IllegalArgumentException("Margin values cannot be negative. Invalid value: " + input);
+            log.warning("Margins: ignoring negative margin: " + input);
+            return 0; // legacy behavior expected by callers
         }
         return input;
     }
@@ -185,6 +187,9 @@ public class Margins {
      * all registered listeners will be notified via their marginsChanged() method.
      */
     public Margins addListener(Listener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException("listener cannot be null");
+        }
         listeners.add(listener);
         return this;
     }
@@ -194,6 +199,9 @@ public class Margins {
      * that was previously added via addListener().
      */
     public Margins removeListener(Listener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException("listener cannot be null");
+        }
         listeners.remove(listener);
         return this;
     }
