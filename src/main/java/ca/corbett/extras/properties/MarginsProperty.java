@@ -65,9 +65,12 @@ public class MarginsProperty extends AbstractProperty {
         margins.setBottom(props.getInteger(fullyQualifiedName + ".bottom", margins.getBottom()));
         margins.setInternalSpacing(props.getInteger(fullyQualifiedName + ".internalSpacing",
                                                     margins.getInternalSpacing()));
-        headerLabel = props.getString(fullyQualifiedName + ".headerLabel", headerLabel);
-        if (headerLabel.isBlank()) {
+        String loadedText = props.getString(fullyQualifiedName + ".headerLabel", headerLabel);
+        if (loadedText == null || loadedText.isBlank()) {
             headerLabel = null;
+        }
+        else {
+            headerLabel = loadedText;
         }
     }
 
@@ -83,18 +86,18 @@ public class MarginsProperty extends AbstractProperty {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
                 || !(field instanceof MarginsField marginField)) {
-            log.log(Level.SEVERE, "Margins.loadFromFormField: received the wrong field \"{0}\"",
+            log.log(Level.SEVERE, "MarginsProperty.loadFromFormField: received the wrong field \"{0}\"",
                     field.getIdentifier());
             return;
         }
 
         if (!field.isValid()) {
-            log.log(Level.WARNING, "Margins.loadFromFormField: received an invalid field \"{0}\"",
+            log.log(Level.WARNING, "MarginsProperty.loadFromFormField: received an invalid field \"{0}\"",
                     field.getIdentifier());
             return;
         }
 
         // DON'T call getMargins()! That's the literal margins on the form field, not what we want.
-        margins = marginField.getMarginsObject();
+        setMargins(marginField.getMarginsObject());
     }
 }

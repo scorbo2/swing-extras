@@ -134,7 +134,14 @@ public class MarginsField extends FormField {
      * @return This MarginsField instance, for chaining.
      */
     public MarginsField setHeaderLabel(String label) {
-        headerLabel.setText(label == null || label.isBlank() ? "" : label);
+        boolean hide = label == null || label.isBlank();
+        headerLabel.setText(hide ? "" : label);
+        headerLabel.setVisible(!hide);
+        Component parent = headerLabel.getParent();
+        if (parent != null) {
+            parent.revalidate();
+            parent.repaint();
+        }
         return this;
     }
 
@@ -159,18 +166,18 @@ public class MarginsField extends FormField {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.insets = new Insets(0, 0, 5, 5); // add some spacing between the fields
 
         // Render the optional header label even if null.
         // This allows us to make it visible later without rebuilding the field component.
         headerLabel.setFont(getDefaultFont().deriveFont(getDefaultFont().getStyle() | java.awt.Font.BOLD));
         gbc.gridwidth = 4; // span all four columns
-        gbc.insets = new Insets(0, 0, 10, 0); // add some spacing below the header
         gbc.anchor = GridBagConstraints.CENTER;
         panel.add(headerLabel, gbc);
 
         // Left field and label:
         gbc.gridy = 1;
+        gbc.gridwidth = 1; // reset to default
+        gbc.insets = new Insets(2, 0, 2, 4); // add some spacing between the fields
         JLabel label = new JLabel("Left:");
         label.setLabelFor(leftField);
         gbc.anchor = GridBagConstraints.EAST;
@@ -218,7 +225,6 @@ public class MarginsField extends FormField {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 3; // push this spinner so it lines up with the ones on the right
-        gbc.insets = new Insets(0, 0, 0, 5);
         label = new JLabel("Internal spacing:");
         label.setLabelFor(internalSpacingField);
         gbc.anchor = GridBagConstraints.EAST;
