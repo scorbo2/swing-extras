@@ -2,10 +2,9 @@ package ca.corbett.forms;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class MarginsTest {
 
@@ -125,22 +124,83 @@ class MarginsTest {
 
     @Test
     public void testNegativeValues_shouldReject() {
-        Margins actual1 = new Margins(-1);
-        Margins actual2 = new Margins(-1, -1, -1, -1, -1);
-        Margins actual3 = new Margins();
-        actual3.setLeft(-1);
-        actual3.setRight(-1);
-        actual3.setTop(-1);
-        actual3.setBottom(-1);
-        actual3.setInternalSpacing(-1);
+        try {
+            new Margins(-1);
+            new Margins(-1, -1, -1, -1, -1);
+            Margins actual3 = new Margins();
+            actual3.setLeft(-1);
+            actual3.setRight(-1);
+            actual3.setTop(-1);
+            actual3.setBottom(-1);
+            actual3.setInternalSpacing(-1);
+            fail("At least one of the above should have thrown an IllegalArgumentException for negative input");
+        }
+        catch (IllegalArgumentException ignored) {
+            // Expected exception
+        }
+    }
 
-        List<Margins> margins = List.of(actual1, actual2, actual3);
-        for (Margins margin : margins) {
-            assertEquals(0, margin.getInternalSpacing());
-            assertEquals(0, margin.getLeft());
-            assertEquals(0, margin.getRight());
-            assertEquals(0, margin.getTop());
-            assertEquals(0, margin.getBottom());
+    @Test
+    public void addListener_shouldNotifyOnChange() {
+        // GIVEN a Margins instance with a listener:
+        Margins margins = new Margins();
+        TestListener listener = new TestListener();
+        margins.addListener(listener);
+
+        // WHEN we do five updates:
+        margins.setLeft(10);
+        margins.setTop(20);
+        margins.setRight(30);
+        margins.setBottom(40);
+        margins.setInternalSpacing(50);
+
+        // THEN we should receive five notifications:
+        assertEquals(5, listener.getNotificationCount());
+    }
+
+    @Test
+    public void setAll_withListener_shouldOnlyNotifyOnce() {
+        // GIVEN a Margins instance with a listener:
+        Margins margins = new Margins();
+        TestListener listener = new TestListener();
+        margins.addListener(listener);
+
+        // WHEN we set all properties at once:
+        margins.setAll(99);
+
+        // THEN we should receive only one notification, not one per property:
+        assertEquals(1, listener.getNotificationCount());
+    }
+
+    @Test
+    public void removeListener_shouldStopNotifications() {
+        // GIVEN a Margins instance with a listener that we will remove:
+        Margins margins = new Margins();
+        TestListener listener = new TestListener();
+        margins.addListener(listener);
+
+        // WHEN we remove the listener and then make some changes:
+        margins.removeListener(listener);
+        margins.setLeft(10);
+        margins.setTop(20);
+        margins.setRight(30);
+        margins.setBottom(40);
+        margins.setInternalSpacing(50);
+
+        // THEN we should receive no notifications:
+        assertEquals(0, listener.getNotificationCount());
+    }
+
+    private static class TestListener implements Margins.Listener {
+        private int notificationCount = 0;
+
+        @Override
+        public void marginsChanged(Margins margins) {
+            notificationCount++;
+        }
+
+        public int getNotificationCount() {
+            return notificationCount;
         }
     }
 }
