@@ -3,7 +3,6 @@ package ca.corbett.forms;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
 
 /**
  * Can be used to specify margins and padding around and inside a FormField,
@@ -48,8 +47,6 @@ public class Margins {
     public interface Listener {
         void marginsChanged(Margins margins);
     }
-
-    private static final Logger log = Logger.getLogger(Margins.class.getName());
 
     public static final int DEFAULT_MARGIN = 4;
 
