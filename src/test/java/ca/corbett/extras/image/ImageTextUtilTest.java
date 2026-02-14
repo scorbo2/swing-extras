@@ -135,7 +135,7 @@ public class ImageTextUtilTest {
      */
     @Test
     public void testDrawText_minFontSizeZero() {
-        // GIVEN: A buffer image
+        // GIVEN: A BufferedImage
         java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(100, 100, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         
         // WHEN/THEN: drawText is called with minFontSize = 0, it should throw IllegalArgumentException
@@ -152,7 +152,7 @@ public class ImageTextUtilTest {
      */
     @Test
     public void testDrawText_minFontSizeNegative() {
-        // GIVEN: A buffer image
+        // GIVEN: A BufferedImage
         java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(100, 100, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         
         // WHEN/THEN: drawText is called with minFontSize = -1, it should throw IllegalArgumentException
@@ -169,7 +169,7 @@ public class ImageTextUtilTest {
      */
     @Test
     public void testDrawText_maxSizeToFitPercentTooLow() {
-        // GIVEN: A buffer image
+        // GIVEN: A BufferedImage
         java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(100, 100, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         
         // WHEN/THEN: drawText is called with maxSizeToFitPercent = 0.05, it should throw IllegalArgumentException
@@ -186,7 +186,7 @@ public class ImageTextUtilTest {
      */
     @Test
     public void testDrawText_maxSizeToFitPercentTooHigh() {
-        // GIVEN: A buffer image
+        // GIVEN: A BufferedImage
         java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(100, 100, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         
         // WHEN/THEN: drawText is called with maxSizeToFitPercent = 1.5, it should throw IllegalArgumentException
@@ -203,7 +203,7 @@ public class ImageTextUtilTest {
      */
     @Test
     public void testDrawText_maxSizeToFitPercentBoundaryValues() {
-        // GIVEN: A buffer image
+        // GIVEN: A BufferedImage
         java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(100, 100, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         
         // WHEN/THEN: drawText is called with maxSizeToFitPercent = 0.1, it should not throw
@@ -226,7 +226,7 @@ public class ImageTextUtilTest {
      */
     @Test
     public void testDrawText_withMaxSizeToFitPercentOnly_invalidValue() {
-        // GIVEN: A buffer image
+        // GIVEN: A BufferedImage
         java.awt.image.BufferedImage image = new java.awt.image.BufferedImage(100, 100, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         
         // WHEN/THEN: drawText is called with invalid maxSizeToFitPercent, it should throw IllegalArgumentException
