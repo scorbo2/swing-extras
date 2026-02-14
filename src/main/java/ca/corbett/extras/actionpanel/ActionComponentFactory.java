@@ -53,7 +53,7 @@ class ActionComponentFactory {
         JLabel label = new JLabel("<html>" + action.getName() + "</html>");
         if (action.getIcon() != null && actionPanel.isShowActionIcons() && (action.getIcon() instanceof ImageIcon)) {
             label.setIcon(ImageUtil.scaleIcon((ImageIcon)action.getIcon(), actionPanel.getActionIconSize()));
-            label.setIconTextGap(actionPanel.getActionInternalPadding());
+            label.setIconTextGap(actionPanel.getActionIconTextGap());
         }
         if (action.getTooltip() != null) {
             label.setToolTipText(action.getTooltip());
@@ -100,8 +100,10 @@ class ActionComponentFactory {
         }
 
         // If this is the highlighted action, highlight it:
-        if (actionPanel.isHighlightedAction(action)) {
-            button.setBackground(ColorOptions.getHighlightColor(button.getBackground()));
+        if (actionPanel.isHighlightLastActionEnabled()) {
+            if (actionPanel.isHighlightedAction(action)) {
+                button.setBackground(ColorOptions.getHighlightColor(button.getBackground()));
+            }
         }
 
         // Null out the icon if we're not showing icons:
@@ -114,7 +116,7 @@ class ActionComponentFactory {
             if (action.getIcon() != null && action.getIcon() instanceof ImageIcon) {
                 button.setIcon(ImageUtil.scaleIcon((ImageIcon)action.getIcon(), actionPanel.getActionIconSize()));
                 button.setHorizontalTextPosition(JButton.RIGHT); // text to the right of the icon
-                button.setIconTextGap(actionPanel.getActionInternalPadding());
+                button.setIconTextGap(actionPanel.getActionIconTextGap());
             }
         }
 

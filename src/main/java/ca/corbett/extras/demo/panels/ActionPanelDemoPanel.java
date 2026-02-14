@@ -14,6 +14,7 @@ import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.Margins;
 import ca.corbett.forms.SwingFormsResources;
 import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
@@ -22,6 +23,7 @@ import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.FontField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.LongTextField;
+import ca.corbett.forms.fields.MarginsField;
 import ca.corbett.forms.fields.NumberField;
 import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.ShortTextField;
@@ -111,11 +113,10 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private ComboField<BorderOption> headerBorderField;
     private ComboField<BorderOption> actionTrayBorderField;
     private ComboField<BorderOption> toolBarBorderField;
-    private NumberField externalPaddingField;
-    private NumberField headerInternalPaddingField;
-    private NumberField actionInternalPaddingField;
-    private NumberField toolBarInternalPaddingField;
-    private NumberField actionIndentField;
+    private MarginsField actionGroupMarginsField;
+    private MarginsField headerMarginsField;
+    private MarginsField actionTrayMarginsField;
+    private MarginsField toolBarMarginsField;
     private ComboField<String> animationField;
     private ComboField<String> colorSourceField;
     private ComboField<String> fontSourceField;
@@ -203,7 +204,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         // Set initial styling options for the ActionPanel based on default field values:
         actionPanel.getBorderOptions().setHeaderBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         colorSourceFieldChanged(); // set our cool custom colors
-        actionPanel.setActionIndent(4);
+        marginsChanged(); // set our margins based on the default values in the margin fields
 
         return formPanel;
     }
@@ -377,15 +378,9 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         useLabelsField = new ComboField<>("Action style:", options, 0);
         useLabelsField.addValueChangedListener(f -> {
             if (useLabelsField.getSelectedIndex() == 0) {
-                // Re-enable left indent for labels, if it was set:
-                actionIndentField.setEnabled(true);
-                actionPanel.setActionIndent(actionIndentField.getCurrentValue().intValue());
                 actionPanel.setUseLabels();
             }
             else {
-                // Left indent only makes sense for labels, disable it for buttons:
-                actionIndentField.setEnabled(false);
-                actionPanel.setActionIndent(0);
                 actionPanel.setUseButtons();
             }
         });
@@ -716,46 +711,49 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 """;
         formPanel.add(new LabelField(label));
 
-        externalPaddingField = new NumberField("External padding:", ActionPanel.DEFAULT_EXTERNAL_PADDING, 0, 32, 1);
-        externalPaddingField.addValueChangedListener(
-                f -> actionPanel.setExternalPadding(externalPaddingField.getCurrentValue().intValue()));
-        externalPaddingField.setHelpText("<html>Sets the space between each group and the edges<br>" +
-                                                 "of the panel, and also the space between groups.</html>");
-        formPanel.add(externalPaddingField);
+        actionGroupMarginsField = new MarginsField("", new Margins(ActionPanel.DEFAULT_EXTERNAL_PADDING));
+        actionGroupMarginsField.getMargins().setTop(10).setBottom(5).setLeft(16);
+        actionGroupMarginsField.setHeaderLabel("Action group margins");
+        actionGroupMarginsField.setHelpText("<html>Sets the space between each group and the edges of the panel.<br>" +
+                                                    "Internal spacing controls the gap between groups.</html>");
+        actionGroupMarginsField.addValueChangedListener(f -> marginsChanged());
+        formPanel.add(actionGroupMarginsField);
 
-        headerInternalPaddingField = new NumberField("Header padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32, 1);
-        headerInternalPaddingField.addValueChangedListener(
-                f -> actionPanel.setHeaderInternalPadding(headerInternalPaddingField.getCurrentValue().intValue()));
-        headerInternalPaddingField.setHelpText(
-                "<html>Sets the space between components within the header of an ActionGroup,<br>" +
-                        "as well as the space between those components and the inner edge of the group.</html>");
-        formPanel.add(headerInternalPaddingField);
+        headerMarginsField = new MarginsField("", new Margins(ActionPanel.DEFAULT_INTERNAL_PADDING));
+        headerMarginsField.getMargins().setTop(5).setBottom(5).setLeft(16);
+        headerMarginsField.setHeaderLabel("Header margins");
+        headerMarginsField.setHelpText("<html>Sets the space around the header of each group.<br>" +
+                                               "Internal spacing controls the gap between the header components.</html>");
+        headerMarginsField.addValueChangedListener(f -> marginsChanged());
+        formPanel.add(headerMarginsField);
 
-        actionInternalPaddingField = new NumberField("Action padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32, 1);
-        actionInternalPaddingField.addValueChangedListener(
-                f -> actionPanel.setActionInternalPadding(actionInternalPaddingField.getCurrentValue().intValue()));
-        actionInternalPaddingField.setHelpText(
-                "<html>Sets the space between action buttons/labels in an ActionGroup,<br>" +
-                        "as well as the space between those components and the inner edge of the group.</html>");
-        formPanel.add(actionInternalPaddingField);
+        actionTrayMarginsField = new MarginsField("", new Margins(ActionPanel.DEFAULT_INTERNAL_PADDING));
+        actionTrayMarginsField.getMargins().setTop(5).setBottom(5).setLeft(16);
+        actionTrayMarginsField.setHeaderLabel("Action tray margins");
+        actionTrayMarginsField.setHelpText(
+                "<html>Sets the space between the actions and the edge of the action group.<br>" +
+                        "Internal spacing controls the gap between the actions themselves.</html>");
+        actionTrayMarginsField.addValueChangedListener(f -> marginsChanged());
+        formPanel.add(actionTrayMarginsField);
 
-        toolBarInternalPaddingField = new NumberField("Toolbar padding:", ActionPanel.DEFAULT_INTERNAL_PADDING, 0, 32,
-                                                      1);
-        toolBarInternalPaddingField.addValueChangedListener(
-                f -> actionPanel.setToolBarInternalPadding(toolBarInternalPaddingField.getCurrentValue().intValue()));
-        toolBarInternalPaddingField.setHelpText(
-                "<html>Sets the space between components within the toolbar of an ActionGroup,<br>" +
-                        "as well as the space between those components and the inner edge of the group.<br>" +
-                        "(ToolBar must be enabled and not in \"Stretch\" mode for this value to work).</html>");
-        formPanel.add(toolBarInternalPaddingField);
+        toolBarMarginsField = new MarginsField("", new Margins(ActionPanel.DEFAULT_INTERNAL_PADDING));
+        toolBarMarginsField.getMargins().setTop(5).setLeft(16);
+        toolBarMarginsField.setHeaderLabel("Toolbar margins");
+        toolBarMarginsField.setHelpText(
+                "<html>Sets the space between the toolbar buttons and the edge of the action group.<br>" +
+                        "Internal spacing controls the gap between toolbar buttons themselves.<br>" +
+                        "(ToolBar must be enabled for these changes to be visible!)<br>" +
+                        "(Internal spacing is ignored in ToolBar \"Stretch\" mode).</html>");
+        toolBarMarginsField.addValueChangedListener(f -> marginsChanged());
+        formPanel.add(toolBarMarginsField);
 
-        actionIndentField = new NumberField("Action left indent:", 4, 0, 32, 1);
-        actionIndentField.addValueChangedListener(
-                f -> actionPanel.setActionIndent(actionIndentField.getCurrentValue().intValue()));
-        actionIndentField.setHelpText("<html>When using labels instead of buttons, you can<br>" +
-                                              "set a left indent for the action labels to give them a bit<br>" +
-                                              "of separation from the group header.</html>");
-        formPanel.add(actionIndentField);
+        NumberField iconTextGapField = new NumberField("Action icon-text gap:", 4, 0, 64, 1);
+        iconTextGapField.getMargins().setTop(12);
+        iconTextGapField.setHelpText("<html>Sets the gap between the action icons and text.<br>" +
+                                             "(Only applicable if action icons are enabled and actions have icons!)</html>");
+        iconTextGapField.addValueChangedListener(
+                f -> actionPanel.setActionIconTextGap(iconTextGapField.getCurrentValue().intValue()));
+        formPanel.add(iconTextGapField);
 
         return formPanel;
     }
@@ -861,6 +859,19 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         else {
             collapseClip.setFramePosition(0); // rewind
             collapseClip.start();
+        }
+    }
+
+    private void marginsChanged() {
+        actionPanel.setAutoRebuildEnabled(false);
+        try {
+            actionPanel.getActionGroupMargins().copy(actionGroupMarginsField.getMarginsObject());
+            actionPanel.getHeaderMargins().copy(headerMarginsField.getMarginsObject());
+            actionPanel.getActionTrayMargins().copy(actionTrayMarginsField.getMarginsObject());
+            actionPanel.getToolBarMargins().copy(toolBarMarginsField.getMarginsObject());
+        }
+        finally {
+            actionPanel.setAutoRebuildEnabled(true);
         }
     }
 
