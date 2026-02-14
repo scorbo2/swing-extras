@@ -90,8 +90,8 @@ public class ComboField<T> extends FormField {
     /**
      * Returns the currently selected item as an instance of T.
      */
+    @SuppressWarnings("unchecked")
     public T getSelectedItem() {
-        //noinspection unchecked
         return (T)comboBox.getSelectedItem();
     }
 

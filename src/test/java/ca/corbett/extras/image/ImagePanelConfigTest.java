@@ -58,7 +58,7 @@ public class ImagePanelConfigTest extends AbstractPropertyBaseTests {
     }
 
     @Test
-    public void testChangeListener() throws Exception {
+    public void testChangeListener() {
         // GIVEN a property with a mocked change listener:
         ImagePanelConfig testProp = (ImagePanelConfig)createTestObject("test", "test");
         PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);

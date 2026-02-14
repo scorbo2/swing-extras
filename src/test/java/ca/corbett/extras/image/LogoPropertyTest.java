@@ -84,7 +84,7 @@ public class LogoPropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
-    public void testChangeListener() throws Exception {
+    public void testChangeListener() {
         // GIVEN a property with a mocked change listener:
         LogoProperty testProp = (LogoProperty)createTestObject("test", "test");
         PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);

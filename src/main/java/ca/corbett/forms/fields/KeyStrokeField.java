@@ -46,7 +46,7 @@ public class KeyStrokeField extends FormField implements DocumentListener {
     private final Set<KeyStroke> reservedKeyStrokes = new HashSet<>();
     private final JTextField textField;
     private boolean allowBlank;
-    private FieldValidator fieldValidator;
+    private final FieldValidator<? extends FormField> fieldValidator;
 
     /**
      * Creates a new KeyStrokeField to represent the given KeyStroke, which can be null to

@@ -80,7 +80,7 @@ class KeyStrokeManagerTest {
 
         // WHEN we parse them:
         for (String keyStroke : keyStrokes) {
-            KeyStroke result = keyManager.parseKeyStroke(keyStroke);
+            KeyStroke result = KeyStrokeManager.parseKeyStroke(keyStroke);
 
             // THEN we should get a non-null KeyStroke:
             assertNotNull(result, "Failed to parse valid key stroke: " + keyStroke);
@@ -188,7 +188,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void register_unregister_reassignHandler_flow() throws Exception {
+    public void register_unregister_reassignHandler_flow() {
         // GIVEN a simply dummy action:
         AtomicInteger invoked = new AtomicInteger(0);
         Action actionUnderTest = new AbstractAction("MyAction") {
@@ -235,7 +235,7 @@ class KeyStrokeManagerTest {
 
 
     @Test
-    public void multipleActionsSameKeystroke_areBothRegistered_and_haveAccelerators() throws Exception {
+    public void multipleActionsSameKeystroke_areBothRegistered_and_haveAccelerators() {
         AtomicInteger a1 = new AtomicInteger(0);
         AtomicInteger a2 = new AtomicInteger(0);
 
@@ -281,7 +281,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void clear_withActionsRegistered_shouldClear() throws Exception {
+    public void clear_withActionsRegistered_shouldClear() {
         Action action = new AbstractAction("SomeAction") {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -420,7 +420,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void clear_withRegisteredAction_shouldClearActionAccelerator() throws Exception {
+    public void clear_withRegisteredAction_shouldClearActionAccelerator() {
         // GIVEN a registered action:
         Action action = new AbstractAction("ClearAcceleratorAction") {
             @Override
@@ -439,7 +439,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void dispose_withRegisteredHandlers_shouldClearAll() throws Exception {
+    public void dispose_withRegisteredHandlers_shouldClearAll() {
         Action action = new AbstractAction("DisposableAction") {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -489,7 +489,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void warnIfMultipleHandlers_disabled_noWarning() throws Exception {
+    public void warnIfMultipleHandlers_disabled_noWarning() {
         // GIVEN a KeyStrokeManager with warning disabled (default):
         TestLogHandler logHandler = new TestLogHandler();
         Logger testLogger = Logger.getLogger(KeyStrokeManager.class.getName());
@@ -520,7 +520,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void warnIfMultipleHandlers_enabled_logsWarning() throws Exception {
+    public void warnIfMultipleHandlers_enabled_logsWarning() {
         // GIVEN a KeyStrokeManager with warning enabled:
         TestLogHandler logHandler = new TestLogHandler();
         Logger testLogger = Logger.getLogger(KeyStrokeManager.class.getName());
@@ -573,7 +573,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void checkForMultipleHandlers_noMultiple_returnsEmpty() throws Exception {
+    public void checkForMultipleHandlers_noMultiple_returnsEmpty() {
         // GIVEN a manager with only single handlers:
         Action action1 = new AbstractAction("A1") {
             @Override
@@ -598,7 +598,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void checkForMultipleHandlers_withMultiple_returnsCorrectList() throws Exception {
+    public void checkForMultipleHandlers_withMultiple_returnsCorrectList() {
         // GIVEN a manager with some multiple handlers:
         Action action1 = new AbstractAction("A1") {
             @Override
@@ -639,7 +639,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void checkForMultipleHandlers_afterClear_returnsEmpty() throws Exception {
+    public void checkForMultipleHandlers_afterClear_returnsEmpty() {
         // GIVEN a manager with multiple handlers:
         Action action1 = new AbstractAction("A1") {
             @Override
@@ -666,7 +666,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void registerHandler_withKeyActionAndStringShortcut_shouldRegister() throws Exception {
+    public void registerHandler_withKeyActionAndStringShortcut_shouldRegister() {
         // GIVEN a KeyAction:
         KeyAction keyAction = e -> {
             // No-op for testing
@@ -693,7 +693,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void registerHandler_withKeyStrokeAndKeyStrokeShortcut_shouldRegister() throws Exception {
+    public void registerHandler_withKeyStrokeAndKeyStrokeShortcut_shouldRegister() {
         // GIVEN a KeyAction:
         KeyAction keyAction = e -> {
             // No-op for testing
@@ -720,7 +720,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void unregisterHandler_withKeyStroke_shouldUnregister() throws Exception {
+    public void unregisterHandler_withKeyStroke_shouldUnregister() {
         // GIVEN a KeyAction registered with a String shortcut:
         KeyAction keyAction = e -> {
             // No-op for testing
@@ -741,7 +741,7 @@ class KeyStrokeManagerTest {
     }
 
     @Test
-    public void unregisterHandler_withMultipleHandlers_shouldRemoveAll() throws Exception {
+    public void unregisterHandler_withMultipleHandlers_shouldRemoveAll() {
         // GIVEN a KeyStrokeManager with multiple handlers registered for the same keystroke:
         Action action1 = new AbstractAction("A1") {
             @Override

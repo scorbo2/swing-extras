@@ -127,7 +127,7 @@ public class HyperlinkUtil {
             openHyperlink(url.toURI(), owner);
         }
         catch (Exception e) {
-            report("Malformed URL", "Unable to browse URL: " + url.toString(), Level.WARNING, e, owner);
+            report("Malformed URL", "Unable to browse URL: " + url, Level.WARNING, e, owner);
         }
     }
 

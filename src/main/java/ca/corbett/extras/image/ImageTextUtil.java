@@ -220,38 +220,19 @@ public class ImageTextUtil {
         for (String line : lines) {
             int textWidth = g.getFontMetrics().stringWidth(line);
             int textHeight = (int)(g.getFontMetrics().getLineMetrics(line, g).getHeight());
-            int textX;
-            switch (align) {
-                case TOP_LEFT:
-                case CENTER_LEFT:
-                case BOTTOM_LEFT:
-                    textX = boundLeft;
-                    break;
-                case TOP_RIGHT:
-                case CENTER_RIGHT:
-                case BOTTOM_RIGHT:
-                    textX = boundRight - textWidth; //  - (int)(textWidth * 0.1); // 0.1 = kludge to fix bad centering
-                    break;
-                default:
-                    textX = boundLeft + (boundWidth - textWidth) / 2;//  - (int)(textWidth * 0.1); // 0.1 = kludge to fix bad centering
-            }
+            int textX = switch (align) {
+                case TOP_LEFT, CENTER_LEFT, BOTTOM_LEFT -> boundLeft;
+                case TOP_RIGHT, CENTER_RIGHT, BOTTOM_RIGHT -> boundRight - textWidth;
+                default -> boundLeft + (boundWidth - textWidth) / 2;
+            };
             if (textY == 0) {
                 int paragraphHeight = textHeight * lines.size();
                 int textAscent = g.getFontMetrics().getAscent() / 4; // needed for proper vertical positioning
-                switch (align) {
-                    case TOP_LEFT:
-                    case TOP_CENTER:
-                    case TOP_RIGHT:
-                        textY = boundTop - textAscent;
-                        break;
-                    case BOTTOM_LEFT:
-                    case BOTTOM_CENTER:
-                    case BOTTOM_RIGHT:
-                        textY = boundBottom - paragraphHeight - textAscent;
-                        break;
-                    default:
-                        textY = boundTop + ((boundHeight - paragraphHeight) / 2) - textAscent;
-                }
+                textY = switch (align) {
+                    case TOP_LEFT, TOP_CENTER, TOP_RIGHT -> boundTop - textAscent;
+                    case BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT -> boundBottom - paragraphHeight - textAscent;
+                    default -> boundTop + ((boundHeight - paragraphHeight) / 2) - textAscent;
+                };
             }
             else {
                 textY += textHeight;

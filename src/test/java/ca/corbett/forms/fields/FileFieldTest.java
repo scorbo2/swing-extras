@@ -54,7 +54,7 @@ class FileFieldTest extends FormFieldBaseTests {
         assertSame(FileField.SelectionType.NonExistingFile, ((FileField)actual).getSelectionType());
 
         actualField.setSelectionType(FileField.SelectionType.ExistingFile);
-        assertSame(FileField.SelectionType.ExistingFile, ((FileField)actual).getSelectionType());;
+        assertSame(FileField.SelectionType.ExistingFile, ((FileField)actual).getSelectionType());
     }
 
     @Test
@@ -69,7 +69,7 @@ class FileFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testAddValueChangedListener() throws Exception {
+    public void testAddValueChangedListener() {
         FileField actualField = (FileField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
@@ -82,7 +82,7 @@ class FileFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testRemoveValueChangedListener() throws Exception {
+    public void testRemoveValueChangedListener() {
         FileField actualField = (FileField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);

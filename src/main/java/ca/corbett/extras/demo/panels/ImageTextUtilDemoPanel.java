@@ -215,14 +215,12 @@ public class ImageTextUtilDemoPanel extends PanelBuilder {
             bgGradient = (Gradient)bgColorField.getSelectedValue();
             fillColor = textFillColorField.getColor();
             outlineColor = textOutlineColorField.getColor();
-            //@formatter:off
-            switch (outlineWidthField.getSelectedIndex()) {
-                case 0: outlineWidth = 0; break;
-                case 1: outlineWidth = 20; break;
-                case 2: outlineWidth = 12; break;
-                case 3: outlineWidth = 8; break;
-            }
-            //@formatter:on
+            outlineWidth = switch (outlineWidthField.getSelectedIndex()) {
+                case 0 -> 0;
+                case 1 -> 20;
+                case 2 -> 12;
+                default -> 8;
+            };
             textAlign = textAlignField.getSelectedItem();
             lineWrapAt = (Integer)lineWrapField.getCurrentValue();
             render();

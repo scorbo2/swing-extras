@@ -100,7 +100,7 @@ class SingleInstanceManagerTest {
     }
 
     @Test
-    void tryAcquireLock_withInvalidPort_shouldReject() throws Exception {
+    void tryAcquireLock_withInvalidPort_shouldReject() {
         int[] invalidPorts = new int[]{-1, 0, 80, 65536};
         int exceptionsCaught = 0;
         for (int port : invalidPorts) {

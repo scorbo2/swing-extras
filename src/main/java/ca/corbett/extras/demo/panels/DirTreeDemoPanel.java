@@ -177,7 +177,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
                 "Got the blues",
                 "Hot dog stand!"
         );
-        colorSchemeField = new ComboField("Color scheme:", options, 0);
+        colorSchemeField = new ComboField<>("Color scheme:", options, 0);
         colorSchemeField.setVisible(dirTree.getTreeCellRenderer() instanceof DefaultTreeCellRenderer);
         colorSchemeField.addValueChangedListener(new ValueChangedListener() {
             @Override
@@ -278,7 +278,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
      *
      * @since 2.7
      */
-    private class AnnoyingPromptListener implements DirTreeListener {
+    private static class AnnoyingPromptListener implements DirTreeListener {
         @Override
         public boolean selectionWillChange(DirTree source, File newSelectedDir) {
             return JOptionPane.showConfirmDialog(DemoApp.getInstance(),

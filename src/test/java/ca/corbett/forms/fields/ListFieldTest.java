@@ -54,9 +54,8 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testSetSelectionMode() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
-        JList<String> actualList = actualField.getList();
+        ListField<?> actualField = (ListField<?>)actual;
+        JList<?> actualList = actualField.getList();
         assertEquals(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION, actualField.getSelectionMode());
         assertEquals(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION, actualList.getSelectionMode());
 
@@ -72,9 +71,8 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testSetSelectionMode_ignoreStupidValues() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
-        JList<String> actualList = actualField.getList();
+        ListField<?> actualField = (ListField<?>)actual;
+        JList<?> actualList = actualField.getList();
         actualField.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         actualField.setSelectionMode(9999);
@@ -88,9 +86,8 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testSetLayoutOrientation() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
-        JList<String> actualList = actualField.getList();
+        ListField<?> actualField = (ListField<?>)actual;
+        JList<?> actualList = actualField.getList();
 
         int[] orientation = new int[] {JList.VERTICAL,
                 JList.VERTICAL_WRAP,
@@ -104,9 +101,8 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testVisibleRowCount() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
-        JList<String> actualList = actualField.getList();
+        ListField<?> actualField = (ListField<?>)actual;
+        JList<?> actualList = actualField.getList();
 
         int[] rowCounts = new int[] {7,11,5};
         for (int rowCount : rowCounts) {
@@ -118,9 +114,8 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testVisibleRowCount_ignoreStupidValues() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
-        JList<String> actualList = actualField.getList();
+        ListField<?> actualField = (ListField<?>)actual;
+        JList<?> actualList = actualField.getList();
         final int expected = 3;
         actualField.setVisibleRowCount(expected);
 
@@ -136,9 +131,8 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testCellWidth() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
-        JList<String> actualList = actualField.getList();
+        ListField<?> actualField = (ListField<?>)actual;
+        JList<?> actualList = actualField.getList();
 
         int[] cellWidths = new int[] {7,11,5,-1};
         for (int cellWidth : cellWidths) {
@@ -150,9 +144,8 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testCellWidth_rejectStupidValues() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
-        JList<String> actualList = actualField.getList();
+        ListField<?> actualField = (ListField<?>)actual;
+        JList<?> actualList = actualField.getList();
 
         final int expected = 5;
         actualField.setFixedCellWidth(expected);
@@ -164,8 +157,7 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testSelectedIndexes() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
+        ListField<?> actualField = (ListField<?>)actual;
 
         actualField.setSelectedIndex(0);
         int[] selected = actualField.getSelectedIndexes();
@@ -181,8 +173,7 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testSelectedIndexes_ignoreStupidValues() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
+        ListField<?> actualField = (ListField<?>)actual;
 
         actualField.setSelectedIndex(0);
         actualField.setSelectedIndex(-999);
@@ -258,8 +249,7 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testValueChangedOnSelectionModeChange_shouldNotifyOnce() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
+        ListField<?> actualField = (ListField<?>)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
         actualField.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -268,8 +258,7 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testRemoveValueChangedListener() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
+        ListField<?> actualField = (ListField<?>)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
         actual.removeValueChangedListener(listener);
@@ -287,8 +276,7 @@ class ListFieldTest extends FormFieldBaseTests {
 
     @Test
     public void validate_validScenario() {
-        //noinspection unchecked
-        ListField<String> actualField = (ListField<String>)actual;
+        ListField<?> actualField = (ListField<?>)actual;
         actual.addFieldValidator(new TestValidator());
         actualField.setSelectedIndex(1);
         assertTrue(actual.isValid());

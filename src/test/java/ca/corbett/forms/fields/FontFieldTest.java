@@ -91,7 +91,7 @@ class FontFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testAddValueChangedListener() throws Exception {
+    public void testAddValueChangedListener() {
         FontField actualField = (FontField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
@@ -130,7 +130,7 @@ class FontFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testRemoveValueChangedListener() throws Exception {
+    public void testRemoveValueChangedListener() {
         FontField actualField = (FontField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
