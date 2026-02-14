@@ -353,7 +353,8 @@ public class GradientUtil {
     }
 
     protected static RadialGradientPaint createCircularGradientPaint(float centerX, float centerY, int width, int height, Color color1, Color color2) {
-        float radius = Math.min(width, height) / 2f;
+        float baseRadius = Math.min(width, height) / 2f;
+        float radius = Math.max(0.5f, baseRadius);
         return new RadialGradientPaint(centerX, centerY, radius,
                                        new float[]{0f, 1f},
                                        new Color[]{color1, color2});
