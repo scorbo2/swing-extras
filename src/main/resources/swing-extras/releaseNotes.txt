@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
+  #386 - GradientUtil: add circular gradient option
   #382 - New FormField: MarginsField / MarginsProperty
   #376 - ActionPanel: extract border options
   #375 - ActionPanel: extract expand/collapse options
