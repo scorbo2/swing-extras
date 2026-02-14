@@ -4,7 +4,6 @@ import ca.corbett.extras.gradient.ColorSelectionType;
 import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
-import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.ListField;
 import ca.corbett.forms.fields.NumberField;
@@ -295,12 +294,7 @@ public final class FontDialog extends JDialog {
     private JComponent buildFontChooserPanel(Color textColor, Color bgColor) {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
 
-        ValueChangedListener changeListener = new ValueChangedListener() {
-            @Override
-            public void formFieldValueChanged(FormField field) {
-                fontChanged();
-            }
-        };
+        ValueChangedListener changeListener = field -> fontChanged();
 
         List<String> options = new ArrayList<>();
         options.add("Java built-in fonts");

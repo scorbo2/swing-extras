@@ -38,7 +38,7 @@ public class CollapsiblePanelField extends FormField {
     private static final int PANEL_ICON_SIZE = 20;
     private static boolean isDefaultBorderEnabled = true;
 
-    public enum ButtonPosition { Left, Right; }
+    public enum ButtonPosition {Left, Right}
 
     private final JPanel expandPanel;
     private final JPanel headerPanel;

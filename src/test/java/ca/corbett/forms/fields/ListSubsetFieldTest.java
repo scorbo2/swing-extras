@@ -425,7 +425,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void selectItem_withValueChangedListener_shouldNotify() {
         // GIVEN a ListSubsetField with a ValueChangedListener:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -441,7 +440,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void unselectItem_withValueChangedListener_shouldNotify() {
         // GIVEN a ListSubsetField with a ValueChangedListener and an item already selected:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -458,7 +456,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void selectItems_withValueChangedListener_shouldNotify() {
         // GIVEN a ListSubsetField with a ValueChangedListener:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -474,7 +471,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void selectAllItems_withValueChangedListener_shouldNotify() {
         // GIVEN a ListSubsetField with a ValueChangedListener:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -490,7 +486,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void unselectAllItems_withValueChangedListener_shouldNotify() {
         // GIVEN a ListSubsetField with a ValueChangedListener and some items selected:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -507,7 +502,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void selectItem_withNonExistingItem_shouldNotNotify() {
         // GIVEN a ListSubsetField with a ValueChangedListener:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -523,7 +517,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void selectItems_withNoValidItems_shouldNotNotify() {
         // GIVEN a ListSubsetField with a ValueChangedListener:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -539,7 +532,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void multipleSelections_withValueChangedListener_shouldNotifyMultipleTimes() {
         // GIVEN a ListSubsetField with a ValueChangedListener:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -559,7 +551,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void removeValueChangedListener_shouldStopNotifications() {
         // GIVEN a ListSubsetField with a ValueChangedListener that is later removed:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -577,7 +568,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void selectAllItems_withNoItemsToMove_shouldNotNotify() {
         // GIVEN a ListSubsetField with a ValueChangedListener and all items already selected:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",
@@ -594,7 +584,6 @@ class ListSubsetFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void unselectAllItems_withNoItemsToMove_shouldNotNotify() {
         // GIVEN a ListSubsetField with a ValueChangedListener and no items selected:
         ListSubsetField<String> subsetField = new ListSubsetField<>("Test Subset Field",

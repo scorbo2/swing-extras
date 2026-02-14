@@ -46,8 +46,7 @@ class ListPropertyTest extends AbstractPropertyBaseTests {
         testProp.addFormFieldChangeListener(listener);
 
         // WHEN we generate a form field and mess with it a bit:
-        //noinspection unchecked
-        ListField<String> formField = (ListField<String>)testProp.generateFormField();
+        ListField<?> formField = (ListField<?>)testProp.generateFormField();
         formField.setSelectedIndex(1);
         formField.setSelectedIndex(2);
 

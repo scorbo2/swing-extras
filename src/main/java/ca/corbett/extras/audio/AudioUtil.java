@@ -90,12 +90,11 @@ public class AudioUtil {
      * @param audioData An int array containing audio data (from one of the parseAudio methods).
      * @param listener  An optional PlaybackListener to receive playback events. Can be null.
      * @return A PlaybackThread instance.
-     * @throws javax.sound.sampled.UnsupportedAudioFileException On unsupported audio.
      * @throws java.io.IOException                               On general i/o error.
      * @throws javax.sound.sampled.LineUnavailableException      On audio system error.
      */
     public static PlaybackThread play(int[][] audioData, PlaybackListener listener)
-            throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+            throws IOException, LineUnavailableException {
         AudioInputStream audioStream = getAudioInputStream(audioData);
         PlaybackThread thread = new PlaybackThread(audioStream, 0, 0, listener);
         new Thread(thread).start();
@@ -168,12 +167,11 @@ public class AudioUtil {
      * @param limit     An offset, in milliseconds, where to stop playing. 0 means play to end of stream.
      * @param listener  An optional PlaybackListener to receive playback events. Can be null.
      * @return A PlaybackThread instance.
-     * @throws javax.sound.sampled.UnsupportedAudioFileException On unsupported audio.
      * @throws java.io.IOException                               On general i/o error.
      * @throws javax.sound.sampled.LineUnavailableException      On audio system error.
      */
     public static PlaybackThread play(int[][] audioData, long offset, long limit, PlaybackListener listener)
-            throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+            throws IOException, LineUnavailableException {
         AudioInputStream audioStream = getAudioInputStream(audioData);
         PlaybackThread thread = new PlaybackThread(audioStream, offset, limit, listener);
         new Thread(thread).start();
@@ -354,11 +352,8 @@ public class AudioUtil {
      * @param audioData The parsed audio data, presumably from one of the parseAudio methods.
      * @param prefs     A WaveformConfig instance describing what the waveform should look like.
      * @return A BufferedImage containing a graphical representation of the audio data.
-     * @throws javax.sound.sampled.UnsupportedAudioFileException On unsupported audio.
-     * @throws java.io.IOException                               On general i/o error.
      */
-    public static BufferedImage generateWaveform(int[][] audioData, WaveformConfig prefs)
-            throws UnsupportedAudioFileException, IOException {
+    public static BufferedImage generateWaveform(int[][] audioData, WaveformConfig prefs) {
         BufferedImage waveform;
 
         // Make sure our audio channel indexes make sense:

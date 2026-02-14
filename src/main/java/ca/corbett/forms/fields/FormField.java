@@ -420,6 +420,7 @@ public abstract class FormField {
      *
      * @return True if the field value is valid according to all our validators, false otherwise.
      */
+    @SuppressWarnings("unchecked")
     public boolean validate() {
         boolean isValid = true;
 
@@ -430,7 +431,6 @@ public abstract class FormField {
 
         List<String> validationMessages = new ArrayList<>();
         for (FieldValidator<? extends FormField> validator : fieldValidators) {
-            //noinspection unchecked
             FieldValidator<FormField> theValidator = (FieldValidator<FormField>)validator;
             ValidationResult validationResult = theValidator.validate(this);
             if (validationResult == null) {

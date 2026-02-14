@@ -152,7 +152,6 @@ class ActionPanelTest {
                 latch.countDown();
             }
             catch (Exception e) {
-                e.printStackTrace();
                 fail("Instant expand/collapse test failed: " + e.getMessage());
             }
         });

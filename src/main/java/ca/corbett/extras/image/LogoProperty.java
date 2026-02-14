@@ -26,7 +26,7 @@ public final class LogoProperty extends AbstractProperty {
 
         private final String label;
 
-        private ColorType(String label) {
+        ColorType(String label) {
             this.label = label;
         }
 

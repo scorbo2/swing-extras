@@ -482,7 +482,6 @@ public class SliderField extends FormField {
             }
 
             // Fallback (should never reach here if fractions are properly sorted)
-            System.out.println("fallback!");
             return stopLabels[stopLabels.length - 1];
         }
 

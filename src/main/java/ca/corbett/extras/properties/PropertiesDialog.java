@@ -265,13 +265,7 @@ public class PropertiesDialog extends JDialog {
         panel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
         panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
         JButton btn = new JButton("OK");
-        btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                validateFormAndClose();
-            }
-
-        });
+        btn.addActionListener(e -> validateFormAndClose());
         btn.setPreferredSize(new Dimension(95, 24));
         panel.add(btn);
 

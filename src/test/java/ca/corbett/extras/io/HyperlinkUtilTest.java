@@ -336,7 +336,7 @@ class HyperlinkUtilTest {
 
         // Now it should use the real system browser (behavior depends on environment)
         // We just verify it doesn't throw
-        assertDoesNotThrow(() -> HyperlinkUtil.isBrowsingSupported());
+        assertDoesNotThrow(HyperlinkUtil::isBrowsingSupported);
     }
 
     @Test

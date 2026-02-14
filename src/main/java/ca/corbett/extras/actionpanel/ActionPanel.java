@@ -18,6 +18,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -284,7 +285,6 @@ public class ActionPanel extends JPanel {
      * Namely, we ensure that a valid Card Container is set before accepting the action.
      *
      * @param cardAction The CardAction to add.
-     * @return This ActionPanel, for method chaining.
      */
     private void checkCardAction(CardAction cardAction) {
         if (cardContainer == null) {
@@ -676,7 +676,7 @@ public class ActionPanel extends JPanel {
         boolean newNameInUse = actionGroups.stream()
                                            .filter(g -> g != group) // exclude group in question
                                            .map(ActionGroup::getName)
-                                           .filter(name -> name != null)
+                                           .filter(Objects::nonNull)
                                            .anyMatch(name -> name.equalsIgnoreCase(newNameLower));
         if (newNameInUse) {
             return false;

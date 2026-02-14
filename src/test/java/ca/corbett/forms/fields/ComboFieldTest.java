@@ -19,7 +19,7 @@ class ComboFieldTest extends FormFieldBaseTests {
 
     @Override
     protected FormField createTestObject() {
-        return new ComboField<String>("test", List.of("One", "Two", "Three"), 0);
+        return new ComboField<>("test", List.of("One", "Two", "Three"), 0);
     }
 
     @Test
@@ -46,7 +46,7 @@ class ComboFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testSetSelectedIndex() {
-        ComboField actualCombo = (ComboField)actual;
+        ComboField<?> actualCombo = (ComboField<?>)actual;
         assertEquals(0, actualCombo.getSelectedIndex());
 
         actualCombo.setSelectedIndex(2);
@@ -57,6 +57,7 @@ class ComboFieldTest extends FormFieldBaseTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testSetSelectedItem() {
         ComboField<String> actualCombo = (ComboField<String>)actual;
         assertEquals("One", actualCombo.getSelectedItem());
@@ -69,6 +70,7 @@ class ComboFieldTest extends FormFieldBaseTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testSetOptions() {
         ComboField<String> actualCombo = (ComboField<String>)actual;
         actualCombo.setOptions(List.of("1","2","3","4","5"), 4);
@@ -78,12 +80,12 @@ class ComboFieldTest extends FormFieldBaseTests {
     @Test
     public void testHasValidationLabel() {
         // ComboField has no validation label unless FieldValidators are explicitly assigned
-        assertFalse(((ComboField)actual).hasValidationLabel());
+        assertFalse(actual.hasValidationLabel());
     }
 
     @Test
     public void testAddValueChangedListener() {
-        ComboField<String> actualField = (ComboField<String>)actual;
+        ComboField<?> actualField = (ComboField<?>)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
         actualField.setSelectedIndex(1);
@@ -94,7 +96,7 @@ class ComboFieldTest extends FormFieldBaseTests {
 
     @Test
     public void testRemoveValueChangedListener() {
-        ComboField<String> actualField = (ComboField<String>)actual;
+        ComboField<?> actualField = (ComboField<?>)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
         actual.removeValueChangedListener(listener);
@@ -105,7 +107,7 @@ class ComboFieldTest extends FormFieldBaseTests {
 
     @Test
     public void validate_invalidScenario() {
-        ComboField actualField = (ComboField)actual;
+        ComboField<?> actualField = (ComboField<?>)actual;
         actual.addFieldValidator(new TestValidator());
         assertTrue(actual.hasValidationLabel());
         actualField.setSelectedIndex(1);
@@ -119,13 +121,13 @@ class ComboFieldTest extends FormFieldBaseTests {
         assertTrue(actual.isValid());
         assertNull(actual.getValidationLabel().getToolTipText());
     }
-    
-    private static class TestValidator implements FieldValidator<ComboField> {
+
+    private static class TestValidator implements FieldValidator<ComboField<?>> {
 
         public static final String MSG = "selected index must be 0";
 
         @Override
-        public ValidationResult validate(ComboField fieldToValidate) {
+        public ValidationResult validate(ComboField<?> fieldToValidate) {
             return fieldToValidate.getSelectedIndex() == 0
                     ? ValidationResult.valid()
                     : ValidationResult.invalid(MSG);

@@ -76,7 +76,7 @@ public class LongTextFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testAddValueChangedListener() throws Exception {
+    public void testAddValueChangedListener() {
         LongTextField actualField = (LongTextField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
@@ -89,7 +89,7 @@ public class LongTextFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testRemoveValueChangedListener() throws Exception {
+    public void testRemoveValueChangedListener() {
         LongTextField actualField = (LongTextField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);

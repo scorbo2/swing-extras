@@ -90,7 +90,7 @@ class NonHeaderLabelFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testAddValueChangedListener() throws Exception {
+    public void testAddValueChangedListener() {
         LabelField actualField = (LabelField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
@@ -101,7 +101,7 @@ class NonHeaderLabelFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testRemoveValueChangedListener() throws Exception {
+    public void testRemoveValueChangedListener() {
         LabelField actualField = (LabelField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);

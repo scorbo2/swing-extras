@@ -144,8 +144,7 @@ class EnumPropertyTest extends AbstractPropertyBaseTests {
         testProp.addFormFieldChangeListener(listener);
 
         // WHEN we generate a form field and mess with it a bit:
-        //noinspection unchecked
-        ComboField<String> formField = (ComboField<String>)testProp.generateFormField();
+        ComboField<?> formField = (ComboField<?>)testProp.generateFormField();
         formField.setSelectedIndex(1);
         formField.setSelectedIndex(2);
 

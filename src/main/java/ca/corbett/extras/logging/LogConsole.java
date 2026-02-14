@@ -21,8 +21,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
@@ -32,6 +30,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A singleton LogConsole window that works with LogConsoleHandler to display
@@ -67,6 +66,8 @@ import java.util.logging.Level;
  */
 public final class LogConsole extends JFrame implements ChangeListener {
 
+    private static final Logger log = Logger.getLogger(LogConsole.class.getName());
+
     /**
      * How many log messages to store in memory, or 0 for no limit.
      */
@@ -87,8 +88,8 @@ public final class LogConsole extends JFrame implements ChangeListener {
     private static LogConsole instance;
 
     private final JTextPane textPane;
-    private DefaultComboBoxModel comboBoxModel;
-    private JComboBox comboBox;
+    private DefaultComboBoxModel<String> comboBoxModel;
+    private JComboBox<String> comboBox;
     private JSpinner fontSizeSpinner;
 
     private final ItemListener itemListener = new ItemListener() {
@@ -133,9 +134,7 @@ public final class LogConsole extends JFrame implements ChangeListener {
      * @return A list of registered theme names.
      */
     public SortedSet<String> getRegisteredThemeNames() {
-        SortedSet<String> list = new TreeSet<>();
-        list.addAll(registeredThemes.keySet());
-        return list;
+        return new TreeSet<>(registeredThemes.keySet());
     }
 
     /**
@@ -328,7 +327,8 @@ public final class LogConsole extends JFrame implements ChangeListener {
                 textPane.setCaretPosition(textPane.getDocument().getLength());
             }
             catch (BadLocationException ble) {
-
+                // Irony of ironies... where does the LogConsole log errors if it can't log to itself?
+                log.log(Level.WARNING, "LogConsole.append: failed to append log message to text pane", ble);
             }
 
             // Cleanup if required:
@@ -409,44 +409,28 @@ public final class LogConsole extends JFrame implements ChangeListener {
         panel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
         String[] options = new String[]{LogConsoleTheme.DEFAULT_STYLE_NAME, "Matrix", "Paper"};
-        comboBoxModel = new DefaultComboBoxModel(options);
-        comboBox = new JComboBox(comboBoxModel);
+        comboBoxModel = new DefaultComboBoxModel<>(options);
+        comboBox = new JComboBox<>(comboBoxModel);
         comboBox.setEditable(false);
         comboBox.addItemListener(itemListener);
         panel.add(comboBox);
 
         JButton button = new JButton("Copy all to clipboard");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Toolkit.getDefaultToolkit().getSystemClipboard()
-                       .setContents(new StringSelection(textPane.getText()), null);
-            }
-
-        });
+        button.addActionListener(e -> Toolkit.getDefaultToolkit().getSystemClipboard()
+                                             .setContents(new StringSelection(textPane.getText()), null));
         panel.add(button);
 
         button = new JButton("Clear");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clear();
-            }
-
-        });
+        button.addActionListener(e -> clear());
         panel.add(button);
 
         JLabel label = new JLabel("  Font size:");
         panel.add(label);
         fontSizeSpinner = new JSpinner(new SpinnerNumberModel(12, 8, 48, 1));
         panel.add(fontSizeSpinner);
-        fontSizeSpinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                currentTheme.setFontPointSize((Integer)fontSizeSpinner.getValue());
-                fireFontSizeChangedEvent((Integer)fontSizeSpinner.getValue());
-            }
-
+        fontSizeSpinner.addChangeListener(e -> {
+            currentTheme.setFontPointSize((Integer)fontSizeSpinner.getValue());
+            fireFontSizeChangedEvent((Integer)fontSizeSpinner.getValue());
         });
 
         return panel;
