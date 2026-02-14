@@ -3,6 +3,7 @@ package ca.corbett.extras.gradient;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
+import java.awt.RadialGradientPaint;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
 
@@ -89,6 +90,10 @@ public class GradientUtil {
                 fillDiagonal2Gradient(graphics, x1, centerY, centerX, y2, conf.color1(), conf.color2());
                 fillDiagonal2Gradient(graphics, centerX, y1, x2, centerY, conf.color2(), conf.color1());
                 break;
+
+            case CIRCLE:
+                fillCircularGradient(graphics, x1, y1, width, height, conf.color1(), conf.color2());
+                break;
         }
     }
 
@@ -168,6 +173,14 @@ public class GradientUtil {
                 graphics.setPaint(new GradientPaint(centerX, centerY, conf.color2(), x2, y1, conf.color1()));
                 graphics.drawLine(centerX, y1, x2, y1);
                 graphics.drawLine(x2, y1, x2, centerY);
+                break;
+
+            case CIRCLE:
+                float radius = Math.min(width, height) / 2f;
+                graphics.setPaint(new RadialGradientPaint(centerX, centerY, radius,
+                                                          new float[]{0f, 1f},
+                                                          new Color[]{conf.color1(), conf.color2()}));
+                graphics.drawRect(x1, y1, width, height);
                 break;
         }
     }
@@ -303,6 +316,14 @@ public class GradientUtil {
                 graphics.setClip(centerX, gradientY1, width / 2, height / 2);
                 graphics.drawString(string, textX, textY);
                 break;
+
+            case CIRCLE:
+                float radius = Math.min(width, height) / 2f;
+                graphics.setPaint(new RadialGradientPaint(centerX, centerY, radius,
+                                                          new float[]{0f, 1f},
+                                                          new Color[]{conf.color1(), conf.color2()}));
+                graphics.drawString(string, textX, textY);
+                break;
         }
 
         graphics.setClip(oldClip);
@@ -326,5 +347,15 @@ public class GradientUtil {
     protected static void fillDiagonal2Gradient(Graphics2D graphics, int x1, int y1, int x2, int y2, Color color1, Color color2) {
         graphics.setPaint(new GradientPaint(x1, y2, color1, x2, y1, color2));
         graphics.fillRect(x1, y1, x2 - x1, y2 - y1);
+    }
+
+    protected static void fillCircularGradient(Graphics2D graphics, int x1, int y1, int width, int height, Color color1, Color color2) {
+        float centerX = x1 + (width / 2f);
+        float centerY = y1 + (height / 2f);
+        float radius = Math.min(width, height) / 2f;
+        graphics.setPaint(new RadialGradientPaint(centerX, centerY, radius,
+                                                   new float[]{0f, 1f},
+                                                   new Color[]{color1, color2}));
+        graphics.fillRect(x1, y1, width, height);
     }
 }
