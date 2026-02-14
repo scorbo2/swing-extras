@@ -164,6 +164,10 @@ public class ActionPanel extends JPanel {
         this.actionTrayMargins = new Margins(DEFAULT_INTERNAL_PADDING);
         this.toolBarMargins = new Margins(DEFAULT_INTERNAL_PADDING);
         this.actionGroupMargins = new Margins(DEFAULT_EXTERNAL_PADDING);
+        this.headerMargins.addListener(m -> rebuild()); // rebuild on change
+        this.actionTrayMargins.addListener(m -> rebuild());
+        this.toolBarMargins.addListener(m -> rebuild());
+        this.actionGroupMargins.addListener(m -> rebuild());
         this.actionIconTextGap = 4; // default gap between action icons and text
         this.showActionIcons = true; // visible by default (if the action has an icon set)
         this.showGroupIcons = true; // visible by default (if the group has an icon set)
@@ -938,6 +942,27 @@ public class ActionPanel extends JPanel {
      * This controls the space between the header components (e.g. icon, label, expand/collapse button)
      * and the edges of the header. The internalSpacing property controls the space between the header
      * components themselves.
+     * <p>
+     *     Note: changing any of the properties of the returned Margins instance will trigger
+     *     an immediate rebuild of the ActionPanel. If you have multiple changes you wish to
+     *     make, it may make sense to disable auto-rebuild until after your changes are complete,
+     *     to avoid unnecessary intermediate rebuilds. For example:
+     * </p>
+     * <pre>
+     *     actionPanel.setAutoRebuild(false);
+     *     try {
+     *         Margins margins = actionPanel.getHeaderMargins();
+     *         margins.setTop(10);
+     *         margins.setBottom(10);
+     *         margins.setLeft(5);
+     *         margins.setRight(5);
+     *     }
+     *     finally {
+     *         // Re-enabling auto-rebuild will trigger
+     *         // an immediate rebuild:
+     *         actionPanel.setAutoRebuild(true);
+     *     }
+     * </pre>
      *
      * @return The Margins instance for the header area of action groups.
      */
@@ -949,6 +974,27 @@ public class ActionPanel extends JPanel {
      * Returns the Margins instance for the action tray area of action groups. This controls the space between the
      * action components (e.g. buttons/labels) and the edges of the action tray. The internalSpacing property controls
      * the space between the action components themselves.
+     * <p>
+     *     Note: changing any of the properties of the returned Margins instance will trigger
+     *     an immediate rebuild of the ActionPanel. If you have multiple changes you wish to
+     *     make, it may make sense to disable auto-rebuild until after your changes are complete,
+     *     to avoid unnecessary intermediate rebuilds. For example:
+     * </p>
+     * <pre>
+     *     actionPanel.setAutoRebuild(false);
+     *     try {
+     *         Margins margins = actionPanel.getActionTrayMargins();
+     *         margins.setTop(10);
+     *         margins.setBottom(10);
+     *         margins.setLeft(5);
+     *         margins.setRight(5);
+     *     }
+     *     finally {
+     *         // Re-enabling auto-rebuild will trigger
+     *         // an immediate rebuild:
+     *         actionPanel.setAutoRebuild(true);
+     *     }
+     * </pre>
      *
      * @return The Margins instance for the action tray area of action groups.
      */
@@ -962,6 +1008,27 @@ public class ActionPanel extends JPanel {
      * the internalSpacing property controls the space between the ToolBar buttons themselves.
      * If the ToolBar is in Stretch mode, then there is no space between the buttons, regardless
      * of the internalSpacing setting, because the buttons are stretched to fill all available space.
+     * <p>
+     *     Note: changing any of the properties of the returned Margins instance will trigger
+     *     an immediate rebuild of the ActionPanel. If you have multiple changes you wish to
+     *     make, it may make sense to disable auto-rebuild until after your changes are complete,
+     *     to avoid unnecessary intermediate rebuilds. For example:
+     * </p>
+     * <pre>
+     *     actionPanel.setAutoRebuild(false);
+     *     try {
+     *         Margins margins = actionPanel.getToolBarMargins();
+     *         margins.setTop(10);
+     *         margins.setBottom(10);
+     *         margins.setLeft(5);
+     *         margins.setRight(5);
+     *     }
+     *     finally {
+     *         // Re-enabling auto-rebuild will trigger
+     *         // an immediate rebuild:
+     *         actionPanel.setAutoRebuild(true);
+     *     }
+     * </pre>
      *
      * @return The Margins instance for the ToolBar.
      */
@@ -973,6 +1040,27 @@ public class ActionPanel extends JPanel {
      * Returns the Margins instance for action groups. This controls the space between action groups
      * and the edges of the ActionPanel. The internalSpacing property controls the gap between
      * action groups themselves.
+     * <p>
+     *     Note: changing any of the properties of the returned Margins instance will trigger
+     *     an immediate rebuild of the ActionPanel. If you have multiple changes you wish to
+     *     make, it may make sense to disable auto-rebuild until after your changes are complete,
+     *     to avoid unnecessary intermediate rebuilds. For example:
+     * </p>
+     * <pre>
+     *     actionPanel.setAutoRebuild(false);
+     *     try {
+     *         Margins margins = actionPanel.getActionGroupMargins();
+     *         margins.setTop(10);
+     *         margins.setBottom(10);
+     *         margins.setLeft(5);
+     *         margins.setRight(5);
+     *     }
+     *     finally {
+     *         // Re-enabling auto-rebuild will trigger
+     *         // an immediate rebuild:
+     *         actionPanel.setAutoRebuild(true);
+     *     }
+     * </pre>
      *
      * @return The Margins instance for action groups.
      */
