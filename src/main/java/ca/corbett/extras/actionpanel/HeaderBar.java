@@ -70,12 +70,12 @@ class HeaderBar extends JPanel {
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
         headerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Add internal padding - this is the space between the outer edge of the HeaderBar
-        // and the internal components.
-        if (actionPanel.getHeaderInternalPadding() > 0) {
-            int pad = actionPanel.getHeaderInternalPadding();
-            headerPanel.setBorder(BorderFactory.createEmptyBorder(pad, pad, pad, pad));
-        }
+        // Apply margin around the header:
+        int leftMargin = actionPanel.getHeaderMargins().getLeft();
+        int rightMargin = actionPanel.getHeaderMargins().getRight();
+        int topMargin = actionPanel.getHeaderMargins().getTop();
+        int bottomMargin = actionPanel.getHeaderMargins().getBottom();
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(topMargin, leftMargin, bottomMargin, rightMargin));
 
         // Apply background color if set:
         if (actionPanel.getColorOptions().getGroupHeaderBackground() != null) {
@@ -90,7 +90,7 @@ class HeaderBar extends JPanel {
      * If the group has an icon and group icons are enabled, adds the icon to the header panel.
      */
     private void addIcon() {
-        int pad = actionPanel.getHeaderInternalPadding();
+        int pad = actionPanel.getHeaderMargins().getInternalSpacing();
         if (group.getIcon() != null && actionPanel.isShowGroupIcons()) {
             Icon icon = null;
             if (group.getIcon() instanceof ImageIcon) {
@@ -159,7 +159,7 @@ class HeaderBar extends JPanel {
 
         // The headerPanel itself has padding on all sides, so we only need to pad
         // the left side of the button here, to keep it away from the label.
-        int pad = actionPanel.getHeaderInternalPadding();
+        int pad = actionPanel.getHeaderMargins().getInternalSpacing();
         expandCollapseButton.setBorder(BorderFactory.createEmptyBorder(0, pad, 0, 0));
 
         // The listener for the button will either trigger an animation or just

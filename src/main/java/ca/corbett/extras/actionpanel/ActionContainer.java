@@ -26,12 +26,9 @@ import java.util.List;
 class ActionContainer extends JPanel {
 
     private final ActionPanel actionPanel;
-    private final ActionGroup actionGroup;
-    private final ToolBar toolBar;
 
     public ActionContainer(ActionPanel actionPanel, ActionGroup actionGroup) {
         this.actionPanel = actionPanel;
-        this.actionGroup = actionGroup;
 
         setLayout(new BorderLayout());
 
@@ -49,16 +46,18 @@ class ActionContainer extends JPanel {
         List<EnhancedAction> actions = actionGroup.getActions();
 
         // Add each action component:
-        boolean isFirst = true;
-        for (EnhancedAction action : actions) {
-            JPanel wrapperPanel = createComponentWrapperPanel(isFirst ? actionPanel.getActionInternalPadding() : 0);
+        for (int i = 0; i < actions.size(); i++) {
+            EnhancedAction action = actions.get(i);
+            JPanel wrapperPanel = createComponentWrapperPanel(i == 0, i == actions.size() - 1);
             Component actionComponent = ActionComponentFactory.create(actionPanel, action);
             wrapperPanel.add(actionComponent, BorderLayout.CENTER);
             actionsPanel.add(wrapperPanel);
 
             // If this is the highlighted action, mark it visually:
-            if (actionPanel.isHighlightedAction(action) && (actionComponent instanceof JLabel)) {
-                wrapperPanel.setBackground(ColorOptions.getHighlightColor(wrapperPanel.getBackground()));
+            if (actionPanel.isHighlightLastActionEnabled()) {
+                if (actionPanel.isHighlightedAction(action) && (actionComponent instanceof JLabel)) {
+                    wrapperPanel.setBackground(ColorOptions.getHighlightColor(wrapperPanel.getBackground()));
+                }
             }
         }
 
@@ -66,25 +65,30 @@ class ActionContainer extends JPanel {
 
         // Add the toolbar if enabled:
         if (actionPanel.isToolBarEnabled()) {
-            toolBar = new ToolBar(actionPanel, actionGroup.getName());
+            ToolBar toolBar = new ToolBar(actionPanel, actionGroup.getName());
             toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
             add(toolBar, BorderLayout.SOUTH);
         }
-        else {
-            toolBar = null;
-        }
     }
 
-    private JPanel createComponentWrapperPanel(int topMargin) {
+    private JPanel createComponentWrapperPanel(boolean isFirst, boolean isLast) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Apply internal padding and action indent if set:
-        if (actionPanel.getActionInternalPadding() > 0 || actionPanel.getActionIndent() > 0) {
-            int pad = actionPanel.getActionInternalPadding();
-            int indent = actionPanel.getActionIndent();
-            panel.setBorder(BorderFactory.createEmptyBorder(topMargin, pad + indent, pad, pad));
-        }
+        int leftMargin = actionPanel.getActionTrayMargins().getLeft();
+        int rightMargin = actionPanel.getActionTrayMargins().getRight();
+
+        // If this is the first action, then our top margin will be the top property
+        // of the action tray margins. Otherwise, we want to use the internal spacing value:
+        int topMargin = isFirst
+                ? actionPanel.getActionTrayMargins().getTop()
+                : actionPanel.getActionTrayMargins().getInternalSpacing();
+
+        // If this is the last action, then our bottom margin will be the bottom property
+        // of the action tray margins. Otherwise, it's zero, as the top margin of the next action
+        // will handle the spacing between them.
+        int bottomMargin = isLast ? actionPanel.getActionTrayMargins().getBottom() : 0;
+        panel.setBorder(BorderFactory.createEmptyBorder(topMargin, leftMargin, bottomMargin, rightMargin));
 
         // Apply action background color if set:
         if (actionPanel.getColorOptions().getActionBackground() != null) {

@@ -107,13 +107,17 @@ class ActionPanelTest {
 
     @Test
     void testMethodChaining() {
+        // GIVEN some changes to our ExpandCollapseOptions:
         options.setAnimationEnabled(false);
         options.setAnimationDurationMs(300);
+
+        // WHEN we call the ActionPanel methods that should return "this" for chaining:
         ActionPanel result = actionPanel
                 .setUseButtons()
-                .setHeaderInternalPadding(5)
-                .setExternalPadding(10);
+                .setHighlightLastActionEnabled(false)
+                .setAutoRebuildEnabled(false);
 
+        // THEN the returned instance should be the same ActionPanel instance, and our options should be updated:
         assertSame(actionPanel, result, "Methods should return the same ActionPanel instance for chaining");
         assertFalse(options.isAnimationEnabled(), "Animation should be disabled");
         assertEquals(300, options.getAnimationDurationMs(), "Duration should be 300ms");

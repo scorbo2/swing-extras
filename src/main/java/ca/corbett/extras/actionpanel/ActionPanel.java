@@ -2,6 +2,7 @@ package ca.corbett.extras.actionpanel;
 
 import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.forms.Margins;
 import ca.corbett.forms.SwingFormsResources;
 
 import javax.swing.Box;
@@ -131,11 +132,11 @@ public class ActionPanel extends JPanel {
     private Container cardContainer;
     private Font actionFont;
     private Font groupHeaderFont;
-    private int headerInternalPadding;
-    private int actionInternalPadding;
-    private int toolBarInternalPadding;
-    private int externalPadding;
-    private int actionIndent;
+    private final Margins headerMargins;
+    private final Margins actionTrayMargins;
+    private final Margins toolBarMargins;
+    private final Margins actionGroupMargins;
+    private int actionIconTextGap;
     private boolean showActionIcons;
     private boolean showGroupIcons;
     private ImageIcon expandIcon;
@@ -159,11 +160,15 @@ public class ActionPanel extends JPanel {
         this.cardContainer = null;
         this.actionFont = null; // Use L&F default
         this.groupHeaderFont = null; // Use L&F default
-        this.headerInternalPadding = DEFAULT_INTERNAL_PADDING;
-        this.actionInternalPadding = DEFAULT_INTERNAL_PADDING;
-        this.toolBarInternalPadding = DEFAULT_INTERNAL_PADDING;
-        this.externalPadding = DEFAULT_EXTERNAL_PADDING;
-        this.actionIndent = 0; // no indent by default
+        this.headerMargins = new Margins(DEFAULT_INTERNAL_PADDING);
+        this.actionTrayMargins = new Margins(DEFAULT_INTERNAL_PADDING);
+        this.toolBarMargins = new Margins(DEFAULT_INTERNAL_PADDING);
+        this.actionGroupMargins = new Margins(DEFAULT_EXTERNAL_PADDING);
+        this.headerMargins.addListener(m -> rebuild()); // rebuild on change
+        this.actionTrayMargins.addListener(m -> rebuild());
+        this.toolBarMargins.addListener(m -> rebuild());
+        this.actionGroupMargins.addListener(m -> rebuild());
+        this.actionIconTextGap = 4; // default gap between action icons and text
         this.showActionIcons = true; // visible by default (if the action has an icon set)
         this.showGroupIcons = true; // visible by default (if the group has an icon set)
         this.expandIcon = SwingFormsResources.getPlusIcon(DEFAULT_ICON_SIZE);
@@ -396,9 +401,6 @@ public class ActionPanel extends JPanel {
      */
     public ActionPanel setHighlightLastActionEnabled(boolean highlightLastAction) {
         this.highlightLastAction = highlightLastAction;
-        if (!highlightLastAction) {
-            this.highlightedAction = null; // clear any highlighted action
-        }
         rebuild();
         return this;
     }
@@ -936,83 +938,166 @@ public class ActionPanel extends JPanel {
     }
 
     /**
-     * Sets the space between components within the header of an ActionGroup. The default is 2 pixels.
+     * Returns the Margins instance for the header area of action groups.
+     * This controls the space between the header components (e.g. icon, label, expand/collapse button)
+     * and the edges of the header. The internalSpacing property controls the space between the header
+     * components themselves.
+     * <p>
+     *     Note: changing any of the properties of the returned Margins instance will trigger
+     *     an immediate rebuild of the ActionPanel. If you have multiple changes you wish to
+     *     make, it may make sense to disable auto-rebuild until after your changes are complete,
+     *     to avoid unnecessary intermediate rebuilds. For example:
+     * </p>
+     * <pre>
+     *     actionPanel.setAutoRebuild(false);
+     *     try {
+     *         Margins margins = actionPanel.getHeaderMargins();
+     *         margins.setTop(10);
+     *         margins.setBottom(10);
+     *         margins.setLeft(5);
+     *         margins.setRight(5);
+     *     }
+     *     finally {
+     *         // Re-enabling auto-rebuild will trigger
+     *         // an immediate rebuild:
+     *         actionPanel.setAutoRebuild(true);
+     *     }
+     * </pre>
      *
-     * @param padding The header's internal padding in pixels. Must be greater than or equal to 0.
+     * @return The Margins instance for the header area of action groups.
+     */
+    public Margins getHeaderMargins() {
+        return headerMargins;
+    }
+
+    /**
+     * Returns the Margins instance for the action tray area of action groups. This controls the space between the
+     * action components (e.g. buttons/labels) and the edges of the action tray. The internalSpacing property controls
+     * the space between the action components themselves.
+     * <p>
+     *     Note: changing any of the properties of the returned Margins instance will trigger
+     *     an immediate rebuild of the ActionPanel. If you have multiple changes you wish to
+     *     make, it may make sense to disable auto-rebuild until after your changes are complete,
+     *     to avoid unnecessary intermediate rebuilds. For example:
+     * </p>
+     * <pre>
+     *     actionPanel.setAutoRebuild(false);
+     *     try {
+     *         Margins margins = actionPanel.getActionTrayMargins();
+     *         margins.setTop(10);
+     *         margins.setBottom(10);
+     *         margins.setLeft(5);
+     *         margins.setRight(5);
+     *     }
+     *     finally {
+     *         // Re-enabling auto-rebuild will trigger
+     *         // an immediate rebuild:
+     *         actionPanel.setAutoRebuild(true);
+     *     }
+     * </pre>
+     *
+     * @return The Margins instance for the action tray area of action groups.
+     */
+    public Margins getActionTrayMargins() {
+        return actionTrayMargins;
+    }
+
+    /**
+     * Returns the Margins instance for the ToolBar. This controls the space between the ToolBar
+     * buttons and the edges of the ToolBar area. If the ToolBar is not in Stretch mode, then
+     * the internalSpacing property controls the space between the ToolBar buttons themselves.
+     * If the ToolBar is in Stretch mode, then there is no space between the buttons, regardless
+     * of the internalSpacing setting, because the buttons are stretched to fill all available space.
+     * <p>
+     *     Note: changing any of the properties of the returned Margins instance will trigger
+     *     an immediate rebuild of the ActionPanel. If you have multiple changes you wish to
+     *     make, it may make sense to disable auto-rebuild until after your changes are complete,
+     *     to avoid unnecessary intermediate rebuilds. For example:
+     * </p>
+     * <pre>
+     *     actionPanel.setAutoRebuild(false);
+     *     try {
+     *         Margins margins = actionPanel.getToolBarMargins();
+     *         margins.setTop(10);
+     *         margins.setBottom(10);
+     *         margins.setLeft(5);
+     *         margins.setRight(5);
+     *     }
+     *     finally {
+     *         // Re-enabling auto-rebuild will trigger
+     *         // an immediate rebuild:
+     *         actionPanel.setAutoRebuild(true);
+     *     }
+     * </pre>
+     *
+     * @return The Margins instance for the ToolBar.
+     */
+    public Margins getToolBarMargins() {
+        return toolBarMargins;
+    }
+
+    /**
+     * Returns the Margins instance for action groups. This controls the space between action groups
+     * and the edges of the ActionPanel. The internalSpacing property controls the gap between
+     * action groups themselves.
+     * <p>
+     *     Note: changing any of the properties of the returned Margins instance will trigger
+     *     an immediate rebuild of the ActionPanel. If you have multiple changes you wish to
+     *     make, it may make sense to disable auto-rebuild until after your changes are complete,
+     *     to avoid unnecessary intermediate rebuilds. For example:
+     * </p>
+     * <pre>
+     *     actionPanel.setAutoRebuild(false);
+     *     try {
+     *         Margins margins = actionPanel.getActionGroupMargins();
+     *         margins.setTop(10);
+     *         margins.setBottom(10);
+     *         margins.setLeft(5);
+     *         margins.setRight(5);
+     *     }
+     *     finally {
+     *         // Re-enabling auto-rebuild will trigger
+     *         // an immediate rebuild:
+     *         actionPanel.setAutoRebuild(true);
+     *     }
+     * </pre>
+     *
+     * @return The Margins instance for action groups.
+     */
+    public Margins getActionGroupMargins() {
+        return actionGroupMargins;
+    }
+
+    /**
+     * Returns the gap between the action icon and the action text.
+     * This is only relevant if showActionIcons is true and actions have icons.
+     * Note we don't use the action tray's internalSpacing for this, because it's
+     * nice to be able to control this text gap separately from the gap between the
+     * action components themselves.
+     *
+     * @return The gap in pixels between the action icon and the action text.
+     */
+    public int getActionIconTextGap() {
+        return actionIconTextGap;
+    }
+
+    /**
+     * Sets the gap between action icons and their text labels.
+     * This is only relevant if showActionIcons is true and actions have icons.
+     * Note we don't use the action tray's internalSpacing for this, because it's
+     * nice to be able to control this text gap separately from the gap between the
+     * action components themselves.
+     *
+     * @param gap The gap in pixels between the action icon and the action text. Must be 0 or greater.
      * @return This ActionPanel, for method chaining.
      */
-    public ActionPanel setHeaderInternalPadding(int padding) {
-        if (padding < 0) {
-            throw new IllegalArgumentException("Header padding cannot be negative.");
+    public ActionPanel setActionIconTextGap(int gap) {
+        if (gap < 0) {
+            throw new IllegalArgumentException("Icon-text gap cannot be negative.");
         }
-        headerInternalPadding = padding;
+        this.actionIconTextGap = gap;
         rebuild();
         return this;
-    }
-
-    /**
-     * Returns the internal padding between components in the header of an ActionGroup, in pixels.
-     *
-     * @return The internal padding in pixels.
-     */
-    public int getHeaderInternalPadding() {
-        return headerInternalPadding;
-    }
-
-    /**
-     * Sets the space between action labels/buttons in an ActionGroup. The default is 2 pixels.
-     *
-     * @param padding The internal padding between actions in pixels. Must be greater than or equal to 0.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setActionInternalPadding(int padding) {
-        if (padding < 0) {
-            throw new IllegalArgumentException("Action padding cannot be negative.");
-        }
-        actionInternalPadding = padding;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the internal padding between action labels/buttons in an ActionGroup, in pixels.
-     *
-     * @return The internal padding between actions in pixels.
-     */
-    public int getActionInternalPadding() {
-        return actionInternalPadding;
-    }
-
-    /**
-     * Sets the space between components in the ToolBar area. This is the padding that is applied
-     * around the components in the ToolBar, and between them. This only applies if the
-     * ToolBar's ButtonPosition is not Stretch. In "Stretch" mode, there is no space
-     * between ToolBarButtons, no matter what this padding is set to, because the buttons
-     * are stretched to fill all available space.
-     *
-     * @param padding The internal padding for the ToolBar in pixels. Must be greater than or equal to 0.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setToolBarInternalPadding(int padding) {
-        if (padding < 0) {
-            throw new IllegalArgumentException("ToolBar padding cannot be negative.");
-        }
-        toolBarInternalPadding = padding;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the internal padding for the ToolBar area, in pixels. This is the padding that is applied
-     * around the components in the ToolBar, and between them. This only applies if the
-     * ToolBar's ButtonPosition is not Stretch. In "Stretch" mode, there is no space
-     * between ToolBarButtons, no matter what this padding is set to, because the buttons
-     * are stretched to fill all available space.
-     *
-     * @return The internal padding for the ToolBar in pixels.
-     */
-    public int getToolBarInternalPadding() {
-        return toolBarInternalPadding;
     }
 
     /**
@@ -1111,56 +1196,6 @@ public class ActionPanel extends JPanel {
      */
     public ImageIcon getCollapseIcon() {
         return collapseIcon;
-    }
-
-    /**
-     * Sets the space between action groups, and also the space between
-     * the action groups and the edges of the ActionPanel. The default is 8 pixels.
-     *
-     * @param padding The external padding in pixels. Must be greater than or equal to 0.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setExternalPadding(int padding) {
-        if (padding < 0) {
-            throw new IllegalArgumentException("External padding cannot be negative.");
-        }
-        externalPadding = padding;
-        rebuild();
-        return this;
-    }
-
-    /**
-     * Returns the external padding between action groups and the edges of the ActionPanel.
-     *
-     * @return The external padding in pixels.
-     */
-    public int getExternalPadding() {
-        return externalPadding;
-    }
-
-    /**
-     * Returns the left indent applied to action items within their group.
-     *
-     * @return The action indent in pixels.
-     */
-    public int getActionIndent() {
-        return actionIndent;
-    }
-
-    /**
-     * Sets an optional left indent to apply to action items within their group.
-     * The default is 0 (no indent).
-     *
-     * @param actionIndent The action indent in pixels. Must be greater than or equal to 0.
-     * @return This ActionPanel, for method chaining.
-     */
-    public ActionPanel setActionIndent(int actionIndent) {
-        if (actionIndent < 0) {
-            throw new IllegalArgumentException("Action indent cannot be negative.");
-        }
-        this.actionIndent = actionIndent;
-        rebuild();
-        return this;
     }
 
     /**
@@ -1460,11 +1495,13 @@ public class ActionPanel extends JPanel {
         // Sort groups if comparator is set
         List<ActionGroup> sortedGroups = getSortedGroups();
 
-        // Render each action group
-        boolean isFirstGroup = true;
-        for (ActionGroup group : sortedGroups) {
-            wrapperPanel.add(new GroupContainer(this, group, isFirstGroup ? externalPadding : 0));
-            isFirstGroup = false;
+        // Render each action group:
+        for (int i = 0; i < sortedGroups.size(); i++) {
+            ActionGroup group = sortedGroups.get(i);
+            wrapperPanel.add(new GroupContainer(this,
+                                                group,
+                                                i == 0, // isFirstGroup
+                                                i == sortedGroups.size() - 1)); // isLastGroup
         }
 
         // Add glue to push everything to the top
