@@ -191,7 +191,7 @@ public class ImageTextUtil {
      * @param outlineWidthFactor   fontPointSize/outlineWidthFactor determines thickness of text border.
      * @param fillColor            The color to use to fill the text.
      * @param maxSizeToFitPercent  The percentage of the boundary that the text should fit within (e.g., 0.9 for 90%).
-     * @throws IllegalArgumentException if maxSizeToFitPercent is not between 0.1 and 1.
+     * @throws IllegalArgumentException if maxSizeToFitPercent is not between 0.1 and 1.0 (inclusive).
      */
     public static void drawText(BufferedImage image, String text, int lineLength, Font font,
                                 TextAlign align, Color outlineColor, float outlineWidthFactor, 
@@ -224,7 +224,7 @@ public class ImageTextUtil {
      * @param fillColor            The color to use to fill the text.
      * @param maxSizeToFitPercent  The percentage of the boundary that the text should fit within (e.g., 0.9 for 90%).
      * @param minFontSize          The minimum font size to use, preventing text from becoming too small.
-     * @throws IllegalArgumentException if minFontSize is <= 0 or maxSizeToFitPercent is not between 0.1 and 1.
+     * @throws IllegalArgumentException if minFontSize is <= 0 or maxSizeToFitPercent is not between 0.1 and 1.0 (inclusive).
      */
     public static void drawText(BufferedImage image, String text, int lineLength, Font font,
                                 TextAlign align, Color outlineColor, float outlineWidthFactor, 
@@ -293,7 +293,7 @@ public class ImageTextUtil {
      * @param rect                 The Rectangle in image coordinates in which the text will be drawn.
      * @param maxSizeToFitPercent  The percentage of the boundary that the text should fit within (e.g., 0.9 for 90%).
      * @param minFontSize          The minimum font size to use, preventing text from becoming too small.
-     * @throws IllegalArgumentException if minFontSize is <= 0 or maxSizeToFitPercent is not between 0.1 and 1.
+     * @throws IllegalArgumentException if minFontSize is <= 0 or maxSizeToFitPercent is not between 0.1 and 1.0 (inclusive).
      */
     public static void drawText(BufferedImage image, String text, int lineLength, Font font,
                                 TextAlign align, Color outlineColor, float outlineWidthFactor,
