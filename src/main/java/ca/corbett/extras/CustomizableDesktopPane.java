@@ -226,7 +226,10 @@ public class CustomizableDesktopPane extends JDesktopPane {
                     x = (getWidth() / 2) - (logoImage.getWidth() / 2);
                     yield (getHeight() / 2) - (logoImage.getHeight() / 2);
                 }
-                default -> y;
+                case OFF -> {
+                    x = 0;
+                    yield 0;
+                }
             };
             Composite composite = ((Graphics2D)g).getComposite();
             ((Graphics2D)g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, logoImageAlpha));
