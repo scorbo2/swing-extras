@@ -176,10 +176,8 @@ public class GradientUtil {
                 break;
 
             case CIRCLE:
-                float radius = Math.min(width, height) / 2f;
-                graphics.setPaint(new RadialGradientPaint(centerX, centerY, radius,
-                                                          new float[]{0f, 1f},
-                                                          new Color[]{conf.color1(), conf.color2()}));
+                graphics.setPaint(createCircularGradientPaint(centerX, centerY, width, height,
+                                                              conf.color1(), conf.color2()));
                 graphics.drawRect(x1, y1, width, height);
                 break;
         }
@@ -318,10 +316,8 @@ public class GradientUtil {
                 break;
 
             case CIRCLE:
-                float radius = Math.min(width, height) / 2f;
-                graphics.setPaint(new RadialGradientPaint(centerX, centerY, radius,
-                                                          new float[]{0f, 1f},
-                                                          new Color[]{conf.color1(), conf.color2()}));
+                graphics.setPaint(createCircularGradientPaint(centerX, centerY, width, height,
+                                                              conf.color1(), conf.color2()));
                 graphics.drawString(string, textX, textY);
                 break;
         }
@@ -352,10 +348,14 @@ public class GradientUtil {
     protected static void fillCircularGradient(Graphics2D graphics, int x1, int y1, int width, int height, Color color1, Color color2) {
         float centerX = x1 + (width / 2f);
         float centerY = y1 + (height / 2f);
-        float radius = Math.min(width, height) / 2f;
-        graphics.setPaint(new RadialGradientPaint(centerX, centerY, radius,
-                                                   new float[]{0f, 1f},
-                                                   new Color[]{color1, color2}));
+        graphics.setPaint(createCircularGradientPaint(centerX, centerY, width, height, color1, color2));
         graphics.fillRect(x1, y1, width, height);
+    }
+
+    protected static RadialGradientPaint createCircularGradientPaint(float centerX, float centerY, int width, int height, Color color1, Color color2) {
+        float radius = Math.min(width, height) / 2f;
+        return new RadialGradientPaint(centerX, centerY, radius,
+                                       new float[]{0f, 1f},
+                                       new Color[]{color1, color2});
     }
 }
