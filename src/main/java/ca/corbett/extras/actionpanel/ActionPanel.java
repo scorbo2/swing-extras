@@ -809,9 +809,9 @@ public class ActionPanel extends JPanel {
 
     /**
      * Sets the font for action items. This overrides the Look and Feel default font.
-     * You can pass null to revert to the L&F default.
+     * You can pass null to revert to the L&amp;F default.
      *
-     * @param font The font to use for actions, or null to use the L&F default.
+     * @param font The font to use for actions, or null to use the L&amp;F default.
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel setActionFont(Font font) {
@@ -823,7 +823,7 @@ public class ActionPanel extends JPanel {
     /**
      * Returns the font for action items. May be null if Look and Feel defaults are in use.
      *
-     * @return The action font, or null if L&F default is in use.
+     * @return The action font, or null if L&amp;F default is in use.
      */
     public Font getActionFont() {
         return actionFont;
@@ -831,9 +831,9 @@ public class ActionPanel extends JPanel {
 
     /**
      * Sets the font for group headers. This overrides the Look and Feel default font.
-     * You can pass null to revert to the L&F default.
+     * You can pass null to revert to the L&amp;F default.
      *
-     * @param font The font to use for group headers, or null to use the L&F default.
+     * @param font The font to use for group headers, or null to use the L&amp;F default.
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel setGroupHeaderFont(Font font) {
@@ -845,7 +845,7 @@ public class ActionPanel extends JPanel {
     /**
      * Returns the font for group headers. May be null if Look and Feel defaults are in use.
      *
-     * @return The group header font, or null if L&F default is in use.
+     * @return The group header font, or null if L&amp;F default is in use.
      */
     public Font getGroupHeaderFont() {
         return groupHeaderFont;

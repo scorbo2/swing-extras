@@ -77,9 +77,9 @@ public class ColorOptions extends ActionPanelOptions {
     /**
      * Sets the background color for the entire panel. This is the color that is shown
      * behind the ActionGroups. This overrides the Look and Feel default color.
-     * You can pass null to revert to the L&F default.
+     * You can pass null to revert to the L&amp;F default.
      *
-     * @param color The background color, or null to use the L&F default.
+     * @param color The background color, or null to use the L&amp;F default.
      * @return This ColorOptions instance, for method chaining.
      */
     public ColorOptions setPanelBackground(Color color) {
@@ -92,7 +92,7 @@ public class ColorOptions extends ActionPanelOptions {
      * Returns the background color for the entire panel. This is the color that is shown
      * behind the ActionGroups. May be null if Look and Feel defaults are in use.
      *
-     * @return The panel background color, or null if L&F default is in use.
+     * @return The panel background color, or null if L&amp;F default is in use.
      */
     public Color getPanelBackground() {
         return panelBackground;
@@ -101,9 +101,9 @@ public class ColorOptions extends ActionPanelOptions {
     /**
      * Sets the foreground color for action items. If useLabels is true, this is the text
      * color; if useButtons is true, this is the button foreground color. This overrides
-     * the Look and Feel default color. You can pass null to revert to the L&F default.
+     * the Look and Feel default color. You can pass null to revert to the L&amp;F default.
      *
-     * @param color The foreground color, or null to use the L&F default.
+     * @param color The foreground color, or null to use the L&amp;F default.
      * @return This ColorOptions instance, for method chaining.
      */
     public ColorOptions setActionForeground(Color color) {
@@ -116,7 +116,7 @@ public class ColorOptions extends ActionPanelOptions {
      * Returns the foreground color for action items. May be null if Look and Feel defaults
      * are in use.
      *
-     * @return The action foreground color, or null if L&F default is in use.
+     * @return The action foreground color, or null if L&amp;F default is in use.
      */
     public Color getActionForeground() {
         return actionForeground;
@@ -130,10 +130,10 @@ public class ColorOptions extends ActionPanelOptions {
      * color of the action buttons themselves, use setActionButtonBackground().
      * <p>
      * This overrides the Look and Feel default color.
-     * You can pass null to revert to the L&F default.
+     * You can pass null to revert to the L&amp;F default.
      * </p>
      *
-     * @param color The background color, or null to use the L&F default.
+     * @param color The background color, or null to use the L&amp;F default.
      * @return This ColorOptions instance, for method chaining.
      */
     public ColorOptions setActionBackground(Color color) {
@@ -146,7 +146,7 @@ public class ColorOptions extends ActionPanelOptions {
      * Returns the background color for action items. May be null if Look and Feel defaults
      * are in use.
      *
-     * @return The action background color, or null if L&F default is in use.
+     * @return The action background color, or null if L&amp;F default is in use.
      */
     public Color getActionBackground() {
         return actionBackground;
@@ -155,9 +155,9 @@ public class ColorOptions extends ActionPanelOptions {
     /**
      * If action buttons are enabled instead of labels, this is the background color of the buttons themselves.
      * This is not the same as the action background color, which is the color that is shown behind the buttons.
-     * This overrides the Look and Feel default color. You can pass null to revert to the L&F default.
+     * This overrides the Look and Feel default color. You can pass null to revert to the L&amp;F default.
      *
-     * @param color The background color for action buttons, or null to use the L&F default.
+     * @param color The background color for action buttons, or null to use the L&amp;F default.
      * @return This ColorOptions instance, for method chaining.
      */
     public ColorOptions setActionButtonBackground(Color color) {
@@ -171,7 +171,7 @@ public class ColorOptions extends ActionPanelOptions {
      * This is not the same as the action background color, which is the color that is
      * shown behind the buttons. May be null if Look and Feel defaults are in use.
      *
-     * @return The background color for action buttons, or null if L&F default is in use.
+     * @return The background color for action buttons, or null if L&amp;F default is in use.
      */
     public Color getActionButtonBackground() {
         return actionButtonBackground;
@@ -179,9 +179,9 @@ public class ColorOptions extends ActionPanelOptions {
 
     /**
      * Sets the foreground color for group headers. This overrides the
-     * Look and Feel default color. You can pass null to revert to the L&F default.
+     * Look and Feel default color. You can pass null to revert to the L&amp;F default.
      *
-     * @param color The foreground color, or null to use the L&F default.
+     * @param color The foreground color, or null to use the L&amp;F default.
      * @return This ColorOptions instance, for method chaining.
      */
     public ColorOptions setGroupHeaderForeground(Color color) {
@@ -194,7 +194,7 @@ public class ColorOptions extends ActionPanelOptions {
      * Returns the foreground color for group headers. May be null if Look and Feel defaults
      * are in use.
      *
-     * @return The group header foreground color, or null if L&F default is in use.
+     * @return The group header foreground color, or null if L&amp;F default is in use.
      */
     public Color getGroupHeaderForeground() {
         return groupHeaderForeground;
@@ -202,9 +202,9 @@ public class ColorOptions extends ActionPanelOptions {
 
     /**
      * Sets the background color for group headers. This overrides the
-     * Look and Feel default color. You can pass null to revert to the L&F default.
+     * Look and Feel default color. You can pass null to revert to the L&amp;F default.
      *
-     * @param color The background color, or null to use the L&F default.
+     * @param color The background color, or null to use the L&amp;F default.
      * @return This ColorOptions instance, for method chaining.
      */
     public ColorOptions setGroupHeaderBackground(Color color) {
@@ -217,7 +217,7 @@ public class ColorOptions extends ActionPanelOptions {
      * Returns the background color for group headers. May be null if Look and Feel defaults
      * are in use.
      *
-     * @return The group header background color, or null if L&F default is in use.
+     * @return The group header background color, or null if L&amp;F default is in use.
      */
     public Color getGroupHeaderBackground() {
         return groupHeaderBackground;
@@ -225,7 +225,7 @@ public class ColorOptions extends ActionPanelOptions {
 
     /**
      * Sets the background color for toolbar buttons. You can pass null here to
-     * use the L&F default color, or you can use the setToolBarButtonsTransparent() convenience
+     * use the L&amp;F default color, or you can use the setToolBarButtonsTransparent() convenience
      * method to render the buttons as fully transparent (icons only, no button background).
      * <p>
      * Note that this is not the same as setting the action background color;
@@ -233,7 +233,7 @@ public class ColorOptions extends ActionPanelOptions {
      * while this is the color of the buttons themselves.
      * </p>
      *
-     * @param color The background color for toolbar buttons, or null to use the L&F default.
+     * @param color The background color for toolbar buttons, or null to use the L&amp;F default.
      * @return This ColorOptions instance, for method chaining.
      */
     public ColorOptions setToolBarButtonBackground(Color color) {
@@ -257,7 +257,7 @@ public class ColorOptions extends ActionPanelOptions {
      * Returns the background color for toolbar buttons. May be null if Look and Feel defaults
      * are in use.
      *
-     * @return The background color for toolbar buttons, or null if L&F default is in use.
+     * @return The background color for toolbar buttons, or null if L&amp;F default is in use.
      */
     public Color getToolBarButtonBackground() {
         return toolBarButtonBackground;

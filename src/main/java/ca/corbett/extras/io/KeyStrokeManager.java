@@ -374,7 +374,7 @@ public class KeyStrokeManager {
      * </p>
      * <pre>
      *     ksm.registerHandler("Esc", new AbstractAction() {
-     *         @Override
+     *         &#064;Override
      *         public void actionPerformed(ActionEvent e) {
      *             dispose(); // That's a lot of boilerplate!
      *         }
@@ -446,7 +446,7 @@ public class KeyStrokeManager {
      * </p>
      * <pre>
      *     ksm.registerHandler("Esc", new AbstractAction() {
-     *         @Override
+     *         &#064;Override
      *         public void actionPerformed(ActionEvent e) {
      *             dispose(); // That's a lot of boilerplate!
      *         }
