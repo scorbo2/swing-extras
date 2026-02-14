@@ -64,6 +64,8 @@ public class ImageTextUtil {
     public static final Color DEFAULT_FILL_COLOR = Color.WHITE;
     public static final Color DEFAULT_OUTLINE_COLOR = Color.BLACK;
     public static final float DEFAULT_OUTLINE_WIDTH_FACTOR = 8f;
+    public static final double DEFAULT_MAX_SIZE_TO_FIT_PERCENT = 0.9;
+    public static final int DEFAULT_MIN_FONT_SIZE = 12;
 
     /**
      * Protected constructor to allow subclassing for application-specific utility methods
@@ -89,7 +91,9 @@ public class ImageTextUtil {
                  DEFAULT_OUTLINE_WIDTH_FACTOR,
                  DEFAULT_FILL_COLOR,
                  null,
-                 new Rectangle(image.getWidth(), image.getHeight()));
+                 new Rectangle(image.getWidth(), image.getHeight()),
+                 DEFAULT_MAX_SIZE_TO_FIT_PERCENT,
+                 DEFAULT_MIN_FONT_SIZE);
     }
 
     /**
@@ -113,7 +117,9 @@ public class ImageTextUtil {
                  DEFAULT_OUTLINE_WIDTH_FACTOR,
                  fillColor,
                  null,
-                 new Rectangle(image.getWidth(), image.getHeight()));
+                 new Rectangle(image.getWidth(), image.getHeight()),
+                 DEFAULT_MAX_SIZE_TO_FIT_PERCENT,
+                 DEFAULT_MIN_FONT_SIZE);
     }
 
     /**
@@ -138,7 +144,9 @@ public class ImageTextUtil {
                  DEFAULT_OUTLINE_WIDTH_FACTOR,
                  fillColor,
                  null,
-                 new Rectangle(image.getWidth(), image.getHeight()));
+                 new Rectangle(image.getWidth(), image.getHeight()),
+                 DEFAULT_MAX_SIZE_TO_FIT_PERCENT,
+                 DEFAULT_MIN_FONT_SIZE);
     }
 
     /**
@@ -165,7 +173,74 @@ public class ImageTextUtil {
                  outlineWidthFactor,
                  fillColor,
                  null,
-                 new Rectangle(image.getWidth(), image.getHeight()));
+                 new Rectangle(image.getWidth(), image.getHeight()),
+                 DEFAULT_MAX_SIZE_TO_FIT_PERCENT,
+                 DEFAULT_MIN_FONT_SIZE);
+    }
+
+    /**
+     * Outputs the given lines of text using the given styling parameters.
+     * Text will be line wrapped and scaled as needed to fit in the image.
+     *
+     * @param image                The BufferedImage on which the text will be drawn.
+     * @param text                 The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
+     * @param lineLength           The desired length of each line. Will be adjusted based on image dimensions.
+     * @param font                 The font to use.
+     * @param align                A TextAlign value for placing the text within our rectangle.
+     * @param outlineColor         The Color to use for outlining the text (if necessary).
+     * @param outlineWidthFactor   fontPointSize/outlineWidthFactor determines thickness of text border.
+     * @param fillColor            The color to use to fill the text.
+     * @param maxSizeToFitPercent  The percentage of the boundary that the text should fit within (e.g., 0.9 for 90%).
+     * @throws IllegalArgumentException if maxSizeToFitPercent is not between 0.1 and 1.
+     */
+    public static void drawText(BufferedImage image, String text, int lineLength, Font font,
+                                TextAlign align, Color outlineColor, float outlineWidthFactor, 
+                                Color fillColor, double maxSizeToFitPercent) {
+        drawText(image,
+                 text,
+                 lineLength,
+                 font,
+                 align,
+                 outlineColor,
+                 outlineWidthFactor,
+                 fillColor,
+                 null,
+                 new Rectangle(image.getWidth(), image.getHeight()),
+                 maxSizeToFitPercent,
+                 DEFAULT_MIN_FONT_SIZE);
+    }
+
+    /**
+     * Outputs the given lines of text using the given styling parameters.
+     * Text will be line wrapped and scaled as needed to fit in the image.
+     *
+     * @param image                The BufferedImage on which the text will be drawn.
+     * @param text                 The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
+     * @param lineLength           The desired length of each line. Will be adjusted based on image dimensions.
+     * @param font                 The font to use.
+     * @param align                A TextAlign value for placing the text within our rectangle.
+     * @param outlineColor         The Color to use for outlining the text (if necessary).
+     * @param outlineWidthFactor   fontPointSize/outlineWidthFactor determines thickness of text border.
+     * @param fillColor            The color to use to fill the text.
+     * @param maxSizeToFitPercent  The percentage of the boundary that the text should fit within (e.g., 0.9 for 90%).
+     * @param minFontSize          The minimum font size to use, preventing text from becoming too small.
+     * @throws IllegalArgumentException if minFontSize is <= 0 or maxSizeToFitPercent is not between 0.1 and 1.
+     */
+    public static void drawText(BufferedImage image, String text, int lineLength, Font font,
+                                TextAlign align, Color outlineColor, float outlineWidthFactor, 
+                                Color fillColor, double maxSizeToFitPercent, int minFontSize) {
+        drawText(image,
+                 text,
+                 lineLength,
+                 font,
+                 align,
+                 outlineColor,
+                 outlineWidthFactor,
+                 fillColor,
+                 null,
+                 new Rectangle(image.getWidth(), image.getHeight()),
+                 maxSizeToFitPercent,
+                 minFontSize);
     }
 
     /**
@@ -187,6 +262,51 @@ public class ImageTextUtil {
     public static void drawText(BufferedImage image, String text, int lineLength, Font font,
                                 TextAlign align, Color outlineColor, float outlineWidthFactor,
                                 Color fillColor, BufferedImage fillTexture, Rectangle rect) {
+        drawText(image,
+                 text,
+                 lineLength,
+                 font,
+                 align,
+                 outlineColor,
+                 outlineWidthFactor,
+                 fillColor,
+                 fillTexture,
+                 rect,
+                 DEFAULT_MAX_SIZE_TO_FIT_PERCENT,
+                 DEFAULT_MIN_FONT_SIZE);
+    }
+
+    /**
+     * Outputs the given lines of text using the given styling parameters and the
+     * given placement rectangle. Text will be line wrapped and scaled as needed to fit
+     * in the given Rectangle.
+     *
+     * @param image                The BufferedImage on which the text will be drawn.
+     * @param text                 The text to be drawn. Can be arbitrarily long; linewrapping will be applied.
+     * @param lineLength           The desired length of each line. Will be adjusted based on image dimensions.
+     * @param font                 The font to use.
+     * @param align                A TextAlign value for placing the text within our rectangle.
+     * @param outlineColor         The Color to use for outlining the text (if necessary).
+     * @param outlineWidthFactor   fontPointSize/outlineWidthFactor determines thickness of text border.
+     * @param fillColor            The color to use to fill the text.
+     * @param fillTexture          An image to use to fill text (if fillColor is null, otherwise ignored).
+     * @param rect                 The Rectangle in image coordinates in which the text will be drawn.
+     * @param maxSizeToFitPercent  The percentage of the boundary that the text should fit within (e.g., 0.9 for 90%).
+     * @param minFontSize          The minimum font size to use, preventing text from becoming too small.
+     * @throws IllegalArgumentException if minFontSize is <= 0 or maxSizeToFitPercent is not between 0.1 and 1.
+     */
+    public static void drawText(BufferedImage image, String text, int lineLength, Font font,
+                                TextAlign align, Color outlineColor, float outlineWidthFactor,
+                                Color fillColor, BufferedImage fillTexture, Rectangle rect, 
+                                double maxSizeToFitPercent, int minFontSize) {
+        
+        // Validate parameters
+        if (minFontSize <= 0) {
+            throw new IllegalArgumentException("minFontSize must be greater than 0, got: " + minFontSize);
+        }
+        if (maxSizeToFitPercent < 0.1 || maxSizeToFitPercent > 1.0) {
+            throw new IllegalArgumentException("maxSizeToFitPercent must be between 0.1 and 1.0, got: " + maxSizeToFitPercent);
+        }
 
         // put a 1 pixel margin on all edges, just to avoid wonkiness later
         int boundLeft = (int)rect.getX() + 1;
@@ -212,7 +332,7 @@ public class ImageTextUtil {
 
         // Figure out the smallest font size that will cause the longest line of text to fit
         // comfortably within our given Rectangle:
-        int fontPointSize = computeFontSize(font, lines, g, boundLeft, boundTop, boundRight, boundBottom);
+        int fontPointSize = computeFontSize(font, lines, g, boundLeft, boundTop, boundRight, boundBottom, maxSizeToFitPercent, minFontSize);
         font = font.deriveFont((float)fontPointSize);
         g.setFont(font);
 
@@ -354,19 +474,21 @@ public class ImageTextUtil {
     /**
      * Invoked internally to determine the smallest font point size that will allow the given
      * text to fit comfortably inside the given pixel boundary.
-     * A minimum font point size of 12 is used to prevent text from getting too long to see.
+     * A minimum font point size is used to prevent text from getting too long to see.
      * Very very long lines will therefore overflow if line wrapping has not been performed.
      *
-     * @param font   The font to use for calculation purposes.
-     * @param text   The block of text in question.
-     * @param g      A Graphics object which will be used to retrieve font metrics.
-     * @param left   The left edge of the text zone.
-     * @param top    The top edge of the text zone.
-     * @param right  The right edge of the text zone.
-     * @param bottom The bottom edge of the text zone.
+     * @param font                 The font to use for calculation purposes.
+     * @param text                 The block of text in question.
+     * @param g                    A Graphics object which will be used to retrieve font metrics.
+     * @param left                 The left edge of the text zone.
+     * @param top                  The top edge of the text zone.
+     * @param right                The right edge of the text zone.
+     * @param bottom               The bottom edge of the text zone.
+     * @param maxSizeToFitPercent  The percentage of the boundary that the text should fit within (e.g., 0.9 for 90%).
+     * @param minFontSize          The minimum font size to use, preventing text from becoming too small.
      * @return A font point size appropriate for the given text in the given boundary.
      */
-    protected static int computeFontSize(Font font, List<String> text, Graphics2D g, int left, int top, int right, int bottom) {
+    protected static int computeFontSize(Font font, List<String> text, Graphics2D g, int left, int top, int right, int bottom, double maxSizeToFitPercent, int minFontSize) {
         int fontPointSize = 150; // huge default, we'll shrink it down to fit
         int boundWidth = right - left;
         int boundHeight = bottom - top;
@@ -392,14 +514,14 @@ public class ImageTextUtil {
             int stringWidth = g.getFontMetrics().stringWidth(longestLine);
             int stringHeight = (int)(g.getFontMetrics().getLineMetrics(longestLine, g).getHeight());
             int paragraphHeight = stringHeight * text.size();
-            if (stringWidth < (boundWidth * 0.9)
-                    && paragraphHeight < (boundHeight * 0.9)) { // TODO height limit should be configurable
+            if (stringWidth < (boundWidth * maxSizeToFitPercent)
+                    && paragraphHeight < (boundHeight * maxSizeToFitPercent)) {
                 fits = true;
             }
             else {
                 fontPointSize -= fontDecrement;
-                if (fontPointSize <= 12) { // TODO this minimum should probably also be configurable
-                    logger.info("computeFontSize: text too small! Applying minimum point size of 12.");
+                if (fontPointSize <= minFontSize) {
+                    logger.info("computeFontSize: text too small! Applying minimum point size of " + minFontSize + ".");
                     break; // don't go so small you can't see it
                 }
             }
