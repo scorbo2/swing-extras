@@ -9,7 +9,9 @@ import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A custom FormField implementation that allows editing of a single
@@ -41,10 +43,10 @@ public class KeyStrokeField extends FormField implements DocumentListener {
     public static final int DEFAULT_COLS = 15;
 
     private String reservedKeyStrokeMsg = RESERVED_MSG;
-    private final List<KeyStroke> reservedKeyStrokes = new ArrayList<>();
+    private final Set<KeyStroke> reservedKeyStrokes = new HashSet<>();
     private final JTextField textField;
     private boolean allowBlank;
-    private FieldValidator fieldValidator;
+    private final FieldValidator<? extends FormField> fieldValidator;
 
     /**
      * Creates a new KeyStrokeField to represent the given KeyStroke, which can be null to
@@ -154,6 +156,25 @@ public class KeyStrokeField extends FormField implements DocumentListener {
                 : reservedMsg;
 
         this.reservedKeyStrokes.addAll(reservedKeyStrokes);
+        return this;
+    }
+
+    /**
+     * Adds additional reserved KeyStrokes to the list of KeyStrokes that cannot be assigned.
+     * Duplicates are automatically pruned. This method does not affect the reserved KeyStroke message.
+     */
+    public KeyStrokeField addReservedKeyStrokes(List<KeyStroke> additionalKeyStrokes) {
+        if (additionalKeyStrokes != null && !additionalKeyStrokes.isEmpty()) {
+            this.reservedKeyStrokes.addAll(additionalKeyStrokes);
+        }
+        return this;
+    }
+
+    /**
+     * Clears the list of reserved KeyStrokes, allowing all KeyStrokes to be assigned.
+     */
+    public KeyStrokeField clearReservedKeyStrokes() {
+        this.reservedKeyStrokes.clear();
         return this;
     }
 

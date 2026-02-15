@@ -70,7 +70,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void findLatestApplicationVersion_shouldFindLatestVersion() throws Exception {
+    public void findLatestApplicationVersion_shouldFindLatestVersion() {
         // GIVEN a manifest with multiple application versions:
         final String manifestJson = """
                 {
@@ -103,7 +103,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void findHighestExtensionVersion_shouldFindHighestVersion() throws Exception {
+    public void findHighestExtensionVersion_shouldFindHighestVersion() {
         // GIVEN an extension with multiple versions:
         final String extensionJson = """
                 {
@@ -158,7 +158,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void getApplicationVersionsForMajorVersion_shouldReturnCorrectVersions() throws Exception {
+    public void getApplicationVersionsForMajorVersion_shouldReturnCorrectVersions() {
         // GIVEN a manifest with multiple application versions:
         final String manifestJson = """
                 {
@@ -192,7 +192,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void getUniqueExtensionNames_shouldReturnCorrectNames() throws Exception {
+    public void getUniqueExtensionNames_shouldReturnCorrectNames() {
         // GIVEN a manifest with multiple extensions:
         final String manifestJson = """
                 {
@@ -231,7 +231,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void getUniqueExtensionNamesForMajorVersion_shouldReturnCorrectNames() throws Exception {
+    public void getUniqueExtensionNamesForMajorVersion_shouldReturnCorrectNames() {
         // GIVEN a manifest with multiple extensions:
         final String manifestJson = """
                 {
@@ -269,7 +269,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void getHighestVersionForExtension_shouldReturnCorrectVersion() throws Exception {
+    public void getHighestVersionForExtension_shouldReturnCorrectVersion() {
         // GIVEN a manifest with multiple extensions:
         final String manifestJson = """
                 {
@@ -323,7 +323,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void getHighestVersionForExtensionInMajorAppVersion_shouldReturnCorrectVersion() throws Exception {
+    public void getHighestVersionForExtensionInMajorAppVersion_shouldReturnCorrectVersion() {
         // GIVEN a manifest with multiple extensions:
         final String manifestJson = """
                 {
@@ -388,7 +388,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void getHighestExtensionVersionsForMajorAppVersion_shouldReturnCorrectVersions() throws Exception {
+    public void getHighestExtensionVersionsForMajorAppVersion_shouldReturnCorrectVersions() {
         // GIVEN a manifest with multiple extensions:
         final String manifestJson = """
                 {
@@ -460,7 +460,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void getHighestExtensionVersions_shouldReturnCorrectVersions() throws Exception {
+    public void getHighestExtensionVersions_shouldReturnCorrectVersions() {
         // GIVEN a manifest with multiple extensions:
         final String manifestJson = """
                 {
@@ -533,7 +533,7 @@ class VersionManifestTest {
     }
 
     @Test
-    public void findExtensionForExtensionVersion_shouldReturnCorrectExtension() throws Exception {
+    public void findExtensionForExtensionVersion_shouldReturnCorrectExtension() {
         // GIVEN a manifest with multiple extensions:
         final String manifestJson = """
                 {

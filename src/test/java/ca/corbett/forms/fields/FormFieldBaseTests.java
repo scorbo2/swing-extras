@@ -1,5 +1,6 @@
 package ca.corbett.forms.fields;
 
+import ca.corbett.extras.testutils.AlwaysFalseValidator;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.validators.FieldValidator;
@@ -35,9 +36,6 @@ public abstract class FormFieldBaseTests {
         if (actual.hasFieldLabel()) {
             assertTrue(actual.getFieldLabel().isEnabled());
         }
-        if (actual.hasHelpLabel()) {
-            assertTrue(actual.getHelpLabel().isEnabled());
-        }
         if (actual.hasValidationLabel()) {
             assertTrue(actual.getValidationLabel().isEnabled());
         }
@@ -47,9 +45,6 @@ public abstract class FormFieldBaseTests {
         assertFalse(actual.getFieldComponent().isEnabled());
         if (actual.hasFieldLabel()) {
             assertFalse(actual.getFieldLabel().isEnabled());
-        }
-        if (actual.hasHelpLabel()) {
-            assertFalse(actual.getHelpLabel().isEnabled());
         }
         if (actual.hasValidationLabel()) {
             assertFalse(actual.getValidationLabel().isEnabled());
@@ -61,12 +56,27 @@ public abstract class FormFieldBaseTests {
         if (actual.hasFieldLabel()) {
             assertTrue(actual.getFieldLabel().isEnabled());
         }
-        if (actual.hasHelpLabel()) {
-            assertTrue(actual.getHelpLabel().isEnabled());
-        }
         if (actual.hasValidationLabel()) {
             assertTrue(actual.getValidationLabel().isEnabled());
         }
+    }
+
+    @Test
+    public void testSetEnabled_helpLabelShouldNotBeDisabled() {
+        // Help label should always remain enabled, even when the field is disabled.
+        // This ensures that users can still access help text for disabled fields.
+        // See: https://github.com/scorbo2/swing-extras/issues/324
+        actual.setHelpText("Some help text");
+        assertTrue(actual.hasHelpLabel());
+        assertTrue(actual.getHelpLabel().isEnabled());
+
+        actual.setEnabled(false);
+        assertFalse(actual.isEnabled());
+        assertTrue(actual.getHelpLabel().isEnabled(), "Help label should remain enabled when field is disabled");
+
+        actual.setEnabled(true);
+        assertTrue(actual.isEnabled());
+        assertTrue(actual.getHelpLabel().isEnabled());
     }
 
     @Test
@@ -157,6 +167,13 @@ public abstract class FormFieldBaseTests {
         FieldValidator<FormField> validator = new AlwaysFalseValidator();
         actual.addFieldValidator(validator);
         actual.removeFieldValidator(validator);
+        assertTrue(actual.isValid());
+        assertNull(actual.getValidationLabel().getToolTipText());
+    }
+
+    @Test
+    public void validate_withNullReturningValidator_shouldTreatAsValid() {
+        actual.addFieldValidator(field -> null);
         assertTrue(actual.isValid());
         assertNull(actual.getValidationLabel().getToolTipText());
     }

@@ -9,6 +9,7 @@ import org.mockito.Mockito;
 import java.io.File;
 import java.net.URL;
 
+import static ca.corbett.extras.testutils.TestConstants.TEST_DOMAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -160,7 +161,7 @@ class DownloadManagerTest {
     @Test
     public void downloadFile_withInvalidURL_shouldFailImmediately() throws Exception {
         // GIVEN a download request in an unsupported format:
-        String urlString = "ftp://example.com/blah/blah/doesnotexist.jpg";
+        String urlString = "ftp://" + TEST_DOMAIN + "/blah/blah/doesnotexist.jpg";
         DownloadListener mockListener = Mockito.mock(DownloadListener.class);
 
         // WHEN we try to download it:

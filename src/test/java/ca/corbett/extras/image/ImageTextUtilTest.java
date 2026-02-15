@@ -2,6 +2,7 @@ package ca.corbett.extras.image;
 
 import org.junit.jupiter.api.Test;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -128,5 +129,113 @@ public class ImageTextUtilTest {
             assertTrue(line.length() <= 30, 
                       "Each line should not be excessively longer than lineLength");
         }
+    }
+
+    /**
+     * Test that drawText throws IllegalArgumentException when minFontSize is zero.
+     */
+    @Test
+    public void testDrawText_minFontSizeZero() {
+        // GIVEN: A BufferedImage
+        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        
+        // WHEN/THEN: drawText is called with minFontSize = 0, it should throw IllegalArgumentException
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            ImageTextUtil.drawText(image, "Test", 30, ImageTextUtil.DEFAULT_FONT,
+                    ImageTextUtil.TextAlign.CENTER, ImageTextUtil.DEFAULT_OUTLINE_COLOR,
+                    ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR, ImageTextUtil.DEFAULT_FILL_COLOR, 0.9, 0);
+        });
+        assertTrue(exception.getMessage().contains("minFontSize must be greater than 0"));
+    }
+
+    /**
+     * Test that drawText throws IllegalArgumentException when minFontSize is negative.
+     */
+    @Test
+    public void testDrawText_minFontSizeNegative() {
+        // GIVEN: A BufferedImage
+        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        
+        // WHEN/THEN: drawText is called with minFontSize = -1, it should throw IllegalArgumentException
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            ImageTextUtil.drawText(image, "Test", 30, ImageTextUtil.DEFAULT_FONT,
+                    ImageTextUtil.TextAlign.CENTER, ImageTextUtil.DEFAULT_OUTLINE_COLOR,
+                    ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR, ImageTextUtil.DEFAULT_FILL_COLOR, 0.9, -1);
+        });
+        assertTrue(exception.getMessage().contains("minFontSize must be greater than 0"));
+    }
+
+    /**
+     * Test that drawText throws IllegalArgumentException when maxSizeToFitPercent is below 0.1.
+     */
+    @Test
+    public void testDrawText_maxSizeToFitPercentTooLow() {
+        // GIVEN: A BufferedImage
+        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        
+        // WHEN/THEN: drawText is called with maxSizeToFitPercent = 0.05, it should throw IllegalArgumentException
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            ImageTextUtil.drawText(image, "Test", 30, ImageTextUtil.DEFAULT_FONT,
+                    ImageTextUtil.TextAlign.CENTER, ImageTextUtil.DEFAULT_OUTLINE_COLOR,
+                    ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR, ImageTextUtil.DEFAULT_FILL_COLOR, 0.05, 12);
+        });
+        assertTrue(exception.getMessage().contains("maxSizeToFitPercent must be between 0.1 and 1.0"));
+    }
+
+    /**
+     * Test that drawText throws IllegalArgumentException when maxSizeToFitPercent is above 1.0.
+     */
+    @Test
+    public void testDrawText_maxSizeToFitPercentTooHigh() {
+        // GIVEN: A BufferedImage
+        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        
+        // WHEN/THEN: drawText is called with maxSizeToFitPercent = 1.5, it should throw IllegalArgumentException
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            ImageTextUtil.drawText(image, "Test", 30, ImageTextUtil.DEFAULT_FONT,
+                    ImageTextUtil.TextAlign.CENTER, ImageTextUtil.DEFAULT_OUTLINE_COLOR,
+                    ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR, ImageTextUtil.DEFAULT_FILL_COLOR, 1.5, 12);
+        });
+        assertTrue(exception.getMessage().contains("maxSizeToFitPercent must be between 0.1 and 1.0"));
+    }
+
+    /**
+     * Test that drawText accepts valid boundary values for maxSizeToFitPercent.
+     */
+    @Test
+    public void testDrawText_maxSizeToFitPercentBoundaryValues() {
+        // GIVEN: A BufferedImage
+        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        
+        // WHEN/THEN: drawText is called with maxSizeToFitPercent = 0.1, it should not throw
+        assertDoesNotThrow(() -> {
+            ImageTextUtil.drawText(image, "Test", 30, ImageTextUtil.DEFAULT_FONT,
+                    ImageTextUtil.TextAlign.CENTER, ImageTextUtil.DEFAULT_OUTLINE_COLOR,
+                    ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR, ImageTextUtil.DEFAULT_FILL_COLOR, 0.1, 12);
+        });
+        
+        // AND: drawText is called with maxSizeToFitPercent = 1.0, it should not throw
+        assertDoesNotThrow(() -> {
+            ImageTextUtil.drawText(image, "Test", 30, ImageTextUtil.DEFAULT_FONT,
+                    ImageTextUtil.TextAlign.CENTER, ImageTextUtil.DEFAULT_OUTLINE_COLOR,
+                    ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR, ImageTextUtil.DEFAULT_FILL_COLOR, 1.0, 12);
+        });
+    }
+
+    /**
+     * Test that drawText with just maxSizeToFitPercent parameter also validates correctly.
+     */
+    @Test
+    public void testDrawText_withMaxSizeToFitPercentOnly_invalidValue() {
+        // GIVEN: A BufferedImage
+        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        
+        // WHEN/THEN: drawText is called with invalid maxSizeToFitPercent, it should throw IllegalArgumentException
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            ImageTextUtil.drawText(image, "Test", 30, ImageTextUtil.DEFAULT_FONT,
+                    ImageTextUtil.TextAlign.CENTER, ImageTextUtil.DEFAULT_OUTLINE_COLOR,
+                    ImageTextUtil.DEFAULT_OUTLINE_WIDTH_FACTOR, ImageTextUtil.DEFAULT_FILL_COLOR, 1.5);
+        });
+        assertTrue(exception.getMessage().contains("maxSizeToFitPercent must be between 0.1 and 1.0"));
     }
 }

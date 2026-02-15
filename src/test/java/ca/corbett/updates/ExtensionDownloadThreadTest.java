@@ -117,7 +117,7 @@ class ExtensionDownloadThreadTest {
         return ext;
     }
 
-    private static VersionManifest.ExtensionVersion createSampleExtensionVersion() throws Exception {
+    private static VersionManifest.ExtensionVersion createSampleExtensionVersion() {
         VersionManifest.ExtensionVersion extVersion = new VersionManifest.ExtensionVersion();
         extVersion.setDownloadPath("extension.jar");
         extVersion.setSignaturePath("extension.sig");

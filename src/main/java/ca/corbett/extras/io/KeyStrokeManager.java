@@ -1,5 +1,6 @@
 package ca.corbett.extras.io;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.awt.KeyEventDispatcher;
@@ -8,8 +9,11 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -58,9 +62,10 @@ public class KeyStrokeManager {
     private static final Logger log = Logger.getLogger(KeyStrokeManager.class.getName());
 
     private boolean isDisposed = false;
-    private Window window;
+    private final Set<Window> windows = new HashSet<>();
     private final Map<KeyStroke, List<Action>> keyMap = new ConcurrentHashMap<>();
     private boolean isEnabled;
+    private boolean warnIfMultipleHandlers = false;
     private final KeyEventDispatcher keyDispatcher = new CustomKeyDispatcher();
 
     /**
@@ -71,7 +76,9 @@ public class KeyStrokeManager {
      * @param window the window that must be active to receive shortcuts.
      */
     public KeyStrokeManager(Window window) {
-        this.window = window;
+       if (window != null){
+            this.windows.add(window);
+       }
         this.isEnabled = window != null; // We need a window to be enabled
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(keyDispatcher);
     }
@@ -90,8 +97,42 @@ public class KeyStrokeManager {
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         manager.removeKeyEventDispatcher(keyDispatcher);
         keyMap.clear();
-        window = null;
+        windows.clear();
         isDisposed = true;
+    }
+
+    /**
+     * Adds a new window to this KeyStrokeManager
+     */
+    public void addWindow(Window window){
+       if (window == null){
+            throw new IllegalArgumentException("Window cannot be null!");
+       }
+       
+       this.windows.add(window);
+       // previously to adding multiple window support it was the normal behavior to enable the manager during initial setup if the window != null
+       // to mantain this behavior we validate if there is any window after the operation and update isEnabled
+        this.isEnabled = !this.windows.isEmpty();
+    }
+
+    /**
+     * Removes an specified window from this KeyStrokeManager
+     */
+    public void removeWindow(Window window){
+        if(window != null){
+           if(this.windows.remove(window)){
+            log.fine("window reference was found and removed");
+           }else{
+            log.warning("window reference wasn't found in this KeystrokeManager instance");
+           }
+        } else {
+            throw new IllegalArgumentException("Window cannot be null!");
+        }
+
+        //by giving the user the chance to delete any window from the manager we also give him the chance to remove them all, in case there are no more
+        // active window we disable the manager
+        this.isEnabled = !this.windows.isEmpty();
+
     }
 
     /**
@@ -102,14 +143,38 @@ public class KeyStrokeManager {
     }
 
     /**
+     * Returns whether this KeyStrokeManager will warn when multiple handlers
+     * are registered for the same keystroke.
+     *
+     * @return true if warnings are enabled, false otherwise
+     */
+    public boolean isWarnIfMultipleHandlers() {
+        return warnIfMultipleHandlers;
+    }
+
+    /**
+     * Sets whether this KeyStrokeManager should warn when multiple handlers
+     * are registered for the same keystroke. When enabled, a warning will be
+     * logged if registerHandler is called for a keystroke that already has
+     * at least one handler registered.
+     *
+     * @param warnIfMultipleHandlers true to enable warnings, false to disable
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager setWarnIfMultipleHandlers(boolean warnIfMultipleHandlers) {
+        this.warnIfMultipleHandlers = warnIfMultipleHandlers;
+        return this;
+    }
+
+    /**
      * Can be used to enable or disable this KeyStrokeManager. When disabled, no keyboard
      * shortcuts will be processed. This does not unregister any assigned actions!
      * It simply means those actions will not be invoked until we are re-enabled.
      */
     public KeyStrokeManager setEnabled(boolean enabled) {
         // If our window is null, we cannot be enabled:
-        if (window == null) {
-            log.warning("KeyStrokeManager.setEnabled: cannot enable; window is null.");
+        if (windows.isEmpty()) {
+            log.warning("KeyStrokeManager.setEnabled: cannot enable; there is no main window attached.");
             this.isEnabled = false;
             return this;
         }
@@ -259,6 +324,23 @@ public class KeyStrokeManager {
     }
 
     /**
+     * Returns a list of all keystrokes that have more than one handler registered.
+     * This can be used to programmatically detect and handle duplicate handler assignments.
+     * An empty list is returned if no keystrokes have multiple handlers.
+     *
+     * @return A List of KeyStrokes that have more than one handler registered. Empty if none found.
+     */
+    public List<KeyStroke> checkForMultipleHandlers() {
+        List<KeyStroke> result = new ArrayList<>();
+        for (Map.Entry<KeyStroke, List<Action>> entry : keyMap.entrySet()) {
+            if (entry.getValue() != null && entry.getValue().size() > 1) {
+                result.add(entry.getKey());
+            }
+        }
+        return result;
+    }
+
+    /**
      * Registers a keyboard shortcut with an action.
      * Accepts shortcuts in the format: "ctrl+P", "alt+F4", "ctrl+shift+S", etc.
      * If the given shortcut already has an action registered, the new action will be added
@@ -281,6 +363,39 @@ public class KeyStrokeManager {
     }
 
     /**
+     * A convenience method to allow registration of simple KeyActions without having to create a whole Action object.
+     * With lambdas, this can reduce the adding of a handler to a single line, in the case where your application
+     * doesn't have a ready-made Action to use. For example:
+     * <pre>
+     *     ksm.registerHandler("Esc", e -> dispose());
+     * </pre>
+     * <p>
+     *     This is as opposed to the old way, forcing callers to create an Action or AbstractAction:
+     * </p>
+     * <pre>
+     *     ksm.registerHandler("Esc", new AbstractAction() {
+     *         &#064;Override
+     *         public void actionPerformed(ActionEvent e) {
+     *             dispose(); // That's a lot of boilerplate!
+     *         }
+     *     });
+     * </pre>
+     * <p>
+     * The drawback of this approach is that you will be unable to invoke unregisterHandler()
+     * with your KeyAction to remove your handler later, because we wrapped it in an AbstractAction
+     * that is not exposed. However, you can use the unregisterHandler() overload that accepts a
+     * keystroke to remove all handlers for that keystroke, or you can call clear() to remove all handlers if needed.
+     * </p>
+     *
+     * @param keyStroke the String version of the KeyStroke to register
+     * @param action    the KeyAction to execute when the shortcut is pressed
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager registerHandler(String keyStroke, KeyAction action) {
+        return registerHandler(keyStroke, wrapKeyAction(action));
+    }
+
+    /**
      * Registers a keyboard shortcut with an action.
      * Accepts shortcuts in the format: "ctrl+P", "alt+F4", "ctrl+shift+S", etc.
      * If the given shortcut already has an action registered, the new action will be added
@@ -299,13 +414,76 @@ public class KeyStrokeManager {
             throw new IllegalArgumentException("registerHandler: keyStroke and action must not be null.");
         }
 
+        // Check if this keystroke already has handlers
+        List<Action> existingHandlers = keyMap.get(keyStroke);
+        boolean alreadyHasHandlers = existingHandlers != null && !existingHandlers.isEmpty();
+
         // Okay, we can register it now.
         keyMap.computeIfAbsent(keyStroke, k -> new ArrayList<>()).add(action);
+
+        // If warning is enabled and we just added a second (or more) handler, log a warning
+        if (warnIfMultipleHandlers && alreadyHasHandlers) {
+            String keyStrokeStr = keyStrokeToString(keyStroke);
+            log.warning("Multiple handlers registered for keystroke: " + keyStrokeStr + 
+                       " (now has " + keyMap.get(keyStroke).size() + " handlers)");
+        }
 
         // Store the accelerator in the Action so menu items can access it
         action.putValue(Action.ACCELERATOR_KEY, keyStroke);
 
         return this;
+    }
+
+    /**
+     * A convenience method to allow registration of simple KeyActions without having to create a whole Action object.
+     * With lambdas, this can reduce the adding of a handler to a single line, in the case where your application
+     * doesn't have a ready-made Action to use. For example:
+     * <pre>
+     *     ksm.registerHandler("Esc", e -> dispose());
+     * </pre>
+     * <p>
+     *     This is as opposed to the old way, forcing callers to create an Action or AbstractAction:
+     * </p>
+     * <pre>
+     *     ksm.registerHandler("Esc", new AbstractAction() {
+     *         &#064;Override
+     *         public void actionPerformed(ActionEvent e) {
+     *             dispose(); // That's a lot of boilerplate!
+     *         }
+     *     });
+     * </pre>
+     * <p>
+     * The drawback of this approach is that you will be unable to invoke unregisterHandler()
+     * with your KeyAction to remove your handler later, because we wrapped it in an AbstractAction
+     * that is not exposed. However, you can use the unregisterHandler() overload that accepts a
+     * keystroke to remove all handlers for that keystroke, or you can call clear() to remove all handlers if needed.
+     * </p>
+     *
+     * @param keyStroke the KeyStroke to register
+     * @param action    the KeyAction to execute when the shortcut is pressed
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager registerHandler(KeyStroke keyStroke, KeyAction action) {
+        return registerHandler(keyStroke, wrapKeyAction(action));
+    }
+
+    /**
+     * Invoked internally to wrap the given KeyAction in a regular AbstractAction
+     * so we can handle it like normal.
+     *
+     * @param keyAction the KeyAction to wrap. Must not be null.
+     * @return an AbstractAction that delegates to the given KeyAction when triggered.
+     */
+    private AbstractAction wrapKeyAction(KeyAction keyAction) {
+        if (keyAction == null) {
+            throw new IllegalArgumentException("KeyAction cannot be null!");
+        }
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keyAction.actionPerformed(e);
+            }
+        };
     }
 
     /**
@@ -330,6 +508,57 @@ public class KeyStrokeManager {
         // Remove the accelerator from the Action:
         action.putValue(Action.ACCELERATOR_KEY, null);
 
+        return this;
+    }
+
+    /**
+     * Unregisters any handlers associated with the given KeyStroke, removing their keyboard shortcuts.
+     * If there were no handlers for the given KeyStroke, this method does nothing.
+     *
+     * @param keyStroke The KeyStroke to unregister.
+     * @return this manager, for fluent-style method chaining
+     */
+    public KeyStrokeManager unregisterHandler(String keyStroke) {
+        KeyStroke parsed = parseKeyStroke(keyStroke);
+        if (parsed == null) {
+            throw new IllegalArgumentException("Invalid keystroke: " + keyStroke);
+        }
+        return unregisterHandler(parsed);
+    }
+
+    /**
+     * Unregisters any handlers associated with the given KeyStroke, removing their keyboard shortcuts.
+     * If there were no handlers for the given KeyStroke, this method does nothing.
+     *
+     * @param keyStroke The KeyStroke to unregister.
+     * @return this manager, for fluent-style method chaining
+     * @throws IllegalArgumentException if the given keyStroke is null
+     */
+    public KeyStrokeManager unregisterHandler(KeyStroke keyStroke) {
+        if (keyStroke == null) {
+            throw new IllegalArgumentException("keyStroke must not be null");
+        }
+        List<Action> actions = keyMap.remove(keyStroke);
+        if (actions != null) {
+            for (Action action : actions) {
+                // Only adjust the accelerator if it currently matches this keyStroke.
+                Object currentValue = action.getValue(Action.ACCELERATOR_KEY);
+                if (currentValue instanceof KeyStroke) {
+                    KeyStroke currentAccel = (KeyStroke) currentValue;
+                    if (keyStroke.equals(currentAccel)) {
+                        // Check remaining keystrokes for this action in this manager.
+                        List<KeyStroke> remainingKeyStrokes = getKeyStrokesForAction(action);
+                        if (remainingKeyStrokes.isEmpty()) {
+                            // No other keystrokes: clear the accelerator.
+                            action.putValue(Action.ACCELERATOR_KEY, null);
+                        } else {
+                            // Reassign accelerator to one of the remaining keystrokes.
+                            action.putValue(Action.ACCELERATOR_KEY, remainingKeyStrokes.get(0));
+                        }
+                    }
+                }
+            }
+        }
         return this;
     }
 
@@ -414,6 +643,8 @@ public class KeyStrokeManager {
                 case "meta":
                 case "cmd":
                 case "command":
+                case "win":
+                case "windows":
                     modifiers |= KeyEvent.META_DOWN_MASK;
                     break;
                 default:
@@ -470,7 +701,7 @@ public class KeyStrokeManager {
             }
         }
 
-        // Handle special keys
+        // Handle special keys:
         return switch (keyName) {
             case "enter" -> KeyEvent.VK_ENTER;
             case "escape", "esc" -> KeyEvent.VK_ESCAPE;
@@ -479,14 +710,43 @@ public class KeyStrokeManager {
             case "backspace" -> KeyEvent.VK_BACK_SPACE;
             case "delete", "del" -> KeyEvent.VK_DELETE;
             case "insert", "ins" -> KeyEvent.VK_INSERT;
+            case "pause" -> KeyEvent.VK_PAUSE;
             case "home" -> KeyEvent.VK_HOME;
             case "end" -> KeyEvent.VK_END;
-            case "pageup" -> KeyEvent.VK_PAGE_UP;
-            case "pagedown" -> KeyEvent.VK_PAGE_DOWN;
+            case "pageup", "pgup" -> KeyEvent.VK_PAGE_UP;
+            case "pagedown", "pgdn", "pgdwn", "pgdown" -> KeyEvent.VK_PAGE_DOWN;
             case "up" -> KeyEvent.VK_UP;
             case "down" -> KeyEvent.VK_DOWN;
             case "left" -> KeyEvent.VK_LEFT;
             case "right" -> KeyEvent.VK_RIGHT;
+            case "comma" -> KeyEvent.VK_COMMA;
+            case "dot", "period" -> KeyEvent.VK_PERIOD;
+            case "minus", "dash" -> KeyEvent.VK_MINUS;
+            case "equals", "equal" -> KeyEvent.VK_EQUALS;
+            case "slash", "forwardslash" -> KeyEvent.VK_SLASH;
+            case "backslash" -> KeyEvent.VK_BACK_SLASH;
+            case "semicolon" -> KeyEvent.VK_SEMICOLON;
+            case "plus" -> KeyEvent.VK_PLUS;
+            case "numpad0", "num0", "numpad_0" -> KeyEvent.VK_NUMPAD0;
+            case "numpad1", "num1", "numpad_1" -> KeyEvent.VK_NUMPAD1;
+            case "numpad2", "num2", "numpad_2" -> KeyEvent.VK_NUMPAD2;
+            case "numpad3", "num3", "numpad_3" -> KeyEvent.VK_NUMPAD3;
+            case "numpad4", "num4", "numpad_4" -> KeyEvent.VK_NUMPAD4;
+            case "numpad5", "num5", "numpad_5" -> KeyEvent.VK_NUMPAD5;
+            case "numpad6", "num6", "numpad_6" -> KeyEvent.VK_NUMPAD6;
+            case "numpad7", "num7", "numpad_7" -> KeyEvent.VK_NUMPAD7;
+            case "numpad8", "num8", "numpad_8" -> KeyEvent.VK_NUMPAD8;
+            case "numpad9", "num9", "numpad_9" -> KeyEvent.VK_NUMPAD9;
+            case "numpaddivide", "numpad_divide", "numdivide" -> KeyEvent.VK_DIVIDE;
+            case "numpadmultiple", "numpad_multiply", "nummultiply" -> KeyEvent.VK_MULTIPLY;
+            case "numpadsubstract", "numpad_subtract", "numsubtract", "numpad_minus", "numpadminus" ->
+                    KeyEvent.VK_SUBTRACT;
+            case "numpadadd", "numpad_add", "numadd", "numpad_plus", "numpadplus" -> KeyEvent.VK_ADD;
+            case "numpaddot", "numpad_dot", "numdecimal" -> KeyEvent.VK_DECIMAL;
+            case "numlock" -> KeyEvent.VK_NUM_LOCK;
+            case "scrolllock", "scrlk" -> KeyEvent.VK_SCROLL_LOCK;
+            case "printscreen", "prtsc" -> KeyEvent.VK_PRINTSCREEN;
+            case "backtick" -> KeyEvent.VK_BACK_QUOTE;
             default -> KeyEvent.VK_UNDEFINED;
         };
     }
@@ -549,6 +809,8 @@ public class KeyStrokeManager {
                 return "Delete";
             case KeyEvent.VK_INSERT:
                 return "Insert";
+            case KeyEvent.VK_PAUSE:
+                return "Pause";
             case KeyEvent.VK_HOME:
                 return "Home";
             case KeyEvent.VK_END:
@@ -565,6 +827,60 @@ public class KeyStrokeManager {
                 return "Left";
             case KeyEvent.VK_RIGHT:
                 return "Right";
+            case KeyEvent.VK_COMMA:
+                return "Comma";
+            case KeyEvent.VK_PERIOD:
+                return "Dot";
+            case KeyEvent.VK_MINUS:
+                return "Minus";
+            case KeyEvent.VK_EQUALS:
+                return "Equals";
+            case KeyEvent.VK_SLASH:
+                return "Slash";
+            case KeyEvent.VK_BACK_SLASH:
+                return "Backslash";
+            case KeyEvent.VK_SEMICOLON:
+                return "Semicolon";
+            case KeyEvent.VK_PLUS:
+                return "Plus";
+            case KeyEvent.VK_NUMPAD0:
+                return "Numpad0";
+            case KeyEvent.VK_NUMPAD1:
+                return "Numpad1";
+            case KeyEvent.VK_NUMPAD2:
+                return "Numpad2";
+            case KeyEvent.VK_NUMPAD3:
+                return "Numpad3";
+            case KeyEvent.VK_NUMPAD4:
+                return "Numpad4";
+            case KeyEvent.VK_NUMPAD5:
+                return "Numpad5";
+            case KeyEvent.VK_NUMPAD6:
+                return "Numpad6";
+            case KeyEvent.VK_NUMPAD7:
+                return "Numpad7";
+            case KeyEvent.VK_NUMPAD8:
+                return "Numpad8";
+            case KeyEvent.VK_NUMPAD9:
+                return "Numpad9";
+            case KeyEvent.VK_DIVIDE:
+                return "NumpadDivide";
+            case KeyEvent.VK_MULTIPLY:
+                return "NumpadMultiply";
+            case KeyEvent.VK_SUBTRACT:
+                return "NumpadMinus";
+            case KeyEvent.VK_ADD:
+                return "NumpadPlus";
+            case KeyEvent.VK_DECIMAL:
+                return "NumpadDot";
+            case KeyEvent.VK_NUM_LOCK:
+                return "NumLock";
+            case KeyEvent.VK_SCROLL_LOCK:
+                return "ScrollLock";
+            case KeyEvent.VK_PRINTSCREEN:
+                return "PrintScreen";
+            case KeyEvent.VK_BACK_QUOTE:
+                return "Backtick";
         }
 
         // Handle function keys (check after special keys to avoid conflicts)
@@ -584,15 +900,24 @@ public class KeyStrokeManager {
      */
     private class CustomKeyDispatcher implements KeyEventDispatcher {
 
+        private Optional<Window> getActiveWindowIfAny()
+        {
+            // Only a single window can be active at the same time, but even if there is more than one the event must be only called once
+            return windows.stream().filter(Window::isActive).findFirst();
+        }
+
         @Override
         public boolean dispatchKeyEvent(KeyEvent e) {
+
+            Optional<Window> activeWindow = getActiveWindowIfAny();
+
             // Don't process if we're disabled:
             if (!isEnabled) {
                 return false;
             }
 
-            // Don't process if our window is null or isn't active:
-            if (window == null || !window.isActive()) {
+            // Don't process if none of our windows are active
+            if (activeWindow.isEmpty()) {
                 return false;
             }
 
@@ -619,7 +944,7 @@ public class KeyStrokeManager {
                     for (Action action : actions) {
                         // Don't execute disabled actions:
                         if (action.isEnabled()) {
-                            action.actionPerformed(new ActionEvent(window,
+                            action.actionPerformed(new ActionEvent(activeWindow.get(),
                                                                    ActionEvent.ACTION_PERFORMED,
                                                                    keyStrokeStr));
                         }

@@ -52,7 +52,7 @@ class UpdateSourcesTest {
     }
 
     @Test
-    public void fromJson_withValidJson_shouldParse() throws Exception {
+    public void fromJson_withValidJson_shouldParse() {
         // GIVEN a valid update sources json string:
         // WHEN we parse it out via UpdateSources.fromJson:
         UpdateSources updateSources = UpdateSources.fromJson(updateSourcesJson);
@@ -64,7 +64,7 @@ class UpdateSourcesTest {
     }
 
     @Test
-    public void fromJsonUpdateSource_withVariableSubstitution_shouldSubstitute() throws Exception {
+    public void fromJsonUpdateSource_withVariableSubstitution_shouldSubstitute() {
         // GIVEN UpdateSource json that includes a variable to substitute:
         System.setProperty("user.home", "/test/directory");
         final String testJson = """
@@ -116,7 +116,7 @@ class UpdateSourcesTest {
     }
 
     @Test
-    public void pruneLocalSources_withNonExistentLocalSource_shouldPrune() throws Exception {
+    public void pruneLocalSources_withNonExistentLocalSource_shouldPrune() {
         // GIVEN UpdateSource json that references a non-existing local dir:
         final String testJson = """
                 {

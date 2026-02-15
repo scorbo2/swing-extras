@@ -37,7 +37,7 @@ public final class SwingFormsResources extends ResourceLoader {
     /**
      * The native size (width and height) of all swing-forms icons.
      */
-    static final int NATIVE_SIZE = 48;
+    public static final int NATIVE_SIZE = 48;
 
     /**
      * This is just here as a safeguard, and will likely never be used outside of unit tests.
@@ -73,6 +73,9 @@ public final class SwingFormsResources extends ResourceLoader {
     static final String MOVE_DOWN = "icon-move-down.png";
     static final String MOVE_ALL_LEFT = "icon-move-all-left.png";
     static final String MOVE_ALL_RIGHT = "icon-move-all-right.png";
+    static final String DOCUMENT_EDIT = "icon-document-edit.png";
+    static final String RENAME = "icon-rename.png";
+    static final String SETTINGS = "icon-settings.png";
 
     // Our cache will be lazy-loaded as icons are requested:
     // (If callers go through the parent class methods, they bypass our cache)
@@ -231,6 +234,27 @@ public final class SwingFormsResources extends ResourceLoader {
      */
     public static ImageIcon getMoveAllRightIcon(int size) {
         return internalLoad(MOVE_ALL_RIGHT, size);
+    }
+
+    /**
+     * Returns an ImageIcon to represent editing a document or item.
+     */
+    public static ImageIcon getDocumentEditIcon(int size) {
+        return internalLoad(DOCUMENT_EDIT, size);
+    }
+
+    /**
+     * Returns an ImageIcon to represent renaming an item.
+     */
+    public static ImageIcon getRenameIcon(int size) {
+        return internalLoad(RENAME, size);
+    }
+
+    /**
+     * Returns an ImageIcon to represent settings or configuration.
+     */
+    public static ImageIcon getSettingsIcon(int size) {
+        return internalLoad(SETTINGS, size);
     }
 
     /**

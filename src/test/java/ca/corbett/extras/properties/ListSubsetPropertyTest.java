@@ -15,7 +15,7 @@ class ListSubsetPropertyTest extends AbstractPropertyBaseTests {
 
     @Override
     protected AbstractProperty createTestObject(String fullyQualifiedName, String label) {
-        return new ListSubsetProperty<>(fullyQualifiedName, label);
+        return new ListSubsetProperty<String>(fullyQualifiedName, label);
     }
 
     @Test
@@ -45,6 +45,7 @@ class ListSubsetPropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void generateFormField_shouldReturnListSubsetField() {
         // GIVEN a ListSubsetProperty with some values:
         ListSubsetProperty<String> listSubsetProperty = (ListSubsetProperty<String>) actual;
@@ -58,7 +59,7 @@ class ListSubsetPropertyTest extends AbstractPropertyBaseTests {
 
         // THEN we should get a ListSubsetField with the correct configuration:
         assertInstanceOf(ListSubsetField.class, formField);
-        ListSubsetField<String> listSubsetField = (ListSubsetField<String>) formField;
+        ListSubsetField<?> listSubsetField = (ListSubsetField<?>)formField;
         Assertions.assertEquals(7, listSubsetField.getVisibleRowCount());
         Assertions.assertEquals(150, listSubsetField.getFixedCellWidth());
         Assertions.assertEquals(4, listSubsetField.getAvailableItems().size());
@@ -66,6 +67,7 @@ class ListSubsetPropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void loadFromFormField_givenModifiedFormField_shouldUpdate() {
         // GIVEN a ListSubsetProperty and its corresponding FormField:
         ListSubsetProperty<String> listSubsetProperty = (ListSubsetProperty<String>) actual;

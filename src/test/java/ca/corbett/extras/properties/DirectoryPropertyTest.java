@@ -14,7 +14,7 @@ class DirectoryPropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
-    public void testChangeListener_withNoValueSet_shouldNotifyListenerOnce() throws Exception {
+    public void testChangeListener_withNoValueSet_shouldNotifyListenerOnce() {
         // GIVEN a property with a mocked change listener and no file set:
         DirectoryProperty testProp = new DirectoryProperty("test", "test", false);
         PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);
@@ -29,8 +29,7 @@ class DirectoryPropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
-    public void testChangeListener_withValueSet_shouldNotifyListenerTwiceBecauseDocumentListenerIsBroken()
-            throws Exception {
+    public void testChangeListener_withValueSet_shouldNotifyListenerTwiceBecauseDocumentListenerIsBroken() {
         // GIVEN a property with a mocked change listener and a value set:
         DirectoryProperty testProp = new DirectoryProperty("test", "test", false);
         testProp.setDirectory(new File("hello"));

@@ -136,12 +136,19 @@ public class ListSubsetProperty<T> extends AbstractProperty {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
                 || !(field instanceof ListSubsetField)) {
             log.log(Level.SEVERE, "ListSubsetProperty.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
+            return;
+        }
+
+        if (!field.isValid()) {
+            log.log(Level.WARNING, "ListSubsetProperty.loadFromFormField: received an invalid field \"{0}\"",
+                    field.getIdentifier());
             return;
         }
 

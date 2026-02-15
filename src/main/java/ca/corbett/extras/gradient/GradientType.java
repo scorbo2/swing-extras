@@ -45,7 +45,13 @@ public enum GradientType {
      * Describes a four-part gradient that progresses linearly from each corner of the image
      * towards the center, color 1 to color 2.
      */
-    STAR("Star");
+    STAR("Star"),
+
+    /**
+     * Describes a circular gradient that progresses radially from the center outward,
+     * color 1 to color 2.
+     */
+    CIRCLE("Circle");
 
     private final String label;
 

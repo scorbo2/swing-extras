@@ -118,6 +118,12 @@ public class DecimalProperty extends AbstractProperty {
             return;
         }
 
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "DecimalProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         value = ((NumberField)field).getCurrentValue().doubleValue();
     }
 

@@ -184,6 +184,12 @@ public class SliderProperty extends AbstractProperty {
             return;
         }
 
+        if (!field.isValid()) {
+            log.log(Level.WARNING, "SliderProperty.loadFromFormField: received an invalid field \"{0}\"",
+                    field.getIdentifier());
+            return;
+        }
+
         currentValue = ((SliderField)field).getValue();
     }
 }

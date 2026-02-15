@@ -278,6 +278,12 @@ public abstract class FormField {
 
     /**
      * Enables or disables all components in this field.
+     * <p>
+     * <b>Note:</b> The help label is intentionally not disabled when the field is disabled.
+     * This is because the help label should always be visible and accessible to the user,
+     * even when the field itself is disabled. Descendant classes can override
+     * {@code setEnabled()} to implement their own handling if needed.
+     * </p>
      *
      * @param enabled whether to enable or disable the components.
      */
@@ -288,7 +294,6 @@ public abstract class FormField {
             fieldComponent.setEnabled(enabled);
         }
         validationLabel.setEnabled(enabled);
-        helpLabel.setEnabled(enabled);
         return this;
     }
 
@@ -415,6 +420,7 @@ public abstract class FormField {
      *
      * @return True if the field value is valid according to all our validators, false otherwise.
      */
+    @SuppressWarnings("unchecked")
     public boolean validate() {
         boolean isValid = true;
 
@@ -425,9 +431,11 @@ public abstract class FormField {
 
         List<String> validationMessages = new ArrayList<>();
         for (FieldValidator<? extends FormField> validator : fieldValidators) {
-            //noinspection unchecked
             FieldValidator<FormField> theValidator = (FieldValidator<FormField>)validator;
             ValidationResult validationResult = theValidator.validate(this);
+            if (validationResult == null) {
+                validationResult = ValidationResult.valid();
+            }
             isValid = isValid && validationResult.isValid();
             if (!validationResult.isValid()) {
                 validationMessages.add(validationResult.getMessage());

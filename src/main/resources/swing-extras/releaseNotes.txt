@@ -1,6 +1,34 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.8.0 [TODO release date]
+  #386 - GradientUtil: add circular gradient option
+  #382 - New FormField: MarginsField / MarginsProperty
+  #376 - ActionPanel: extract border options
+  #375 - ActionPanel: extract expand/collapse options
+  #371 - ImageUtil: add savePngImage convenience method
+  #370 - KeyStrokeManager: new convenience methods
+  #367 - ActionPanel: extract ColorOptions
+  #363 - ActionPanel: highlight last action
+  #362 - ActionPanel: add CardLayout integration
+  #359 - ActionPanel: more padding options
+  #355 - TextInputDialog: better keyboard support
+  #354 - FormField: avoid NPEs from poorly-coded FieldValidators
+  #350 - New UI component: TextInputDialog
+  #348 - BlurLayerUI: add animation options
+  #341 - AbstractProperty: reject input from invalid form fields
+  #340 - KeyStrokeField/Property: add/clear reserved keystrokes
+  #337 - ExtensionManager: better ext-load-order.txt handling
+  #335 - ActionPanel: add ToolBar
+  #333 - DirTree: add styling options, just because.
+  #332 - ActionPanel: many usability improvements
+  #330 - New UI component: ActionPanel
+  #327 - KeyStrokeManager: add multiple window support
+  #325 - KeyStrokeManager: warn on multiple handlers per keystroke
+  #324 - FormField: don't disable help icon when disabling field
+  #322 - KeyStrokeProperty: fix bug regarding reserved keystrokes
+  #321 - KeyStrokeManager: add many new handy key aliases
+
 Version 2.7.0 [2026-01-25] - Maintenance release
   #317 - FormPanel: help labels can now be toggled dynamically
   #315 - Bug: KeyStrokeManager.clear() was not removing accelerators
