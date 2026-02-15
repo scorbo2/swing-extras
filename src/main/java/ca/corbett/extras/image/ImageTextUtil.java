@@ -476,7 +476,7 @@ public class ImageTextUtil {
     /**
      * Invoked internally to determine the smallest font point size that will allow the given
      * text to fit comfortably inside the given pixel boundary.
-     * Uses {@link #DEFAULT_MIN_FONT_SIZE} to prevent text from getting too small to see.
+     * Uses {@link #DEFAULT_MIN_FONT_SIZE} and {@link #DEFAULT_MAX_SIZE_TO_FIT_PERCENT} as defaults.
      * Very very long lines will therefore overflow if line wrapping has not been performed.
      *
      * @param font   The font to use for calculation purposes.
