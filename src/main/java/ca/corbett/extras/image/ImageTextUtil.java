@@ -487,9 +487,7 @@ public class ImageTextUtil {
      * @param right  The right edge of the text zone.
      * @param bottom The bottom edge of the text zone.
      * @return A font point size appropriate for the given text in the given boundary.
-     * @deprecated Use {@link #computeFontSize(Font, List, Graphics2D, int, int, int, int, double, int)} instead.
      */
-    @Deprecated
     protected static int computeFontSize(Font font, List<String> text, Graphics2D g, int left, int top, int right, int bottom) {
         return computeFontSize(font, text, g, left, top, right, bottom, DEFAULT_MAX_SIZE_TO_FIT_PERCENT, DEFAULT_MIN_FONT_SIZE);
     }
