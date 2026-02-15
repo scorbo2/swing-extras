@@ -476,6 +476,27 @@ public class ImageTextUtil {
     /**
      * Invoked internally to determine the smallest font point size that will allow the given
      * text to fit comfortably inside the given pixel boundary.
+     * A minimum font point size of 12 is used to prevent text from getting too long to see.
+     * Very very long lines will therefore overflow if line wrapping has not been performed.
+     *
+     * @param font   The font to use for calculation purposes.
+     * @param text   The block of text in question.
+     * @param g      A Graphics object which will be used to retrieve font metrics.
+     * @param left   The left edge of the text zone.
+     * @param top    The top edge of the text zone.
+     * @param right  The right edge of the text zone.
+     * @param bottom The bottom edge of the text zone.
+     * @return A font point size appropriate for the given text in the given boundary.
+     * @deprecated Use {@link #computeFontSize(Font, List, Graphics2D, int, int, int, int, double, int)} instead.
+     */
+    @Deprecated
+    protected static int computeFontSize(Font font, List<String> text, Graphics2D g, int left, int top, int right, int bottom) {
+        return computeFontSize(font, text, g, left, top, right, bottom, DEFAULT_MAX_SIZE_TO_FIT_PERCENT, DEFAULT_MIN_FONT_SIZE);
+    }
+
+    /**
+     * Invoked internally to determine the smallest font point size that will allow the given
+     * text to fit comfortably inside the given pixel boundary.
      * A minimum font point size is used to prevent text from getting too long to see.
      * Very very long lines will therefore overflow if line wrapping has not been performed.
      *
