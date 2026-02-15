@@ -304,7 +304,9 @@ public class ImageTextUtil {
         if (minFontSize <= 0) {
             throw new IllegalArgumentException("minFontSize must be greater than 0, got: " + minFontSize);
         }
-        if (maxSizeToFitPercent < 0.1 || maxSizeToFitPercent > 1.0) {
+        if (!Double.isFinite(maxSizeToFitPercent)
+                || maxSizeToFitPercent < 0.1
+                || maxSizeToFitPercent > 1.0) {
             throw new IllegalArgumentException("maxSizeToFitPercent must be between 0.1 and 1.0, got: " + maxSizeToFitPercent);
         }
 
