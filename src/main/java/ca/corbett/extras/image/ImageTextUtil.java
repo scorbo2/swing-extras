@@ -521,6 +521,7 @@ public class ImageTextUtil {
             else {
                 fontPointSize -= fontDecrement;
                 if (fontPointSize <= minFontSize) {
+                    fontPointSize = minFontSize;
                     logger.info("computeFontSize: text too small! Applying minimum point size of " + minFontSize + ".");
                     break; // don't go so small you can't see it
                 }
