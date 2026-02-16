@@ -1,5 +1,6 @@
 package ca.corbett.extras.actionpanel;
 
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.image.ImageUtil;
 
 import javax.swing.BorderFactory;
@@ -11,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -83,6 +85,11 @@ class HeaderBar extends JPanel {
             headerPanel.setOpaque(true);
         }
 
+        // Otherwise, use the L&F button background color:
+        else {
+            headerPanel.setBackground(LookAndFeelManager.getLafColor("Button.background", Color.LIGHT_GRAY));
+        }
+
         return headerPanel;
     }
 
@@ -127,6 +134,9 @@ class HeaderBar extends JPanel {
         // Set the foreground color:
         if (actionPanel.getColorOptions().getGroupHeaderForeground() != null) {
             nameLabel.setForeground(actionPanel.getColorOptions().getGroupHeaderForeground());
+        }
+        else {
+            nameLabel.setForeground(LookAndFeelManager.getLafColor("Button.foreground", Color.BLACK));
         }
 
         // If double-click is allowed to toggle expand/collapse, set that up:
