@@ -124,51 +124,59 @@ public class DemoApp extends JFrame {
      * Creates all of our demo panels and adds them to the menu on the left side.
      */
     private void populateDemoPanels() {
-        addDemoPanel(INTRO, new IntroPanel());
-        addDemoPanel(INTRO, new AboutDemoPanel());
-        addDemoPanel(UI, new ActionPanelDemoPanel());
-        addDemoPanel(UI, audioDemoPanel);
-        addDemoPanel(UI, new DesktopDemoPanel());
-        addDemoPanel(UI, new DirTreeDemoPanel());
-        addDemoPanel(UI, new ProgressDemoPanel());
-        addDemoPanel(UI, new TextInputDialogPanel());
-        addDemoPanel(FORMS, new FormsOverviewPanel());
-        addDemoPanel(FORMS, new BasicFormPanel());
-        addDemoPanel(FORMS, new AdvancedFormPanel());
-        addDemoPanel(FORMS, new ListFieldPanel());
-        addDemoPanel(FORMS, new FormsValidationPanel());
-        addDemoPanel(FORMS, new FormActionsPanel());
-        addDemoPanel(FORMS, new FormsRendererPanel());
-        addDemoPanel(FORMS, new CustomFormFieldPanel());
-        addDemoPanel(FORMS, new FormHelpPanel());
-        addDemoPanel(ANIMATION, new AnimationTextDemoPanel());
-        addDemoPanel(ANIMATION, new AnimationPanelEffectsPanel()); // These are just for fun
-        addDemoPanel("Animation", new AnimationScrollDemoPanel()); // Not really a "swing extra", but okay
-        addDemoPanel(IMAGES, new ImageUtilDemoPanel());
-        addDemoPanel(IMAGES, new ImageTextUtilDemoPanel());
-        addDemoPanel(EXTENSIONS, new ExtensionsOverviewPanel());
-        addDemoPanel(EXTENSIONS, new PropertiesDemoPanel());
-        addDemoPanel(MISC, new KeyStrokeManagerPanel());
-        addDemoPanel(MISC, new LogConsolePanel());
+        // We just want to build once at the end, as opposed
+        // to rebuilding every time we add a panel:
+        actionPanel.setAutoRebuildEnabled(false);
+        try {
+            addDemoPanel(INTRO, new IntroPanel());
+            addDemoPanel(INTRO, new AboutDemoPanel());
+            addDemoPanel(UI, new ActionPanelDemoPanel());
+            addDemoPanel(UI, audioDemoPanel);
+            addDemoPanel(UI, new DesktopDemoPanel());
+            addDemoPanel(UI, new DirTreeDemoPanel());
+            addDemoPanel(UI, new ProgressDemoPanel());
+            addDemoPanel(UI, new TextInputDialogPanel());
+            addDemoPanel(FORMS, new FormsOverviewPanel());
+            addDemoPanel(FORMS, new BasicFormPanel());
+            addDemoPanel(FORMS, new AdvancedFormPanel());
+            addDemoPanel(FORMS, new ListFieldPanel());
+            addDemoPanel(FORMS, new FormsValidationPanel());
+            addDemoPanel(FORMS, new FormActionsPanel());
+            addDemoPanel(FORMS, new FormsRendererPanel());
+            addDemoPanel(FORMS, new CustomFormFieldPanel());
+            addDemoPanel(FORMS, new FormHelpPanel());
+            addDemoPanel(ANIMATION, new AnimationTextDemoPanel());
+            addDemoPanel(ANIMATION, new AnimationPanelEffectsPanel()); // These are just for fun
+            addDemoPanel(ANIMATION, new AnimationScrollDemoPanel()); // Not really a "swing extra", but okay
+            addDemoPanel(IMAGES, new ImageUtilDemoPanel());
+            addDemoPanel(IMAGES, new ImageTextUtilDemoPanel());
+            addDemoPanel(EXTENSIONS, new ExtensionsOverviewPanel());
+            addDemoPanel(EXTENSIONS, new PropertiesDemoPanel());
+            addDemoPanel(MISC, new KeyStrokeManagerPanel());
+            addDemoPanel(MISC, new LogConsolePanel());
 
-        // Collapse all groups but the first by default, otherwise it looks too busy:
-        actionPanel.setExpanded(UI, false);
-        actionPanel.setExpanded(FORMS, false);
-        actionPanel.setExpanded(ANIMATION, false);
-        actionPanel.setExpanded(IMAGES, false);
-        actionPanel.setExpanded(EXTENSIONS, false);
-        actionPanel.setExpanded(MISC, false);
+            // Collapse all groups but the first by default, otherwise it looks too busy:
+            actionPanel.setExpanded(UI, false);
+            actionPanel.setExpanded(FORMS, false);
+            actionPanel.setExpanded(ANIMATION, false);
+            actionPanel.setExpanded(IMAGES, false);
+            actionPanel.setExpanded(EXTENSIONS, false);
+            actionPanel.setExpanded(MISC, false);
+        }
+
+        finally {
+            // Re-enabling auto-rebuild will force an immediate rebuild:
+            actionPanel.setAutoRebuildEnabled(true);
+        }
 
         // Force the first card to show:
-        ((CardLayout)demoPanel.getLayout()).show(demoPanel, "Intro");
+        ((CardLayout)demoPanel.getLayout()).show(demoPanel, INTRO);
     }
 
     /**
      * Invoked internally to add the given demo panel to our menu.
      */
     private void addDemoPanel(String group, PanelBuilder panel) {
-        // Keep the text from being directly against the window border:
-        //cardListModel.addElement("  " + panel.getTitle());
         actionPanel.add(group, panel.getTitle(), panel.getTitle());
         demoPanel.add(PropertiesDialog.buildScrollPane(panel.build()), panel.getTitle());
     }

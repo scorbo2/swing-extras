@@ -19,7 +19,7 @@ public class FormsOverviewPanel extends PanelBuilder {
 
     @Override
     public String getTitle() {
-        return "Forms: overview";
+        return "Welcome to swing-forms!";
     }
 
     @Override

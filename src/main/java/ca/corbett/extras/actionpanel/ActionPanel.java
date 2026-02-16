@@ -194,6 +194,14 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Performs internal cleanup to ensure that this ActionPanel will become eligible
+     * for garbage collection when no longer needed.
+     */
+    public void dispose() {
+        LookAndFeelManager.removeChangeListener(e -> rebuild());
+    }
+
+    /**
      * Adds a single action to the specified group. If the group does not exist, it will be created.
      *
      * @param groupName The name of the group to add the action to.
