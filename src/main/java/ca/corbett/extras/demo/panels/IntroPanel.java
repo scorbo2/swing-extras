@@ -26,7 +26,7 @@ public class IntroPanel extends PanelBuilder {
 
     @Override
     public String getTitle() {
-        return "Introduction";
+        return "Welcome to swing-extras!";
     }
 
     @Override

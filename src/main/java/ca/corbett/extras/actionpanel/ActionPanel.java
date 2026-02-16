@@ -188,6 +188,17 @@ public class ActionPanel extends JPanel {
         this.expandCollapseOptions.addListener(this::rebuild);
         this.borderOptions.addListener(this::rebuild);
         this.autoRebuildEnabled = true;
+
+        // Listen for L&F changes so we can update our fonts and colors as needed:
+        LookAndFeelManager.addChangeListener(e -> rebuild());
+    }
+
+    /**
+     * Performs internal cleanup to ensure that this ActionPanel will become eligible
+     * for garbage collection when no longer needed.
+     */
+    public void dispose() {
+        LookAndFeelManager.removeChangeListener(e -> rebuild());
     }
 
     /**
