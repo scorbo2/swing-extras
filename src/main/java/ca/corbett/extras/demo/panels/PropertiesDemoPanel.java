@@ -23,10 +23,10 @@ import ca.corbett.extras.properties.LongTextProperty;
 import ca.corbett.extras.properties.PanelProperty;
 import ca.corbett.extras.properties.PasswordProperty;
 import ca.corbett.extras.properties.Properties;
-import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.extras.properties.ShortTextProperty;
 import ca.corbett.extras.properties.SliderProperty;
+import ca.corbett.extras.properties.dialog.PropertiesDialog;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ButtonField;
@@ -425,10 +425,12 @@ public class PropertiesDemoPanel extends PanelBuilder {
             catch (Exception ex) {
                 logger.log(Level.SEVERE, "Couldn't load properties.", ex);
             }
-            PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(),
+            // TODO offer ability to show ActionPanel or classic style dialog here with same properties list
+            PropertiesDialog dialog = propsManager.generateClassicDialog(DemoApp.getInstance(),
                                                                   "Test properties",
-                                                                  alignmentField.getSelectedItem(),
-                                                                  borderMarginField.getCurrentValue().intValue());
+                                                                         true);
+            dialog.setAlignment(alignmentField.getSelectedItem());
+            dialog.setBorderMargin(borderMarginField.getCurrentValue().intValue());
             dialog.setVisible(true);
             if (dialog.wasOkayed()) {
                 propsManager.save();

@@ -1,6 +1,6 @@
 package ca.corbett.extras.properties;
 
-import ca.corbett.forms.FormPanel;
+import ca.corbett.extras.properties.dialog.PropertiesDialog;
 import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.ShortTextField;
@@ -19,7 +19,7 @@ class PropertiesDialogTest {
     public void findFormField_withValidFormField_shouldFind() {
         // GIVEN a properties dialog with a bunch of fields on it:
         PropertiesManager propsManager = new PropertiesManager(new Properties(), createTestProps(), "Test");
-        PropertiesDialog dialog = propsManager.generateDialog(new JFrame(), "Test");
+        PropertiesDialog dialog = propsManager.generateClassicDialog(new JFrame(), "Test", true);
 
         // WHEN we search for specific fields:
         LabelField labelField = (LabelField)dialog.findFormField("test.test.label2");
@@ -30,43 +30,6 @@ class PropertiesDialogTest {
         assertNotNull(labelField);
         assertNotNull(textField);
         assertNull(formField);
-    }
-
-    @Test
-    public void getFormPanelAt_withSingleFormPanel_shouldSucceed() {
-        // GIVEN a properties dialog with only one form panel on it:
-        PropertiesManager propsManager = new PropertiesManager(new Properties(), createTestProps(), "Test");
-        PropertiesDialog dialog = propsManager.generateDialog(new JFrame(), "Test");
-
-        // WHEN we search for specific form panels by index:
-        FormPanel formPanel1 = dialog.getFormPanelAt(0);
-        FormPanel formPanelNull1 = dialog.getFormPanelAt(99);
-        FormPanel formPanelNull2 = dialog.getFormPanelAt(1);
-
-        // THEN we should see expected results:
-        assertNotNull(formPanel1);
-        assertNull(formPanelNull1);
-        assertNull(formPanelNull2);
-    }
-
-    @Test
-    public void getFormPanelAt_withMultiFormPanels_shouldSucceed() {
-        // GIVEN a properties dialog with multiple form panels on it:
-        PropertiesManager propsManager = new PropertiesManager(new Properties(), createMultiTabTestProps(), "Test");
-        PropertiesDialog dialog = propsManager.generateDialog(new JFrame(), "Test");
-
-        // WHEN we search for specific form panels by index:
-        FormPanel formPanel1 = dialog.getFormPanelAt(0);
-        FormPanel formPanel2 = dialog.getFormPanelAt(1);
-        FormPanel formPanelNull1 = dialog.getFormPanelAt(99);
-        FormPanel formPanelNull2 = dialog.getFormPanelAt(2);
-
-        // THEN we should see expected results:
-        assertNotNull(formPanel1);
-        assertNotNull(formPanel2);
-        assertNull(formPanelNull1);
-        assertNull(formPanelNull2);
-
     }
 
     private List<AbstractProperty> createTestProps() {

@@ -1,6 +1,6 @@
 package ca.corbett.extras.about;
 
-import ca.corbett.extras.properties.PropertiesDialog;
+import ca.corbett.extras.ScrollUtil;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -77,7 +77,7 @@ public final class AboutDialog extends JDialog implements KeyEventDispatcher {
         setResizable(false);
         setLayout(new BorderLayout());
 
-        add(PropertiesDialog.buildScrollPane(aboutPanel), BorderLayout.CENTER);
+        add(ScrollUtil.buildScrollPane(aboutPanel), BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));

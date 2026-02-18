@@ -1,10 +1,10 @@
 package ca.corbett.extensions.ui;
 
 import ca.corbett.extensions.AppExtensionInfo;
+import ca.corbett.extras.ScrollUtil;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.LabelProperty;
 import ca.corbett.extras.properties.Properties;
-import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
@@ -219,7 +219,7 @@ public class ExtensionDetailsPanel extends JPanel {
         addReleaseNotesField();
         addScreenshotsField();
 
-        add(PropertiesDialog.buildScrollPane(formPanel), BorderLayout.CENTER);
+        add(ScrollUtil.buildScrollPane(formPanel), BorderLayout.CENTER);
     }
 
     /**
@@ -440,7 +440,6 @@ public class ExtensionDetailsPanel extends JPanel {
 
         // Create and show a properties dialog with this list:
         PropertiesManager manager = new PropertiesManager(new Properties(), copy, "preview");
-        manager.setAlwaysShowSubcategoryLabels(true);
         manager.generateDialog(owner, "Config preview").setVisible(true);
 
         // Now restore all properties to their previous initiallyEditable state:

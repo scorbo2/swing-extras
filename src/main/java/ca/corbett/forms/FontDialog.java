@@ -1,7 +1,7 @@
 package ca.corbett.forms;
 
+import ca.corbett.extras.ScrollUtil;
 import ca.corbett.extras.gradient.ColorSelectionType;
-import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.fields.ColorField;
 import ca.corbett.forms.fields.ComboField;
 import ca.corbett.forms.fields.LabelField;
@@ -351,7 +351,7 @@ public final class FontDialog extends JDialog {
             formPanel.add(bgColorField);
         }
 
-        return PropertiesDialog.buildScrollPane(formPanel);
+        return ScrollUtil.buildScrollPane(formPanel);
     }
 
     /**

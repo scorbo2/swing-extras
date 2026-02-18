@@ -1,6 +1,7 @@
 package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.ScrollUtil;
 import ca.corbett.extras.TextInputDialog;
 import ca.corbett.extras.actionpanel.ActionPanel;
 import ca.corbett.extras.actionpanel.BorderOptions;
@@ -11,7 +12,6 @@ import ca.corbett.extras.actionpanel.ExpandListener;
 import ca.corbett.extras.actionpanel.ToolBarOptions;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.gradient.ColorSelectionType;
-import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.Margins;
@@ -147,7 +147,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         panelMap.put(TAB_EXPAND, buildExpandCollapsePanel());
         panelMap.put(TAB_ANIMATION, buildAnimationPanel());
         for (String key : panelMap.keySet()) {
-            cardPanel.add(PropertiesDialog.buildScrollPane(panelMap.get(key)), key);
+            cardPanel.add(ScrollUtil.buildScrollPane(panelMap.get(key)), key);
         }
 
         // Let's start with the Welcome tab visible:
@@ -900,7 +900,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 String actionName = dialog.getResult();
                 if (actionName != null) {
                     panelMap.put(actionName, buildExampleNewItemPanel(actionName));
-                    cardPanel.add(PropertiesDialog.buildScrollPane(panelMap.get(actionName)), actionName);
+                    cardPanel.add(ScrollUtil.buildScrollPane(panelMap.get(actionName)), actionName);
                     return new CardAction(actionName, actionName); // our actionName doubles as cardId
                 }
                 return null;

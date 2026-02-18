@@ -3,8 +3,8 @@ package ca.corbett.extensions;
 import ca.corbett.extensions.ui.ExtensionManagerDialog;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.FileBasedProperties;
-import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
+import ca.corbett.extras.properties.dialog.PropertiesDialog;
 import ca.corbett.forms.Alignment;
 import ca.corbett.updates.UpdateManager;
 
@@ -210,15 +210,18 @@ public abstract class AppProperties<T extends AppExtension> {
      */
     public boolean showPropertiesDialog(Frame owner, Alignment alignment) {
         reconcileExtensionEnabledStatus();
-        PropertiesDialog dialog = propsManager.generateDialog(owner,
+        // TODO switch from classic to ActionPanel here, it should be the new default
+        PropertiesDialog dialog = propsManager.generateClassicDialog(owner,
                                                               appName + " properties",
-                                                              alignment,
-                                                              propertiesDialogFormPanelBorderMargin);
+                                                                     true);
+        dialog.setAlignment(alignment);
+        dialog.setBorderMargin(propertiesDialogFormPanelBorderMargin);
         dialog.setSize(propertiesDialogInitialWidth, propertiesDialogInitialHeight);
         dialog.setMinimumSize(new Dimension(propertiesDialogMinimumWidth, propertiesDialogMinimumHeight));
         dialog.setVisible(true);
 
         if (dialog.wasOkayed()) {
+            propsManager.updateFromDialog(dialog);
             save();
         }
 
