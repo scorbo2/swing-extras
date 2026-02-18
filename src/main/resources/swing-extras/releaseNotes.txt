@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
+  #393 - Fix bug in ToggleableTabbedPane with L&F changes
   #386 - GradientUtil: add circular gradient option
   #382 - New FormField: MarginsField / MarginsProperty
   #376 - ActionPanel: extract border options
