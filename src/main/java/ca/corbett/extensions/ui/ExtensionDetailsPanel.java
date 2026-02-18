@@ -440,7 +440,11 @@ public class ExtensionDetailsPanel extends JPanel {
 
         // Create and show a properties dialog with this list:
         PropertiesManager manager = new PropertiesManager(new Properties(), copy, "preview");
-        manager.generateDialog(owner, "Config preview").setVisible(true);
+
+        // Debatable, but I prefer the "classic" dialog for showing a quick config preview,
+        // because the list of properties is likely very short, and ActionPanel is intended
+        // more for very large and busy properties dialogs:
+        manager.generateClassicDialog(owner, "Config preview", true).setVisible(true);
 
         // Now restore all properties to their previous initiallyEditable state:
         for (AbstractProperty prop : configProps) {

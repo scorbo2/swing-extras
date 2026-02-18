@@ -425,10 +425,8 @@ public class PropertiesDemoPanel extends PanelBuilder {
             catch (Exception ex) {
                 logger.log(Level.SEVERE, "Couldn't load properties.", ex);
             }
-            // TODO offer ability to show ActionPanel or classic style dialog here with same properties list
-            PropertiesDialog dialog = propsManager.generateClassicDialog(DemoApp.getInstance(),
-                                                                  "Test properties",
-                                                                         true);
+            PropertiesDialog dialog = propsManager.generateDialog(DemoApp.getInstance(),
+                                                                  "Test properties");
             dialog.setAlignment(alignmentField.getSelectedItem());
             dialog.setBorderMargin(borderMarginField.getCurrentValue().intValue());
             dialog.setVisible(true);
