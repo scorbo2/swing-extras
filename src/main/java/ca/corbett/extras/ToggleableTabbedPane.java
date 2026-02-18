@@ -1,6 +1,7 @@
 package ca.corbett.extras;
 
 import javax.swing.JTabbedPane;
+import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -20,7 +21,7 @@ import java.awt.event.MouseListener;
 public class ToggleableTabbedPane extends JTabbedPane {
 
     private boolean tabHeaderVisible = true;
-    private BasicTabbedPaneUI defaultUI;
+    private TabbedPaneUI defaultUI;
     private HiddenTabUI hiddenUI;
 
     public ToggleableTabbedPane() {
@@ -39,25 +40,9 @@ public class ToggleableTabbedPane extends JTabbedPane {
     }
 
     private void initializeUIs() {
-        // Store the default UI
-        defaultUI = new BasicTabbedPaneUI();
-
-        // Create our custom hidden UI
         hiddenUI = new HiddenTabUI();
-
-        // Set initial state
-        updateUI();
-
-        // We need to listen for Look and Feel changes, because our custom
-        // UI will be overridden by a default UI for the new LaF:
-        LookAndFeelManager.addChangeListener(e -> {
-            defaultUI = new BasicTabbedPaneUI();
-            if (! tabHeaderVisible) {
-                setUI(hiddenUI); // re-set it if needed
-                revalidate();
-                repaint();
-            }
-        });
+        // defaultUI will be captured in updateUI(), which Swing calls
+        // automatically during construction via the super() call
     }
 
     /**
@@ -98,13 +83,16 @@ public class ToggleableTabbedPane extends JTabbedPane {
 
     @Override
     public void updateUI() {
-        // Initialize UIs if they don't exist yet (during construction)
-        if (defaultUI == null || hiddenUI == null) {
-            super.updateUI();
-            return;
-        }
+        // Let the LaF install its own UI delegate first
+        super.updateUI();
 
-        updateTabUI();
+        // Now capture whatever the LaF just installed
+        defaultUI = getUI();
+
+        // If we're in hidden mode, re-apply the hidden UI
+        if (hiddenUI != null && !tabHeaderVisible) {
+            setUI(hiddenUI);
+        }
     }
 
     /**
