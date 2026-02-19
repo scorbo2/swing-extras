@@ -1,7 +1,6 @@
 package ca.corbett.extras;
 
 import ca.corbett.extras.io.KeyStrokeManager;
-import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
@@ -104,7 +103,7 @@ public class TextInputDialog extends JDialog {
         buttonPanel.add(cancelButton);
 
         setLayout(new BorderLayout());
-        add(PropertiesDialog.buildScrollPane(formPanel), BorderLayout.CENTER);
+        add(ScrollUtil.buildScrollPane(formPanel), BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
         if (owner != null) {

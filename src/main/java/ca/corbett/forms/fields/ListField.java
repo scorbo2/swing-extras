@@ -1,6 +1,6 @@
 package ca.corbett.forms.fields;
 
-import ca.corbett.extras.properties.PropertiesDialog;
+import ca.corbett.extras.ScrollUtil;
 
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
@@ -502,7 +502,7 @@ public class ListField<T> extends FormField {
         wrapperPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Wrap our list in a scroll pane:
-        JScrollPane scrollPane = PropertiesDialog.buildScrollPane(list);
+        JScrollPane scrollPane = ScrollUtil.buildScrollPane(list);
         wrapperPanel.add(scrollPane, BorderLayout.CENTER);
 
         return wrapperPanel;

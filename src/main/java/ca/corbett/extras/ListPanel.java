@@ -1,7 +1,6 @@
 package ca.corbett.extras;
 
 import ca.corbett.extensions.ui.ExtensionManagerDialog;
-import ca.corbett.extras.properties.PropertiesDialog;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -206,7 +205,7 @@ public class ListPanel<T> extends JPanel {
         }
 
         // Add the list itself, wrapped in a scroll pane:
-        add(PropertiesDialog.buildScrollPane(list), BorderLayout.CENTER);
+        add(ScrollUtil.buildScrollPane(list), BorderLayout.CENTER);
 
         // Add optional command buttons underneath:
         if (commands != null && ! commands.isEmpty()) {

@@ -371,6 +371,34 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * If a companion CardLayout is linked, this will set the highlighted action to be
+     * the one that triggers the given cardId. If no such action is found, this does nothing.
+     * If no companion CardLayout is linked, you will receive an IllegalStateException.
+     *
+     * @param cardId The id of the card whose triggering action should be highlighted.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setHighlightedAction(String cardId) {
+        if (cardContainer == null) {
+            throw new IllegalStateException(
+                    "Cannot set highlighted action by cardId without first setting a Card Container on the ActionPanel.");
+        }
+        if (cardId == null || cardId.isEmpty()) {
+            throw new IllegalArgumentException("Card ID cannot be null or empty.");
+        }
+
+        // Find the first CardAction that matches the given cardId:
+        for (CardAction cardAction : getCardActions()) {
+            if (Objects.equals(cardAction.cardId, cardId)) {
+                return setHighlightedAction(cardAction);
+            }
+        }
+
+        // If we get here, no matching CardAction was found. Just ignore it and return:
+        return this;
+    }
+
+    /**
      * Sets the specified action as the currently highlighted action.
      * Only one action can be highlighted at a time. Pass null to clear any highlighted action.
      *

@@ -1,6 +1,7 @@
 package ca.corbett.extras.demo;
 
 import ca.corbett.extensions.demo.ExtensionsOverviewPanel;
+import ca.corbett.extras.ScrollUtil;
 import ca.corbett.extras.Version;
 import ca.corbett.extras.actionpanel.ActionPanel;
 import ca.corbett.extras.demo.panels.AboutDemoPanel;
@@ -21,7 +22,6 @@ import ca.corbett.extras.demo.panels.ProgressDemoPanel;
 import ca.corbett.extras.demo.panels.PropertiesDemoPanel;
 import ca.corbett.extras.demo.panels.TextInputDialogPanel;
 import ca.corbett.extras.logging.LogConsole;
-import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.demo.AdvancedFormPanel;
 import ca.corbett.forms.demo.BasicFormPanel;
 import ca.corbett.forms.demo.CustomFormFieldPanel;
@@ -102,7 +102,7 @@ public class DemoApp extends JFrame {
         actionPanel.getExpandCollapseOptions().setAllowHeaderDoubleClick(true);
 
         // Make our action panel scrollable:
-        JScrollPane actionPanelScrollPane = PropertiesDialog.buildScrollPane(actionPanel);
+        JScrollPane actionPanelScrollPane = ScrollUtil.buildScrollPane(actionPanel);
 
         // Now add it all together in a split pane::
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, actionPanelScrollPane, demoPanel);
@@ -178,6 +178,6 @@ public class DemoApp extends JFrame {
      */
     private void addDemoPanel(String group, PanelBuilder panel) {
         actionPanel.add(group, panel.getTitle(), panel.getTitle());
-        demoPanel.add(PropertiesDialog.buildScrollPane(panel.build()), panel.getTitle());
+        demoPanel.add(ScrollUtil.buildScrollPane(panel.build()), panel.getTitle());
     }
 }

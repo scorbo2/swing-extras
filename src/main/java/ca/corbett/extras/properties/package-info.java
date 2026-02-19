@@ -13,5 +13,11 @@
  * AbstractProperty's descendant classes), tie them to a Properties or
  * FileBasedProperties instance, and then PropertiesManager does the rest.
  * </p>
+ * <p>
+ * For examples and additional documentation, refer to the
+ * <a href="https://www.corbett.ca/swing-extras-book/">swing-extras book</a>.
+ * </p>
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
 package ca.corbett.extras.properties;
