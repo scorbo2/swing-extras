@@ -147,8 +147,11 @@ public class ActionPanelPropertiesDialog extends PropertiesDialog {
             }
         }
 
-        // Flip to that card and mark it as highlighted in the ActionPanel:
-        ((CardLayout)cardPanel.getLayout()).show(cardPanel, cardId);
-        actionPanel.setHighlightedAction(cardId);
+        // If we found it above, flip to it. Otherwise, ignore it.
+        if (cardId != null) {
+            // Flip to that card and mark it as highlighted in the ActionPanel:
+            ((CardLayout)cardPanel.getLayout()).show(cardPanel, cardId);
+            actionPanel.setHighlightedAction(cardId);
+        }
     }
 }
