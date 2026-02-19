@@ -20,7 +20,7 @@ class ExtensionDownloadThreadTest {
     private static DownloadedExtension testExtensionFiles;
     private static VersionManifest.ExtensionVersion extensionVersion;
     private static UpdateSources.UpdateSource updateSource;
-    private DownloadedExtension testResult;
+    private volatile DownloadedExtension testResult;
 
     @BeforeAll
     public static void setup() throws Exception {
