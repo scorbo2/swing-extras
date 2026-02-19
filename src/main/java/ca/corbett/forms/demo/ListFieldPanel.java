@@ -227,8 +227,11 @@ public class ListFieldPanel extends PanelBuilder {
      * Adding a list item is one of the actions that we can't supply out-of-the-box,
      * because we don't know what type of data the list holds or what the list represents.
      * So, here's a simple example action that adds a string item to a ListField of strings.
+     * <p>
+     *     (public because also used from Properties demo panel)
+     * </p>
      */
-    private static class ListItemAddAction extends EnhancedAction {
+    public static class ListItemAddAction extends EnhancedAction {
 
         private final ListField<String> listField;
 
@@ -247,7 +250,13 @@ public class ListFieldPanel extends PanelBuilder {
         }
     }
 
-    private class ListItemHelpAction extends EnhancedAction {
+    /**
+     * Shows a quick help popup for the list item action buttons, which may not be self-explanatory to new users.
+     * <p>
+     * (public because also used from Properties demo panel)
+     * </p>
+     */
+    public static class ListItemHelpAction extends EnhancedAction {
 
         public ListItemHelpAction() {
             super(SwingFormsResources.getHelpIcon(16));
@@ -256,10 +265,12 @@ public class ListFieldPanel extends PanelBuilder {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            getMessageUtil().info("Action buttons can be added directly to ListFields!\n"
+            JOptionPane.showMessageDialog(DemoApp.getInstance(),
+                                          "Action buttons can be added directly to ListFields!\n"
                                           + "This is useful for actions that manipulate the list contents,\n"
                                           + "such as adding, removing, or reordering items.\n\n"
-                                          + "You can control alignment, size, and spacing of the buttons!\n");
+                                                  + "You can control alignment, size, and spacing of the buttons!\n",
+                                          "ListField help", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

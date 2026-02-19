@@ -239,7 +239,25 @@ public class PropertiesManager {
      * @return A PropertiesDialog instance, populated and ready to be shown.
      */
     public PropertiesDialog generateDialog(Window owner, String dialogTitle) {
-        return PropertiesDialog.createActionPanelDialog(owner, dialogTitle, properties);
+        return generateDialog(owner, dialogTitle, false);
+    }
+
+    /**
+     * Generates a PropertiesDialog for the current properties list.
+     * You can use setAlignment() and setBorderPanel() on the generated dialog to customize
+     * the FormPanel layout options.
+     * <p>
+     * <b>Note:</b> As of swing-extras 2.8, this method will return a PropertiesDialog
+     * based on ActionPanel navigation. Use the generateClassicDialog() method if you want the older tabbed pane style dialog instead.
+     * </p>
+     *
+     * @param owner           The owner Window for the dialog.
+     * @param dialogTitle     The title of the dialog.
+     * @param addPanelHeaders true to show auto-generated header labels for each FormPanel.
+     * @return A PropertiesDialog instance, populated and ready to be shown.
+     */
+    public PropertiesDialog generateDialog(Window owner, String dialogTitle, boolean addPanelHeaders) {
+        return PropertiesDialog.createActionPanelDialog(owner, dialogTitle, properties, addPanelHeaders);
     }
 
     /**

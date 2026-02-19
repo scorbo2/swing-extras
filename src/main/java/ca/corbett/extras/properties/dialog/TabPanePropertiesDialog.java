@@ -14,20 +14,34 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * An internal class used to generate the "classic" properties dialog,
+ * A PropertiesDialog implementation that generates the "classic" properties dialog,
  * with a separate tab for each major category of properties, and
  * header labels used to separate the subcategories.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.8 (refactored from older code)
  */
-class TabPanePropertiesDialog extends PropertiesDialog {
+public class TabPanePropertiesDialog extends PropertiesDialog {
 
     private static final Logger logger = Logger.getLogger(TabPanePropertiesDialog.class.getName());
 
     private ToggleableTabbedPane tabbedPane;
     private final boolean alwaysShowSubcategoryLabels;
 
+    /**
+     * It's generally preferable to use the create factory methods in the parent PropertiesDialog class,
+     * but you can directly instantiate this class if you want.
+     *
+     * @param owner                       the parent window for this dialog
+     * @param title                       the title to show in the dialog header
+     * @param properties                  the list of properties to show in this dialog.
+     *                                    Refer to the PropertiesManager Javadocs for details on how
+     *                                    properties are categorized and subcategorized.
+     * @param alwaysShowSubcategoryLabels if true, subcategory header labels will be shown even if there's only one
+     *                                    subcategory (which would be redundant with the tab header).
+     *                                    If false, subcategory header labels will only be shown if there
+     *                                    are multiple subcategories within a category.
+     */
     public TabPanePropertiesDialog(Window owner, String title, List<AbstractProperty> properties, boolean alwaysShowSubcategoryLabels) {
         super(owner, title, properties);
         this.alwaysShowSubcategoryLabels = alwaysShowSubcategoryLabels;
@@ -43,8 +57,8 @@ class TabPanePropertiesDialog extends PropertiesDialog {
     protected void populateFormPanels() {
         for (String category : categories) {
             List<String> subCategories = subcategoriesByCategory.get(category);
-            FormPanel formPanel = new FormPanel(DEFAULT_ALIGNMENT);
-            formPanel.setBorderMargin(DEFAULT_BORDER_MARGIN);
+            FormPanel formPanel = new FormPanel(alignment);
+            formPanel.setBorderMargin(borderMargin);
             formPanel.setName(category); // this controls the label for the tab header
             for (String subCategory : subCategories) {
                 // Show a subcategory label header if there's more than one subcategory:

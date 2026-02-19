@@ -47,7 +47,10 @@ public abstract class PropertiesDialog extends JDialog {
     protected final List<String> categories;
     protected final Map<String, List<String>> subcategoriesByCategory;
     protected final KeyStrokeManager keyStrokeManager;
+    protected Alignment alignment = DEFAULT_ALIGNMENT;
+    protected int borderMargin = DEFAULT_BORDER_MARGIN;
     private boolean wasOkayed = false;
+    private boolean isInitialized = false;
 
     /**
      * Creates and returns a "classic"-style PropertiesDialog, where each top-level category
@@ -80,16 +83,24 @@ public abstract class PropertiesDialog extends JDialog {
      *     PropertiesDialog dialog = PropertiesDialog.createActionPanelDialog(owner, title, properties);
      *     ActionPanel actionPanel = ((ActionPanelPropertiesDialog)dialog).getActionPanel();
      * </pre>
+     * <p>
+     *     <b>Panel headers</b> - In the ActionPanel style, you have the option to add header labels to each FormPanel.
+     *     These headers will be generated based on the subcategory name. If your layout is self-explanatory,
+     *     or you've already added your own LabelProperty instances, you can suppress these auto-generated
+     *     header labels by setting addPanelHeaders to false.
+     * </p>
      *
      * @param owner      The Window that owns this dialog. This is used to center the dialog over the owner.
      * @param title      The title to show in the dialog header.
      * @param properties The list of properties that this dialog is meant to edit. Ideally, not empty or null.
+     * @param addPanelHeaders Whether to add header labels to each FormPanel in the ActionPanel.
      * @return A new PropertiesDialog instance with the "action panel" style.
      */
     public static PropertiesDialog createActionPanelDialog(Window owner,
                                                            String title,
-                                                           List<AbstractProperty> properties) {
-        return new ActionPanelPropertiesDialog(owner, title, properties);
+                                                           List<AbstractProperty> properties,
+                                                           boolean addPanelHeaders) {
+        return new ActionPanelPropertiesDialog(owner, title, properties, addPanelHeaders);
     }
 
     /**
@@ -125,16 +136,16 @@ public abstract class PropertiesDialog extends JDialog {
         for (String category : categories) {
             subcategoriesByCategory.put(category, PropertiesManager.getSubcategories(category, this.properties));
         }
-        populateFormPanels(); // subclass will handle this
-        initLayout(); // subclass will handle this
 
         add(buildButtonPanel(), BorderLayout.SOUTH);
         keyStrokeManager.registerHandler("esc", e -> dispose());
-
-        tagFormFields(this);
     }
 
     public PropertiesDialog setAlignment(Alignment alignment) {
+        if (alignment == null) {
+            throw new IllegalArgumentException("Alignment cannot be null");
+        }
+        this.alignment = alignment;
         for (FormPanel formPanel : formPanels) {
             if (formPanel != null) {
                 formPanel.setAlignment(alignment);
@@ -144,6 +155,10 @@ public abstract class PropertiesDialog extends JDialog {
     }
 
     public PropertiesDialog setBorderMargin(int margin) {
+        if (margin < 0) {
+            throw new IllegalArgumentException("Margin cannot be negative");
+        }
+        this.borderMargin = margin;
         for (FormPanel formPanel : formPanels) {
             if (formPanel != null) {
                 formPanel.setBorderMargin(margin);
@@ -196,8 +211,15 @@ public abstract class PropertiesDialog extends JDialog {
     @Override
     public void setVisible(boolean visible) {
         if (visible) {
-            setLocationRelativeTo(owner);
+            if (!isInitialized) {
+                // We only want to do this the first time we show the dialog, not every time:
+                isInitialized = true;
+                populateFormPanels(); // subclass will handle this
+                initLayout(); // subclass will handle this
+                tagFormFields(this);
+            }
         }
+        setLocationRelativeTo(owner);
         super.setVisible(visible);
     }
 

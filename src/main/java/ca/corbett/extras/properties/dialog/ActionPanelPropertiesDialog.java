@@ -5,6 +5,7 @@ import ca.corbett.extras.actionpanel.ActionPanel;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.LabelField;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -14,14 +15,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A PropertiesDialog implementation that uses an ActionPanel on the left to show the categories and subcategories,
+ * and a CardLayout on the right to show the corresponding FormPanel for the selected category/subcategory.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ * @since swing-extras 2.8
+ */
 public class ActionPanelPropertiesDialog extends PropertiesDialog {
 
     private ActionPanel actionPanel;
     private JPanel cardPanel;
     private Map<String, FormPanel> formPanelsByCardId;
+    private final boolean addPanelHeaders;
 
-    public ActionPanelPropertiesDialog(Window owner, String title, List<AbstractProperty> properties) {
+    /**
+     * It's generally preferable to use the create factory methods in the parent PropertiesDialog class,
+     * but you can directly instantiate this class if you want.
+     *
+     * @param owner           the parent window for this dialog
+     * @param title           the title to show in the dialog header
+     * @param properties      the list of properties to show in this dialog.
+     * @param addPanelHeaders true to auto-generate a header label for each FormPanel.
+     */
+    public ActionPanelPropertiesDialog(Window owner, String title, List<AbstractProperty> properties, boolean addPanelHeaders) {
         super(owner, title, properties);
+        this.addPanelHeaders = addPanelHeaders;
     }
 
     /**
@@ -51,8 +70,17 @@ public class ActionPanelPropertiesDialog extends PropertiesDialog {
         for (String category : categories) {
             List<String> subCategories = subcategoriesByCategory.get(category);
             for (String subCategory : subCategories) {
-                FormPanel formPanel = new FormPanel(DEFAULT_ALIGNMENT);
-                formPanel.setBorderMargin(DEFAULT_BORDER_MARGIN);
+                FormPanel formPanel = new FormPanel(alignment);
+                formPanel.setBorderMargin(borderMargin);
+
+                // Auto-generate a header label if requested.
+                // This can be a lazy way of adding some visual context to your FormPanels.
+                // But you have the option of adding header/info labels to your own properties list instead.
+                if (addPanelHeaders) {
+                    formPanel.add(LabelField.createBoldHeaderLabel(subCategory));
+                }
+
+                // Get all properties for this category/subcategory and render them to the FormPanel:
                 List<AbstractProperty> propList = PropertiesManager.getProperties(properties, category, subCategory);
                 for (AbstractProperty prop : propList) {
                     formPanel.add(prop.generateFormField(formPanel));
