@@ -5,6 +5,7 @@ import ca.corbett.extras.actionpanel.ActionPanel;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.PropertiesManager;
 import ca.corbett.forms.FormPanel;
+import ca.corbett.forms.fields.FormField;
 import ca.corbett.forms.fields.LabelField;
 
 import javax.swing.JPanel;
@@ -14,6 +15,7 @@ import java.awt.Window;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * A PropertiesDialog implementation that uses an ActionPanel on the left to show the categories and subcategories,
@@ -23,6 +25,8 @@ import java.util.Map;
  * @since swing-extras 2.8
  */
 public class ActionPanelPropertiesDialog extends PropertiesDialog {
+
+    private static final Logger logger = Logger.getLogger(ActionPanelPropertiesDialog.class.getName());
 
     private ActionPanel actionPanel;
     private JPanel cardPanel;
@@ -83,7 +87,18 @@ public class ActionPanelPropertiesDialog extends PropertiesDialog {
                 // Get all properties for this category/subcategory and render them to the FormPanel:
                 List<AbstractProperty> propList = PropertiesManager.getProperties(properties, category, subCategory);
                 for (AbstractProperty prop : propList) {
-                    formPanel.add(prop.generateFormField(formPanel));
+                    try {
+                        FormField field = prop.generateFormField(formPanel);
+                        formPanel.add(field);
+                    }
+                    catch (UnsupportedOperationException use) {
+                        // In VERY rare cases, a property might not support FormField generation.
+                        // In that case, we'll just skip it and log a warning:
+                        // (ideally such a property would never be added in the first place, but let's be safe)
+                        logger.warning("Property \""
+                                               + prop.getFullyQualifiedName()
+                                               + "\" does not support FormField generation. Skipping.");
+                    }
                 }
 
                 // Add this one to our parent class's list:
