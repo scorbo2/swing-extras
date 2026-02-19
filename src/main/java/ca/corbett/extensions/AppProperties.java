@@ -210,8 +210,7 @@ public abstract class AppProperties<T extends AppExtension> {
      */
     public boolean showPropertiesDialog(Frame owner, Alignment alignment) {
         reconcileExtensionEnabledStatus();
-        // TODO switch from classic to ActionPanel here, it should be the new default
-        PropertiesDialog dialog = propsManager.generateClassicDialog(owner,
+        PropertiesDialog dialog = propsManager.generateDialog(owner,
                                                               appName + " properties",
                                                                      true);
         dialog.setAlignment(alignment);
