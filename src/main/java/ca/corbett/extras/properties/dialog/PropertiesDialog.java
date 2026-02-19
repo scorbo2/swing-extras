@@ -153,6 +153,13 @@ public abstract class PropertiesDialog extends JDialog {
         keyStrokeManager.registerHandler("esc", e -> dispose());
     }
 
+    /**
+     * Sets the preferred FormPanel alignment for all FormPanels on this dialog.
+     * Can be invoked either before or after showing the dialog.
+     *
+     * @param alignment The preferred alignment to use for all FormPanels on this dialog. Cannot be null.
+     * @return This PropertiesDialog instance, for chaining.
+     */
     public PropertiesDialog setAlignment(Alignment alignment) {
         if (alignment == null) {
             throw new IllegalArgumentException("Alignment cannot be null");
@@ -166,6 +173,13 @@ public abstract class PropertiesDialog extends JDialog {
         return this;
     }
 
+    /**
+     * Sets the preferred border margin for all FormPanels on this dialog.
+     * Can be invoked either before or after showing the dialog.
+     *
+     * @param margin The preferred border margin to use for all FormPanels on this dialog. Cannot be negative.
+     * @return This PropertiesDialog instance, for chaining.
+     */
     public PropertiesDialog setBorderMargin(int margin) {
         if (margin < 0) {
             throw new IllegalArgumentException("Margin cannot be negative");
@@ -223,15 +237,9 @@ public abstract class PropertiesDialog extends JDialog {
     @Override
     public void setVisible(boolean visible) {
         if (visible) {
-            if (!isInitialized) {
-                // We only want to do this the first time we show the dialog, not every time:
-                isInitialized = true;
-                populateFormPanels(); // subclass will handle this
-                initLayout(); // subclass will handle this
-                tagFormFields(this);
-            }
+            initialize();
+            setLocationRelativeTo(owner);
         }
-        setLocationRelativeTo(owner);
         super.setVisible(visible);
     }
 
@@ -265,6 +273,11 @@ public abstract class PropertiesDialog extends JDialog {
      * @return A FormField instance representing that field, or null if not found.
      */
     public FormField findFormField(String identifier) {
+        // Wonky case: this might actually get invoked before we are setVisible(true),
+        // for example in unit tests. So, just make sure we're initialized first:
+        initialize();
+
+        // Find the requested field, if we have it:
         for (FormPanel formPanel : formPanels) {
             if (formPanel != null) {
                 FormField field = formPanel.getFormField(identifier);
@@ -380,6 +393,20 @@ public abstract class PropertiesDialog extends JDialog {
                     field.setExtraAttribute(DIALOG_PROP, dialog);
                 }
             }
+        }
+    }
+
+    /**
+     * Calls upon our subclass to populate our list of FormPanels
+     * and to initialize our layout.
+     */
+    private void initialize() {
+        if (!isInitialized) {
+            // We only want to do this the first time we show the dialog, not every time:
+            isInitialized = true;
+            populateFormPanels(); // subclass will handle this
+            initLayout(); // subclass will handle this
+            tagFormFields(this);
         }
     }
 }
