@@ -289,7 +289,7 @@ public abstract class PropertiesDialog extends JDialog {
         // (This allows the user to navigate FormPanels and see ALL validation errors,
         //  not just those on whichever FormPanel first failed validation.)
         for (FormPanel formPanel : formPanels) {
-            if (formPanel != null && !formPanel.isFormValid()) {
+            if (formPanel != null && !formPanel.isFormValid() && firstFormPanelWithErrors == null) {
                 firstFormPanelWithErrors = formPanel;
             }
         }
