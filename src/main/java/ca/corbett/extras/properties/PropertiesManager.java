@@ -18,7 +18,15 @@ import java.util.logging.Logger;
  * application preferences are handled in a consistent way. This can be used
  * for managing properties of any supported type in a generic and configurable way.
  * <p>
- *     TODO update javadocs to describe the new mechanism for prop dialog access
+ * PropertiesManager can be used directly, but the more typical case is for applications
+ * to use AppProperties (or a derived class), which binds together a PropertiesManager instance
+ * with an ExtensionManager instance. AppProperties is extremely useful in saving a lot
+ * of work for client code. Specifically, AppProperties can handle the auto-generation
+ * of a PropertiesDialog for viewing and editing your application's properties.
+ * </p>
+ * <p>
+ * For more information, refer to the <a href="https://www.corbett.ca/swing-extras-book/">swing-extras book</a>,
+ * or check out the built-in demo application that comes with this library!
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>

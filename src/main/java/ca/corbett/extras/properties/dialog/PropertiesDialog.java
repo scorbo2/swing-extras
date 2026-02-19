@@ -21,17 +21,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
- * TODO update Javadocs for updated class structure - all of this is changing in 2.8
+ * PropertiesDialog can display and allow editing of a list of AbstractProperty
+ * instances. The design is very flexible, allowing you to use categories and
+ * subcategories to organize your properties. There are two basic choices
+ * for the layout of this dialog:
+ * <ul>
+ *     <li><b>"Classic" style</b>: this organizes properties into a tabbed
+ *     pane, with each property category getting its own tab.</li>
+ *     <li><b>"Action panel" style</b>: this organizes properties into an ActionPanel
+ *     on the left for navigation, with subcategories displayed in FormPanels on the right.</li>
+ * </ul>
+ * <p>
+ * PropertiesDialog instances can be created manually, but it's generally better
+ * to go through AppProperties for managing your application's properties.
+ * The AppProperties class (or an application-specific derived instance) can
+ * handle auto-generating the PropertiesDialog for you.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 1.8, 2024-12-30
  */
 public abstract class PropertiesDialog extends JDialog {
-
-    private static final Logger logger = Logger.getLogger(PropertiesDialog.class.getName());
 
     public static final String DIALOG_PROP = "propertiesDialog";
     public static final Alignment DEFAULT_ALIGNMENT = Alignment.TOP_LEFT;
