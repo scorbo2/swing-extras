@@ -283,7 +283,7 @@ public class PropertiesManager {
      * @return A PropertiesDialog instance, populated and ready to be shown.
      */
     public PropertiesDialog generateClassicDialog(Window owner, String dialogTitle, boolean alwaysShowSubcategoryLabels) {
-        return PropertiesDialog.createClassicDialog(owner, dialogTitle, properties, false);
+        return PropertiesDialog.createClassicDialog(owner, dialogTitle, properties, alwaysShowSubcategoryLabels);
     }
 
     /**
