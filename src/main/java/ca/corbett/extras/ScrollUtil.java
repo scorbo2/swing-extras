@@ -34,6 +34,12 @@ public class ScrollUtil {
      * @return A JScrollPane that won't take a million years to scroll through.
      */
     public static JScrollPane buildScrollPane(Component component, int unitIncrement) {
+        if (component == null) {
+            throw new IllegalArgumentException("component must not be null");
+        }
+        if (unitIncrement < 1) {
+            throw new IllegalArgumentException("unitIncrement must be a positive integer");
+        }
         JScrollPane scrollPane = new JScrollPane(component);
         scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
