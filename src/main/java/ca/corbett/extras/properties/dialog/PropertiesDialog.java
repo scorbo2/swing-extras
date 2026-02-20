@@ -80,7 +80,9 @@ public abstract class PropertiesDialog extends JDialog {
                                                        String title,
                                                        List<AbstractProperty> properties,
                                                        boolean alwaysShowSubcategoryLabels) {
-        return new TabPanePropertiesDialog(owner, title, properties, alwaysShowSubcategoryLabels);
+        PropertiesDialog dialog = new TabPanePropertiesDialog(owner, title, properties, alwaysShowSubcategoryLabels);
+        dialog.initialize(); // Can't invoke overridable methods in constructor, so this goes here.
+        return dialog;
     }
 
     /**
@@ -112,7 +114,9 @@ public abstract class PropertiesDialog extends JDialog {
                                                            String title,
                                                            List<AbstractProperty> properties,
                                                            boolean addPanelHeaders) {
-        return new ActionPanelPropertiesDialog(owner, title, properties, addPanelHeaders);
+        PropertiesDialog dialog = new ActionPanelPropertiesDialog(owner, title, properties, addPanelHeaders);
+        dialog.initialize(); // Can't invoke overridable methods in constructor, so this goes here.
+        return dialog;
     }
 
     /**
@@ -237,7 +241,6 @@ public abstract class PropertiesDialog extends JDialog {
     @Override
     public void setVisible(boolean visible) {
         if (visible) {
-            initialize();
             setLocationRelativeTo(owner);
         }
         super.setVisible(visible);
@@ -273,10 +276,6 @@ public abstract class PropertiesDialog extends JDialog {
      * @return A FormField instance representing that field, or null if not found.
      */
     public FormField findFormField(String identifier) {
-        // Wonky case: this might actually get invoked before we are setVisible(true),
-        // for example in unit tests. So, just make sure we're initialized first:
-        initialize();
-
         // Find the requested field, if we have it:
         for (FormPanel formPanel : formPanels) {
             if (formPanel != null) {
