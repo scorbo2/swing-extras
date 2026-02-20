@@ -199,7 +199,8 @@ public class KeyStrokeProperty extends AbstractProperty {
     public void loadFromProps(Properties props) {
         allowBlank = props.getBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
         String reservedStr = props.getString(fullyQualifiedName + ".reservedKeyStrokes",
-                                             listToString(new ArrayList<>(reservedKeyStrokes)));
+                                             listToString(new ArrayList<>(reservedKeyStrokes)),
+                                             true); // Treat blank values as null to allow overwriting them.
         reservedKeyStrokes.clear();
         reservedKeyStrokes.addAll(stringToList(reservedStr));
         reservedKeyStrokeMsg = props.getString(fullyQualifiedName + ".reservedKeyStrokeMsg", reservedKeyStrokeMsg);

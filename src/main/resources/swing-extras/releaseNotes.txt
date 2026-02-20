@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
+  #402 - Change unexpected behavior in Properties.getString()
   #399 - AppProperties: better subclass access to props dialog
   #398 - PropertiesDialog: ensure ActionPanel is scrollable
   #393 - Fix bug in ToggleableTabbedPane with L&F changes
