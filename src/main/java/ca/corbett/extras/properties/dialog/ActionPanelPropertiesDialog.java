@@ -147,7 +147,7 @@ public class ActionPanelPropertiesDialog extends PropertiesDialog {
             actionPanel.setHighlightedAction(firstCardId);
         }
 
-        add(actionPanel, BorderLayout.WEST);
+        add(ScrollUtil.buildScrollPane(actionPanel), BorderLayout.WEST);
         add(cardPanel, BorderLayout.CENTER);
     }
 
