@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExtensionDownloadThreadTest {
 
+    private static final int CALLBACK_TIMEOUT_SECONDS = 5;
+
     private static DownloadManager downloadManager;
     private static DownloadedExtension testExtensionFiles;
     private static VersionManifest.ExtensionVersion extensionVersion;
@@ -51,7 +53,7 @@ class ExtensionDownloadThreadTest {
         thread.join();
         
         // Wait for the progressComplete callback to finish:
-        boolean completed = testLatch.await(5, TimeUnit.SECONDS);
+        boolean completed = testLatch.await(CALLBACK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertTrue(completed, "progressComplete callback should have been invoked within timeout");
 
         // THEN it should have downloaded all files:
@@ -79,7 +81,7 @@ class ExtensionDownloadThreadTest {
         thread.join();
         
         // Wait for the progressComplete callback to finish:
-        boolean completed = testLatch.await(5, TimeUnit.SECONDS);
+        boolean completed = testLatch.await(CALLBACK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertTrue(completed, "progressComplete callback should have been invoked within timeout");
 
         // THEN it should have downloaded only the jar file:
@@ -105,7 +107,7 @@ class ExtensionDownloadThreadTest {
         thread.join();
         
         // Wait for the progressComplete callback to finish:
-        boolean completed = testLatch.await(5, TimeUnit.SECONDS);
+        boolean completed = testLatch.await(CALLBACK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertTrue(completed, "progressComplete callback should have been invoked within timeout");
 
         // THEN it should have downloaded only the screenshots:
