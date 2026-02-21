@@ -225,6 +225,52 @@ public class LookAndFeelManager {
     }
 
     /**
+     * Returns the self-reported name of the current Look and Feel, or the
+     * string "unknown" if the current Look and Feel does not self-report a name.
+     */
+    public static String getCurrentLafName() {
+        String name = UIManager.getLookAndFeel().getName();
+        return (name == null || name.isBlank()) ? "unknown" : name;
+    }
+
+    /**
+     * Returns the class name of the current Look and Feel.
+     */
+    public static String getCurrentLafClassName() {
+        return UIManager.getLookAndFeel().getClass().getName();
+    }
+
+    /**
+     * Returns true if the current Look and Feel is a "light" theme, false if it's a
+     * "dark" theme. The mechanism for determining this is a bit loose, and may
+     * not be accurate in all cases.
+     */
+    public static boolean isLight() {
+        return !isDark();
+    }
+
+    /**
+     * Returns true if the current Look and Feel is a "dark" theme, false if it's a
+     * "light" theme. The mechanism for determining this is a bit loose, and may
+     * not be accurate in all cases.
+     */
+    public static boolean isDark() {
+        // Get both the self-reported name and the class name of the current LaF:
+        String combinedName = getCurrentLafName() + " " + getCurrentLafClassName();
+        combinedName = combinedName.toLowerCase();
+
+        // We *could* spot-check some RGB values in the current LaF and make
+        // a proper guess as to whether it's "light" or "dark", but this seems
+        // pretty error-prone. So, eh, let's just look for "dark" in the
+        // name and call it a day. Any theme that doesn't explicitly have
+        // "dark" in the name is probably a light theme.
+        return combinedName.contains("dark")
+                || combinedName.contains("darc") // don't forget about "darcula"!
+                || combinedName.contains("matrix"); // No LaF that I currently know of, but it makes sense to me :)
+
+    }
+
+    /**
      * If you wish to be informed when the current Look and Feel changes, because
      * you have perhaps set some custom colors across your UI, you can subscribe
      * to receive notification when it happens.
