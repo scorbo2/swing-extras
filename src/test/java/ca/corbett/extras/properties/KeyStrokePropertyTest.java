@@ -165,6 +165,32 @@ class KeyStrokePropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
+    public void setReservedKeyStrokesAfterSave_withInitialBlankValue_shouldAllowSettingReservedKeyStrokes() {
+        // GIVEN a KeyStrokeProperty with no reserved keystrokes:
+        KeyStrokeProperty property = (KeyStrokeProperty)actual;
+        property.setReservedKeyStrokes(List.of());
+
+        // WHEN we save to properties:
+        Properties props = new Properties();
+        property.saveToProps(props);
+
+        // THEN the value stored in props should be an explicit blank String:
+        assertEquals("", props.getString(property.getFullyQualifiedName() + ".reservedKeyStrokes", "defaultValue"));
+
+        // WHEN we then set some reserved keystrokes on the property and load it:
+        KeyStroke reserved1 = KeyStrokeManager.parseKeyStroke("Ctrl+S");
+        KeyStroke reserved2 = KeyStrokeManager.parseKeyStroke("Ctrl+O");
+        property.setReservedKeyStrokes(List.of(reserved1, reserved2));
+        property.loadFromProps(props);
+
+        // THEN the reserved keystrokes should have replaced the explicit blank String from earlier:
+        List<KeyStroke> reserved = property.getReservedKeyStrokes();
+        assertEquals(2, reserved.size());
+        assertTrue(reserved.contains(reserved1));
+        assertTrue(reserved.contains(reserved2));
+    }
+
+    @Test
     public void addReservedKeyStrokes_withAdditionalKeyStrokes_shouldAddThem() {
         // GIVEN a KeyStrokeProperty with one reserved keystroke:
         KeyStrokeProperty property = (KeyStrokeProperty)actual;

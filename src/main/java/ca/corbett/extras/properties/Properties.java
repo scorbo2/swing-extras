@@ -79,13 +79,35 @@ public class Properties {
 
     /**
      * Retrieves the String value of the named property, if any.
+     * If the stored value is explicitly blank, then a blank string is returned.
+     * If you wish to treat blank strings the same as null/missing values,
+     * then invoke getString(name, defaultValue, true) instead of this method.
      *
      * @param name         The property name.
      * @param defaultValue A value to receive if no such named property exists.
      * @return The value of the named property, or defaultValue if no such property exists.
      */
     public String getString(String name, String defaultValue) {
-        return props.getProperty(name, defaultValue);
+        return getString(name, defaultValue, false);
+    }
+
+    /**
+     * Retrieves the String value of the named property, if any.
+     * If defaultIfBlank is true, then explicit blank String values in the saved property
+     * will be handled the same way as if the property had a null/missing value.
+     * That is, the given defaultValue will be returned instead of the blank string.
+     *
+     * @param name           The property name.
+     * @param defaultValue   A value to receive if the value is missing or invalid.
+     * @param defaultIfBlank true to treat blank string values the same as null values.
+     * @return The value of the named property, or defaultValue, based on the stored value, as described above.
+     */
+    public String getString(String name, String defaultValue, boolean defaultIfBlank) {
+        String value = props.getProperty(name, defaultValue);
+        if (defaultIfBlank && value != null && value.isBlank()) {
+            return defaultValue;
+        }
+        return value;
     }
 
     /**
