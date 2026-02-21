@@ -62,6 +62,7 @@ import com.jtattoo.plaf.noire.NoireLookAndFeel;
 import com.jtattoo.plaf.smart.SmartLookAndFeel;
 import com.jtattoo.plaf.texture.TextureLookAndFeel;
 
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -222,6 +223,66 @@ public class LookAndFeelManager {
     public static Color getLafColor(String key, Color defaultColor) {
         Color c = UIManager.getColor(key);
         return c == null ? defaultColor : c;
+    }
+
+    /**
+     * Returns the self-reported name of the current Look and Feel, or the
+     * string "unknown" if there is no Look and Feel set, or if the current
+     * Look and Feel does not self-report a name.
+     */
+    public static String getCurrentLafName() {
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        if (laf == null) {
+            return "unknown";
+        }
+        String name = laf.getName();
+        return (name == null || name.isBlank()) ? "unknown" : name;
+    }
+
+    /**
+     * Returns the class name of the current Look and Feel, or the
+     * string "unknown" if there is no Look and Feel set.
+     */
+    public static String getCurrentLafClassName() {
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        if (laf == null) {
+            return "unknown";
+        }
+        return laf.getClass().getName();
+    }
+
+    /**
+     * Returns true if the current Look and Feel is a "light" theme, false if it's a
+     * "dark" theme. The mechanism for determining this is a bit loose, and may
+     * not be accurate in all cases.
+     */
+    public static boolean isLight() {
+        return !isDark();
+    }
+
+    /**
+     * Returns true if the current Look and Feel is a "dark" theme, false if it's a
+     * "light" theme. The mechanism for determining this is a bit loose, and may
+     * not be accurate in all cases.
+     */
+    public static boolean isDark() {
+        // Get both the self-reported name and the class name of the current LaF:
+        String combinedName = getCurrentLafName() + " " + getCurrentLafClassName();
+        combinedName = combinedName.toLowerCase();
+
+        // We *could* spot-check some RGB values in the current LaF and make
+        // a proper guess as to whether it's "light" or "dark", but this seems
+        // pretty error-prone. So, eh, let's just look for "dark" in the
+        // name and call it a day. Any theme that doesn't explicitly have
+        // "dark" in the name is probably a light theme.
+        return combinedName.contains("dark")
+                || combinedName.contains("darc") // don't forget about "darcula"!
+                || combinedName.contains("matrix") // No LaF that I currently know of, but it makes sense to me :)
+                || combinedName.contains("hiberbee") // Hiberbee is a dark theme but doesn't have "dark" in the name
+                || combinedName.contains("noir")  // anything with "noir"/"noire"
+                || combinedName.contains("moon")  // another guess
+                || combinedName.contains("night");// just another guess... sigh.
+
     }
 
     /**
