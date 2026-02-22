@@ -59,12 +59,7 @@ class ToolBarGroupEditAction extends ToolBarAction {
             }
 
             if (dialog.listWasModified()) {
-                ActionGroup actionGroup = actionPanel.getGroup(groupName);
-                if (actionGroup != null) {
-                    actionGroup.clear();
-                    actionGroup.addAll(dialog.getModifiedList());
-                    actionPanel.rebuild();
-                }
+                actionPanel.reorderActions(groupName, dialog.getModifiedList());
             }
         }
     }

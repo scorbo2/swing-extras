@@ -454,4 +454,67 @@ class ActionPanelTest {
         // THEN the group should have been created:
         assertTrue(actionPanel.hasGroup("test"), "Group should be created even if action name and card ID are null");
     }
+
+    @Test
+    public void renameGroup_withGroupRenamedListener_shouldNotifyListener() {
+        // GIVEN an ActionPanel with a group and a GroupRenamedListener
+        actionPanel.add("group1", createTestAction("Action 1"));
+
+        final String[] capturedOldName = new String[1];
+        final String[] capturedNewName = new String[1];
+
+        actionPanel.addGroupRenamedListener((ap, oldName, newName) -> {
+            capturedOldName[0] = oldName;
+            capturedNewName[0] = newName;
+        });
+
+        // WHEN we rename the group
+        boolean result = actionPanel.renameGroup("group1", "new name");
+
+        // THEN the listener should be notified with the correct old and new names
+        assertTrue(result, "renameGroup should succeed");
+        assertEquals("group1", capturedOldName[0], "Listener should receive the correct old name");
+        assertEquals("new name", capturedNewName[0], "Listener should receive the correct new name");
+    }
+
+    @Test
+    public void removeGroup_withGroupRemovedListener_shouldNotifyListener() {
+        // GIVEN an ActionPanel with a group and a GroupRemovedListener
+        actionPanel.add("group1", createTestAction("Action 1"));
+
+        final String[] capturedGroupName = new String[1];
+
+        actionPanel.addGroupRemovedListener((ap, groupName) -> {
+            capturedGroupName[0] = groupName;
+        });
+
+        // WHEN we remove the group
+        actionPanel.removeGroup("group1");
+
+        // THEN the listener should be notified with the correct group name
+        assertFalse(actionPanel.hasGroup("group1"), "removeGroup should succeed");
+        assertEquals("group1", capturedGroupName[0], "Listener should receive the correct group name");
+    }
+
+    @Test
+    public void reorderGroup_withGroupReorderedListener_shouldNotifyListener() {
+        // GIVEN an ActionPanel with a group and a GroupReorderedListener
+        actionPanel.addAll("group1", List.of(
+                createTestAction("Action 1"),
+                createTestAction("Action 2")));
+
+        final String[] capturedGroupName = new String[1];
+
+        actionPanel.addGroupReorderedListener((ap, groupName) -> {
+            capturedGroupName[0] = groupName;
+        });
+
+        // WHEN we reorder the group
+        ActionGroup group = actionPanel.getGroup("group1");
+        actionPanel.reorderActions("group1", List.of(group.getActions().get(1), group.getActions().get(0)));
+        actionPanel.rebuild();
+
+        // THEN the listener should be notified with the correct group name
+        assertEquals("group1", capturedGroupName[0], "Listener should receive the correct group name");
+    }
 }

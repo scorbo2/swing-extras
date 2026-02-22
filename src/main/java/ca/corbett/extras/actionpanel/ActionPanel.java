@@ -109,6 +109,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *     Access the ToolBarOptions with getToolBarOptions().
  * </p>
  * <p>
+ * <b>Listening for events</b> - there are a few notifications that callers can subscribe to:
+ * </p>
+ * <ul>
+ *     <li><b>Expand/collapse events</b> - listen for when the user expands or collapses an action group with
+ *     <code>addExpandListener(ExpandListener listener)</code>. The listener will be notified of which group was
+ *     expanded or collapsed, and whether it was an expand or a collapse event.</li>
+ *     <li><b>Group rename events</b> - if you allow group renaming in the toolbar,
+ *       then you can listen for when a group is renamed with
+ *       <code>addGroupRenamedListener(GroupRenamedListener listener)</code>.
+ *       The listener will be notified of the old and new group names.</li>
+ *     <li><b>Group removal events</b> - if you allow group removal in the toolbar,
+ *       then you can listen for when a group is removed with
+ *       <code>addGroupRemovedListener(GroupRemovedListener listener)</code>.
+ *       The listener will be notified of the name of the group that was removed.</li>
+ *     <li><b>Group reorder events</b> - if you allow item reordering in the toolbar,
+ *       then you can listen for when a group is reordered with
+ *       <code>addGroupReorderedListener(GroupReorderedListener listener)</code>.
+ *       The listener will be notified of the name of the group that was reordered.</li>
+ * </ul>
+ * <p>
  * For a complete working example of ActionPanel with all customization options, refer to the
  * demo application included with swing-extras! For more documentation and code examples,
  * refer to the <a href="https://www.corbett.ca/swing-extras-book/">swing-extras book</a>.
@@ -124,6 +144,9 @@ public class ActionPanel extends JPanel {
     public static final int DEFAULT_EXTERNAL_PADDING = 8;
 
     private final List<ExpandListener> expandListeners = new CopyOnWriteArrayList<>();
+    private final List<GroupRenamedListener> groupRenamedListeners = new CopyOnWriteArrayList<>();
+    private final List<GroupRemovedListener> groupRemovedListeners = new CopyOnWriteArrayList<>();
+    private final List<GroupReorderedListener> groupReorderedListeners = new CopyOnWriteArrayList<>();
     private final List<ActionGroup> actionGroups;
     private EnhancedAction highlightedAction;
     private boolean highlightLastAction;
@@ -309,6 +332,26 @@ public class ActionPanel extends JPanel {
                     "Cannot add CardAction without first setting a Card Container on the ActionPanel.");
         }
         cardAction.setCardContainer(cardContainer);
+    }
+
+    /**
+     * Returns all actions that belong to the specified group.
+     * If the named group does not exist, or does not contain any actions, then an empty list is returned.
+     * The actions are returned in the order determined by the action comparator for this ActionPanel,
+     * or in the order they were added if no comparator is set.
+     *
+     * @param groupName The name of the group whose actions should be returned. Case-insensitive.
+     * @return A list of all actions that belong to the specified group.
+     */
+    public List<EnhancedAction> getActionsForGroup(String groupName) {
+        if (groupName == null || groupName.isBlank()) {
+            return List.of(); // just return empty list if groupName is invalid
+        }
+        ActionGroup group = findGroup(groupName);
+        if (group == null) {
+            return List.of(); // just return empty list if group doesn't exist
+        }
+        return group.getActions();
     }
 
     /**
@@ -690,6 +733,7 @@ public class ActionPanel extends JPanel {
         ActionGroup group = findGroup(groupName);
         if (group != null) {
             actionGroups.remove(group);
+            fireGroupRemovedEvent(groupName);
             rebuild();
         }
         return this;
@@ -729,8 +773,40 @@ public class ActionPanel extends JPanel {
 
         // All good:
         group.renameTo(newName);
+        fireGroupRenamedEvent(oldName, newName);
         rebuild();
         return true;
+    }
+
+    /**
+     * Invoked internally to supply a new ordering of actions for the specified group.
+     * <b>Note:</b> we don't actually validate that the given list contains the same actions
+     * that were already in the group, so technically, this could be used to supply
+     * an entirely new list. This method is package-private to ensure it is only invoked
+     * from our own ToolBarGroupEditAction, which allows user-specified manual ordering.
+     * Note that if a Comparator is set, then the order supplied here will be overridden
+     * by the Comparator-specified order.
+     *
+     * @param groupName The name of the group to reorder.
+     * @param newOrder  The new ordering of actions for the group. If null, nothing happens.
+     * @return This ActionPanel, for method chaining.
+     */
+    ActionPanel reorderActions(String groupName, List<EnhancedAction> newOrder) {
+        if (groupName == null || groupName.isEmpty()) {
+            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        }
+        if (newOrder == null) {
+            return this; // just ignore null
+        }
+        ActionGroup group = findGroup(groupName);
+        if (group != null) {
+            // If newOrder is empty, this will empty the group, but that's fine - we trust the caller.
+            group.clear();
+            group.addAll(newOrder);
+            fireGroupReorderedEvent(groupName);
+            rebuild();
+        }
+        return this;
     }
 
     /**
@@ -1442,6 +1518,128 @@ public class ActionPanel extends JPanel {
     void fireExpandEvent(String groupName, boolean expanded) {
         for (ExpandListener listener : expandListeners) {
             listener.groupExpandedChanged(groupName, expanded);
+        }
+    }
+
+    /**
+     * Subscribe to receive notification whenever a group is renamed within this ActionPanel.
+     *
+     * @param listener A GroupRenamedListener to be notified whenever a group is renamed within this ActionPanel.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel addGroupRenamedListener(GroupRenamedListener listener) {
+        if (listener != null) {
+            groupRenamedListeners.add(listener);
+        }
+        return this;
+    }
+
+    /**
+     * Stop listening for notification whenever a group is renamed within this ActionPanel.
+     *
+     * @param listener A GroupRenamedListener that was previously registered to receive notification of group renames.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel removeGroupRenamedListener(GroupRenamedListener listener) {
+        if (listener != null) {
+            groupRenamedListeners.remove(listener);
+        }
+        return this;
+    }
+
+    /**
+     * Invoked internally to notify listeners that a group has been renamed within this ActionPanel.
+     *
+     * @param oldName The old name of the renamed group. Should not be null (not validated here).
+     * @param newName The new name of the renamed group. Should not be null (not validated here).
+     */
+    void fireGroupRenamedEvent(String oldName, String newName) {
+        for (GroupRenamedListener listener : groupRenamedListeners) {
+            listener.groupRenamed(this, oldName, newName);
+        }
+    }
+
+    /**
+     * Subscribe to receive notification whenever a group is removed from this ActionPanel.
+     *
+     * @param listener A GroupRemovedListener to be notified whenever a group is removed from this ActionPanel.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel addGroupRemovedListener(GroupRemovedListener listener) {
+        if (listener != null) {
+            groupRemovedListeners.add(listener);
+        }
+        return this;
+    }
+
+    /**
+     * Stop listening for notification whenever a group is removed from this ActionPanel.
+     *
+     * @param listener A GroupRemovedListener that was previously registered to receive notification of group removals.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel removeGroupRemovedListener(GroupRemovedListener listener) {
+        if (listener != null) {
+            groupRemovedListeners.remove(listener);
+        }
+        return this;
+    }
+
+    /**
+     * Invoked internally to notify listeners that a group has been removed from this ActionPanel.
+     *
+     * @param removedGroup The name of the group that was removed. Should not be null (not validated here).
+     */
+    void fireGroupRemovedEvent(String removedGroup) {
+        for (GroupRemovedListener listener : groupRemovedListeners) {
+            listener.groupRemoved(this, removedGroup);
+        }
+    }
+
+    /**
+     * Subscribe to receive notification whenever the items within a group are reordered.
+     * This happens from the built-in group edit dialog, where the user can drag-and-drop to manually
+     * reorder items, or use the sort options on the dialog. Callers will NOT receive notifications
+     * when action groups are sorted by a provided Comparator. This subscription event is only
+     * for manual user-drive reordering.
+     * <p>
+     * Note that at any time, you can invoke getActionsForGroup() to get the ordered
+     * list of actions for a given group. So, if you have a Comparator set, you have
+     * an easy way of discovering the auto-sorted order.
+     * </p>
+     *
+     * @param listener A GroupReorderedListener to be notified whenever the items within a group are reordered.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel addGroupReorderedListener(GroupReorderedListener listener) {
+        if (listener != null) {
+            groupReorderedListeners.add(listener);
+        }
+        return this;
+    }
+
+    /**
+     * Stop listening for notification whenever a group is reordered within this ActionPanel.
+     *
+     * @param listener A GroupReorderedListener that was previously registered to receive notification of group reordering.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel removeGroupReorderedListener(GroupReorderedListener listener) {
+        if (listener != null) {
+            groupReorderedListeners.remove(listener);
+        }
+        return this;
+    }
+
+    /**
+     * Invoked internally to notify listeners that the items within a group have been reordered.
+     * Callers can invoke getActionsForGroup(affectedGroup) to get the new order of actions within the group.
+     *
+     * @param affectedGroup The name of the group that was reordered. Should not be null (not validated here).
+     */
+    void fireGroupReorderedEvent(String affectedGroup) {
+        for (GroupReorderedListener listener : groupReorderedListeners) {
+            listener.groupReordered(this, affectedGroup);
         }
     }
 
