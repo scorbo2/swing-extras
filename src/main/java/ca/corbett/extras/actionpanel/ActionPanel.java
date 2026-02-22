@@ -1608,7 +1608,7 @@ public class ActionPanel extends JPanel {
      * This happens from the built-in group edit dialog, where the user can drag-and-drop to manually
      * reorder items, or use the sort options on the dialog. Callers will NOT receive notifications
      * when action groups are sorted by a provided Comparator. This subscription event is only
-     * for manual user-drive reordering.
+     * for manual user-driven reordering.
      * <p>
      * Note that at any time, you can invoke getActionsForGroup() to get the ordered
      * list of actions for a given group. So, if you have a Comparator set, you have
