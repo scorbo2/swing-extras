@@ -10,6 +10,7 @@ import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -400,5 +401,57 @@ class ActionPanelTest {
         // THEN getCardContainer should return null
         assertNull(actionPanel.getCardContainer(),
             "getCardContainer should return null when no container is set");
+    }
+
+    @Test
+    void add_withNullAction_shouldCreateEmptyGroup() {
+        // GIVEN an ActionPanel with no groups:
+        ActionPanel actionPanel = new ActionPanel();
+        assertFalse(actionPanel.hasGroup("test"));
+
+        // WHEN we add a null action to a new group:
+        actionPanel.add("test", (EnhancedAction)null);
+
+        // THEN the group should have been created:
+        assertTrue(actionPanel.hasGroup("test"), "Group should be created even if action is null");
+    }
+
+    @Test
+    public void addAll_withNullList_shouldCreateEmptyGroup() {
+        // GIVEN an ActionPanel with no groups:
+        ActionPanel actionPanel = new ActionPanel();
+        assertFalse(actionPanel.hasGroup("test"));
+
+        // WHEN we add a null list of actions to a new group:
+        actionPanel.addAll("test", null);
+
+        // THEN the group should have been created:
+        assertTrue(actionPanel.hasGroup("test"), "Group should be created even if action list is null");
+    }
+
+    @Test
+    public void addAll_withEmptyList_shouldCreateEmptyGroup() {
+        // GIVEN an ActionPanel with no groups:
+        ActionPanel actionPanel = new ActionPanel();
+        assertFalse(actionPanel.hasGroup("test"));
+
+        // WHEN we add an empty list of actions to a new group:
+        actionPanel.addAll("test", List.of());
+
+        // THEN the group should have been created:
+        assertTrue(actionPanel.hasGroup("test"), "Group should be created even if action list is empty");
+    }
+
+    @Test
+    public void add_withNullActionNameAndCardId_shouldCreateEmptyGroup() {
+        // GIVEN an ActionPanel with no groups:
+        ActionPanel actionPanel = new ActionPanel();
+        assertFalse(actionPanel.hasGroup("test"));
+
+        // WHEN we add a CardAction with null name and card ID to a new group using the convenience method:
+        actionPanel.add("test", null, null);
+
+        // THEN the group should have been created:
+        assertTrue(actionPanel.hasGroup("test"), "Group should be created even if action name and card ID are null");
     }
 }
