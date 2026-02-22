@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
+  #410 - ActionPanel: add buttonPadding option, fix action gaps
   #408 - ActionPanel: add change notification events
   #406 - ActionPanel: add way to create empty groups
   #403 - LookAndFeelManager: add query options

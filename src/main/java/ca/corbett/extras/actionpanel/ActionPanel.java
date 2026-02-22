@@ -167,6 +167,7 @@ public class ActionPanel extends JPanel {
     private final Margins actionTrayMargins;
     private final Margins toolBarMargins;
     private final Margins actionGroupMargins;
+    private int buttonPadding;
     private int actionIconTextGap;
     private boolean showActionIcons;
     private boolean showGroupIcons;
@@ -195,6 +196,7 @@ public class ActionPanel extends JPanel {
         this.actionTrayMargins = new Margins(DEFAULT_INTERNAL_PADDING);
         this.toolBarMargins = new Margins(DEFAULT_INTERNAL_PADDING);
         this.actionGroupMargins = new Margins(DEFAULT_EXTERNAL_PADDING);
+        this.buttonPadding = 2; // 2 pixel default space between button label/icon and button border
         this.headerMargins.addListener(m -> rebuild()); // rebuild on change
         this.actionTrayMargins.addListener(m -> rebuild());
         this.toolBarMargins.addListener(m -> rebuild());
@@ -1233,6 +1235,34 @@ public class ActionPanel extends JPanel {
         this.actionIconTextGap = gap;
         rebuild();
         return this;
+    }
+
+    /**
+     * Sets optional padding to add between button text/icons and the edges of the button. This applies
+     * to actions, when rendered as buttons, and also applies to toolbar buttons, if the toolbar is enabled.
+     * The default value is 2.
+     *
+     * @param padding A pixel value to apply between button text/icons and the edges of the button. Must be 0 or greater.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setButtonPadding(int padding) {
+        if (padding < 0) {
+            throw new IllegalArgumentException("Button padding cannot be negative.");
+        }
+        this.buttonPadding = padding;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Returns padding to add between button text/icons and the edges of the button. This applies
+     * to actions, when rendered as buttons, and also applies to toolbar buttons, if the
+     * toolbar is enabled. The default value is 2.
+     *
+     * @return The pixel value of the padding between button text/icons and the edges of the button.
+     */
+    public int getButtonPadding() {
+        return buttonPadding;
     }
 
     /**

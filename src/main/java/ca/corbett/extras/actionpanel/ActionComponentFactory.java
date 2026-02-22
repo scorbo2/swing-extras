@@ -1,15 +1,21 @@
 package ca.corbett.extras.actionpanel;
 
 import ca.corbett.extras.EnhancedAction;
+import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.image.ImageUtil;
+import com.formdev.flatlaf.ui.FlatButtonBorder;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.border.Border;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -84,6 +90,7 @@ class ActionComponentFactory {
     static JButton createButton(ActionPanel actionPanel, EnhancedAction action) {
         // Create a button:
         JButton button = new JButton(action);
+        button.setFocusable(false);
 
         // Spy on its action events so we can highlight it when invoked:
         button.addActionListener(new ActionSpy(actionPanel, action));
@@ -123,6 +130,24 @@ class ActionComponentFactory {
         // Left alignment is generally best for buttons in a vertical list
         // This is not currently configurable...
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Special case "flat buttons" because their default border handling is very stupid.
+        // (they apply padding around buttons, I think as part of their "focus border", and it looks awful,
+        //  particularly if you try to set action tray internal spacing to 0.)
+        // We can also apply the button padding from our ActionPanel, if it is set.
+        int pad = actionPanel.getButtonPadding();
+        if (button.getBorder() != null && button.getBorder() instanceof FlatButtonBorder) {
+            Border lineBorder = BorderFactory.createLineBorder(
+                    LookAndFeelManager.getLafColor("Button.default.startBorderColor", Color.LIGHT_GRAY),
+                    1,
+                    true);
+            Border paddingBorder = BorderFactory.createEmptyBorder(pad, pad, pad, pad);
+            button.setBorder(BorderFactory.createCompoundBorder(lineBorder, paddingBorder));
+        }
+        else {
+            // Regular buttons can just use the margin for padding:
+            button.setMargin(new Insets(pad, pad, pad, pad));
+        }
 
         return button;
     }

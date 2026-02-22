@@ -1,12 +1,18 @@
 package ca.corbett.extras.actionpanel;
 
+import ca.corbett.extras.LookAndFeelManager;
+import com.formdev.flatlaf.ui.FlatButtonBorder;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 
 /**
  * A ToolBar can be optionally presented within an ActionGroup in an ActionPanel.
@@ -116,7 +122,7 @@ class ToolBar extends JPanel {
             return null; // not an error - just means no button for this action
         }
 
-        final int buttonSize = options.getIconSize() + 4; // arbitrary padding to make sure icons fit comfortably
+        final int buttonSize = options.getIconSize() + (actionPanel.getButtonPadding() * 2); // apply padding as needed.
         JButton button = new JButton(action);
         button.setText(""); // our buttons are icons-only
 
@@ -125,6 +131,25 @@ class ToolBar extends JPanel {
         // method in ColorOptions to set the button background to transparent, so you can mimic the old look.
         // We don't disable borders, though, because I find this approach works better across L&Fs.
         button.setBackground(actionPanel.getColorOptions().getToolBarButtonBackground());
+        button.setFocusable(false);
+
+        // Special case "flat buttons" because their default border handling is very stupid.
+        // (they apply padding around buttons, I think as part of their "focus border", and it looks awful,
+        //  particularly if you try to set toolbar internal spacing to 0.)
+        // We can also apply the button padding from our ActionPanel, if it is set.
+        int pad = actionPanel.getButtonPadding();
+        if (button.getBorder() != null && button.getBorder() instanceof FlatButtonBorder) {
+            Border lineBorder = BorderFactory.createLineBorder(
+                    LookAndFeelManager.getLafColor("Button.default.startBorderColor", Color.LIGHT_GRAY),
+                    1,
+                    true);
+            Border paddingBorder = BorderFactory.createEmptyBorder(pad, pad, pad, pad);
+            button.setBorder(BorderFactory.createCompoundBorder(lineBorder, paddingBorder));
+        }
+        else {
+            // Regular buttons can just use the margin for padding:
+            button.setMargin(new Insets(pad, pad, pad, pad));
+        }
 
         button.setPreferredSize(new Dimension(buttonSize, buttonSize)); // ignored in Stretch mode
         button.setIcon(action.getIcon());
