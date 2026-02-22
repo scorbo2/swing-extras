@@ -282,16 +282,16 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel add(String groupName, String actionName, String cardId) {
-        if (cardContainer == null) {
-            throw new IllegalStateException(
-                    "Cannot add CardAction with cardId without first setting a Card Container on the ActionPanel.");
-        }
         if (groupName == null || groupName.isBlank()) {
             throw new IllegalArgumentException("Group name cannot be null or blank.");
         }
         CardAction cardAction = null;
         if (actionName != null && !actionName.isBlank()
                 && cardId != null && !cardId.isBlank()) {
+            if (cardContainer == null) {
+                throw new IllegalStateException(
+                        "Cannot add CardAction with cardId without first setting a Card Container on the ActionPanel.");
+            }
             cardAction = new CardAction(actionName, cardId);
         }
         return add(groupName, cardAction);
