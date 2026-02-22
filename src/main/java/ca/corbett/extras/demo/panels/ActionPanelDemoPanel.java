@@ -760,6 +760,12 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 f -> actionPanel.setActionIconTextGap(iconTextGapField.getCurrentValue().intValue()));
         formPanel.add(iconTextGapField);
 
+        NumberField buttonPaddingField = new NumberField("Button padding:", 2, 0, 32, 1);
+        buttonPaddingField.setHelpText("Adds a gap between button labels/icons and the edge of the button.");
+        buttonPaddingField.addValueChangedListener(
+                f -> actionPanel.setButtonPadding(buttonPaddingField.getCurrentValue().intValue()));
+        formPanel.add(buttonPaddingField);
+
         return formPanel;
     }
 

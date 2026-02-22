@@ -4,17 +4,22 @@ import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.forms.Margins;
 import ca.corbett.forms.SwingFormsResources;
+import com.formdev.flatlaf.ui.FlatButtonBorder;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -167,6 +172,7 @@ public class ActionPanel extends JPanel {
     private final Margins actionTrayMargins;
     private final Margins toolBarMargins;
     private final Margins actionGroupMargins;
+    private int buttonPadding;
     private int actionIconTextGap;
     private boolean showActionIcons;
     private boolean showGroupIcons;
@@ -195,6 +201,7 @@ public class ActionPanel extends JPanel {
         this.actionTrayMargins = new Margins(DEFAULT_INTERNAL_PADDING);
         this.toolBarMargins = new Margins(DEFAULT_INTERNAL_PADDING);
         this.actionGroupMargins = new Margins(DEFAULT_EXTERNAL_PADDING);
+        this.buttonPadding = 2; // 2 pixel default space between button label/icon and button border
         this.headerMargins.addListener(m -> rebuild()); // rebuild on change
         this.actionTrayMargins.addListener(m -> rebuild());
         this.toolBarMargins.addListener(m -> rebuild());
@@ -1236,6 +1243,34 @@ public class ActionPanel extends JPanel {
     }
 
     /**
+     * Sets optional padding to add between button text/icons and the edges of the button. This applies
+     * to actions, when rendered as buttons, and also applies to toolbar buttons, if the toolbar is enabled.
+     * The default value is 2.
+     *
+     * @param padding A pixel value to apply between button text/icons and the edges of the button. Must be 0 or greater.
+     * @return This ActionPanel, for method chaining.
+     */
+    public ActionPanel setButtonPadding(int padding) {
+        if (padding < 0) {
+            throw new IllegalArgumentException("Button padding cannot be negative.");
+        }
+        this.buttonPadding = padding;
+        rebuild();
+        return this;
+    }
+
+    /**
+     * Returns padding to add between button text/icons and the edges of the button. This applies
+     * to actions, when rendered as buttons, and also applies to toolbar buttons, if the
+     * toolbar is enabled. The default value is 2.
+     *
+     * @return The pixel value of the padding between button text/icons and the edges of the button.
+     */
+    public int getButtonPadding() {
+        return buttonPadding;
+    }
+
+    /**
      * Sets the size (width and height) at which header icons are rendered.
      * The default is 16 pixels. Icons will be scaled as needed.
      *
@@ -1780,5 +1815,31 @@ public class ActionPanel extends JPanel {
         // Refresh the display:
         revalidate();
         repaint();
+    }
+
+    /**
+     * A utility method to apply our custom fixes to JButtons to get them to
+     * behave properly across certain Look and Feels.
+     * This is here because it's used both for action buttons and also for toolbar buttons.
+     */
+    void applyButtonPadding(JButton button) {
+        // Special case "flat buttons" because their default border handling is very stupid.
+        // (they apply padding around buttons, I think as part of their "focus border", and it looks awful,
+        //  particularly if you try to set internal spacing to 0.)
+        // We can also apply the button padding from our ActionPanel, if it is set.
+        int pad = buttonPadding;
+        if (button.getBorder() != null && button.getBorder() instanceof FlatButtonBorder) {
+            button.setFocusPainted(false);
+            Border lineBorder = BorderFactory.createLineBorder(
+                    LookAndFeelManager.getLafColor("Button.default.startBorderColor", Color.LIGHT_GRAY),
+                    1,
+                    true);
+            Border paddingBorder = BorderFactory.createEmptyBorder(pad, pad, pad, pad);
+            button.setBorder(BorderFactory.createCompoundBorder(lineBorder, paddingBorder));
+        }
+        else {
+            // Regular buttons can just use the margin for padding:
+            button.setMargin(new Insets(pad, pad, pad, pad));
+        }
     }
 }

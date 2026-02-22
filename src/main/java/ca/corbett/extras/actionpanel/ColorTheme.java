@@ -59,13 +59,13 @@ public enum ColorTheme {
          new Color(80, 80, 80)),    // toolbar button background
 
     ICE("Ice",
-        Color.DARK_GRAY,                    // panel background
-        new Color(224, 255, 255),  // action background
-        new Color(0, 0, 128),      // action foreground
-        new Color(75, 110, 175),   // group header background
-        new Color(185, 238, 238),  // group header foreground
-        new Color(176, 204, 204),  // action button background
-        new Color(176, 204, 204)), // toolbar button background
+        new Color(45, 45, 45),     // panel background
+        new Color(60, 60, 60),     // action background
+        new Color(220, 220, 220),  // action foreground
+        new Color(70, 130, 180),   // group header background
+        Color.WHITE,                        // group header foreground
+        new Color(80, 80, 80),     // action button background
+        new Color(80, 80, 80)),    // toolbar button background
 
     MATRIX("Matrix",
            new Color(0, 48, 0),      // panel background

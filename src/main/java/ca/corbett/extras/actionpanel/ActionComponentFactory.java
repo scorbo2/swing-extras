@@ -124,6 +124,9 @@ class ActionComponentFactory {
         // This is not currently configurable...
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // Set up internal padding for this button:
+        actionPanel.applyButtonPadding(button);
+
         return button;
     }
 

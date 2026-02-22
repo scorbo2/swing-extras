@@ -116,7 +116,7 @@ class ToolBar extends JPanel {
             return null; // not an error - just means no button for this action
         }
 
-        final int buttonSize = options.getIconSize() + 4; // arbitrary padding to make sure icons fit comfortably
+        final int buttonSize = options.getIconSize() + (actionPanel.getButtonPadding() * 2); // apply padding as needed.
         JButton button = new JButton(action);
         button.setText(""); // our buttons are icons-only
 
@@ -126,7 +126,10 @@ class ToolBar extends JPanel {
         // We don't disable borders, though, because I find this approach works better across L&Fs.
         button.setBackground(actionPanel.getColorOptions().getToolBarButtonBackground());
 
-        button.setPreferredSize(new Dimension(buttonSize, buttonSize)); // ignored in Stretch mode
+        // Set up internal padding for this button:
+        actionPanel.applyButtonPadding(button);
+
+        button.setPreferredSize(new Dimension(buttonSize, buttonSize)); // width is ignored in Stretch mode
         button.setIcon(action.getIcon());
         button.setToolTipText(action.getTooltip());
         return button;
