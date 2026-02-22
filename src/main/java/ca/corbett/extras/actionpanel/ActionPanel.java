@@ -221,7 +221,14 @@ public class ActionPanel extends JPanel {
      * for garbage collection when no longer needed.
      */
     public void dispose() {
+        // Stop listening for Look and Feel changes:
         LookAndFeelManager.removeChangeListener(e -> rebuild());
+
+        // Clear all listeners to help ensure this ActionPanel can be garbage collected when no longer needed:
+        expandListeners.clear();
+        groupRenamedListeners.clear();
+        groupRemovedListeners.clear();
+        groupReorderedListeners.clear();
     }
 
     /**
