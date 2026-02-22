@@ -115,18 +115,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *     <li><b>Expand/collapse events</b> - listen for when the user expands or collapses an action group with
  *     <code>addExpandListener(ExpandListener listener)</code>. The listener will be notified of which group was
  *     expanded or collapsed, and whether it was an expand or a collapse event.</li>
- *     <li><b>Group rename events</b> - if you allow group renaming in the toolbar,
- *       then you can listen for when a group is renamed with
+ *     <li><b>Group rename events</b> - listen for when a group is renamed with
  *       <code>addGroupRenamedListener(GroupRenamedListener listener)</code>.
- *       The listener will be notified of the old and new group names.</li>
- *     <li><b>Group removal events</b> - if you allow group removal in the toolbar,
- *       then you can listen for when a group is removed with
+ *       The listener will be notified of the old and new group names.
+ *       This listener is invoked both when the user renames a group via the toolbar
+ *       (when group renaming is enabled) and when a group is renamed programmatically
+ *       using methods such as <code>setGroupName(String, String)</code> or
+ *       <code>renameGroup(String, String)</code>.</li>
+ *     <li><b>Group removal events</b> - listen for when a group is removed with
  *       <code>addGroupRemovedListener(GroupRemovedListener listener)</code>.
- *       The listener will be notified of the name of the group that was removed.</li>
- *     <li><b>Group reorder events</b> - if you allow item reordering in the toolbar,
- *       then you can listen for when a group is reordered with
+ *       The listener will be notified of the name of the group that was removed.
+ *       This listener is invoked both when the user removes a group via the toolbar
+ *       (when group removal is enabled) and when a group is removed programmatically
+ *       using methods such as <code>removeGroup(String)</code>.</li>
+ *     <li><b>Group reorder events</b> - listen for when a group is reordered with
  *       <code>addGroupReorderedListener(GroupReorderedListener listener)</code>.
- *       The listener will be notified of the name of the group that was reordered.</li>
+ *       The listener will be notified of the name of the group that was reordered.
+ *       This listener is invoked both when the user reorders items via the toolbar
+ *       (when reordering is enabled) and when the order is changed programmatically
+ *       using methods such as <code>reorderActions(String, int, int)</code>.</li>
  * </ul>
  * <p>
  * For a complete working example of ActionPanel with all customization options, refer to the
