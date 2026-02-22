@@ -446,8 +446,8 @@ public class ActionPanel extends JPanel {
             throw new IllegalStateException(
                     "Cannot set highlighted action by cardId without first setting a Card Container on the ActionPanel.");
         }
-        if (cardId == null || cardId.isEmpty()) {
-            throw new IllegalArgumentException("Card ID cannot be null or empty.");
+        if (cardId == null || cardId.isBlank()) {
+            throw new IllegalArgumentException("Card ID cannot be null or blank.");
         }
 
         // Find the first CardAction that matches the given cardId:
@@ -764,8 +764,8 @@ public class ActionPanel extends JPanel {
      * @return True if the rename was successful, false otherwise (e.g. if oldName does not exist, or newName is already in use).
      */
     public boolean renameGroup(String oldName, String newName) {
-        if (newName == null || newName.isEmpty()) {
-            throw new IllegalArgumentException("New group name cannot be null or empty.");
+        if (newName == null || newName.isBlank()) {
+            throw new IllegalArgumentException("New group name cannot be null or blank.");
         }
 
         // Make sure the requested group exists:
@@ -806,8 +806,8 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     ActionPanel reorderActions(String groupName, List<EnhancedAction> newOrder) {
-        if (groupName == null || groupName.isEmpty()) {
-            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        if (groupName == null || groupName.isBlank()) {
+            throw new IllegalArgumentException("Group name cannot be null or blank.");
         }
         if (newOrder == null) {
             return this; // just ignore null
@@ -847,8 +847,8 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel setGroupIcon(String groupName, Icon icon) {
-        if (groupName == null || groupName.isEmpty()) {
-            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        if (groupName == null || groupName.isBlank()) {
+            throw new IllegalArgumentException("Group name cannot be null or blank.");
         }
         ActionGroup group = findOrCreateGroup(groupName);
         group.setIcon(icon);
@@ -1378,8 +1378,8 @@ public class ActionPanel extends JPanel {
      * @return True if the group is expanded, false if it is collapsed.
      */
     public boolean isExpanded(String groupName) {
-        if (groupName == null || groupName.isEmpty()) {
-            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        if (groupName == null || groupName.isBlank()) {
+            throw new IllegalArgumentException("Group name cannot be null or blank.");
         }
         ActionGroup group = findGroup(groupName);
         return group != null && group.isExpanded();
@@ -1395,8 +1395,8 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel setExpanded(String groupName, boolean expanded) {
-        if (groupName == null || groupName.isEmpty()) {
-            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        if (groupName == null || groupName.isBlank()) {
+            throw new IllegalArgumentException("Group name cannot be null or blank.");
         }
         ActionGroup group = findGroup(groupName);
         if (group == null) {
@@ -1417,8 +1417,8 @@ public class ActionPanel extends JPanel {
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel toggleExpanded(String groupName) {
-        if (groupName == null || groupName.isEmpty()) {
-            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        if (groupName == null || groupName.isBlank()) {
+            throw new IllegalArgumentException("Group name cannot be null or blank.");
         }
         ActionGroup group = findGroup(groupName);
         if (group == null) {
