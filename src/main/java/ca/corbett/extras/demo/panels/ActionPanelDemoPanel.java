@@ -1,5 +1,6 @@
 package ca.corbett.extras.demo.panels;
 
+import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.ScrollUtil;
 import ca.corbett.extras.TextInputDialog;
@@ -43,6 +44,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -86,7 +89,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private static final String TAB_ANIMATION = "Animation options";
 
     // We'll have an ActionPanel on the left and a content panel on the right:
-    private ActionPanel actionPanel;
+    private final ActionPanel actionPanel;
     private final JPanel cardPanel = new JPanel(new CardLayout());
 
     // And we'll use a map of action names to form panels for showing content:
@@ -396,7 +399,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private FormPanel buildToolBarOptionsPanel() {
         FormPanel formPanel = new FormPanel(Alignment.TOP_LEFT);
         formPanel.add(LabelField.createBoldHeaderLabel("Toolbar options"));
-        String label = """
+        final String text = """
                 <html>Each action group can optionally have a toolbar<br>
                 with buttons for adding, removing, and reordering<br>
                 actions within the group, as well as buttons for<br>
@@ -405,7 +408,9 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 and you can even add your own custom buttons!<br><br>
                 Try it out with the options below!</html>
                 """;
-        formPanel.add(new LabelField(label));
+        LabelField labelField = new LabelField(text);
+        labelField.getFieldComponent().addMouseListener(new AddEmptyGroupAction()); // sneaky easter-egg for testing.
+        formPanel.add(labelField);
 
         CheckBoxField enableField = new CheckBoxField("Enable toolbar", false);
         enableField.addValueChangedListener(f -> toolBarEnabledChanged(enableField.isChecked()));
@@ -901,7 +906,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                 if (actionName != null) {
                     panelMap.put(actionName, buildExampleNewItemPanel(actionName));
                     cardPanel.add(ScrollUtil.buildScrollPane(panelMap.get(actionName)), actionName);
-                    return new CardAction(actionName, actionName); // our actionName doubles as cardId
+                    ImageIcon icon = SwingFormsResources.getCopyIcon(SwingFormsResources.NATIVE_SIZE); // arbitrary
+                    return new CardAction(actionName, actionName, icon); // our actionName doubles as cardId
                 }
                 return null;
             });
@@ -1002,6 +1008,23 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                     // Re-enabling auto-rebuild will trigger a single rebuild now that all colors are set:
                     actionPanel.setAutoRebuildEnabled(true);
                 }
+            }
+        }
+    }
+
+    /**
+     * Just ignore this! It's a hidden easter-egg that allows manual testing
+     * of ActionPanel's "add group if not exists" feature.
+     */
+    private class AddEmptyGroupAction extends MouseAdapter {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            TextInputDialog dialog = new TextInputDialog(DemoApp.getInstance(), "Create group if not exists");
+            dialog.setAllowBlank(false);
+            dialog.setVisible(true);
+            String groupName = dialog.getResult();
+            if (groupName != null) {
+                actionPanel.add(groupName, (EnhancedAction)null);
             }
         }
     }

@@ -203,20 +203,23 @@ public class ActionPanel extends JPanel {
 
     /**
      * Adds a single action to the specified group. If the group does not exist, it will be created.
+     * You can pass null for the action if you just want to create an empty group.
      *
      * @param groupName The name of the group to add the action to.
-     * @param action    The action to add.
+     * @param action    The action to add. Can be null to just create the group if it does not exist.
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel add(String groupName, EnhancedAction action) {
-        if (groupName == null || action == null || groupName.isEmpty()) {
-            throw new IllegalArgumentException("Group name and action cannot be null or empty.");
+        if (groupName == null || groupName.isBlank()) {
+            throw new IllegalArgumentException("Group name cannot be null or blank.");
         }
         if (action instanceof CardAction cardAction) {
             checkCardAction(cardAction);
         }
         ActionGroup group = findOrCreateGroup(groupName);
-        group.add(action);
+        if (action != null) {
+            group.add(action);
+        }
         rebuild();
         return this;
     }
@@ -227,15 +230,15 @@ public class ActionPanel extends JPanel {
      * But, an empty group will be created in that case if it does not already exist.
      *
      * @param groupName The name of the group to add the actions to.
-     * @param actions   The list of actions to add.
+     * @param actions   The list of actions to add. Can be null or empty to just create the group if it does not exist.
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel addAll(String groupName, List<EnhancedAction> actions) {
-        if (groupName == null || groupName.isEmpty()) {
-            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        if (groupName == null || groupName.isBlank()) {
+            throw new IllegalArgumentException("Group name cannot be null or blank.");
         }
-        if (actions == null || actions.isEmpty()) {
-            return this; // Just ignore
+        if (actions == null) {
+            actions = List.of(); // just treat null as empty list
         }
 
         // First validate all CardActions to avoid creating groups if validation fails:
@@ -268,10 +271,14 @@ public class ActionPanel extends JPanel {
      * nothing will happen when the action is triggered. It's up to calling code
      * to make sure the cardId given here matches the name of a card in the card container.
      * </p>
+     * <p>
+     * If the given actionName or the given cardId are null or blank, then the named group
+     * will be created if it does not exist, but no CardAction will be added to the group.
+     * </p>
      *
      * @param groupName  The name of the group to which the new action should belong.
-     * @param actionName The text for the action.
-     * @param cardId     The id of the card to show when the action is triggered.
+     * @param actionName The text for the action. Can be null to just create the named group.
+     * @param cardId     The id of the card to show when the action is triggered. Can be null to just create the group.
      * @return This ActionPanel, for method chaining.
      */
     public ActionPanel add(String groupName, String actionName, String cardId) {
@@ -279,16 +286,15 @@ public class ActionPanel extends JPanel {
             throw new IllegalStateException(
                     "Cannot add CardAction with cardId without first setting a Card Container on the ActionPanel.");
         }
-        if (groupName == null || groupName.isEmpty()) {
-            throw new IllegalArgumentException("Group name cannot be null or empty.");
+        if (groupName == null || groupName.isBlank()) {
+            throw new IllegalArgumentException("Group name cannot be null or blank.");
         }
-        if (actionName == null || actionName.isEmpty()) {
-            throw new IllegalArgumentException("Action name cannot be null or empty.");
+        CardAction cardAction = null;
+        if (actionName != null && !actionName.isBlank()
+                && cardId != null && !cardId.isBlank()) {
+            cardAction = new CardAction(actionName, cardId);
         }
-        if (cardId == null || cardId.isEmpty()) {
-            throw new IllegalArgumentException("Card ID cannot be null or empty.");
-        }
-        return add(groupName, new CardAction(actionName, cardId));
+        return add(groupName, cardAction);
     }
 
     /**
