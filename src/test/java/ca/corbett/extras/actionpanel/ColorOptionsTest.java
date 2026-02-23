@@ -283,8 +283,8 @@ class ColorOptionsTest {
 
     @Test
     void getHighlightColor_withLightColor_shouldReturnDarkerColor() {
-        // GIVEN a light color (r, g, b all > 200):
-        Color lightColor = new Color(210, 210, 210);
+        // GIVEN a light color where all components are above RGB_THRESHOLD:
+        Color lightColor = new Color(ColorOptions.RGB_THRESHOLD + 10, ColorOptions.RGB_THRESHOLD + 10, ColorOptions.RGB_THRESHOLD + 10);
 
         // WHEN we get the highlight color:
         Color highlight = ColorOptions.getHighlightColor(lightColor);
@@ -323,8 +323,8 @@ class ColorOptionsTest {
 
     @Test
     void getHighlightColor_withLightColor_shouldNotGoBelowZero() {
-        // GIVEN a very light color where subtracting 30 would go below 0:
-        Color veryLightColor = new Color(215, 215, 215); // just over the threshold
+        // GIVEN a light color just above the RGB_THRESHOLD (all components > RGB_THRESHOLD):
+        Color veryLightColor = new Color(ColorOptions.RGB_THRESHOLD + 15, ColorOptions.RGB_THRESHOLD + 15, ColorOptions.RGB_THRESHOLD + 15);
 
         // WHEN we get the highlight color:
         Color highlight = ColorOptions.getHighlightColor(veryLightColor);
@@ -337,10 +337,8 @@ class ColorOptionsTest {
 
     @Test
     void getHighlightColor_withDarkColor_shouldNotGoAbove255() {
-        // GIVEN a color where adding 30 would go above 255:
-        Color nearMaxColor = new Color(230, 230, 230); // just under the light threshold but could overflow on add
-        // Actually pick a truly dark color near max-ish components that are below 200
-        Color darkHighColor = new Color(190, 190, 190);
+        // GIVEN a dark color just below RGB_THRESHOLD (not all components > RGB_THRESHOLD):
+        Color darkHighColor = new Color(ColorOptions.RGB_THRESHOLD - 10, ColorOptions.RGB_THRESHOLD - 10, ColorOptions.RGB_THRESHOLD - 10);
 
         // WHEN we get the highlight color:
         Color highlight = ColorOptions.getHighlightColor(darkHighColor);
@@ -368,39 +366,39 @@ class ColorOptionsTest {
     @Test
     void setPanelBackground_shouldFireOptionsChanged() {
         // GIVEN a listener is registered:
-        final boolean[] fired = {false};
-        colorOptions.addListener(() -> fired[0] = true);
+        final int[] count = {0};
+        colorOptions.addListener(() -> count[0]++);
 
         // WHEN we set the panel background:
         colorOptions.setPanelBackground(Color.RED);
 
-        // THEN the listener should be notified:
-        assertTrue(fired[0], "Options listener should be notified when panel background changes");
+        // THEN the listener should be notified exactly once:
+        assertEquals(1, count[0], "Options listener should be notified exactly once when panel background changes");
     }
 
     @Test
     void setFromTheme_shouldFireOptionsChanged() {
         // GIVEN a listener is registered:
-        final boolean[] fired = {false};
-        colorOptions.addListener(() -> fired[0] = true);
+        final int[] count = {0};
+        colorOptions.addListener(() -> count[0]++);
 
         // WHEN we apply a theme:
         colorOptions.setFromTheme(ColorTheme.DARK);
 
-        // THEN the listener should be notified:
-        assertTrue(fired[0], "Options listener should be notified when theme is applied");
+        // THEN the listener should be notified exactly once:
+        assertEquals(1, count[0], "Options listener should be notified exactly once when theme is applied");
     }
 
     @Test
     void useSystemDefaults_shouldFireOptionsChanged() {
         // GIVEN a listener is registered:
-        final boolean[] fired = {false};
-        colorOptions.addListener(() -> fired[0] = true);
+        final int[] count = {0};
+        colorOptions.addListener(() -> count[0]++);
 
         // WHEN we call useSystemDefaults:
         colorOptions.useSystemDefaults();
 
-        // THEN the listener should be notified:
-        assertTrue(fired[0], "Options listener should be notified when useSystemDefaults is called");
+        // THEN the listener should be notified exactly once:
+        assertEquals(1, count[0], "Options listener should be notified exactly once when useSystemDefaults is called");
     }
 }
