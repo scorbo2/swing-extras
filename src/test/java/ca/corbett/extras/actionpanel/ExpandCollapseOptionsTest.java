@@ -182,40 +182,40 @@ class ExpandCollapseOptionsTest {
     @Test
     void setAnimationEnabled_shouldFireOptionsChanged() {
         // GIVEN a listener is registered:
-        final boolean[] fired = {false};
-        options.addListener(() -> fired[0] = true);
+        final int[] count = {0};
+        options.addListener(() -> count[0]++);
 
         // WHEN we change the animation enabled state:
         options.setAnimationEnabled(false);
 
-        // THEN the listener should be notified:
-        assertTrue(fired[0], "Options listener should be notified when animation enabled state changes");
+        // THEN the listener should be notified exactly once:
+        assertEquals(1, count[0], "Options listener should be notified exactly once when animation enabled state changes");
     }
 
     @Test
     void setAnimationDurationMs_shouldFireOptionsChanged() {
         // GIVEN a listener is registered:
-        final boolean[] fired = {false};
-        options.addListener(() -> fired[0] = true);
+        final int[] count = {0};
+        options.addListener(() -> count[0]++);
 
         // WHEN we change the animation duration:
         options.setAnimationDurationMs(400);
 
-        // THEN the listener should be notified:
-        assertTrue(fired[0], "Options listener should be notified when animation duration changes");
+        // THEN the listener should be notified exactly once:
+        assertEquals(1, count[0], "Options listener should be notified exactly once when animation duration changes");
     }
 
     @Test
     void setAllowHeaderDoubleClick_shouldFireOptionsChanged() {
         // GIVEN a listener is registered:
-        final boolean[] fired = {false};
-        options.addListener(() -> fired[0] = true);
+        final int[] count = {0};
+        options.addListener(() -> count[0]++);
 
         // WHEN we change the header double-click setting:
         options.setAllowHeaderDoubleClick(true);
 
-        // THEN the listener should be notified:
-        assertTrue(fired[0], "Options listener should be notified when header double-click setting changes");
+        // THEN the listener should be notified exactly once:
+        assertEquals(1, count[0], "Options listener should be notified exactly once when header double-click setting changes");
     }
 
     /**

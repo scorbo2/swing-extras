@@ -562,32 +562,32 @@ class ToolBarOptionsTest {
 
     @Test
     void setButtonPosition_shouldFireOptionsChanged() {
-        final boolean[] fired = {false};
-        toolBarOptions.addListener(() -> fired[0] = true);
+        final int[] count = {0};
+        toolBarOptions.addListener(() -> count[0]++);
 
         toolBarOptions.setButtonPosition(ToolBarOptions.ButtonPosition.AlignLeft);
 
-        assertTrue(fired[0], "Options listener should be notified when button position changes");
+        assertEquals(1, count[0], "Options listener should be notified exactly once when button position changes");
     }
 
     @Test
     void setIconSize_shouldFireOptionsChanged() {
-        final boolean[] fired = {false};
-        toolBarOptions.addListener(() -> fired[0] = true);
+        final int[] count = {0};
+        toolBarOptions.addListener(() -> count[0]++);
 
         toolBarOptions.setIconSize(32);
 
-        assertTrue(fired[0], "Options listener should be notified when icon size changes");
+        assertEquals(1, count[0], "Options listener should be notified exactly once when icon size changes");
     }
 
     @Test
     void addExcludedGroup_shouldFireOptionsChanged() {
-        final boolean[] fired = {false};
-        toolBarOptions.addListener(() -> fired[0] = true);
+        final int[] count = {0};
+        toolBarOptions.addListener(() -> count[0]++);
 
         toolBarOptions.addExcludedGroup("SomeGroup");
 
-        assertTrue(fired[0], "Options listener should be notified when an excluded group is added");
+        assertEquals(1, count[0], "Options listener should be notified exactly once when an excluded group is added");
     }
 
     // --- Helpers ---
