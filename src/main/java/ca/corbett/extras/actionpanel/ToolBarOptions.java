@@ -429,22 +429,21 @@ public final class ToolBarOptions extends ActionPanelOptions {
     }
 
     /**
-     * Indicates whether the built-in "Edit group" action for reordering and removing items is enabled.
-     * If true, then an "Edit group" button will be shown for each ActionGroup, which allows the user
-     * to reorder and remove items from that group.
+     * Indicates whether item removal is enabled in the built-in "Edit group" action.
+     * If true, then the "Edit group" button will allow the user to remove items from that group.
      *
-     * @return Whether the built-in "Edit group" action for reordering and removing items is enabled.
+     * @return Whether item removal is enabled in the built-in "Edit group" action.
      */
     public boolean isAllowItemRemoval() {
         return allowItemRemoval;
     }
 
     /**
-     * Indicates whether the built-in "Edit group" action for reordering and removing items is enabled.
-     * If true, then an "Edit group" button will be shown for each ActionGroup, which allows the user
-     * to reorder and remove items from that group.
+     * Indicates whether the built-in "Remove group" action is enabled.
+     * If true, then a "Remove group" button will be shown for each ActionGroup, which allows the user
+     * to remove that group entirely.
      *
-     * @return Whether the built-in "Edit group" action for reordering and removing items is enabled.
+     * @return Whether the built-in "Remove group" action is enabled.
      */
     public boolean isAllowGroupRemoval() {
         return allowGroupRemoval;

@@ -18,6 +18,16 @@ public class ColorOptions extends ActionPanelOptions {
 
     private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
+    /**
+     * The RGB threshold used to decide whether a color is considered "light" or "dark"
+     * for the purposes of deriving a highlight color. Colors where all three RGB components
+     * are above this threshold are considered light (and will be darkened); all other colors
+     * are considered dark (and will be lightened).
+     *
+     * @see #getHighlightColor(Color)
+     */
+    public static final int RGB_THRESHOLD = 200;
+
     private Color panelBackground;
     private Color actionBackground;
     private Color actionForeground;
@@ -273,7 +283,7 @@ public class ColorOptions extends ActionPanelOptions {
      */
     public static Color getHighlightColor(Color baseColor) {
         // If it's already light, we'll darken it:
-        if (baseColor.getRed() > 200 && baseColor.getGreen() > 200 && baseColor.getBlue() > 200) {
+        if (baseColor.getRed() > RGB_THRESHOLD && baseColor.getGreen() > RGB_THRESHOLD && baseColor.getBlue() > RGB_THRESHOLD) {
             // Simple approach: darken the base color by a fixed amount
             int r = Math.max(0, baseColor.getRed() - 30);
             int g = Math.max(0, baseColor.getGreen() - 30);
