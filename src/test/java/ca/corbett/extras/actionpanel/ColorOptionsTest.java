@@ -337,16 +337,17 @@ class ColorOptionsTest {
 
     @Test
     void getHighlightColor_withDarkColor_shouldNotGoAbove255() {
-        // GIVEN a dark color just below RGB_THRESHOLD (not all components > RGB_THRESHOLD):
-        Color darkHighColor = new Color(ColorOptions.RGB_THRESHOLD - 10, ColorOptions.RGB_THRESHOLD - 10, ColorOptions.RGB_THRESHOLD - 10);
+        // GIVEN a color that goes through the lightening branch (not all components > RGB_THRESHOLD)
+        // and has components high enough that lightening would exceed 255 without clamping:
+        Color darkHighColor = new Color(230, ColorOptions.RGB_THRESHOLD - 10, 240);
 
         // WHEN we get the highlight color:
         Color highlight = ColorOptions.getHighlightColor(darkHighColor);
 
-        // THEN the components should be <= 255:
-        assertTrue(highlight.getRed() <= 255, "Red component should be <= 255");
+        // THEN components that would exceed 255 must be clamped to 255:
+        assertEquals(255, highlight.getRed(), "Red component should be clamped to 255");
         assertTrue(highlight.getGreen() <= 255, "Green component should be <= 255");
-        assertTrue(highlight.getBlue() <= 255, "Blue component should be <= 255");
+        assertEquals(255, highlight.getBlue(), "Blue component should be clamped to 255");
     }
 
     // --- Options listener (from ActionPanelOptions base class) ---
