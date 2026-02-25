@@ -425,15 +425,21 @@ public class BlurLayerUI extends LayerUI<JPanel> {
                 g.setColor(overlayTextColor);
                 g.setFont(g.getFont().deriveFont(Font.BOLD, (float)overlayTextSize));
                 FontMetrics fm = g.getFontMetrics();
-                int x = (c.getWidth() - fm.stringWidth(overlayText)) / 2;
-                int y = c.getHeight() / 2;
+                String[] lines = overlayText.replace("\\n", "\n").split("\n", -1);
+                int lineHeight = fm.getHeight();
+                int totalHeight = lineHeight * lines.length;
+                int startY = (c.getHeight() - totalHeight) / 2 + fm.getAscent();
 
                 // Enable antialiasing for smoother text
                 Graphics2D g2text = (Graphics2D)g.create();
                 g2text.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
                                      java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 g2text.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, blurOpacity));
-                g2text.drawString(overlayText, x, y);
+                for (int i = 0; i < lines.length; i++) {
+                    int x = (c.getWidth() - fm.stringWidth(lines[i])) / 2;
+                    int y = startY + i * lineHeight;
+                    g2text.drawString(lines[i], x, y);
+                }
                 g2text.dispose();
             }
         }
