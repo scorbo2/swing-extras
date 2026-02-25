@@ -55,6 +55,14 @@ public class BlurLayerUITest {
     }
 
     @Test
+    public void setOverlayText_literalBackslashN_storedAsIs() {
+        // Literal \n strings (backslash + n) should be stored as-is;
+        // the paint() method converts them to newlines at render time.
+        blurLayerUI.setOverlayText("Line 1\\nLine 2");
+        assertEquals("Line 1\\nLine 2", blurLayerUI.getOverlayText());
+    }
+
+    @Test
     public void setOverlayTextSize_validSize_accepted() {
         blurLayerUI.setOverlayTextSize(24);
         assertEquals(24, blurLayerUI.getOverlayTextSize());

@@ -425,7 +425,7 @@ public class BlurLayerUI extends LayerUI<JPanel> {
                 g.setColor(overlayTextColor);
                 g.setFont(g.getFont().deriveFont(Font.BOLD, (float)overlayTextSize));
                 FontMetrics fm = g.getFontMetrics();
-                String[] lines = overlayText.split("\n", -1);
+                String[] lines = overlayText.replace("\\n", "\n").split("\n", -1);
                 int lineHeight = fm.getHeight();
                 int totalHeight = lineHeight * lines.length;
                 int startY = (c.getHeight() - totalHeight) / 2 + fm.getAscent();
