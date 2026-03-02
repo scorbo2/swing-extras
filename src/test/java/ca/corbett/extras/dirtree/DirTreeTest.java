@@ -176,7 +176,7 @@ class DirTreeTest {
     }
 
     @Test
-    public void dirTreeNode_hasChildren_consideresFilesWhenEnabled(@TempDir Path tempDir) throws IOException {
+    public void dirTreeNode_hasChildren_considersFilesWhenEnabled(@TempDir Path tempDir) throws IOException {
         // A directory with only files (no subdirs) should have children when showFiles=true
         File file1 = new File(tempDir.toFile(), "file1.txt");
         assertTrue(file1.createNewFile());
