@@ -209,12 +209,12 @@ class DirTreeTest {
     }
 
     @Test
-    public void dirTreeNode_isShowHidden_returnsCorrectValue() {
-        DirTreeNode nodeTrue = new DirTreeNode(new File("/"), true, false, null);
+    public void dirTreeNode_isShowHidden_returnsCorrectValue(@TempDir Path tempDir) {
+        DirTreeNode nodeTrue = new DirTreeNode(tempDir.toFile(), true, false, null);
         assertTrue(nodeTrue.isShowHidden());
         assertTrue(nodeTrue.isShowHiddenDirs()); // deprecated method still works
 
-        DirTreeNode nodeFalse = new DirTreeNode(new File("/"), false, false, null);
+        DirTreeNode nodeFalse = new DirTreeNode(tempDir.toFile(), false, false, null);
         assertFalse(nodeFalse.isShowHidden());
         assertFalse(nodeFalse.isShowHiddenDirs()); // deprecated method still works
     }
