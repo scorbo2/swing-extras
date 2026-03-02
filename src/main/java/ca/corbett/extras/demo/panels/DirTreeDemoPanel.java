@@ -110,10 +110,10 @@ public class DirTreeDemoPanel extends PanelBuilder {
         formPanel.add(buildColorCustomizerField());
 
         // And another checkbox for showing/hiding hidden directories: (new in swing-extras 2.7!)
-        checkBoxField = new CheckBoxField("Show hidden directories", true);
+        checkBoxField = new CheckBoxField("Show hidden items", true);
         checkBoxField.addValueChangedListener(field -> {
             boolean isSelected = ((CheckBoxField)field).isChecked();
-            dirTree.setShowHiddenDirs(isSelected);
+            dirTree.setShowHidden(isSelected);
         });
         formPanel.add(checkBoxField);
 
@@ -303,6 +303,10 @@ public class DirTreeDemoPanel extends PanelBuilder {
         @Override
         public void treeUnlocked(DirTree source) {
         }
+
+        @Override
+        public void fileDoubleClicked(DirTree source, File file) {
+        }
     }
 
     /**
@@ -335,6 +339,11 @@ public class DirTreeDemoPanel extends PanelBuilder {
         @Override
         public void treeUnlocked(DirTree source) {
             appendToListenerTextArea("treeUnlocked");
+        }
+
+        @Override
+        public void fileDoubleClicked(DirTree source, File file) {
+            appendToListenerTextArea("fileDoubleClicked: " + file.getAbsolutePath());
         }
     }
 

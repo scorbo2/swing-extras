@@ -1,7 +1,19 @@
 package ca.corbett.extras.dirtree;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DirTreeTest {
 
@@ -32,5 +44,212 @@ class DirTreeTest {
 
         // THEN the listener should be notified of the change:
         Mockito.verify(listenerMock, Mockito.times(1)).showHiddenFilesChanged(tree, newValue);
+    }
+
+    @Test
+    public void setShowHidden_withNoChange_shouldNotNotifyListeners() {
+        DirTree tree = new DirTree();
+        DirTreeListener listenerMock = Mockito.mock(DirTreeListener.class);
+        tree.addDirTreeListener(listenerMock);
+
+        tree.setShowHidden(tree.getShowHidden());
+
+        Mockito.verify(listenerMock, Mockito.never()).showHiddenFilesChanged(Mockito.any(), Mockito.anyBoolean());
+    }
+
+    @Test
+    public void setShowHidden_withChange_shouldNotifyListeners() {
+        DirTree tree = new DirTree();
+        DirTreeListener listenerMock = Mockito.mock(DirTreeListener.class);
+        tree.addDirTreeListener(listenerMock);
+
+        boolean newValue = !tree.getShowHidden();
+        tree.setShowHidden(newValue);
+
+        Mockito.verify(listenerMock, Mockito.times(1)).showHiddenFilesChanged(tree, newValue);
+    }
+
+    @Test
+    public void showFiles_defaultIsFalse() {
+        DirTree tree = new DirTree();
+        assertFalse(tree.getShowFiles());
+    }
+
+    @Test
+    public void setShowFiles_changesValue() {
+        DirTree tree = new DirTree();
+        tree.setShowFiles(true);
+        assertTrue(tree.getShowFiles());
+    }
+
+    @Test
+    public void fileFilter_defaultIsNull() {
+        DirTree tree = new DirTree();
+        assertNull(tree.getFileFilter());
+    }
+
+    @Test
+    public void setFileFilter_changesValue() {
+        DirTree tree = new DirTree();
+        FileFilter filter = f -> f.getName().endsWith(".txt");
+        tree.setFileFilter(filter);
+        assertEquals(filter, tree.getFileFilter());
+    }
+
+    @Test
+    public void dirTreeNode_isFileNode_forDirectory(@TempDir Path tempDir) {
+        File dir = tempDir.toFile();
+        DirTreeNode node = new DirTreeNode(dir, true, false, null);
+        assertFalse(node.isFileNode());
+    }
+
+    @Test
+    public void dirTreeNode_isFileNode_forFile(@TempDir Path tempDir) throws IOException {
+        File file = tempDir.resolve("test.txt").toFile();
+        assertTrue(file.createNewFile());
+        DirTreeNode node = new DirTreeNode(file, true, false, null);
+        assertTrue(node.isFileNode());
+        assertTrue(node.isLeaf());
+    }
+
+    @Test
+    public void dirTreeNode_loadChildren_includesFilesWhenEnabled(@TempDir Path tempDir) throws IOException {
+        // Create a directory structure with files
+        File subDir = new File(tempDir.toFile(), "subdir");
+        assertTrue(subDir.mkdir());
+        File file1 = new File(tempDir.toFile(), "file1.txt");
+        assertTrue(file1.createNewFile());
+        File file2 = new File(tempDir.toFile(), "file2.txt");
+        assertTrue(file2.createNewFile());
+
+        // With showFiles=true, loadChildren should include files
+        DirTreeNode node = new DirTreeNode(tempDir.toFile(), true, true, null);
+        node.loadChildren();
+
+        // Should have 3 children: 1 dir + 2 files
+        assertEquals(3, node.getChildCount());
+
+        // First child should be the directory
+        DirTreeNode firstChild = (DirTreeNode)node.getChildAt(0);
+        assertFalse(firstChild.isFileNode());
+        assertEquals("subdir", firstChild.getDir().getName());
+
+        // Remaining children should be files
+        DirTreeNode secondChild = (DirTreeNode)node.getChildAt(1);
+        assertTrue(secondChild.isFileNode());
+        DirTreeNode thirdChild = (DirTreeNode)node.getChildAt(2);
+        assertTrue(thirdChild.isFileNode());
+    }
+
+    @Test
+    public void dirTreeNode_loadChildren_excludesFilesWhenDisabled(@TempDir Path tempDir) throws IOException {
+        File subDir = new File(tempDir.toFile(), "subdir");
+        assertTrue(subDir.mkdir());
+        File file1 = new File(tempDir.toFile(), "file1.txt");
+        assertTrue(file1.createNewFile());
+
+        // With showFiles=false, loadChildren should only include directories
+        DirTreeNode node = new DirTreeNode(tempDir.toFile(), true, false, null);
+        node.loadChildren();
+
+        assertEquals(1, node.getChildCount());
+        DirTreeNode child = (DirTreeNode)node.getChildAt(0);
+        assertFalse(child.isFileNode());
+    }
+
+    @Test
+    public void dirTreeNode_loadChildren_appliesFileFilter(@TempDir Path tempDir) throws IOException {
+        File file1 = new File(tempDir.toFile(), "readme.txt");
+        assertTrue(file1.createNewFile());
+        File file2 = new File(tempDir.toFile(), "image.png");
+        assertTrue(file2.createNewFile());
+
+        FileFilter txtFilter = f -> f.getName().endsWith(".txt");
+        DirTreeNode node = new DirTreeNode(tempDir.toFile(), true, true, txtFilter);
+        node.loadChildren();
+
+        // Only the .txt file should be included
+        assertEquals(1, node.getChildCount());
+        DirTreeNode child = (DirTreeNode)node.getChildAt(0);
+        assertTrue(child.isFileNode());
+        assertEquals("readme.txt", child.getDir().getName());
+    }
+
+    @Test
+    public void dirTreeNode_hasChildren_consideresFilesWhenEnabled(@TempDir Path tempDir) throws IOException {
+        // A directory with only files (no subdirs) should have children when showFiles=true
+        File file1 = new File(tempDir.toFile(), "file1.txt");
+        assertTrue(file1.createNewFile());
+
+        DirTreeNode nodeWithFiles = new DirTreeNode(tempDir.toFile(), true, true, null);
+        assertTrue(nodeWithFiles.hasChildren());
+
+        DirTreeNode nodeWithoutFiles = new DirTreeNode(tempDir.toFile(), true, false, null);
+        assertFalse(nodeWithoutFiles.hasChildren());
+    }
+
+    @Test
+    public void dirTreeNode_hasChildren_respectsFileFilter(@TempDir Path tempDir) throws IOException {
+        File file1 = new File(tempDir.toFile(), "image.png");
+        assertTrue(file1.createNewFile());
+
+        FileFilter txtFilter = f -> f.getName().endsWith(".txt");
+        DirTreeNode node = new DirTreeNode(tempDir.toFile(), true, true, txtFilter);
+        assertFalse(node.hasChildren()); // only .png file, but filter is for .txt
+    }
+
+    @Test
+    public void dirTreeNode_fileNode_hasNoChildren(@TempDir Path tempDir) throws IOException {
+        File file = tempDir.resolve("test.txt").toFile();
+        assertTrue(file.createNewFile());
+        DirTreeNode node = new DirTreeNode(file, true, true, null);
+        assertFalse(node.hasChildren());
+        node.loadChildren(); // should be a no-op for files
+        assertEquals(0, node.getChildCount());
+    }
+
+    @Test
+    public void dirTreeNode_isShowHidden_returnsCorrectValue() {
+        DirTreeNode nodeTrue = new DirTreeNode(new File("/"), true, false, null);
+        assertTrue(nodeTrue.isShowHidden());
+        assertTrue(nodeTrue.isShowHiddenDirs()); // deprecated method still works
+
+        DirTreeNode nodeFalse = new DirTreeNode(new File("/"), false, false, null);
+        assertFalse(nodeFalse.isShowHidden());
+        assertFalse(nodeFalse.isShowHiddenDirs()); // deprecated method still works
+    }
+
+    @Test
+    public void dirTree_lock_includesFilesWhenShowFilesEnabled(@TempDir Path tempDir) throws IOException {
+        File subDir = new File(tempDir.toFile(), "subdir");
+        assertTrue(subDir.mkdir());
+        File file1 = new File(tempDir.toFile(), "file1.txt");
+        assertTrue(file1.createNewFile());
+
+        DirTree tree = new DirTree();
+        tree.setShowFiles(true);
+        tree.lock(tempDir.toFile());
+
+        // The tree should now show both the subdirectory and the file
+        assertNotNull(tree.getLockDir());
+    }
+
+    @Test
+    public void dirTreeAdapter_fileDoubleClicked_isNoOp() {
+        // Verify the adapter provides a no-op default implementation
+        DirTreeAdapter adapter = new DirTreeAdapter();
+        adapter.fileDoubleClicked(null, null); // should not throw
+    }
+
+    @Test
+    public void deprecatedSetShowHiddenDirs_delegatesToSetShowHidden() {
+        DirTree tree = new DirTree();
+        tree.setShowHiddenDirs(false);
+        assertFalse(tree.getShowHidden());
+        assertFalse(tree.getShowHiddenDirs());
+
+        tree.setShowHiddenDirs(true);
+        assertTrue(tree.getShowHidden());
+        assertTrue(tree.getShowHiddenDirs());
     }
 }

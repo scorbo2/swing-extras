@@ -34,4 +34,9 @@ public class DirTreeAdapter implements DirTreeListener {
     public void treeUnlocked(DirTree source) {
         // No-op
     }
+
+    @Override
+    public void fileDoubleClicked(DirTree source, File file) {
+        // No-op
+    }
 }

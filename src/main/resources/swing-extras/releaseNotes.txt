@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.8.0 [TODO release date]
+  #417 - DirTree: add support for file viewing in the tree
   #415 - BlurLayerUI: support multi-line text overlay
   #410 - ActionPanel: add buttonPadding option, fix action gaps
   #408 - ActionPanel: add change notification events

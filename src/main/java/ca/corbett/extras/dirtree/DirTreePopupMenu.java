@@ -88,11 +88,11 @@ public class DirTreePopupMenu extends JPopupMenu {
         reloadItem.addActionListener(e -> dirTree.reload());
         add(reloadItem);
 
-        JMenuItem showHiddenItems = new JCheckBoxMenuItem("Show hidden directories", dirTree.getShowHiddenDirs());
-        showHiddenItems.addActionListener(e -> dirTree.setShowHiddenDirs(showHiddenItems.isSelected()));
+        JMenuItem showHiddenItems = new JCheckBoxMenuItem("Show hidden items", dirTree.getShowHidden());
+        showHiddenItems.addActionListener(e -> dirTree.setShowHidden(showHiddenItems.isSelected()));
         add(showHiddenItems);
 
-        if (selectedNode != null && dirTree.getAllowLock()) {
+        if (selectedNode != null && !selectedNode.isFileNode() && dirTree.getAllowLock()) {
             add(buildLockMenuItem(selectedNode));
         }
 
