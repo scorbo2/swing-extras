@@ -117,6 +117,14 @@ public class DirTreeDemoPanel extends PanelBuilder {
         });
         formPanel.add(checkBoxField);
 
+        // And another checkbox for showing files in the tree: (new in swing-extras 2.8!)
+        checkBoxField = new CheckBoxField("Show files in the tree", false);
+        checkBoxField.addValueChangedListener(field -> {
+            boolean isSelected = ((CheckBoxField)field).isChecked();
+            dirTree.setShowFiles(isSelected);
+        });
+        formPanel.add(checkBoxField);
+
         // And another checkbox to add a confirmation prompt on every selection change: (new in swing-extras 2.7!)
         checkBoxField = new CheckBoxField("Prompt to confirm selection changes", false);
         checkBoxField.addValueChangedListener(field -> {
