@@ -51,4 +51,13 @@ public interface DirTreeListener {
      * @param source The DirTree instance triggering this event.
      */
     void treeUnlocked(DirTree source);
+
+    /**
+     * Fired when a file node is double-clicked within the DirTree.
+     * This event is only relevant when {@code showFiles} is enabled.
+     *
+     * @param source The DirTree instance triggering this event.
+     * @param file   The file that was double-clicked.
+     */
+    void fileDoubleClicked(DirTree source, File file);
 }
