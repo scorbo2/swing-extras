@@ -230,8 +230,42 @@ class DirTreeTest {
         tree.setShowFiles(true);
         tree.lock(tempDir.toFile());
 
-        // The tree should now show both the subdirectory and the file
         assertNotNull(tree.getLockDir());
+
+        // Verify the tree model root contains both the directory and the file
+        DirTreeNode root = (DirTreeNode)tree.getTree().getModel().getRoot();
+        assertEquals(2, root.getChildCount());
+
+        DirTreeNode dirChild = (DirTreeNode)root.getChildAt(0);
+        assertFalse(dirChild.isFileNode());
+        assertEquals("subdir", dirChild.getDir().getName());
+
+        DirTreeNode fileChild = (DirTreeNode)root.getChildAt(1);
+        assertTrue(fileChild.isFileNode());
+        assertEquals("file1.txt", fileChild.getDir().getName());
+    }
+
+    @Test
+    public void dirTree_lock_filtersFilesWithFileFilter(@TempDir Path tempDir) throws IOException {
+        File txtFile = new File(tempDir.toFile(), "readme.txt");
+        assertTrue(txtFile.createNewFile());
+        File pngFile = new File(tempDir.toFile(), "image.png");
+        assertTrue(pngFile.createNewFile());
+
+        DirTree tree = new DirTree();
+        tree.setShowFiles(true);
+        tree.setFileFilter(f -> f.getName().endsWith(".txt"));
+        tree.lock(tempDir.toFile());
+
+        assertNotNull(tree.getLockDir());
+
+        // Only the .txt file should be present; .png should be filtered out
+        DirTreeNode root = (DirTreeNode)tree.getTree().getModel().getRoot();
+        assertEquals(1, root.getChildCount());
+
+        DirTreeNode child = (DirTreeNode)root.getChildAt(0);
+        assertTrue(child.isFileNode());
+        assertEquals("readme.txt", child.getDir().getName());
     }
 
     @Test
