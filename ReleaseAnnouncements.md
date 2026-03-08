@@ -13,8 +13,7 @@ Notable additions and changes in swing-extras 2.7:
 - MultiProgressDialog is now more configurable (progress label formatting options)
 - DirTree got some new features (show/hide hidden files, confirm before selection change)
 
-And more! View the [full release notes](src/main/resources/swing-extras/releaseNotes.txt) for details,
-or check out the [archived release announcements](ReleaseAnnouncements.md) for details on previous releases.
+And more! View the [full release notes](src/main/resources/swing-extras/releaseNotes.txt) for a complete list.
 
 ## December 31, 2025 - swing extras 2.6 release is here!
 
