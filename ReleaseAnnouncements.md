@@ -2,6 +2,20 @@
 
 Older release announcements for swing-extras releases will be archived here.
 
+## January 25, 2026 - swing-extras 2.7 is here!
+
+This is a maintenance release of swing-extras with a few new features and some bug fixes.
+Notable additions and changes in swing-extras 2.7:
+
+- New utility class: ResourceLoader, for easier loading of resources from the classpath.
+- New utility class: KeyStrokeManager, for easier management of keyboard shortcuts.
+- ListField now supports action buttons natively! Some pre-built actions are included!
+- MultiProgressDialog is now more configurable (progress label formatting options)
+- DirTree got some new features (show/hide hidden files, confirm before selection change)
+
+And more! View the [full release notes](src/main/resources/swing-extras/releaseNotes.txt) for details,
+or check out the [archived release announcements](ReleaseAnnouncements.md) for details on previous releases.
+
 ## December 31, 2025 - swing extras 2.6 release is here!
 
 Happy New Year! The 2.6 release of swing-extras is now available.
