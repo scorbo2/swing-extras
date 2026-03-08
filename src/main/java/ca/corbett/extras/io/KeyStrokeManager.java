@@ -682,8 +682,8 @@ public class KeyStrokeManager {
      * @param keyStroke The key stroke to assign, or null to clear the accelerator.
      */
     private static void setActionAccelerator(Action action, KeyStroke keyStroke) {
-        if (action instanceof EnhancedAction) {
-            ((EnhancedAction) action).setAcceleratorKey(keyStroke);
+        if (action instanceof EnhancedAction enhancedAction) {
+            enhancedAction.setAcceleratorKey(keyStroke);
         }
         else {
             action.putValue(Action.ACCELERATOR_KEY, keyStroke);
