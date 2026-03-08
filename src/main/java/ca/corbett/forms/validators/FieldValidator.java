@@ -28,6 +28,7 @@ public interface FieldValidator<T extends FormField> {
      *
      * @param fieldToValidate The FormField to be validated.
      * @return A ValidationResult which describes whether the current value in our field is valid.
+     * Returning {@code null} is discouraged but treated the same as {@link ValidationResult#valid()}.
      */
     ValidationResult validate(T fieldToValidate);
 }

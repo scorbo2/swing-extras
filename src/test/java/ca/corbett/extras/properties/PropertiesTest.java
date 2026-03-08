@@ -82,6 +82,32 @@ public class PropertiesTest {
         assertEquals(input.getSize(), actual.getSize());
     }
 
+    @Test
+    public void getString_withExplicitBlankStringAndDefaultGetStringMethod_shouldReturnBlank() {
+        // GIVEN a Properties instance where a string property is explicitly blank:
+        Properties props = new Properties();
+        props.setString("blankProp", "");
+
+        // WHEN we invoke the default getString() method with some non-blank default value:
+        String actual = props.getString("blankProp", "defaultValue");
+
+        // THEN we should receive the explicitly-stored blank value, NOT the default value:
+        assertEquals("", actual);
+    }
+
+    @Test
+    public void getString_withExplicitBlankStringAndOverloadedGetStringMethod_shouldReturnDefaultValue() {
+        // GIVEN a Properties instance where a string property is explicitly blank:
+        Properties props = new Properties();
+        props.setString("blankProp", "");
+
+        // WHEN we invoke the getString() overload and explicitly ask for blank values to be handled as nulls:
+        String actual = props.getString("blankProp", "defaultValue", true);
+
+        // THEN we should get the default value, and NOT the explicitly-stored blank value:
+        assertEquals("defaultValue", actual);
+    }
+
     private Properties createTestProps() {
         Properties prop1 = new Properties();
         prop1.setString("String", "string");
@@ -91,5 +117,4 @@ public class PropertiesTest {
         prop1.setColor("Color", Color.blue);
         return prop1;
     }
-
 }

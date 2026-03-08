@@ -61,6 +61,17 @@ public class BooleanProperty extends AbstractProperty {
             return;
         }
 
+        // A checkbox only has two states, so it's hard to imagine a checkbox failing a validation check,
+        // but it can absolutely happen if the client application has put a custom validator on it.
+        // For example, you can't check this checkbox if some other condition isn't met. If the
+        // field is in an invalid state, we should ignore it. (Proper form validation will prevent it
+        // from getting here, but there's nothing to force client code to do that, so let's be defensive).
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "BooleanProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         value = ((CheckBoxField)field).isChecked();
     }
 

@@ -20,6 +20,15 @@ import java.awt.LayoutManager;
  * allows the panel contents to be displayed or hidden. This allows you to provide
  * additional controls or instructional labels on a FormPanel, with the ability
  * to partially hide them when not needed.
+ * <p>
+ *     <b>Dev note:</b> this component was written before the ActionPanel
+ *     and its expandable/collapsible ActionGroups were implemented.
+ *     In a way, this class ended up being a very rough prototype of ActionPanel.
+ *     As such, it has only a small fraction of the number of configuration
+ *     options that ActionPanel exposes. But, this FormField is still
+ *     reasonably good at what it does, even if it isn't quite as sexy.
+ *     So if you notice similarities in the basic design, it's not a coincidence.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.5
@@ -29,7 +38,7 @@ public class CollapsiblePanelField extends FormField {
     private static final int PANEL_ICON_SIZE = 20;
     private static boolean isDefaultBorderEnabled = true;
 
-    public enum ButtonPosition { Left, Right; }
+    public enum ButtonPosition {Left, Right}
 
     private final JPanel expandPanel;
     private final JPanel headerPanel;

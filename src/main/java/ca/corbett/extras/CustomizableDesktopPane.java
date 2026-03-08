@@ -5,7 +5,6 @@ import ca.corbett.extras.gradient.GradientUtil;
 import ca.corbett.extras.properties.Properties;
 
 import javax.swing.JDesktopPane;
-import javax.swing.SwingUtilities;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
@@ -206,32 +205,32 @@ public class CustomizableDesktopPane extends JDesktopPane {
             int x = 0;
             int y = 0;
             int margin = logoImage.getWidth() / 10;
-            switch (logoPlacement) {
-                case TOP_LEFT:
+            y = switch (logoPlacement) {
+                case TOP_LEFT -> {
                     x = margin;
-                    y = margin;
-                    break;
-
-                case TOP_RIGHT:
+                    yield margin;
+                }
+                case TOP_RIGHT -> {
                     x = getWidth() - logoImage.getWidth() - margin;
-                    y = margin;
-                    break;
-
-                case BOTTOM_LEFT:
+                    yield margin;
+                }
+                case BOTTOM_LEFT -> {
                     x = margin;
-                    y = getHeight() - logoImage.getHeight() - margin;
-                    break;
-
-                case BOTTOM_RIGHT:
+                    yield getHeight() - logoImage.getHeight() - margin;
+                }
+                case BOTTOM_RIGHT -> {
                     x = getWidth() - logoImage.getWidth() - margin;
-                    y = getHeight() - logoImage.getHeight() - margin;
-                    break;
-
-                case CENTER:
+                    yield getHeight() - logoImage.getHeight() - margin;
+                }
+                case CENTER -> {
                     x = (getWidth() / 2) - (logoImage.getWidth() / 2);
-                    y = (getHeight() / 2) - (logoImage.getHeight() / 2);
-                    break;
-            }
+                    yield (getHeight() / 2) - (logoImage.getHeight() / 2);
+                }
+                case OFF -> {
+                    x = 0;
+                    yield 0;
+                }
+            };
             Composite composite = ((Graphics2D)g).getComposite();
             ((Graphics2D)g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, logoImageAlpha));
             g.drawImage(logoImage, x, y, null);
@@ -243,13 +242,8 @@ public class CustomizableDesktopPane extends JDesktopPane {
      * Invoked internally when some change is made that requires an immediate redraw.
      */
     private void redraw() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                invalidate();
-                revalidate();
-                repaint();
-            }
-        });
+        invalidate();
+        revalidate();
+        repaint();
     }
 }

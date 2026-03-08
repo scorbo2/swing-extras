@@ -1,9 +1,13 @@
 package ca.corbett.extras.demo;
 
 import ca.corbett.extensions.demo.ExtensionsOverviewPanel;
+import ca.corbett.extras.ScrollUtil;
 import ca.corbett.extras.Version;
+import ca.corbett.extras.actionpanel.ActionPanel;
 import ca.corbett.extras.demo.panels.AboutDemoPanel;
+import ca.corbett.extras.demo.panels.ActionPanelDemoPanel;
 import ca.corbett.extras.demo.panels.AnimationPanelEffectsPanel;
+import ca.corbett.extras.demo.panels.AnimationScrollDemoPanel;
 import ca.corbett.extras.demo.panels.AnimationTextDemoPanel;
 import ca.corbett.extras.demo.panels.AudioDemoPanel;
 import ca.corbett.extras.demo.panels.DesktopDemoPanel;
@@ -16,8 +20,8 @@ import ca.corbett.extras.demo.panels.LogConsolePanel;
 import ca.corbett.extras.demo.panels.PanelBuilder;
 import ca.corbett.extras.demo.panels.ProgressDemoPanel;
 import ca.corbett.extras.demo.panels.PropertiesDemoPanel;
+import ca.corbett.extras.demo.panels.TextInputDialogPanel;
 import ca.corbett.extras.logging.LogConsole;
-import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.forms.demo.AdvancedFormPanel;
 import ca.corbett.forms.demo.BasicFormPanel;
 import ca.corbett.forms.demo.CustomFormFieldPanel;
@@ -28,21 +32,18 @@ import ca.corbett.forms.demo.FormsRendererPanel;
 import ca.corbett.forms.demo.FormsValidationPanel;
 import ca.corbett.forms.demo.ListFieldPanel;
 
-import javax.swing.DefaultListModel;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
-import java.util.logging.Logger;
 
 /**
  * A built-in demo application which shows off the features and components
@@ -55,13 +56,18 @@ import java.util.logging.Logger;
  */
 public class DemoApp extends JFrame {
 
-    private static final Logger logger = Logger.getLogger(DemoApp.class.getName());
     AudioDemoPanel audioDemoPanel = new AudioDemoPanel();
     private static DemoApp instance;
+    private final ActionPanel actionPanel;
+    private final JPanel demoPanel;
 
-    private DefaultListModel<String> cardListModel;
-    private JList<String> cardList;
-    private JPanel demoPanel;
+    private static final String INTRO = "Intro";
+    private static final String UI = "UI components";
+    private static final String IMAGES = "Image handling";
+    private static final String ANIMATION = "Animation";
+    private static final String EXTENSIONS = "Extensions";
+    private static final String FORMS = "Forms";
+    private static final String MISC = "Misc. utilities";
 
     public static DemoApp getInstance() {
         if (instance == null) {
@@ -73,7 +79,7 @@ public class DemoApp extends JFrame {
 
     private DemoApp() {
         super(Version.FULL_NAME + " demo");
-        setSize(900, 660);
+        setSize(990, 680);
         setMinimumSize(new Dimension(500, 500));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -85,9 +91,23 @@ public class DemoApp extends JFrame {
             LogConsole.getInstance().setIconImage(image);
         }
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, buildListPanel(), buildDemoPanel());
+        // Create our card layout and our action panel, and link them together:
+        demoPanel = new JPanel();
+        demoPanel.setLayout(new CardLayout());
+        actionPanel = new ActionPanel();
+        actionPanel.setCardContainer(demoPanel);
+        actionPanel.getActionTrayMargins().setLeft(12); // Indent a little bit
+        actionPanel.getActionTrayMargins().setBottom(6); // Add a little vertical padding
+        actionPanel.getBorderOptions().setGroupBorder(BorderFactory.createLoweredBevelBorder());
+        actionPanel.getExpandCollapseOptions().setAllowHeaderDoubleClick(true);
+
+        // Make our action panel scrollable:
+        JScrollPane actionPanelScrollPane = ScrollUtil.buildScrollPane(actionPanel);
+
+        // Now add it all together in a split pane::
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, actionPanelScrollPane, demoPanel);
         splitPane.setOneTouchExpandable(false); // sadly, this does not play well with certain Look and Feels
-        splitPane.setDividerLocation(195);
+        splitPane.setDividerLocation(205);
         add(splitPane, BorderLayout.CENTER);
     }
 
@@ -104,81 +124,60 @@ public class DemoApp extends JFrame {
      * Creates all of our demo panels and adds them to the menu on the left side.
      */
     private void populateDemoPanels() {
-        addDemoPanel(new IntroPanel());
-        addDemoPanel(audioDemoPanel);
-        addDemoPanel(new DesktopDemoPanel());
-        addDemoPanel(new DirTreeDemoPanel());
-        addDemoPanel(new ImageUtilDemoPanel());
-        addDemoPanel(new ImageTextUtilDemoPanel());
-        addDemoPanel(new AnimationTextDemoPanel());
-        addDemoPanel(new AnimationPanelEffectsPanel()); // These are just for fun
-        //addDemoPanel(new AnimationScrollDemoPanel()); // Not really a "swing extra"
-        addDemoPanel(new ProgressDemoPanel());
-        addDemoPanel(new PropertiesDemoPanel());
-        addDemoPanel(new FormsOverviewPanel());
-        addDemoPanel(new BasicFormPanel());
-        addDemoPanel(new AdvancedFormPanel());
-        addDemoPanel(new ListFieldPanel());
-        addDemoPanel(new FormsValidationPanel());
-        addDemoPanel(new FormActionsPanel());
-        addDemoPanel(new FormsRendererPanel());
-        addDemoPanel(new CustomFormFieldPanel());
-        addDemoPanel(new FormHelpPanel());
-        addDemoPanel(new ExtensionsOverviewPanel());
-        addDemoPanel(new KeyStrokeManagerPanel());
-        addDemoPanel(new LogConsolePanel());
-        addDemoPanel(new AboutDemoPanel());
-        cardList.setSelectedIndex(0);
+        // We just want to build once at the end, as opposed
+        // to rebuilding every time we add a panel:
+        actionPanel.setAutoRebuildEnabled(false);
+        try {
+            addDemoPanel(INTRO, new IntroPanel());
+            addDemoPanel(INTRO, new AboutDemoPanel());
+            addDemoPanel(UI, new ActionPanelDemoPanel());
+            addDemoPanel(UI, audioDemoPanel);
+            addDemoPanel(UI, new DesktopDemoPanel());
+            addDemoPanel(UI, new DirTreeDemoPanel());
+            addDemoPanel(UI, new ProgressDemoPanel());
+            addDemoPanel(UI, new TextInputDialogPanel());
+            addDemoPanel(FORMS, new FormsOverviewPanel());
+            addDemoPanel(FORMS, new BasicFormPanel());
+            addDemoPanel(FORMS, new AdvancedFormPanel());
+            addDemoPanel(FORMS, new ListFieldPanel());
+            addDemoPanel(FORMS, new FormsValidationPanel());
+            addDemoPanel(FORMS, new FormActionsPanel());
+            addDemoPanel(FORMS, new FormsRendererPanel());
+            addDemoPanel(FORMS, new CustomFormFieldPanel());
+            addDemoPanel(FORMS, new FormHelpPanel());
+            addDemoPanel(ANIMATION, new AnimationTextDemoPanel());
+            addDemoPanel(ANIMATION, new AnimationPanelEffectsPanel()); // These are just for fun
+            addDemoPanel(ANIMATION, new AnimationScrollDemoPanel()); // Not really a "swing extra", but okay
+            addDemoPanel(IMAGES, new ImageUtilDemoPanel());
+            addDemoPanel(IMAGES, new ImageTextUtilDemoPanel());
+            addDemoPanel(EXTENSIONS, new ExtensionsOverviewPanel());
+            addDemoPanel(EXTENSIONS, new PropertiesDemoPanel());
+            addDemoPanel(MISC, new KeyStrokeManagerPanel());
+            addDemoPanel(MISC, new LogConsolePanel());
+
+            // Collapse all groups but the first by default, otherwise it looks too busy:
+            actionPanel.setExpanded(UI, false);
+            actionPanel.setExpanded(FORMS, false);
+            actionPanel.setExpanded(ANIMATION, false);
+            actionPanel.setExpanded(IMAGES, false);
+            actionPanel.setExpanded(EXTENSIONS, false);
+            actionPanel.setExpanded(MISC, false);
+        }
+
+        finally {
+            // Re-enabling auto-rebuild will force an immediate rebuild:
+            actionPanel.setAutoRebuildEnabled(true);
+        }
+
+        // Force the first card to show:
+        ((CardLayout)demoPanel.getLayout()).show(demoPanel, INTRO);
     }
 
     /**
      * Invoked internally to add the given demo panel to our menu.
      */
-    private void addDemoPanel(PanelBuilder panel) {
-        // Keep the text from being directly against the window border:
-        cardListModel.addElement("  " + panel.getTitle());
-        demoPanel.add(PropertiesDialog.buildScrollPane(panel.build()), panel.getTitle());
-    }
-
-    /**
-     * Invoked internally to create and return a JPanel that houses the list of
-     * available cards. The list is empty at this point.
-     *
-     * @return A JPanel
-     */
-    private JPanel buildListPanel() {
-        JPanel listPanel = new JPanel();
-        listPanel.setLayout(new BorderLayout());
-
-        // We'll use a simple JList to show the available options:
-        cardListModel = new DefaultListModel<>();
-        cardList = new JList<>(cardListModel);
-        cardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        cardList.setFont(cardList.getFont().deriveFont(Font.PLAIN, 16f));
-        listPanel.add(PropertiesDialog.buildScrollPane(cardList), BorderLayout.CENTER);
-
-        // When an option is selected, we'll show its demo panel in the main content area:
-        cardList.addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting() || cardList.getSelectedValue() == null) {
-                return;
-            }
-
-            // Flip to the given card:
-            ((CardLayout)demoPanel.getLayout()).show(demoPanel, cardList.getSelectedValue().trim());
-        });
-
-        return listPanel;
-    }
-
-    /**
-     * Invoked internally to create and return the demo panel to show
-     * the currently selected demo item from the list in the left.
-     *
-     * @return A JPanel
-     */
-    private JPanel buildDemoPanel() {
-        demoPanel = new JPanel();
-        demoPanel.setLayout(new CardLayout());
-        return demoPanel;
+    private void addDemoPanel(String group, PanelBuilder panel) {
+        actionPanel.add(group, panel.getTitle(), panel.getTitle());
+        demoPanel.add(ScrollUtil.buildScrollPane(panel.build()), panel.getTitle());
     }
 }

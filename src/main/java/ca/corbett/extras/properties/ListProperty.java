@@ -321,13 +321,18 @@ public class ListProperty<T> extends AbstractProperty {
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
-                || !(field instanceof ListField)) {
+                || !(field instanceof ListField<?> listField)) {
             logger.log(Level.SEVERE, "ListProperty.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
             return;
         }
 
-        //noinspection unchecked
-        selectedIndexes = ((ListField<T>)field).getSelectedIndexes();
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "ListProperty.loadFromFormField: field \"{0}\" is not valid -- ignoring",
+                       field.getIdentifier());
+            return;
+        }
+
+        selectedIndexes = listField.getSelectedIndexes();
     }
 }

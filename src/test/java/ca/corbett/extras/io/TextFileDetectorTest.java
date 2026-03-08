@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +45,7 @@ class TextFileDetectorTest {
     }
 
     @Test
-    public void detectTextFile_givenNonExistentFile_shouldThrow() throws Exception {
+    public void detectTextFile_givenNonExistentFile_shouldThrow() {
         // GIVEN a file that does not exist
         File nonExistentFile = new File("this_file_does_not_exist_1234567890.txt");
 
@@ -51,12 +53,15 @@ class TextFileDetectorTest {
         // THEN we should see that an exception is thrown
         try {
             TextFileDetector.isTextFile(nonExistentFile);
-        } catch (Exception e) {
-            assertTrue(e instanceof IllegalArgumentException);
-            return;
+            fail("Expected IllegalArgumentException to be thrown");
+        }
+        catch (IllegalArgumentException ignored) {
+            // Expected! We're good.
+        }
+        catch (IOException ioe) {
+            fail("Expected IllegalArgumentException, but got IOException: " + ioe.getMessage());
         }
 
-        fail("Expected IllegalArgumentException to be thrown");
     }
 
     @Test
@@ -160,11 +165,11 @@ class TextFileDetectorTest {
             // Write UTF-16 BE BOM
             outputStream.write(new byte[] {(byte)0xFE, (byte)0xFF});
             // Write some text (in UTF-16 BE encoding)
-            outputStream.write("H".getBytes("UTF-16BE"));
-            outputStream.write("e".getBytes("UTF-16BE"));
-            outputStream.write("l".getBytes("UTF-16BE"));
-            outputStream.write("l".getBytes("UTF-16BE"));
-            outputStream.write("o".getBytes("UTF-16BE"));
+            outputStream.write("H".getBytes(StandardCharsets.UTF_16BE));
+            outputStream.write("e".getBytes(StandardCharsets.UTF_16BE));
+            outputStream.write("l".getBytes(StandardCharsets.UTF_16BE));
+            outputStream.write("l".getBytes(StandardCharsets.UTF_16BE));
+            outputStream.write("o".getBytes(StandardCharsets.UTF_16BE));
         }
 
         // WHEN we try to detect if it's a text file:
@@ -183,11 +188,11 @@ class TextFileDetectorTest {
             // Write UTF-16 LE BOM
             outputStream.write(new byte[] {(byte)0xFF, (byte)0xFE});
             // Write some text (in UTF-16 LE encoding)
-            outputStream.write("H".getBytes("UTF-16LE"));
-            outputStream.write("e".getBytes("UTF-16LE"));
-            outputStream.write("l".getBytes("UTF-16LE"));
-            outputStream.write("l".getBytes("UTF-16LE"));
-            outputStream.write("o".getBytes("UTF-16LE"));
+            outputStream.write("H".getBytes(StandardCharsets.UTF_16LE));
+            outputStream.write("e".getBytes(StandardCharsets.UTF_16LE));
+            outputStream.write("l".getBytes(StandardCharsets.UTF_16LE));
+            outputStream.write("l".getBytes(StandardCharsets.UTF_16LE));
+            outputStream.write("o".getBytes(StandardCharsets.UTF_16LE));
         }
 
         // WHEN we try to detect if it's a text file:

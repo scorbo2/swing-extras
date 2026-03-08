@@ -226,12 +226,10 @@ public class ImagePanel extends JPanel implements
         thisPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                //@formatter:off
                 switch (thisPanel.originalProperties.getDisplayMode()) {
-                    case BEST_FIT: thisPanel.zoomBestFit(); break;
-                    case STRETCH: thisPanel.stretchImage(); break;
+                    case BEST_FIT -> thisPanel.zoomBestFit();
+                    case STRETCH -> thisPanel.stretchImage();
                 }
-                //@formatter:on
             }
         });
 
@@ -257,20 +255,15 @@ public class ImagePanel extends JPanel implements
         this.setBackground(properties.getBgColor());
 
         // Update zoom settings if needed:
-        //@formatter:off
         switch (properties.getDisplayMode()) {
-            case BEST_FIT: zoomBestFit(); break;
-            case STRETCH: stretchImage(); break;
+            case BEST_FIT -> zoomBestFit();
+            case STRETCH -> stretchImage();
 
-            case CENTER:
-            case NONE:
-            case CUSTOM:
-            default:
+            default -> {
                 zoomFactor = 1.0;
                 resetZoomCenter();
-                break;
+            }
         }
-        //@formatter:on
 
         // Set cursor as appropriate:
         if ((properties.isEnableZoomOnMouseClick()
@@ -515,13 +508,11 @@ public class ImagePanel extends JPanel implements
             setComponentPopupMenu(popupMenu);
         }
 
-        //@formatter:off
         switch (originalProperties.getDisplayMode()) {
-            case BEST_FIT: zoomBestFit(); break;
-            case STRETCH: stretchImage(); break;
-            default: setZoomFactor(1.0); break;
+            case BEST_FIT -> zoomBestFit();
+            case STRETCH -> stretchImage();
+            default -> setZoomFactor(1.0);
         }
-        //@formatter:on
 
         repaint();
     }
@@ -544,13 +535,11 @@ public class ImagePanel extends JPanel implements
             imageIconLabel.setComponentPopupMenu(popupMenu);
         }
 
-        //@formatter:off
         switch (originalProperties.getDisplayMode()) {
-            case BEST_FIT: zoomBestFit(); break;
-            case STRETCH: stretchImage(); break;
-            default: setZoomFactor(1.0); break;
+            case BEST_FIT -> zoomBestFit();
+            case STRETCH -> stretchImage();
+            default -> setZoomFactor(1.0);
         }
-        //@formatter:on
 
         repaint();
     }

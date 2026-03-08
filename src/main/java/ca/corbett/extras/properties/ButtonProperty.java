@@ -32,6 +32,16 @@ public class ButtonProperty extends AbstractProperty {
     }
 
     /**
+     * Most properties generate FormField instances that allow user input, but we do not:
+     *
+     * @return false, to indicate that we are effectively read-only.
+     */
+    @Override
+    public boolean isAllowsUserInput() {
+        return false;
+    }
+
+    /**
      * One of the FlowLayout alignment constants: LEFT, CENTER, RIGHT, LEADING, or TRAILING.
      */
     public int getAlignment() {

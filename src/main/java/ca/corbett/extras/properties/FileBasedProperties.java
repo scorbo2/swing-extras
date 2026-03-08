@@ -128,7 +128,7 @@ public final class FileBasedProperties extends Properties {
             writeCommentBlock(writer, commentHeader);
             writeCommentBlock(writer, comments);
             for (String key : getPropertyNames()) {
-                // Property names can't contain spaces, but you can escape them with \u0020
+                // Property names can't contain spaces, but you can escape them with "\u0020"
                 String sanitizedKey = key.replaceAll(" ", "\\\\u0020");
 
                 // Property values can't contain newlines, but you can escape them with \n

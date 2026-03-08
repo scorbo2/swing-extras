@@ -1,6 +1,6 @@
 package ca.corbett.extras.about;
 
-import ca.corbett.extras.properties.PropertiesDialog;
+import ca.corbett.extras.ScrollUtil;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -13,8 +13,6 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 /**
@@ -79,20 +77,14 @@ public final class AboutDialog extends JDialog implements KeyEventDispatcher {
         setResizable(false);
         setLayout(new BorderLayout());
 
-        add(PropertiesDialog.buildScrollPane(aboutPanel), BorderLayout.CENTER);
+        add(ScrollUtil.buildScrollPane(aboutPanel), BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         JButton button = new JButton("OK");
         button.setPreferredSize(new Dimension(90, 28));
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-
-        });
+        button.addActionListener(e -> dispose());
         buttonPanel.add(button);
 
         add(buttonPanel, BorderLayout.SOUTH);

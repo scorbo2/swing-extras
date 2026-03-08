@@ -78,7 +78,7 @@ public class FileSystemUtilTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         delete(testDir);
     }
 
@@ -381,7 +381,7 @@ public class FileSystemUtilTest {
     }
 
     @Test
-    public void getUniqueDestinationFile_withNoConflicts_ShouldReturnInputFile() throws Exception {
+    public void getUniqueDestinationFile_withNoConflicts_ShouldReturnInputFile() {
         final File tempDir = new File(System.getProperty("java.io.tmpdir"));
 
         // GIVEN a candidate file that we want to copy/move to a directory where there are no name conflicts:

@@ -1,7 +1,6 @@
 package ca.corbett.extras.properties;
 
-import ca.corbett.forms.Alignment;
-import ca.corbett.forms.FormPanel;
+import ca.corbett.extras.properties.dialog.PropertiesDialog;
 import ca.corbett.forms.fields.FormField;
 
 import java.awt.Window;
@@ -16,13 +15,22 @@ import java.util.logging.Logger;
  * Provides a highly configurable wrapper around a set of related properties,
  * along with ways to manage them and present them to the user for viewing and modification.
  * The intention is that all applications go through an instance of this class so that
- * application preferences are handled in a consistent way, but this can be used
- * for managing properties of any type in a generic and configurable way.
- * See also generateDialog() and generateUnrenderedFormPanel() for ways to present
- * a UI to view or edit application properties.
+ * application preferences are handled in a consistent way. This can be used
+ * for managing properties of any supported type in a generic and configurable way.
+ * <p>
+ * PropertiesManager can be used directly, but the more typical case is for applications
+ * to use AppProperties (or a derived class), which binds together a PropertiesManager instance
+ * with an ExtensionManager instance. AppProperties is extremely useful in saving a lot
+ * of work for client code. Specifically, AppProperties can handle the auto-generation
+ * of a PropertiesDialog for viewing and editing your application's properties.
+ * </p>
+ * <p>
+ * For more information, refer to the <a href="https://www.corbett.ca/swing-extras-book/">swing-extras book</a>,
+ * or check out the built-in demo application that comes with this library!
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2024-12-30
+ * @since swing-extras 1.8, 2024-12-30
  */
 public class PropertiesManager {
 
@@ -30,7 +38,6 @@ public class PropertiesManager {
     protected final Properties propertiesInstance;
     protected final List<AbstractProperty> properties;
     protected final String name;
-    private boolean alwaysShowSubcategoryLabels = false;
 
     /**
      * Creates a PropertiesManager instance backed onto the given File object, and a list
@@ -175,9 +182,14 @@ public class PropertiesManager {
 
     /**
      * Saves the value of each of our properties to the Properties instance we were supplied in the
-     * constructor, overwriting any previously saved values.The output list will be
+     * constructor, overwriting any previously saved values. The output list will be
      * alphabetically sorted by fully qualified property name, making for a (hopefully) easy
      * to read properties file.
+     * <p>
+     * <b>Note:</b> If our Properties instance is not a FileBasedProperties instance, then this
+     * method will update the Properties instance in memory, but will not persist anything to disk.
+     * Persistence is up to the caller in that case.
+     * </p>
      */
     public void save() {
         // Save each of our properties to our propertiesInstance instance:
@@ -209,197 +221,69 @@ public class PropertiesManager {
                 continue; // we won't find hidden or disabled fields as they aren't added to the form in the first place
             }
             FormField field = dialog.findFormField(prop.getFullyQualifiedName());
-            // TODO we could do dirty checking here to avoid saving if nothing was modified...
             if (field != null) {
                 prop.loadFromFormField(field);
             }
             else {
-                logger.warning(
-                        "PropertiesManager.updateFromDialog(): couldn't find the form field for property: " + prop.getFullyQualifiedName());
+                logger.warning("PropertiesManager.updateFromDialog(): couldn't find the form field for property: "
+                                       + prop.getFullyQualifiedName());
             }
         }
         save();
     }
 
     /**
-     * Controls whether subcategory labels should always be shown, even if there is only one
-     * subcategory in a given category. The default behavior is to hide subcategory labels
-     * if there is only one subcategory.
+     * Generates a PropertiesDialog for the current properties list.
+     * You can use setAlignment() and setBorderPanel() on the generated dialog to customize
+     * the FormPanel layout options.
      * <p>
-     * If there is more than one subcategory in a category, then the subcategory labels
-     * will be shown regardless of the value of this property.
+     *     <b>Note:</b> As of swing-extras 2.8, this method will return a PropertiesDialog
+     *     based on ActionPanel navigation. Use the generateClassicDialog() method if you
+     *     want the older tabbed pane style dialog instead.
      * </p>
-     *
-     * @param value Force subcategory labels to always show even if there's only one.
-     */
-    public void setAlwaysShowSubcategoryLabels(boolean value) {
-        alwaysShowSubcategoryLabels = value;
-    }
-
-    /**
-     * If true, subcategory header labels will be generated even if there's only one
-     * subcategory in a given category. By default, this is false, meaning that subcategory
-     * header labels will be hidden if there's only one.
-     *
-     * @return Whether subcategory header labels are always generated.
-     */
-    public boolean isAlwaysShowSubcategoryLabels() {
-        return alwaysShowSubcategoryLabels;
-    }
-
-    /**
-     * Generates a PropertiesDialog for the current properties list with default dialog values.
-     * That is, a left-aligned dialog with an 8 pixel border margin.
      *
      * @param owner       The owner Window for the dialog.
      * @param dialogTitle The title of the dialog.
      * @return A PropertiesDialog instance, populated and ready to be shown.
      */
     public PropertiesDialog generateDialog(Window owner, String dialogTitle) {
-        return generateDialog(owner, dialogTitle, Alignment.TOP_LEFT, 8);
+        return generateDialog(owner, dialogTitle, false);
     }
 
     /**
-     * Generates a PropertiesDialog containing all the non-hidden properties managed by this
-     * PropertiesManager. Note that this method is shorthand for:
-     * <blockquote><pre>
-     *     panelList = generateUnrenderedFormPanels(alignment, borderMargin);
-     *     return new PropertiesDialog(this, owner, dialogTitle, panelList);
-     * </pre></blockquote>
-     * You have the option of calling generateUnrenderedFormPanels() yourself to get the list
-     * of FormPanels that are not yet rendered. The advantage of doing it that way is that you
-     * can add custom logic to form fields on those panels to do things like showing/hiding
-     * or enabling/disabling form fields based on the values contained in other fields. Your code
-     * would look something like this:
-     * <blockquote><pre>
-     *     panelList = propsManager.generateUnrenderedFormPanels(alignment, borderMargin);
-     *
-     *     // Add some custom logic to the form:
-     *     ComboField field1 = (ComboField)PropertiesManager.findFormField("my.field.one");
-     *     FormField field2 = PropertiesManager.findFormField("my.field.two");
-     *     field1.addValueChangedAction(new AbstractAction() {
-     *          public void actionPerformed(ActionEvent e) {
-     *              field2.setEnabled("Some special value".equals(field1.getSelectedItem()));
-     *          }
-     *     });
-     *     field2.setEnabled(false); // set initial value
-     *
-     *     new PropertiesDialog(propsManager, owner, dialogTitle, panelList).setVisible(true);
-     * </pre></blockquote>
+     * Generates a PropertiesDialog for the current properties list.
+     * You can use setAlignment() and setBorderPanel() on the generated dialog to customize
+     * the FormPanel layout options.
      * <p>
-     * If you invoke this generateDialog() method to generate the dialog for you,
-     * instead of using the above approach, you will lose the ability to
-     * add those action handlers before the form panels are rendered. That might be
-     * a problem if you need to set certain fields to invisible or disabled before
-     * the dialog is shown based on current form values.
+     * <b>Note:</b> As of swing-extras 2.8, this method will return a PropertiesDialog
+     * based on ActionPanel navigation. Use the generateClassicDialog() method if you want the older tabbed pane style dialog instead.
      * </p>
      *
-     * @param owner        The owner Window for the dialog.
-     * @param dialogTitle  The title of the dialog.
-     * @param alignment    How the form panel(s) on the generated dialog should align themselves.
-     * @param borderMargin Applies a border margin to the generated form panel(s).
+     * @param owner           The owner Window for the dialog.
+     * @param dialogTitle     The title of the dialog.
+     * @param addPanelHeaders true to show auto-generated header labels for each FormPanel.
      * @return A PropertiesDialog instance, populated and ready to be shown.
      */
-    public PropertiesDialog generateDialog(Window owner, String dialogTitle, Alignment alignment, int borderMargin) {
-        List<FormPanel> formPanelList = generateUnrenderedFormPanels(alignment, borderMargin);
-        return new PropertiesDialog(this, owner, dialogTitle, formPanelList);
-    }
-
-    public List<FormPanel> generateUnrenderedFormPanels() {
-        return generateUnrenderedFormPanels(properties, Alignment.TOP_LEFT, 8, alwaysShowSubcategoryLabels);
-    }
-
-    public List<FormPanel> generateUnrenderedFormPanels(Alignment alignment) {
-        return generateUnrenderedFormPanels(properties, alignment, 8, alwaysShowSubcategoryLabels);
-    }
-
-    public List<FormPanel> generateUnrenderedFormPanels(Alignment alignment, int borderMargin) {
-        return generateUnrenderedFormPanels(properties, alignment, borderMargin, alwaysShowSubcategoryLabels);
-    }
-
-    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props) {
-        return generateUnrenderedFormPanels(props, Alignment.TOP_LEFT, 8, false);
-    }
-
-    public static List<FormPanel> generateUnrenderedFormPanel(List<AbstractProperty> props, boolean alwaysShowSubcategoryLabels) {
-        return generateUnrenderedFormPanels(props, Alignment.TOP_LEFT, 8, alwaysShowSubcategoryLabels);
-    }
-
-    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, Alignment alignment) {
-        return generateUnrenderedFormPanels(props, alignment, 8, false);
-    }
-
-    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, Alignment alignment, boolean alwaysShowSubcategoryLabels) {
-        return generateUnrenderedFormPanels(props, alignment, 8, alwaysShowSubcategoryLabels);
-    }
-
-    public static List<FormPanel> generateUnrenderedFormPanels(List<AbstractProperty> props, Alignment alignment, int borderMargin, boolean alwaysShowSubcategoryLabels) {
-        List<String> categories = getCategories(props);
-
-        // Our list of categories might be empty if all properties are hidden or disabled,
-        // of if we simply weren't given any properties. In that case, generate a simple
-        // dialog with a single label field on it indicating that we have nothing to show.
-        if (categories.isEmpty()) {
-            props = List.of(LabelProperty.createLabel("defaultLabel", "There are no properties defined."));
-            categories = getCategories(props);
-        }
-
-        // Now go through each category:
-        List<FormPanel> formPanelList = new ArrayList<>();
-        for (String category : categories) {
-            List<String> subCategories = getSubcategories(category, props);
-            FormPanel formPanel = new FormPanel(alignment);
-            formPanel.setBorderMargin(borderMargin);
-            formPanel.setName(category);
-            for (String subCategory : subCategories) {
-                // Show a subcategory label header if there's more than one subcategory:
-                if (subCategories.size() > 1 || alwaysShowSubcategoryLabels) {
-                    FormField field = LabelProperty
-                            .createHeaderLabel(category + "." + subCategory + ".autoGeneratedHeaderLabel", subCategory)
-                            .generateFormField(formPanel);
-                    formPanel.add(field);
-                }
-
-                // Show all the properties in this subcategory:
-                List<AbstractProperty> propList = getProperties(props, category, subCategory);
-                for (AbstractProperty prop : propList) {
-                    try {
-                        FormField field = prop.generateFormField(formPanel);
-                        formPanel.add(field);
-                    }
-                    catch (UnsupportedOperationException use) {
-                        logger.warning(
-                                "Property \"" + prop.getFullyQualifiedName() + "\" does not support FormField generation. Skipping.");
-                    }
-                }
-            }
-            formPanelList.add(formPanel);
-        }
-
-        return formPanelList;
+    public PropertiesDialog generateDialog(Window owner, String dialogTitle, boolean addPanelHeaders) {
+        return PropertiesDialog.createActionPanelDialog(owner, dialogTitle, properties, addPanelHeaders);
     }
 
     /**
-     * A convenience method to find a specific named form field in a list of
-     * unrendered form panels. If the field is not found, null is returned.
-     * If you can't figure out why the field you're sure is there is returning
-     * null, check if it is marked as hidden or disabled. Such fields are not
-     * included in the generated form panels.
+     * Generates a PropertiesDialog for the current properties list.
+     * You can use setAlignment() and setBorderPanel() on the generated dialog to customize
+     * the FormPanel layout options.
+     * <p>
+     * <b>Note:</b> This method generates a PropertiesDialog based on the older tabbed pane style dialog.
+     * For the newer, ActionPanel-based dialog, use the generateDialog() method instead.
+     * </p>
      *
-     * @param fieldName            The fully qualified name of the field to look for.
-     * @param unrenderedFormPanels A List of unrendered FormPanels, presumably from generateUnrenderedFormPanels()
-     * @return The FormField in question, or null if not found.
+     * @param owner                       The owner Window for the dialog.
+     * @param dialogTitle                 The title of the dialog.
+     * @param alwaysShowSubcategoryLabels true to show subcategory labels even if there's only one subcategory in a category.
+     * @return A PropertiesDialog instance, populated and ready to be shown.
      */
-    public static FormField findFormField(String fieldName, List<FormPanel> unrenderedFormPanels) {
-        for (FormPanel formPanel : unrenderedFormPanels) {
-            List<FormField> fields = formPanel.getFormFields();
-            for (FormField field : fields) {
-                if (field.getIdentifier() != null && field.getIdentifier().equals(fieldName)) {
-                    return field;
-                }
-            }
-        }
-        return null;
+    public PropertiesDialog generateClassicDialog(Window owner, String dialogTitle, boolean alwaysShowSubcategoryLabels) {
+        return PropertiesDialog.createClassicDialog(owner, dialogTitle, properties, alwaysShowSubcategoryLabels);
     }
 
     /**
@@ -410,7 +294,7 @@ public class PropertiesManager {
      * @param props A list of properties to scan.
      * @return A List of unique top-level category names for all non-hidden properties that were found.
      */
-    protected static List<String> getCategories(List<AbstractProperty> props) {
+    public static List<String> getCategories(List<AbstractProperty> props) {
         List<String> categories = new ArrayList<>();
         for (AbstractProperty prop : props) {
             if (!prop.isExposed() || !prop.isEnabled()) {
@@ -432,7 +316,7 @@ public class PropertiesManager {
      * @param props    The list of properties to scan. Hidden or disabled properties will be ignored.
      * @return A list of zero or more subcategories for the named category.
      */
-    protected static List<String> getSubcategories(String category, List<AbstractProperty> props) {
+    public static List<String> getSubcategories(String category, List<AbstractProperty> props) {
         List<String> subCategories = new ArrayList<>();
         for (AbstractProperty prop : props) {
             if (!prop.isExposed() || !prop.isEnabled()) {
@@ -451,11 +335,11 @@ public class PropertiesManager {
      * that belong to the given category and subcategory.
      *
      * @param props       The list of properties to scan
-     * @param category    The toplevel category to check
+     * @param category    The top-level category to check
      * @param subCategory The subcategory to check
      * @return A List of zero or more AbstractProperties that match the search parameters.
      */
-    protected static List<AbstractProperty> getProperties(List<AbstractProperty> props, String category, String subCategory) {
+    public static List<AbstractProperty> getProperties(List<AbstractProperty> props, String category, String subCategory) {
         List<AbstractProperty> propList = new ArrayList<>();
         for (AbstractProperty prop : props) {
             if (!prop.isExposed() || !prop.isEnabled()) {

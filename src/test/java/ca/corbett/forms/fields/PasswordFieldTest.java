@@ -54,7 +54,7 @@ class PasswordFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testAddValueChangedListener() throws Exception {
+    public void testAddValueChangedListener() {
         PasswordField actualField = (PasswordField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);
@@ -67,7 +67,7 @@ class PasswordFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void testRemoveValueChangedListener() throws Exception {
+    public void testRemoveValueChangedListener() {
         PasswordField actualField = (PasswordField)actual;
         ValueChangedListener listener = Mockito.mock(ValueChangedListener.class);
         actual.addValueChangedListener(listener);

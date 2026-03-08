@@ -3,13 +3,12 @@ package ca.corbett.extensions;
 import ca.corbett.extensions.ui.ExtensionManagerDialog;
 import ca.corbett.extras.properties.AbstractProperty;
 import ca.corbett.extras.properties.FileBasedProperties;
-import ca.corbett.extras.properties.PropertiesDialog;
 import ca.corbett.extras.properties.PropertiesManager;
+import ca.corbett.extras.properties.dialog.PropertiesDialog;
 import ca.corbett.forms.Alignment;
 import ca.corbett.updates.UpdateManager;
 
 import javax.swing.JOptionPane;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Window;
 import java.io.File;
@@ -46,11 +45,22 @@ import java.util.logging.Logger;
  * up in the PropertiesDialog until the extension is enabled again.
  * </p>
  * <p>
- * Refer to the <a href="http://www.corbett.ca/swing-extras-book/">swing-extras documentation</a> for more information.
+ * <b>Customizing the generated PropertiesDialog</b><br>
+ * When you invoke showPropertiesDialog(), this class will generate a default PropertiesDialog
+ * for you, and then show it to the user. But what if you want to customize
+ * the generated dialog before it's shown to the user? For example, you might want to make
+ * it larger than the default size, or add extra padding around the FormPanels, or customize
+ * the ActionPanel if it's an ActionPanelPropertiesDialog. You can do all of that by
+ * overriding the propertiesDialogCreated() method, which is invoked after the dialog is created but before
+ * it's shown to the user.
+ * </p>
+ * <p>
+ * Refer to the <a href="http://www.corbett.ca/swing-extras-book/">swing-extras documentation</a>
+ * for more information on how AppProperties works, and how applications can take full advantage of its features!
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2024-12-30
+ * @since swing-extras 1.8, 2024-12-30
  */
 public abstract class AppProperties<T extends AppExtension> {
 
@@ -61,15 +71,6 @@ public abstract class AppProperties<T extends AppExtension> {
 
     private final String appName;
     private final File propsFile;
-
-    // Subclasses can change these as they see fit:
-    protected int propertiesDialogInitialWidth = PropertiesDialog.INITIAL_WIDTH;
-    protected int propertiesDialogInitialHeight = PropertiesDialog.INITIAL_HEIGHT;
-    protected int propertiesDialogMinimumWidth = PropertiesDialog.MINIMUM_WIDTH;
-    protected int propertiesDialogMinimumHeight = PropertiesDialog.MINIMUM_HEIGHT;
-
-    // The border margin on generated form panels can also be adjusted by subclasses if desired:
-    protected int propertiesDialogFormPanelBorderMargin = 16;
 
 
     /**
@@ -192,6 +193,10 @@ public abstract class AppProperties<T extends AppExtension> {
     /**
      * Generates and shows a PropertiesDialog to allow the user to view or change any
      * of the current properties. If the user okays the dialog, changes are automatically saved.
+     * <p>
+     *     <b>Note:</b> Descendant classes can customize the PropertiesDialog before
+     *     it is shown to the user! See the propertiesDialogCreated() method for details.
+     * </p>
      *
      * @param owner The owning Frame (so we can make the dialog modal to that Frame).
      * @return true if the user OK'd the dialog and changes were made - reload your UI!
@@ -203,6 +208,10 @@ public abstract class AppProperties<T extends AppExtension> {
     /**
      * Generates and shows a PropertiesDialog to allow the user to view or change any
      * of the current properties. If the user okays the dialog, changes are automatically saved.
+     * <p>
+     *     <b>Note:</b> Descendant classes can customize the PropertiesDialog before
+     *     it is shown to the user! See the propertiesDialogCreated() method for details.
+     * </p>
      *
      * @param owner     The owning Frame (so we can make the dialog modal to that Frame).
      * @param alignment How the FormPanels should align themselves.
@@ -212,17 +221,53 @@ public abstract class AppProperties<T extends AppExtension> {
         reconcileExtensionEnabledStatus();
         PropertiesDialog dialog = propsManager.generateDialog(owner,
                                                               appName + " properties",
-                                                              alignment,
-                                                              propertiesDialogFormPanelBorderMargin);
-        dialog.setSize(propertiesDialogInitialWidth, propertiesDialogInitialHeight);
-        dialog.setMinimumSize(new Dimension(propertiesDialogMinimumWidth, propertiesDialogMinimumHeight));
-        dialog.setVisible(true);
+                                                                     true);
+        dialog.setAlignment(alignment);
 
+        // Give subclasses a chance to customize this dialog before we show it:
+        propertiesDialogCreated(dialog);
+
+        // Now we can show it and get the result:
+        dialog.setVisible(true);
         if (dialog.wasOkayed()) {
+            propsManager.updateFromDialog(dialog);
             save();
         }
 
         return dialog.wasOkayed();
+    }
+
+    /**
+     * Subclasses can override this method to make adjustments to the PropertiesDialog after it's created,
+     * but before it's shown to the user. For example:
+     * <pre>
+     * &#64;Override
+     * protected void propertiesDialogCreated(PropertiesDialog dialog) {
+     *   dialog.setSize(800, 600); // make larger than default
+     *   dialog.setMinimumSize(new Dimension(600, 400)); // but not smaller than this
+     *   dialog.setBorderMargin(20); // add lots of extra padding around the FormPanels
+     *
+     *   // If we're showing an ActionPanel, we can customize it here:
+     *   if (dialog instanceof ActionPanelPropertiesDialog) {
+     *     ActionPanelPropertiesDialog apd = (ActionPanelPropertiesDialog) dialog;
+     *     apd.getActionPanel().getColorOptions().setFromTheme(ColorTheme.DARK);
+     *   }
+     * }
+     * </pre>
+     * <p>
+     * You can also get access to generated FormField instances using PropertiesDialog.findFormField(),
+     * if you want to make specific adjustments to the starting state of those form fields.
+     * However, it's better practice to add a FormFieldGenerationListener to your AbstractProperty
+     * instances for that purpose.
+     * </p>
+     *
+     * @param dialog The PropertiesDialog that was just created, but has not yet been shown to the user.
+     */
+    protected void propertiesDialogCreated(PropertiesDialog dialog) {
+        // Default implementation does nothing.
+        // This method is purely here for subclass use.
+        // Subclasses are of course free to ignore this method.
+        // In that case, they will receive a fully-defaulted PropertiesDialog.
     }
 
     /**

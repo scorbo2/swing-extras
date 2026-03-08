@@ -2,7 +2,7 @@ package ca.corbett.extras.about;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 /**
  * Unit tests for the AboutPanel class to verify the easter egg feature.
@@ -34,6 +34,6 @@ class AboutPanelTest {
         AboutPanel panel = new AboutPanel(info);
         
         // Call refreshMemoryStats and verify it doesn't throw an exception
-        assertDoesNotThrow(() -> panel.refreshMemoryStats());
+        assertDoesNotThrow(panel::refreshMemoryStats);
     }
 }

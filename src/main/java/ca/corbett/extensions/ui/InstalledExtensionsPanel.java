@@ -156,15 +156,9 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
      * @param component The thing to rejigger.
      */
     protected void rejigger(final JComponent component) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                component.invalidate();
-                component.revalidate();
-                component.repaint();
-            }
-
-        });
+        component.invalidate();
+        component.revalidate();
+        component.repaint();
     }
 
     protected void initComponents() {

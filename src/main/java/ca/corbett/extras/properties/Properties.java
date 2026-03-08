@@ -3,6 +3,7 @@ package ca.corbett.extras.properties;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,12 +13,13 @@ import java.util.logging.Logger;
  * abstract away the type conversions that callers would otherwise have to worry about.
  * Specifically, the java.util.Properties class handles everything as Strings, which is
  * great for simple name/value pairs, but when you want to start storing integers, booleans,
- * colour values, and etc, you have to worry about converting everything to and from
+ * color values, and etc, you have to worry about converting everything to and from
  * Strings. This class abstracts that for you and provides easy convenience methods.
- *
+ * <p>
  * NOTE: All setters in this wrapper guard against null values so that we never pass a
  * null into java.util.Properties#setProperty, which would otherwise cause a
  * NullPointerException in the underlying Hashtable.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2022-05-10
@@ -47,7 +49,7 @@ public class Properties {
             list.add((String) key);
         }
         // Use explicit lambda to avoid any method reference binding issues on some toolchains.
-        list.sort((a, b) -> a.compareTo(b));
+        list.sort(Comparator.naturalOrder());
         return list;
     }
 
@@ -77,13 +79,35 @@ public class Properties {
 
     /**
      * Retrieves the String value of the named property, if any.
+     * If the stored value is explicitly blank, then a blank string is returned.
+     * If you wish to treat blank strings the same as null/missing values,
+     * then invoke getString(name, defaultValue, true) instead of this method.
      *
      * @param name         The property name.
      * @param defaultValue A value to receive if no such named property exists.
      * @return The value of the named property, or defaultValue if no such property exists.
      */
     public String getString(String name, String defaultValue) {
-        return props.getProperty(name, defaultValue);
+        return getString(name, defaultValue, false);
+    }
+
+    /**
+     * Retrieves the String value of the named property, if any.
+     * If defaultIfBlank is true, then explicit blank String values in the saved property
+     * will be handled the same way as if the property had a null/missing value.
+     * That is, the given defaultValue will be returned instead of the blank string.
+     *
+     * @param name           The property name.
+     * @param defaultValue   A value to receive if the value is missing or invalid.
+     * @param defaultIfBlank true to treat blank string values the same as null values.
+     * @return The value of the named property, or defaultValue, based on the stored value, as described above.
+     */
+    public String getString(String name, String defaultValue, boolean defaultIfBlank) {
+        String value = props.getProperty(name, defaultValue);
+        if (defaultIfBlank && value != null && value.isBlank()) {
+            return defaultValue;
+        }
+        return value;
     }
 
     /**

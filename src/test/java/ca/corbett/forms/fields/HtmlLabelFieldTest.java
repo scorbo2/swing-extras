@@ -122,7 +122,7 @@ class HtmlLabelFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void setText_shouldReplaceExistingTextAndAction() throws Exception {
+    public void setText_shouldReplaceExistingTextAndAction() {
         List<String> receivedCommands = new ArrayList<>();
 
         Action firstAction = new AbstractAction() {
@@ -166,7 +166,7 @@ class HtmlLabelFieldTest extends FormFieldBaseTests {
     }
 
     @Test
-    public void setText_withNullAction_shouldDoNothingWhenLinksClicked() throws Exception {
+    public void setText_withNullAction_shouldDoNothingWhenLinksClicked() {
         HtmlLabelField field = new HtmlLabelField("<html>Initial Text</html>", null);
 
         // When the supplied action is null, there should be no hyperlink listeners registered:

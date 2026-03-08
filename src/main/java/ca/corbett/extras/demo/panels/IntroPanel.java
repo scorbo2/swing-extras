@@ -26,7 +26,7 @@ public class IntroPanel extends PanelBuilder {
 
     @Override
     public String getTitle() {
-        return "Introduction";
+        return "Welcome to swing-extras!";
     }
 
     @Override
@@ -89,8 +89,7 @@ public class IntroPanel extends PanelBuilder {
         // We can use LookAndFeelProperty to generate a FormField for us that we can use
         // to change the Look and Feel for the demo app. Wiring up this field is quite easy:
         LookAndFeelProperty lafProperty = new LookAndFeelProperty("", "Change look and feel:");
-        //noinspection unchecked
-        final ComboField<String> lafCombo = (ComboField<String>)lafProperty.generateFormField();
+        final ComboField<?> lafCombo = (ComboField<?>)lafProperty.generateFormField();
         lafCombo.addValueChangedListener(field -> {
             // Use selected value in the FormField to switch to the corresponding Look and Feel:
             LookAndFeelManager.switchLaf(lafProperty.getLafClass(lafCombo.getSelectedIndex()));

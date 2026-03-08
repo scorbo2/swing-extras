@@ -109,6 +109,12 @@ public class EnumProperty<T extends Enum<?>> extends AbstractProperty {
             return;
         }
 
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "EnumProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         ComboField<T> comboField = (ComboField<T>)field;
         value = comboField.getSelectedItem();
     }

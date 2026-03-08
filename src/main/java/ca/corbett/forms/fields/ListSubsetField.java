@@ -613,8 +613,7 @@ public class ListSubsetField<T> extends FormField {
             try {
                 // Get the actual drag source from the transferable data
                 Transferable t = support.getTransferable();
-                @SuppressWarnings("unchecked")
-                TransferData transferData = (TransferData)t.getTransferData(localObjectFlavor);
+                TransferData<?> transferData = (TransferData<?>)t.getTransferData(localObjectFlavor);
 
                 String dragSourceId = transferData.sourceListId;
                 boolean isSameList = dragSourceId.equals(isSelectedList ? "selected" : "available");

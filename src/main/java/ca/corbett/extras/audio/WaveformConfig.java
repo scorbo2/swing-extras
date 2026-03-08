@@ -378,12 +378,18 @@ public class WaveformConfig extends AbstractProperty {
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
-                || !(field instanceof WaveformConfigField)) {
+                || !(field instanceof WaveformConfigField formField)) {
             logger.log(Level.SEVERE, "WaveformConfig.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
             return;
         }
-        WaveformConfigField formField = (WaveformConfigField)field;
+
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "WaveformConfig.loadFromFormField: received invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         bgColor = formField.getBgColor();
         fillColor = formField.getWaveformColor();
         outlineColor = formField.getOutlineColor();

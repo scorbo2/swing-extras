@@ -418,7 +418,7 @@ public final class AudioWaveformPanel extends JPanel {
             fireStateChangedEvent();
             playbackThread = AudioUtil.play(audioData, startOffset, limitOffset, playbackListener);
         }
-        catch (IOException | LineUnavailableException | UnsupportedAudioFileException exc) {
+        catch (IOException | LineUnavailableException exc) {
             getMessageUtil().error("Playback error", "Problem playing audio: " + exc.getMessage(), exc);
             playbackThread = null;
             panelState = PanelState.IDLE;
@@ -534,8 +534,9 @@ public final class AudioWaveformPanel extends JPanel {
         for (int channelI = 0; channelI < audioData.length; channelI++) {
             int[] tempArr = new int[audioData[channelI].length - dataLength];
             System.arraycopy(audioData[channelI], 0, tempArr, 0, startIndex);
-            for (int i = endIndex; i < audioData[channelI].length; i++) {
-                tempArr[i - dataLength] = audioData[channelI][i];
+            if (audioData[channelI].length - endIndex >= 0) {
+                System.arraycopy(audioData[channelI], endIndex, tempArr, endIndex - dataLength,
+                                 audioData[channelI].length - endIndex);
             }
             audioData[channelI] = tempArr;
         }
@@ -787,29 +788,28 @@ public final class AudioWaveformPanel extends JPanel {
 
         // Figure out the sizes of our buttons:
         int btnSize = 22;
-        int iconSize = 20;
-        switch (controlSize) {
-            case XSMALL:
+        int iconSize = switch (controlSize) {
+            case XSMALL -> {
                 btnSize = 16;
-                iconSize = 14;
-                break;
-            case SMALL:
+                yield 14;
+            }
+            case SMALL -> {
                 btnSize = 20;
-                iconSize = 18;
-                break;
-            case NORMAL:
+                yield 18;
+            }
+            case NORMAL -> {
                 btnSize = 24;
-                iconSize = 22;
-                break;
-            case LARGE:
+                yield 22;
+            }
+            case LARGE -> {
                 btnSize = 30;
-                iconSize = 28;
-                break;
-            case XLARGE:
+                yield 28;
+            }
+            case XLARGE -> {
                 btnSize = 40;
-                iconSize = 38;
-                break;
-        }
+                yield 38;
+            }
+        };
 
         JLabel spacer = new JLabel("");
         constraints.gridx = 0;
@@ -828,39 +828,21 @@ public final class AudioWaveformPanel extends JPanel {
         constraints.insets = new Insets(2, 2, 2, 2);
         constraints.weightx = 0;
         constraints.weighty = 0;
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                play();
-            }
-
-        });
+        button.addActionListener(e -> play());
         controlPanelMain.add(button, constraints);
 
         iconResource = "/swing-extras/images/media-playback-stop.png";
         button = buildToolBarButton(iconResource, "Stop", btnSize, iconSize);
         constraints.gridx += deltaX;
         constraints.gridy += deltaY;
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                stop();
-            }
-
-        });
+        button.addActionListener(e -> stop());
         controlPanelMain.add(button, constraints);
 
         iconResource = "/swing-extras/images/media-record.png";
         button = buildToolBarButton(iconResource, "Record", btnSize, iconSize);
         constraints.gridx += deltaX;
         constraints.gridy += deltaY;
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                record();
-            }
-
-        });
+        button.addActionListener(e -> record());
         if (controlType.isAllowRecording()) {
             controlPanelMain.add(button, constraints);
         }
@@ -869,13 +851,7 @@ public final class AudioWaveformPanel extends JPanel {
         button = buildToolBarButton(iconResource, "Cut", btnSize, iconSize);
         constraints.gridx += deltaX;
         constraints.gridy += deltaY;
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doCut();
-            }
-
-        });
+        button.addActionListener(e -> doCut());
         if (controlType.isAllowEditing()) {
             if (controlPosition == ControlPosition.SIDE_EDGES) {
                 controlPanelExtra.add(button, constraints);
@@ -909,13 +885,7 @@ public final class AudioWaveformPanel extends JPanel {
         button = buildToolBarButton(iconResource, "Paste", btnSize, iconSize);
         constraints.gridx += deltaX;
         constraints.gridy += deltaY;
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doPaste();
-            }
-
-        });
+        button.addActionListener(e -> doPaste());
         if (controlType.isAllowEditing()) {
             if (controlPosition == ControlPosition.SIDE_EDGES) {
                 controlPanelExtra.add(button, constraints);
@@ -977,13 +947,7 @@ public final class AudioWaveformPanel extends JPanel {
             return;
         }
 
-        try {
-            waveformImage = AudioUtil.generateWaveform(audioData, waveformPreferences);
-        }
-        catch (UnsupportedAudioFileException | IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
-
+        waveformImage = AudioUtil.generateWaveform(audioData, waveformPreferences);
         redrawWaveform();
     }
 

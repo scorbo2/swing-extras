@@ -14,7 +14,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,7 +56,9 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     private DirTreeNode currentNode; // May be null if no selection - always represents a filesystem location if set
     private boolean allowLock;
     private boolean allowUnlock;
-    private boolean showHiddenDirs;
+    private boolean showHidden;
+    private boolean showFiles;
+    private FileFilter fileFilter;
     private boolean notificationsEnabled = true;
 
     /**
@@ -63,7 +69,9 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     public DirTree() {
         allowLock = true;
         allowUnlock = true;
-        showHiddenDirs = true;
+        showHidden = true;
+        showFiles = false;
+        fileFilter = null;
 
         // Cosmetic adjustments to stock JTree:
         tree.setRootVisible(false);
@@ -95,6 +103,22 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
 
         // Make sure we listen for selection events within our tree so we can notify our own listeners:
         tree.addTreeSelectionListener(this);
+
+        // Listen for double-clicks on file nodes:
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+                    if (path != null) {
+                        DirTreeNode node = (DirTreeNode)path.getLastPathComponent();
+                        if (node.isFileNode()) {
+                            fireFileDoubleClickedEvent(node.getDir());
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -141,6 +165,55 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     @Deprecated(since = "swing-extras 2.7", forRemoval = true)
     public static DirTree createDirTree(File dir) {
         return new DirTree(dir);
+    }
+
+    /**
+     * Provides access to the {@link TreeCellRenderer} in the underlying {@link JTree}.
+     * By default, the renderer is whatever the current Look and Feel installs on the tree. During
+     * construction, if that default renderer is a {@link DefaultTreeCellRenderer}, {@code DirTree}
+     * clears its icons (sets them to {@code null}) to avoid showing per-node icons.
+     *
+     * @return The {@link TreeCellRenderer} used by the underlying {@link JTree}.
+     */
+    public TreeCellRenderer getTreeCellRenderer() {
+        return tree.getCellRenderer();
+    }
+
+    /**
+     * Allow setting a custom {@link TreeCellRenderer} on the underlying {@link JTree}. By default, {@code DirTree}
+     * uses the renderer installed by the current Look and Feel and, if that renderer is a
+     * {@link DefaultTreeCellRenderer}, it clears its icons (sets them to {@code null}) to avoid showing per-node
+     * icons. If you replace the renderer and still want an iconless appearance, you should configure your custom
+     * renderer accordingly (for example, by setting icons to {@code null} on a {@link DefaultTreeCellRenderer}).
+     *
+     * @param renderer The {@link TreeCellRenderer} to use for rendering tree nodes.
+     * @return This {@code DirTree} instance, for chaining.
+     */
+    public DirTree setTreeCellRenderer(TreeCellRenderer renderer) {
+        tree.setCellRenderer(renderer);
+        return this;
+    }
+
+    /**
+     * This is overridden so that we can ensure the underlying JTree will pick
+     * up the desired background color. If you've changed the background, and you want
+     * to revert to letting the current Look and Feel choose the color selection for you,
+     * you can use LookAndFeelManager.getLafColor() with "Tree.background" as the key name.
+     *
+     * @param color the desired background <code>Color</code>.
+     */
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (tree != null) { // this shouldn't be possible, yet I actually saw an NPE here once
+            tree.setBackground(color);
+        }
+        if (scrollPane != null) {
+            scrollPane.setBackground(color);
+            if (scrollPane.getViewport() != null) {
+                scrollPane.getViewport().setBackground(color);
+            }
+        }
     }
 
     /**
@@ -291,26 +364,119 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
 
     /**
      * Indicates whether hidden directories are shown in this DirTree. Default is true.
+     *
+     * @deprecated Use {@link #getShowHidden()} instead.
      */
+    @Deprecated(since = "swing-extras 2.8")
     public boolean getShowHiddenDirs() {
-        return showHiddenDirs;
+        return showHidden;
+    }
+
+    /**
+     * Indicates whether hidden items (directories and files) are shown in this DirTree. Default is true.
+     */
+    public boolean getShowHidden() {
+        return showHidden;
     }
 
     /**
      * Controls whether hidden directories are shown in this DirTree. Default is true.
      * What constitutes a "hidden" directory is platform-dependent.
+     *
+     * @deprecated Use {@link #setShowHidden(boolean)} instead.
      */
+    @Deprecated(since = "swing-extras 2.8")
     public DirTree setShowHiddenDirs(boolean showHiddenDirs) {
-        boolean oldValue = this.showHiddenDirs;
-        this.showHiddenDirs = showHiddenDirs;
+        return setShowHidden(showHiddenDirs);
+    }
+
+    /**
+     * Controls whether hidden items (directories and files) are shown in this DirTree. Default is true.
+     * What constitutes a "hidden" item is platform-dependent.
+     */
+    public DirTree setShowHidden(boolean showHidden) {
+        boolean oldValue = this.showHidden;
+        this.showHidden = showHidden;
 
         // Don't reload or notify if the value didn't actually change:
-        if (oldValue == showHiddenDirs) {
+        if (oldValue == showHidden) {
             return this;
         }
 
-        reload(); // force a reload to apply the new setting
+        notificationsEnabled = false; // be silent about it
+        try {
+            reload(); // force a reload to apply the new setting
+        }
+        finally {
+            notificationsEnabled = true;
+        }
         fireHiddenFilesChangedEvent(); // notify listeners of the change
+        return this;
+    }
+
+    /**
+     * Indicates whether files are shown in this DirTree. Default is false.
+     * When enabled, files are shown as leaf nodes within directories.
+     */
+    public boolean getShowFiles() {
+        return showFiles;
+    }
+
+    /**
+     * Controls whether files are shown in this DirTree. Default is false.
+     * When enabled, files are shown as leaf nodes within directories.
+     *
+     * @param showFiles Whether to show files in the tree.
+     */
+    public DirTree setShowFiles(boolean showFiles) {
+        boolean oldValue = this.showFiles;
+        this.showFiles = showFiles;
+
+        if (oldValue == showFiles) {
+            return this;
+        }
+
+        notificationsEnabled = false;
+        try {
+            reload();
+        }
+        finally {
+            notificationsEnabled = true;
+        }
+        return this;
+    }
+
+    /**
+     * Returns the current FileFilter used to restrict which files are shown.
+     * Returns null if no filter is set (all files are shown).
+     */
+    public FileFilter getFileFilter() {
+        return fileFilter;
+    }
+
+    /**
+     * Sets an optional FileFilter to restrict which files are shown in the tree.
+     * Only relevant when {@code showFiles} is enabled. If null, all files are shown.
+     *
+     * @param fileFilter The FileFilter to apply, or null to show all files.
+     */
+    public DirTree setFileFilter(FileFilter fileFilter) {
+        FileFilter oldValue = this.fileFilter;
+        this.fileFilter = fileFilter;
+
+        if (oldValue == fileFilter) {
+            return this;
+        }
+
+        if (showFiles) {
+            notificationsEnabled = false;
+            try {
+                reload();
+            }
+            finally {
+                notificationsEnabled = true;
+            }
+        }
         return this;
     }
 
@@ -321,15 +487,22 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
     public void reload() {
         File currentDir = getCurrentDir();
 
-        // If we're locked, we need to reload the locked directory:
-        if (lockNode != null) {
-            lock(lockNode.getDir(), true);
+        notificationsEnabled = false; // be silent about it
+        try {
+            // If we're locked, we need to reload the locked directory:
+            if (lockNode != null) {
+                lock(lockNode.getDir(), true);
+            }
+
+            // Otherwise, just unlock with forceReload to reload the entire tree:
+            else {
+                unlock(true);
+            }
+        }
+        finally {
+            notificationsEnabled = true;
         }
 
-        // Otherwise, just unlock with forceReload to reload the entire tree:
-        else {
-            unlock(true);
-        }
 
         // Re-select the previously selected directory (if any):
         if (currentDir != null) {
@@ -385,17 +558,33 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
         }
 
         // Load up the new root node:
-        lockNode = new DirTreeNode(newRootDir, showHiddenDirs);
+        lockNode = new DirTreeNode(newRootDir, showHidden, showFiles, fileFilter);
         File[] files = newRootDir.listFiles();
         if (files != null) {
             Arrays.sort(files, Comparator.comparing(o -> o.getName().toLowerCase()));
+
+            // First pass: add directories
             for (File file : files) {
                 if (file.isDirectory()) {
-                    // Skip hidden directories if the flag is set
-                    if (file.isHidden() && !showHiddenDirs) {
+                    if (file.isHidden() && !showHidden) {
                         continue;
                     }
-                    lockNode.add(new DirTreeNode(file, showHiddenDirs));
+                    lockNode.add(new DirTreeNode(file, showHidden, showFiles, fileFilter));
+                }
+            }
+
+            // Second pass: add files (if showFiles is enabled)
+            if (showFiles) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        if (file.isHidden() && !showHidden) {
+                            continue;
+                        }
+                        if (fileFilter != null && !fileFilter.accept(file)) {
+                            continue;
+                        }
+                        lockNode.add(new DirTreeNode(file, showHidden, showFiles, fileFilter));
+                    }
                 }
             }
         }
@@ -442,10 +631,14 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
         if (roots.length == 1) {
             // Don't send a lockEvent!
             notificationsEnabled = false;
-            lock(roots[0], forceReload);
-            notificationsEnabled = true;
-            if (oldNode != null) {
-                selectAndScrollTo(oldNode.getDir());
+            try {
+                lock(roots[0], forceReload);
+                if (oldNode != null) {
+                    selectAndScrollTo(oldNode.getDir());
+                }
+            }
+            finally {
+                notificationsEnabled = true;
             }
             fireUnlockEvent(); // Technically, we are locked, but from the user's perspective we are unlocked
             return;
@@ -453,10 +646,10 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
 
         // In unlocked mode with multiple filesystem roots, we use a "fake" root node to contain those roots:
         lockNode = null;
-        fakeRootNode = new DirTreeNode(new File(FAKE_ROOT_NAME), showHiddenDirs);
+        fakeRootNode = new DirTreeNode(new File(FAKE_ROOT_NAME), showHidden, showFiles, fileFilter);
         fakeRootNode.setAllowsChildren(true); // Override DirTreeNode logic for this fake root
         for (File root : roots) {
-            fakeRootNode.add(new DirTreeNode(root, showHiddenDirs));
+            fakeRootNode.add(new DirTreeNode(root, showHidden, showFiles, fileFilter));
         }
 
         // Use our new root node to reset the tree model:
@@ -548,7 +741,7 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
             }
 
             // Now we should be able to find the old root node, unless something went wrong:
-            TreePath pathToOldRoot = findPathToNode(new DirTreeNode(dir, showHiddenDirs));
+            TreePath pathToOldRoot = findPathToNode(new DirTreeNode(dir, showHidden, showFiles, fileFilter));
             tree.getSelectionModel().setSelectionPath(pathToOldRoot);
             tree.scrollPathToVisible(pathToOldRoot);
             return true;
@@ -563,7 +756,7 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
      * Given a path, expands the corresponding node in the tree.
      */
     private void expandNodeAtPath(Path path) {
-        DirTreeNode tmpNode = new DirTreeNode(path.toFile(), showHiddenDirs);
+        DirTreeNode tmpNode = new DirTreeNode(path.toFile(), showHidden, showFiles, fileFilter);
         TreePath treePath = findPathToNode(tmpNode);
         if (treePath != null) {
             ((DirTreeNode)treePath.getLastPathComponent()).loadChildren();
@@ -613,7 +806,14 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
             return;
         }
 
-        currentNode = (DirTreeNode)e.getNewLeadSelectionPath().getLastPathComponent();
+        DirTreeNode selectedNode = (DirTreeNode)e.getNewLeadSelectionPath().getLastPathComponent();
+
+        // File nodes don't update currentNode or fire selectionChanged:
+        if (selectedNode.isFileNode()) {
+            return;
+        }
+
+        currentNode = selectedNode;
         fireSelectionChangedEvent(currentNode);
     }
 
@@ -669,7 +869,7 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
         }
 
         for (DirTreeListener listener : new ArrayList<>(listeners)) {
-            listener.showHiddenFilesChanged(this, showHiddenDirs);
+            listener.showHiddenFilesChanged(this, showHidden);
         }
     }
 
@@ -692,6 +892,21 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
             }
         }
         return true;
+    }
+
+    /**
+     * Fired internally to notify listeners that a file node was double-clicked.
+     *
+     * @param file The file that was double-clicked.
+     */
+    private void fireFileDoubleClickedEvent(File file) {
+        if (!notificationsEnabled) {
+            return;
+        }
+
+        for (DirTreeListener listener : new ArrayList<>(listeners)) {
+            listener.fileDoubleClicked(this, file);
+        }
     }
 
     /**
@@ -722,6 +937,11 @@ public final class DirTree extends JPanel implements TreeSelectionListener {
 
             // Get a DirTreeNode for the new selection:
             DirTreeNode newNode = (DirTreeNode)newPath.getLastPathComponent();
+
+            // File nodes are always allowed without veto:
+            if (newNode.isFileNode()) {
+                return true;
+            }
 
             // Give our listeners a chance to veto the selection change:
             // (For example, if there are unsaved changes in the UI that need to be addressed first)

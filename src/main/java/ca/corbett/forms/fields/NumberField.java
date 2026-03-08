@@ -3,8 +3,6 @@ package ca.corbett.forms.fields;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.Dimension;
 import java.util.Objects;
 
@@ -58,13 +56,7 @@ public final class NumberField extends FormField {
      */
     public NumberField(String labelText, SpinnerModel model) {
         spinner = new JSpinner(model);
-        spinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                fireValueChangedEvent();
-            }
-
-        });
+        spinner.addChangeListener(e -> fireValueChangedEvent());
         fieldComponent = spinner;
         fieldComponent.setPreferredSize(new Dimension(60, 22)); // arbitrary default value
         fieldComponent.setFont(getDefaultFont());

@@ -214,13 +214,7 @@ public final class GradientColorChooser extends JPanel {
 
         button = new JButton("Reset");
         button.setPreferredSize(new Dimension(90, 23));
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                resetToDefaults();
-            }
-
-        });
+        button.addActionListener(e -> resetToDefaults());
         buttonPanel.add(button);
 
         dialog.add(buttonPanel, BorderLayout.SOUTH);

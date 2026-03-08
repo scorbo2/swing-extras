@@ -9,18 +9,24 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExtensionDownloadThreadTest {
+
+    private static final int CALLBACK_TIMEOUT_SECONDS = 5;
 
     private static DownloadManager downloadManager;
     private static DownloadedExtension testExtensionFiles;
     private static VersionManifest.ExtensionVersion extensionVersion;
     private static UpdateSources.UpdateSource updateSource;
     private DownloadedExtension testResult;
+    private CountDownLatch testLatch;
 
     @BeforeAll
     public static void setup() throws Exception {
@@ -37,6 +43,7 @@ class ExtensionDownloadThreadTest {
     public void downloadAll_shouldDownloadAllFiles() throws Exception {
         // GIVEN an ExtensionDownloadThread with default settings:
         testResult = null;
+        testLatch = new CountDownLatch(1);
         ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager, updateSource, extensionVersion);
         worker.addProgressListener(new DownloadProgressListener(worker));
 
@@ -44,6 +51,10 @@ class ExtensionDownloadThreadTest {
         Thread thread = new Thread(worker);
         thread.start();
         thread.join();
+        
+        // Wait for the progressComplete callback to finish:
+        boolean completed = testLatch.await(CALLBACK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        assertTrue(completed, "progressComplete callback should have been invoked within timeout");
 
         // THEN it should have downloaded all files:
         assertNotNull(testResult);
@@ -59,6 +70,7 @@ class ExtensionDownloadThreadTest {
     public void downloadJarOnly_shouldIgnoreOtherFiles() throws Exception {
         // GIVEN an ExtensionDownloadThread set to download only the extension jar:
         testResult = null;
+        testLatch = new CountDownLatch(1);
         ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager, updateSource, extensionVersion);
         worker.setDownloadOptions(ExtensionDownloadThread.Options.JarOnly);
         worker.addProgressListener(new DownloadProgressListener(worker));
@@ -67,6 +79,10 @@ class ExtensionDownloadThreadTest {
         Thread thread = new Thread(worker);
         thread.start();
         thread.join();
+        
+        // Wait for the progressComplete callback to finish:
+        boolean completed = testLatch.await(CALLBACK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        assertTrue(completed, "progressComplete callback should have been invoked within timeout");
 
         // THEN it should have downloaded only the jar file:
         assertNotNull(testResult);
@@ -80,6 +96,7 @@ class ExtensionDownloadThreadTest {
     public void downloadScreenshotsOnly_shouldIgnoreOtherFiles() throws Exception {
         // GIVEN an ExtensionDownloadThread set to download only the screenshots:
         testResult = null;
+        testLatch = new CountDownLatch(1);
         ExtensionDownloadThread worker = new ExtensionDownloadThread(downloadManager, updateSource, extensionVersion);
         worker.setDownloadOptions(ExtensionDownloadThread.Options.ScreenshotsOnly);
         worker.addProgressListener(new DownloadProgressListener(worker));
@@ -88,6 +105,10 @@ class ExtensionDownloadThreadTest {
         Thread thread = new Thread(worker);
         thread.start();
         thread.join();
+        
+        // Wait for the progressComplete callback to finish:
+        boolean completed = testLatch.await(CALLBACK_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        assertTrue(completed, "progressComplete callback should have been invoked within timeout");
 
         // THEN it should have downloaded only the screenshots:
         assertNotNull(testResult);
@@ -117,7 +138,7 @@ class ExtensionDownloadThreadTest {
         return ext;
     }
 
-    private static VersionManifest.ExtensionVersion createSampleExtensionVersion() throws Exception {
+    private static VersionManifest.ExtensionVersion createSampleExtensionVersion() {
         VersionManifest.ExtensionVersion extVersion = new VersionManifest.ExtensionVersion();
         extVersion.setDownloadPath("extension.jar");
         extVersion.setSignaturePath("extension.sig");
@@ -155,6 +176,7 @@ class ExtensionDownloadThreadTest {
         @Override
         public void progressComplete() {
             testResult = worker.getDownloadedExtension();
+            testLatch.countDown();
         }
     }
 }

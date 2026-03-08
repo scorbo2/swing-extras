@@ -115,6 +115,12 @@ public class PasswordProperty extends AbstractProperty {
             return;
         }
 
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "PasswordProperty.loadFromFormField: received an invalid field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         password = ((PasswordField)field).getPassword();
     }
 }

@@ -12,7 +12,7 @@ class ShortTextPropertyTest extends AbstractPropertyBaseTests {
     }
 
     @Test
-    public void formFieldChangeListener_withFormFieldChanges_shouldFireChangeEvents() throws Exception {
+    public void formFieldChangeListener_withFormFieldChanges_shouldFireChangeEvents() {
         // GIVEN a test prop with a mocked property form field change listener on it:
         ShortTextProperty testProp = new ShortTextProperty("test", "test", "test");
         PropertyFormFieldChangeListener listener = Mockito.mock(PropertyFormFieldChangeListener.class);

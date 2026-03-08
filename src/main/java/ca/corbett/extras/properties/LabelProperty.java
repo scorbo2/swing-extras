@@ -59,6 +59,16 @@ public class LabelProperty extends AbstractProperty {
     }
 
     /**
+     * Most properties generate FormField instances that allow user input, but we do not:
+     *
+     * @return false, to indicate that we are effectively read-only.
+     */
+    @Override
+    public boolean isAllowsUserInput() {
+        return false;
+    }
+
+    /**
      * A static convenience factory method to create a "header" label with sensible
      * defaults for a section header label. The default values are 16 point bold black
      * text with a slightly larger top and bottom margin.

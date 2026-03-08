@@ -59,7 +59,7 @@ public class ProgressDemoPanel extends PanelBuilder {
 
     @Override
     public String getTitle() {
-        return "Progress";
+        return "Progress dialogs";
     }
 
     @Override

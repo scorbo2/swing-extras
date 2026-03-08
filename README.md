@@ -12,16 +12,17 @@ You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
 - The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
 
-## NEWS! January 25, 2026 - swing-extras 2.7 is here!
+## NEWS! March 8, 2026 - swing-extras 2.8 is here!
 
-This is a maintenance release of swing-extras with a few new features and some bug fixes.
-Notable additions and changes in swing-extras 2.7:
+This release introduces the new ActionPanel component, which is a useful
+and highly configurable navigation component. The demo application has been
+modified to use ActionPanel! Additionally, a number of bug fixes and smaller tickets:
 
-- New utility class: ResourceLoader, for easier loading of resources from the classpath.
-- New utility class: KeyStrokeManager, for easier management of keyboard shortcuts.
-- ListField now supports action buttons natively! Some pre-built actions are included!
-- MultiProgressDialog is now more configurable (progress label formatting options)
-- DirTree got some new features (show/hide hidden files, confirm before selection change)
+- New UI components: ActionPanel, TextInputDialog
+- New FormField: MarginsField / MarginsProperty
+- KeyStrokeManager got many improvements!
+- DirTree: now allows file viewing and double-clicking!
+- BlurLayerUI: add animation options and multi-line text overlay!
 
 And more! View the [full release notes](src/main/resources/swing-extras/releaseNotes.txt) for details,
 or check out the [archived release announcements](ReleaseAnnouncements.md) for details on previous releases.
@@ -49,7 +50,7 @@ To use the archetype, run the following command:
 mvn archetype:generate \
   -DarchetypeGroupId=ca.corbett \
   -DarchetypeArtifactId=swing-extras-archetype \
-  -DarchetypeVersion=2.7.0 \
+  -DarchetypeVersion=2.8.0 \
   -DgroupId=com.example \
   -DartifactId=my-app \
   -Dversion=1.0.0 \
@@ -75,7 +76,7 @@ then start from scratch building your Swing application using the various compon
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>2.7.0</version>
+    <version>2.8.0</version>
   </dependency>
 </dependencies>
 ```
@@ -96,7 +97,7 @@ cd swing-extras
 mvn package
 
 # Run the built-in demo app:
-java -jar target/swing-extras-2.7.0-jar-with-dependencies.jar 
+java -jar target/swing-extras-2.8.0-jar-with-dependencies.jar 
 ```
 
 ## License

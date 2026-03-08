@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -309,18 +308,17 @@ public class UpdateManager {
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(shutdownHooks.size());
-        List<Future<?>> futures = new ArrayList<>();
 
         // Execute all hooks in parallel
         for (ShutdownHook hook : shutdownHooks) {
-            futures.add(executor.submit(() -> {
+            executor.submit(() -> {
                 try {
                     hook.applicationWillRestart();
                 }
                 catch (Exception e) {
                     log.log(Level.SEVERE, "Error reported by shutdown hook: " + e.getMessage(), e);
                 }
-            }));
+            });
         }
 
         // Wait for completion with timeout

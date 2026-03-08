@@ -5,7 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.swing.ImageIcon;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.MediaTracker;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.fail;
@@ -116,5 +120,35 @@ public class ImageUtilTest {
         }
         catch (IOException ignored) {
         }
+    }
+
+    @Test
+    public void savePngImage_withValidImage_shouldSave() throws Exception {
+        // GIVEN a valid image:
+        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        g.setColor(Color.BLUE);
+        g.fillRect(0, 0, 100, 100);
+        g.dispose();
+
+        // WHEN we try to save it as PNG:
+        File tempFile = File.createTempFile("testImage", ".png");
+        tempFile.deleteOnExit();
+        ImageUtil.savePngImage(image, tempFile);
+
+        // THEN it should save without exception and the file should exist:
+        if (!tempFile.exists()) {
+            fail("Expected file to be created but it doesn't exist!");
+        }
+
+        // AND We should be able to load it back:
+        BufferedImage loadedImage = ImageUtil.loadImage(tempFile);
+        if (loadedImage == null) {
+            fail("Expected to load the saved image but got null!");
+        }
+
+        // Clean up
+        image.flush();
+        loadedImage.flush();
     }
 }

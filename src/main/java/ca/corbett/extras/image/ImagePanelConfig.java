@@ -464,12 +464,18 @@ public class ImagePanelConfig extends AbstractProperty implements ChangeListener
     public void loadFromFormField(FormField field) {
         if (field.getIdentifier() == null
                 || !field.getIdentifier().equals(fullyQualifiedName)
-                || !(field instanceof ImagePanelFormField)) {
+                || !(field instanceof ImagePanelFormField formField)) {
             logger.log(Level.SEVERE, "ImagePanelConfig.loadFromFormField: received the wrong field \"{0}\"",
                        field.getIdentifier());
             return;
         }
-        ImagePanelFormField formField = (ImagePanelFormField)field;
+
+        if (!field.isValid()) {
+            logger.log(Level.WARNING, "ImagePanelConfig.loadFromFormField: received invalid form field \"{0}\"",
+                       field.getIdentifier());
+            return;
+        }
+
         bgColor = formField.getBgColor();
         zoomFactorIncrement = formField.getZoomIncrement();
         displayMode = formField.getDisplayMode();

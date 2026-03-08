@@ -143,4 +143,68 @@ class MarginsTest {
             assertEquals(0, margin.getBottom());
         }
     }
+
+    @Test
+    public void addListener_shouldNotifyOnChange() {
+        // GIVEN a Margins instance with a listener:
+        Margins margins = new Margins();
+        TestListener listener = new TestListener();
+        margins.addListener(listener);
+
+        // WHEN we do five updates:
+        margins.setLeft(10);
+        margins.setTop(20);
+        margins.setRight(30);
+        margins.setBottom(40);
+        margins.setInternalSpacing(50);
+
+        // THEN we should receive five notifications:
+        assertEquals(5, listener.getNotificationCount());
+    }
+
+    @Test
+    public void setAll_withListener_shouldOnlyNotifyOnce() {
+        // GIVEN a Margins instance with a listener:
+        Margins margins = new Margins();
+        TestListener listener = new TestListener();
+        margins.addListener(listener);
+
+        // WHEN we set all properties at once:
+        margins.setAll(99);
+
+        // THEN we should receive only one notification, not one per property:
+        assertEquals(1, listener.getNotificationCount());
+    }
+
+    @Test
+    public void removeListener_shouldStopNotifications() {
+        // GIVEN a Margins instance with a listener that we will remove:
+        Margins margins = new Margins();
+        TestListener listener = new TestListener();
+        margins.addListener(listener);
+
+        // WHEN we remove the listener and then make some changes:
+        margins.removeListener(listener);
+        margins.setLeft(10);
+        margins.setTop(20);
+        margins.setRight(30);
+        margins.setBottom(40);
+        margins.setInternalSpacing(50);
+
+        // THEN we should receive no notifications:
+        assertEquals(0, listener.getNotificationCount());
+    }
+
+    private static class TestListener implements Margins.Listener {
+        private int notificationCount = 0;
+
+        @Override
+        public void marginsChanged(Margins margins) {
+            notificationCount++;
+        }
+
+        public int getNotificationCount() {
+            return notificationCount;
+        }
+    }
 }
