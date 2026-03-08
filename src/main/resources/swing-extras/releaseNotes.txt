@@ -35,6 +35,7 @@ Version 2.8.0 [TODO release date]
   #332 - ActionPanel: many usability improvements
   #330 - New UI component: ActionPanel
   #327 - KeyStrokeManager: add multiple window support
+  #326 - KeyStrokeManager: use setAcceleratorKey for EnhancedAction
   #325 - KeyStrokeManager: warn on multiple handlers per keystroke
   #324 - FormField: don't disable help icon when disabling field
   #322 - KeyStrokeProperty: fix bug regarding reserved keystrokes

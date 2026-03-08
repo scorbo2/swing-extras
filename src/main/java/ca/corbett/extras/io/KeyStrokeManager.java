@@ -1,5 +1,6 @@
 package ca.corbett.extras.io;
 
+import ca.corbett.extras.EnhancedAction;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -258,7 +259,7 @@ public class KeyStrokeManager {
     public KeyStrokeManager clear() {
         for (List<Action> actions : keyMap.values()) {
             for (Action action : actions) {
-                action.putValue(Action.ACCELERATOR_KEY, null);
+                setActionAccelerator(action, null);
             }
         }
         keyMap.clear();
@@ -429,7 +430,7 @@ public class KeyStrokeManager {
         }
 
         // Store the accelerator in the Action so menu items can access it
-        action.putValue(Action.ACCELERATOR_KEY, keyStroke);
+        setActionAccelerator(action, keyStroke);
 
         return this;
     }
@@ -506,7 +507,7 @@ public class KeyStrokeManager {
         }
 
         // Remove the accelerator from the Action:
-        action.putValue(Action.ACCELERATOR_KEY, null);
+        setActionAccelerator(action, null);
 
         return this;
     }
@@ -550,10 +551,10 @@ public class KeyStrokeManager {
                         List<KeyStroke> remainingKeyStrokes = getKeyStrokesForAction(action);
                         if (remainingKeyStrokes.isEmpty()) {
                             // No other keystrokes: clear the accelerator.
-                            action.putValue(Action.ACCELERATOR_KEY, null);
+                            setActionAccelerator(action, null);
                         } else {
                             // Reassign accelerator to one of the remaining keystrokes.
-                            action.putValue(Action.ACCELERATOR_KEY, remainingKeyStrokes.get(0));
+                            setActionAccelerator(action, remainingKeyStrokes.get(0));
                         }
                     }
                 }
@@ -670,6 +671,23 @@ public class KeyStrokeManager {
         }
 
         return KeyStroke.getKeyStroke(keyCode, modifiers);
+    }
+
+    /**
+     * Sets the accelerator key on the given action. If the action is an instance
+     * of EnhancedAction, its setAcceleratorKey() method is used so that subclasses
+     * can override it. Otherwise, putValue is called directly.
+     *
+     * @param action    The action whose accelerator should be set.
+     * @param keyStroke The key stroke to assign, or null to clear the accelerator.
+     */
+    private static void setActionAccelerator(Action action, KeyStroke keyStroke) {
+        if (action instanceof EnhancedAction) {
+            ((EnhancedAction) action).setAcceleratorKey(keyStroke);
+        }
+        else {
+            action.putValue(Action.ACCELERATOR_KEY, keyStroke);
+        }
     }
 
     /**
