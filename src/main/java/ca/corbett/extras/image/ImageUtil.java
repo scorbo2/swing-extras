@@ -80,6 +80,7 @@ public class ImageUtil {
      *
      * @param file The File from which to load the image icon. Must not be null.
      * @return an ImageIcon instance.
+     * @throws IllegalArgumentException If {@code file} is {@code null}.
      * @throws IOException If the image could not be loaded.
      */
     public static ImageIcon loadImageIcon(final File file) throws IOException {
@@ -99,6 +100,7 @@ public class ImageUtil {
      *
      * @param url The URL from which to load the image icon. Must not be null.
      * @return an ImageIcon instance.
+     * @throws IllegalArgumentException If {@code url} is {@code null}.
      * @throws IOException If the image could not be loaded.
      */
     public static ImageIcon loadImageIcon(final URL url) throws IOException {
