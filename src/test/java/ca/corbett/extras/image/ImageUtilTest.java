@@ -98,7 +98,7 @@ public class ImageUtilTest {
         when(mockedImageIcon.getImageLoadStatus()).thenReturn(MediaTracker.ERRORED); // invalid!
 
         // WHEN we try to validate it:
-        // THEN it should pass without exception:
+        // THEN we should get an IOException:
         assertThrows(IOException.class, () -> ImageUtil.validateImageIcon(mockedImageIcon));
     }
 
