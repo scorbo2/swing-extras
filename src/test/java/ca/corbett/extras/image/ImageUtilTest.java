@@ -180,7 +180,7 @@ public class ImageUtilTest {
     public void savePngImage_withNullFile_shouldThrow() {
         // GIVEN a null file:
         // WHEN we try to save an image as PNG to it:
-        // THEN we should get an IOException:
+        // THEN we should get an IllegalArgumentException:
         BufferedImage dummyImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
         assertThrows(IllegalArgumentException.class, () -> ImageUtil.savePngImage(dummyImage, null));
     }
