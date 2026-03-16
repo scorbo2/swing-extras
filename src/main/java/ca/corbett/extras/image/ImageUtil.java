@@ -196,7 +196,7 @@ public class ImageUtil {
      *     so that callers can be assured that this method will either return non-null, or throw.
      * </p>
      *
-     * @param inStream The input stream in question. Must contain an image in a format supported by javax.imageio.ImageIo.
+     * @param inStream The input stream in question. Must contain an image in a format supported by javax.imageio.ImageIO.
      * @return A BufferedImage containing the image data.
      * @throws IOException If the image could not be loaded.
      */
