@@ -1,6 +1,8 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.9.0 [TODO release date] - Maintenance release
+
 Version 2.8.0 [2026-03-08] - ActionPanel, TextInputDialog
   #417 - DirTree: add support for file viewing in the tree
   #415 - BlurLayerUI: support multi-line text overlay

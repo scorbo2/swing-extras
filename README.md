@@ -5,12 +5,16 @@ applications. The library includes a demo application so you can try out the var
 utilities within swing-extras:
 
 ![DemoApp](demo-app.png "Demo app")
+TODO update screenshot for 2.9 release
 
 ## Documentation
 
 You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
 - The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
+
+TODO release announcement for 2.9
+TODO archive the 2.8 announcement
 
 ## NEWS! March 8, 2026 - swing-extras 2.8 is here!
 
@@ -50,7 +54,7 @@ To use the archetype, run the following command:
 mvn archetype:generate \
   -DarchetypeGroupId=ca.corbett \
   -DarchetypeArtifactId=swing-extras-archetype \
-  -DarchetypeVersion=2.8.0 \
+  -DarchetypeVersion=2.9.0 \
   -DgroupId=com.example \
   -DartifactId=my-app \
   -Dversion=1.0.0 \
@@ -76,7 +80,7 @@ then start from scratch building your Swing application using the various compon
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>2.8.0</version>
+    <version>2.9.0</version>
   </dependency>
 </dependencies>
 ```
@@ -97,7 +101,7 @@ cd swing-extras
 mvn package
 
 # Run the built-in demo app:
-java -jar target/swing-extras-2.8.0-jar-with-dependencies.jar 
+java -jar target/swing-extras-2.9.0-jar-with-dependencies.jar 
 ```
 
 ## License
