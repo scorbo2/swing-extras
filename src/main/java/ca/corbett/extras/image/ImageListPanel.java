@@ -1,5 +1,7 @@
 package ca.corbett.extras.image;
 
+import ca.corbett.extras.io.KeyStrokeManager;
+
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -31,6 +33,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -375,25 +379,35 @@ public class ImageListPanel extends JPanel {
      * Launches a popup window to show the image at full size.
      */
     private void showImage(BufferedImage image) {
-        JDialog dialog = new JDialog(ownerWindow, "Image preview", Dialog.ModalityType.MODELESS);
-        dialog.setSize(new Dimension(600, 400));
-        dialog.setLocationRelativeTo(ownerWindow);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialog.setLayout(new BorderLayout());
-        dialog.add(new ImagePanel(image, ImagePanelConfig.createSimpleReadOnlyProperties()), BorderLayout.CENTER);
-        dialog.setVisible(true);
+        showPreview(image);
     }
 
     /**
      * Launches a popup window to show the image at full size.
      */
     private void showImage(ImageIcon image) {
+        showPreview(image);
+    }
+
+    /**
+     * Invoked internally to show our popup preview with either a BufferedImage
+     * or an ImageIcon, depending on image type.
+     *
+     * @param imageObject the image to show, either a BufferedImage or an ImageIcon depending on image type
+     */
+    private void showPreview(Object imageObject) {
         JDialog dialog = new JDialog(ownerWindow, "Image preview", Dialog.ModalityType.MODELESS);
         dialog.setSize(new Dimension(600, 400));
         dialog.setLocationRelativeTo(ownerWindow);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setLayout(new BorderLayout());
-        dialog.add(new ImagePanel(image, ImagePanelConfig.createSimpleReadOnlyProperties()), BorderLayout.CENTER);
+        ImagePanel imagePanel = (imageObject instanceof BufferedImage)
+                ? new ImagePanel((BufferedImage)imageObject, ImagePanelConfig.createSimpleReadOnlyProperties())
+                : new ImagePanel((ImageIcon)imageObject, ImagePanelConfig.createSimpleReadOnlyProperties());
+        dialog.add(imagePanel, BorderLayout.CENTER);
+        KeyStrokeManager keyManager = new KeyStrokeManager(dialog);
+        keyManager.registerHandler(KeyStrokeManager.parseKeyStroke("ESC"), e -> dialog.dispose());
+        dialog.addWindowListener(new PopupWindowListener(keyManager));
         dialog.setVisible(true);
     }
 
@@ -584,5 +598,28 @@ public class ImageListPanel extends JPanel {
                 }
             }
         };
+    }
+
+    /**
+     * Handles cleanup on our popup preview dialog.
+     * We listen for both windowClosing and windowClosed, just to make sure we cleaned up properly.
+     */
+    private static class PopupWindowListener extends WindowAdapter {
+
+        private final KeyStrokeManager keyManager;
+
+        public PopupWindowListener(KeyStrokeManager keyManager) {
+            this.keyManager = keyManager;
+        }
+
+        @Override
+        public void windowClosing(WindowEvent e) {
+            keyManager.dispose(); // idempotent - harmless to invoke even if already invoked
+        }
+
+        @Override
+        public void windowClosed(WindowEvent e) {
+            keyManager.dispose(); // idempotent - harmless to invoke even if already invoked
+        }
     }
 }
