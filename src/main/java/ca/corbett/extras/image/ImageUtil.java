@@ -220,8 +220,12 @@ public class ImageUtil {
      * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadFromResource(Class<?> loadingClass, String resourceName) throws IOException {
-        try (InputStream inStream = loadingClass.getResourceAsStream(resourceName)) {
-            return loadImage(inStream);
+        InputStream inStream = loadingClass.getResourceAsStream(resourceName);
+        if (inStream == null) {
+            throw new IOException("Resource not found: " + resourceName + " for class " + loadingClass.getName());
+        }
+        try (InputStream is = inStream) {
+            return loadImage(is);
         }
     }
 
