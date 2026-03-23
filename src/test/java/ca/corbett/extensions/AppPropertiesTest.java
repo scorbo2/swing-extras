@@ -5,6 +5,7 @@ import ca.corbett.extras.properties.IntegerProperty;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -45,7 +46,7 @@ class AppPropertiesTest {
         // GIVEN a properties file with a known property:
         File propsFile = File.createTempFile("peektest", ".props");
         propsFile.deleteOnExit();
-        java.nio.file.Files.writeString(propsFile.toPath(), "someKey=someValue\n");
+        Files.writeString(propsFile.toPath(), "someKey=someValue\n");
 
         // WHEN we peek with a default value for that existing property:
         String actual = AppProperties.peek(propsFile, "someKey", "fallback");
@@ -59,7 +60,7 @@ class AppPropertiesTest {
         // GIVEN a properties file with no property named "bogus":
         File propsFile = File.createTempFile("peektest2", ".props");
         propsFile.deleteOnExit();
-        java.nio.file.Files.writeString(propsFile.toPath(), "someOtherKey=someValue\n");
+        Files.writeString(propsFile.toPath(), "someOtherKey=someValue\n");
 
         // WHEN we peek with a default value for a non-existent property:
         String actual = AppProperties.peek(propsFile, "bogus.property.that.does.not.exist", "myDefault");
