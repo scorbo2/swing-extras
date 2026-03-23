@@ -71,9 +71,9 @@ class AppPropertiesTest {
 
     @Test
     public void peek_withDefaultValue_andNonExistentFile_shouldReturnDefault() throws Exception {
-        // GIVEN a non-existent properties file:
-        File propsFile = File.createTempFile("nonexistent2", ".props");
-        propsFile.delete();
+        // GIVEN a path that is guaranteed not to exist:
+        File propsFile = new File(System.getProperty("java.io.tmpdir"), "nonexistent2_" + System.nanoTime() + ".props");
+        assertFalse(propsFile.exists());
 
         // WHEN we peek with a default value:
         String actual = AppProperties.peek(propsFile, "AnyProperty", "theDefault");
