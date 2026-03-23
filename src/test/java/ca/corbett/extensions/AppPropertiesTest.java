@@ -5,6 +5,7 @@ import ca.corbett.extras.properties.IntegerProperty;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Handler;
@@ -38,6 +39,47 @@ class AppPropertiesTest {
 
         // THEN we should see the property disappear:
         assertNull(appProps.getPropertiesManager().getProperty("General.General.testProperty"));
+    }
+
+    @Test
+    public void peek_withDefaultValue_andExistingProperty_shouldReturnPropertyValue() throws Exception {
+        // GIVEN a properties file with a known property:
+        File propsFile = File.createTempFile("peektest", ".props");
+        propsFile.deleteOnExit();
+        Files.writeString(propsFile.toPath(), "someKey=someValue\n");
+
+        // WHEN we peek with a default value for that existing property:
+        String actual = AppProperties.peek(propsFile, "someKey", "fallback");
+
+        // THEN the actual value should be returned, not the default:
+        assertEquals("someValue", actual);
+    }
+
+    @Test
+    public void peek_withDefaultValue_andNonExistentProperty_shouldReturnDefault() throws Exception {
+        // GIVEN a properties file with no property named "bogus":
+        File propsFile = File.createTempFile("peektest2", ".props");
+        propsFile.deleteOnExit();
+        Files.writeString(propsFile.toPath(), "someOtherKey=someValue\n");
+
+        // WHEN we peek with a default value for a non-existent property:
+        String actual = AppProperties.peek(propsFile, "bogus.property.that.does.not.exist", "myDefault");
+
+        // THEN the default value should be returned:
+        assertEquals("myDefault", actual);
+    }
+
+    @Test
+    public void peek_withDefaultValue_andNonExistentFile_shouldReturnDefault() throws Exception {
+        // GIVEN a path that is guaranteed not to exist:
+        File propsFile = new File(System.getProperty("java.io.tmpdir"), "nonexistent2_" + System.nanoTime() + ".props");
+        assertFalse(propsFile.exists());
+
+        // WHEN we peek with a default value:
+        String actual = AppProperties.peek(propsFile, "AnyProperty", "theDefault");
+
+        // THEN the default value should be returned:
+        assertEquals("theDefault", actual);
     }
 
     @Test

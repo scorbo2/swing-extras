@@ -104,7 +104,29 @@ public abstract class AppProperties<T extends AppExtension> {
      * @return The raw value in String form as it exists in the props file at the time of this call. May be empty.
      */
     public static String peek(File propsFile, String propName) {
-        String result = "";
+        return peek(propsFile, propName, "");
+    }
+
+    /**
+     * Offers a peek directly into the given props file without going through the usual loading mechanism.
+     * This allows direct access to properties (in String form only) exactly as they currently
+     * exist in the given props file. This can be useful in rare cases where an extension needs to know
+     * a property value in order to initialize some other property value. The normal load mechanism prevents
+     * this because property values cannot be read until the AppProperties instance is fully initialized,
+     * leading to a circular problem.
+     * <p>
+     * If the value does not exist or an error occurs while reading the props file, the given defaultValue
+     * is returned instead.
+     * </p>
+     *
+     * @param propsFile    The properties file to read.
+     * @param propName     The fully qualified name of the property in question.
+     * @param defaultValue The value to return if the property does not exist or cannot be read.
+     * @return The raw value in String form as it exists in the props file at the time of this call,
+     *         or defaultValue if not found.
+     */
+    public static String peek(File propsFile, String propName, String defaultValue) {
+        String result = defaultValue;
         try {
             FileBasedProperties tempProps = new FileBasedProperties(propsFile);
             tempProps.load();
