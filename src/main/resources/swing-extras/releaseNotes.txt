@@ -8,6 +8,7 @@ Version 2.9.0 [TODO release date] - Maintenance release
   #424 - Hit ESC to close the image list panel's preview popup
 
 Version 2.8.0 [2026-03-08] - ActionPanel, TextInputDialog
+  #422 - Fix theme misclassification issue in LookAndFeelManager
   #417 - DirTree: add support for file viewing in the tree
   #415 - BlurLayerUI: support multi-line text overlay
   #410 - ActionPanel: add buttonPadding option, fix action gaps
