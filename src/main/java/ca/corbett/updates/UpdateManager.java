@@ -8,6 +8,7 @@ import ca.corbett.extras.io.DownloadThread;
 import com.google.gson.JsonSyntaxException;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -293,8 +294,23 @@ public class UpdateManager {
      */
     public void restartApplication() {
         log.info("Restarting application...");
-        executeShutdownHooks();
-        System.exit(APPLICATION_RESTART);
+
+        // If we are on the Swing EDT, we must NOT block it while waiting for shutdown hooks to finish.
+        // Blocking the EDT would prevent any shutdown hook from doing UI work (e.g. showing a JOptionPane
+        // to ask the user about unsaved changes). Instead, hand off the whole sequence to a dedicated
+        // non-daemon thread so the EDT stays responsive, then exit from that thread when ready.
+        if (SwingUtilities.isEventDispatchThread()) {
+            Thread restartThread = new Thread(() -> {
+                executeShutdownHooks();
+                System.exit(APPLICATION_RESTART);
+            }, "swing-extras-restart");
+            restartThread.setDaemon(false); // keep the JVM alive until this thread finishes
+            restartThread.start();
+        }
+        else {
+            executeShutdownHooks();
+            System.exit(APPLICATION_RESTART);
+        }
     }
 
     /**
