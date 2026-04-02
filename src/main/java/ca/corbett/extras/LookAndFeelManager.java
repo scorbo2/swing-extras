@@ -272,11 +272,11 @@ public class LookAndFeelManager {
 
         // We *could* spot-check some RGB values in the current LaF and make
         // a proper guess as to whether it's "light" or "dark", but this seems
-        // pretty error-prone. So, eh, let's just look for "dark" in the
-        // name and call it a day. Any theme that doesn't explicitly have
-        // "dark" in the name is probably a light theme.
+        // pretty error-prone. So, eh, let's just look for "dark" or other
+        // dark-seeming terms in the name and call it a day.
+        // Any theme that doesn't match this check is *probably* a light theme.
         return combinedName.contains("dark")
-                || combinedName.contains("darc") // don't forget about "darcula"!
+                || combinedName.contains("dracula") // we have two dark themes with "dracula" in the name
                 || combinedName.contains("matrix") // No LaF that I currently know of, but it makes sense to me :)
                 || combinedName.contains("hiberbee") // Hiberbee is a dark theme but doesn't have "dark" in the name
                 || combinedName.contains("noir")  // anything with "noir"/"noire"
