@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -83,7 +84,7 @@ public class UpdateManager {
 
     protected final UpdateSources updateSources;
     protected final List<UpdateManagerListener> listeners = new ArrayList<>();
-    protected final List<ShutdownHook> shutdownHooks = new ArrayList<>();
+    protected final List<ShutdownHook> shutdownHooks = new CopyOnWriteArrayList<>();
     protected final DownloadManager downloadManager;
     protected VersionManifest versionManifest;
 
@@ -273,6 +274,21 @@ public class UpdateManager {
     /**
      * Register to receive notification before the application is restarted to pick up
      * changes caused by extensions being installed or uninstalled.
+     * <p>
+     *     <b>IMPORTANT NOTE:</b> Your shutdown hook will be invoked on a worker thread, NOT the Swing EDT!
+     *     If your shutdown hooks need to do anything UI-related,
+     *     for example showing a popup dialog to prompt the user about unsaved changes,
+     *     then you should use SwingUtilities.invokeAndWait() inside your shutdown hook.
+     *     This serves two important purposes:
+     * </p>
+     * <ol>
+     *     <li>Avoids thread problems with Java Swing, because Java Swing is not thread safe by default.</li>
+     *     <li>Using invokeAndWait() instead of invokeLater() ensures that your shutdown hook
+     *     does not return until it is actually finished. This is important because as soon as the
+     *     last shutdown hook returns, System.exit() is invoked, and the application terminates.
+     *     If you use invokeLater(), it's likely that your hook will return before the work
+     *     is done.</li>
+     * </ol>
      */
     public void registerShutdownHook(ShutdownHook hook) {
         shutdownHooks.add(hook);
@@ -291,6 +307,21 @@ public class UpdateManager {
      * If you have cleanup that needs to be done before a restart (closing open
      * db connections, saving unsaved changes, etc), you should use registerShutdownHook
      * so that your cleanup code can be executed before a restart!
+     * <p>
+     *     <b>IMPORTANT NOTE:</b> Your shutdown hook will be invoked on a worker thread, NOT the Swing EDT!
+     *     If your shutdown hooks need to do anything UI-related,
+     *     for example showing a popup dialog to prompt the user about unsaved changes,
+     *     then you should use SwingUtilities.invokeAndWait() inside your shutdown hook.
+     *     This serves two important purposes:
+     * </p>
+     * <ol>
+     *     <li>Avoids thread problems with Java Swing, because Java Swing is not thread safe by default.</li>
+     *     <li>Using invokeAndWait() instead of invokeLater() ensures that your shutdown hook
+     *     does not return until it is actually finished. This is important because as soon as the
+     *     last shutdown hook returns, System.exit() is invoked, and the application terminates.
+     *     If you use invokeLater(), it's likely that your hook will return before the work
+     *     is done.</li>
+     * </ol>
      */
     public void restartApplication() {
         log.info("Restarting application...");
