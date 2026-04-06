@@ -1,8 +1,10 @@
 package ca.corbett.extras.demo;
 
+import ca.corbett.extras.FallbackExceptionHandler;
 import ca.corbett.extras.LookAndFeelManager;
 import com.formdev.flatlaf.FlatLightLaf;
 
+import java.awt.EventQueue;
 import java.awt.SplashScreen;
 
 /**
@@ -30,7 +32,10 @@ public class DemoAppLauncher {
             splashScreen.close();
         }
 
+        // Register a FallbackExceptionHandler to catch any uncaught exceptions and log them properly:
+        FallbackExceptionHandler.register();
+
         // Create and display the form
-        java.awt.EventQueue.invokeLater(() -> DemoApp.getInstance().setVisible(true));
+        EventQueue.invokeLater(() -> DemoApp.getInstance().setVisible(true));
     }
 }
