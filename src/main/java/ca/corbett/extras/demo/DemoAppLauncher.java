@@ -16,6 +16,9 @@ import java.awt.SplashScreen;
 public class DemoAppLauncher {
     public static void main(String[] args) {
 
+        // Register a FallbackExceptionHandler to catch any uncaught exceptions and log them properly:
+        FallbackExceptionHandler.register();
+
         LookAndFeelManager.installExtraLafs();
         LookAndFeelManager.switchLaf(FlatLightLaf.class.getName());
 
@@ -31,9 +34,6 @@ public class DemoAppLauncher {
             }
             splashScreen.close();
         }
-
-        // Register a FallbackExceptionHandler to catch any uncaught exceptions and log them properly:
-        FallbackExceptionHandler.register();
 
         // Create and display the form
         EventQueue.invokeLater(() -> DemoApp.getInstance().setVisible(true));

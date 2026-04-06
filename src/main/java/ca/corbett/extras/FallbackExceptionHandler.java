@@ -27,7 +27,9 @@ public class FallbackExceptionHandler implements Thread.UncaughtExceptionHandler
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        log.log(Level.SEVERE, "Uncaught exception in thread " + t.getName() + ": " + e.getMessage(), e);
+        String exType = e.getClass().getSimpleName();
+        String exMsg = e.getMessage() == null ? e.toString() : e.getMessage();
+        log.log(Level.SEVERE, "Uncaught " + exType + " in thread " + t.getName() + ": " + exMsg, e);
     }
 
     /**
