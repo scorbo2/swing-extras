@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 2.9.0 [TODO release date] - Maintenance release
   #437 - New convenience class: FallbackExceptionHandler
   #433 - Fix threading issue in UpdateManager's shutdown hooks
+  #431 - FileField: allow customization of chooser button
   #422 - Fix theme misclassification issue in LookAndFeelManager
   #430 - AppProperties.peek() now accepts an optional default value
   #425 - Better ImageIO wrapping and error handling in ImageUtil
