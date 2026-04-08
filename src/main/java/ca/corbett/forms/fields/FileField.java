@@ -136,7 +136,7 @@ public final class FileField extends FormField implements DocumentListener {
      * If the supplied icon is null, this request is ignored. To revert to using text
      * instead of an icon, call setButtonText().
      *
-     * @param icon Any icon to use for the button. Must not be null.
+     * @param icon Any icon to use for the button. If null, this request is ignored.
      * @return This FileField, for chaining.
      */
     public FileField setButtonIcon(Icon icon) {
@@ -144,7 +144,9 @@ public final class FileField extends FormField implements DocumentListener {
             chooseButton.setText("");
             chooseButton.setToolTipText("Choose...");
             chooseButton.setIcon(icon);
-            chooseButton.setPreferredSize(new Dimension(icon.getIconWidth() + 4, icon.getIconHeight() + 4));
+            chooseButton.setPreferredSize(null); // let the button resize to fit the icon
+            getFieldComponent().invalidate();
+            getFieldComponent().repaint();
         }
         return this;
     }
@@ -154,7 +156,7 @@ public final class FileField extends FormField implements DocumentListener {
      * To use an icon instead of text, call setButtonIcon(). Note that if you switch back to using text,
      * any icon that was previously set will be removed, and the button will be resized to fit the text.
      *
-     * @param text Any text to use for the button. Must not be null. Button will be resized to fit the text.
+     * @param text Any text to use for the button. If null, this request is ignored.
      * @return This FileField, for chaining.
      */
     public FileField setButtonText(String text) {
@@ -163,6 +165,8 @@ public final class FileField extends FormField implements DocumentListener {
             chooseButton.setToolTipText(null);
             chooseButton.setIcon(null);
             chooseButton.setPreferredSize(null);
+            getFieldComponent().invalidate();
+            getFieldComponent().repaint();
         }
         return this;
     }
