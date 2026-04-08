@@ -13,6 +13,7 @@ import ca.corbett.forms.validators.FileMustNotExistValidator;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -44,6 +45,14 @@ import java.util.List;
  * The underlying JFileChooser is not directly exposed, but there are some
  * convenience methods here, like setFileFilter(), that can be used to
  * customize it.
+ * </p>
+ * <p>
+ *     The chooser button displays simple text "Choose..." by default, but you
+ *     can change this text with the setButtonText() method.
+ *     You can also opt for an icon instead of text for this button,
+ *     by calling setButtonIcon() - the chooser button will be resized to fit your icon,
+ *     and the text will be removed.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
@@ -119,6 +128,43 @@ public final class FileField extends FormField implements DocumentListener {
         chooseButton.setPreferredSize(new Dimension(105, 22));
         dirPanel.add(chooseButton);
         fieldComponent = dirPanel;
+    }
+
+    /**
+     * Changes our chooser button to use the given icon. The button will be resized to fit the icon,
+     * and the button text will be removed. A tooltip will be added automatically.
+     * If the supplied icon is null, this request is ignored. To revert to using text
+     * instead of an icon, call setButtonText().
+     *
+     * @param icon Any icon to use for the button. Must not be null.
+     * @return This FileField, for chaining.
+     */
+    public FileField setButtonIcon(Icon icon) {
+        if (icon != null) {
+            chooseButton.setText("");
+            chooseButton.setToolTipText("Choose...");
+            chooseButton.setIcon(icon);
+            chooseButton.setPreferredSize(new Dimension(icon.getIconWidth() + 4, icon.getIconHeight() + 4));
+        }
+        return this;
+    }
+
+    /**
+     * Sets the text to use for the button. If the supplied text is null, this request is ignored.
+     * To use an icon instead of text, call setButtonIcon(). Note that if you switch back to using text,
+     * any icon that was previously set will be removed, and the button will be resized to fit the text.
+     *
+     * @param text Any text to use for the button. Must not be null. Button will be resized to fit the text.
+     * @return This FileField, for chaining.
+     */
+    public FileField setButtonText(String text) {
+        if (text != null) {
+            chooseButton.setText(text);
+            chooseButton.setToolTipText(null);
+            chooseButton.setIcon(null);
+            chooseButton.setPreferredSize(null);
+        }
+        return this;
     }
 
     /**
