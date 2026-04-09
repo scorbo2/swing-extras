@@ -35,6 +35,7 @@ public class ColorOptions extends ActionPanelOptions {
     private Color groupHeaderForeground;
     private Color actionButtonBackground;
     private Color toolBarButtonBackground;
+    private Color flatButtonBorderColor;
 
     /**
      * Should only be instantiated by ActionPanel.
@@ -59,6 +60,7 @@ public class ColorOptions extends ActionPanelOptions {
         this.groupHeaderBackground = null; // Use L&F default
         this.actionButtonBackground = null; // Use L&F default
         this.toolBarButtonBackground = null; // Use L&F default
+        this.flatButtonBorderColor = null; // Use L&F default
         fireOptionsChanged();
         return this;
     }
@@ -80,6 +82,7 @@ public class ColorOptions extends ActionPanelOptions {
         this.groupHeaderBackground = theme.getGroupHeaderBackground();
         this.actionButtonBackground = theme.getActionButtonBackground();
         this.toolBarButtonBackground = theme.getToolBarButtonBackground();
+        this.flatButtonBorderColor = theme.getFlatButtonBorderColor();
         fireOptionsChanged();
         return this;
     }
@@ -271,6 +274,32 @@ public class ColorOptions extends ActionPanelOptions {
      */
     public Color getToolBarButtonBackground() {
         return toolBarButtonBackground;
+    }
+
+    /**
+     * Returns the border color for flat buttons. This is used in "flat" themes to provide a
+     * subtle border around buttons. This field is ignored for non-"flat" themes.
+     * If this property is null, the Look and Feel default color will be used for flat button borders.
+     *
+     * @return The border color for flat buttons, or null if L&amp;F default is in use.
+     */
+    public Color getFlatButtonBorderColor() {
+        return flatButtonBorderColor;
+    }
+
+    /**
+     * Sets the border color for flat buttons. This is used in "flat" themes to provide a
+     * subtle border around buttons. This field is ignored for non-"flat" themes.
+     * If you set this property to null, the Look and Feel default color will be used
+     * for flat button borders.
+     *
+     * @param flatButtonBorderColor The border color for flat buttons, or null to use the L&amp;F default.
+     * @return This ColorOptions instance, for method chaining.
+     */
+    public ColorOptions setFlatButtonBorderColor(Color flatButtonBorderColor) {
+        this.flatButtonBorderColor = flatButtonBorderColor;
+        fireOptionsChanged();
+        return this;
     }
 
     /**

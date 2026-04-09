@@ -1823,17 +1823,21 @@ public class ActionPanel extends JPanel {
      * This is here because it's used both for action buttons and also for toolbar buttons.
      */
     void applyButtonPadding(JButton button) {
+        // We will apply whatever buttonPadding has been set:
+        int pad = buttonPadding;
+
         // Special case "flat buttons" because their default border handling is very stupid.
         // (they apply padding around buttons, I think as part of their "focus border", and it looks awful,
         //  particularly if you try to set internal spacing to 0.)
-        // We can also apply the button padding from our ActionPanel, if it is set.
-        int pad = buttonPadding;
-        if (button.getBorder() != null && button.getBorder() instanceof FlatButtonBorder) {
+        if (button.getBorder() instanceof FlatButtonBorder) {
             button.setFocusPainted(false);
-            Border lineBorder = BorderFactory.createLineBorder(
-                    LookAndFeelManager.getLafColor("Button.default.startBorderColor", Color.LIGHT_GRAY),
-                    1,
-                    true);
+            Color borderColor = getColorOptions().getFlatButtonBorderColor();
+            if (borderColor == null) {
+                // This is a terrible fallback default, but callers can avoid it being used
+                // by setting an explicit color, or by setting our colors from any ColorTheme.
+                borderColor = LookAndFeelManager.getLafColor("Button.default.startBorderColor", Color.LIGHT_GRAY);
+            }
+            Border lineBorder = BorderFactory.createLineBorder(borderColor, 1, true);
             Border paddingBorder = BorderFactory.createEmptyBorder(pad, pad, pad, pad);
             button.setBorder(BorderFactory.createCompoundBorder(lineBorder, paddingBorder));
         }

@@ -38,7 +38,8 @@ public enum ColorTheme {
             new Color(70, 130, 180),  // group header background
             Color.WHITE,                       // group header foreground
             new Color(180, 180, 180), // action button background
-            new Color(160, 160, 160)),// toolbar button background
+            new Color(160, 160, 160), // toolbar button background
+            Color.DARK_GRAY), // flat button border color (used in some themes, ignored in others)
 
     LIGHT("Light",
           new Color(255, 255, 255),  // panel background
@@ -47,7 +48,8 @@ public enum ColorTheme {
           new Color(220, 220, 220),  // group header background
           new Color(0, 0, 0),        // group header foreground
           new Color(200, 200, 200),  // action button background
-          new Color(200, 200, 200)), // toolbar button background
+          new Color(200, 200, 200),  // toolbar button background
+          Color.GRAY), // flat button border color (used in some themes, ignored in others)
 
     DARK("Dark",
          new Color(45, 45, 45),     // panel background
@@ -56,25 +58,28 @@ public enum ColorTheme {
          new Color(70, 70, 70),     // group header background
          new Color(220, 220, 220),  // group header foreground
          new Color(80, 80, 80),     // action button background
-         new Color(80, 80, 80)),    // toolbar button background
+         new Color(80, 80, 80),     // toolbar button background
+         Color.DARK_GRAY), // flat button border color (used in some themes, ignored in others)
 
     ICE("Ice",
-        new Color(45, 45, 45),     // panel background
-        new Color(60, 60, 60),     // action background
-        new Color(220, 220, 220),  // action foreground
-        new Color(70, 130, 180),   // group header background
-        Color.WHITE,                        // group header foreground
-        new Color(80, 80, 80),     // action button background
-        new Color(80, 80, 80)),    // toolbar button background
+        new Color(45, 45, 45),    // panel background
+        new Color(60, 60, 60),    // action background
+        new Color(220, 220, 220), // action foreground
+        new Color(70, 130, 180),  // group header background
+        Color.WHITE,                       // group header foreground
+        new Color(80, 80, 80),    // action button background
+        new Color(80, 80, 80),    // toolbar button background
+        Color.DARK_GRAY), // flat button border color (used in some themes, ignored in others)
 
     MATRIX("Matrix",
-           new Color(0, 48, 0),      // panel background
-           new Color(0, 64, 0),      // action background
-           new Color(0, 255, 0),     // action foreground
-           new Color(0, 128, 0),     // group header background
-           new Color(0, 255, 0),     // group header foreground
-           new Color(0, 96, 0),      // action button background
-           new Color(0, 96, 0)),     // toolbar button background
+           new Color(0, 48, 0),   // panel background
+           new Color(0, 64, 0),   // action background
+           new Color(0, 255, 0),  // action foreground
+           new Color(0, 128, 0),  // group header background
+           new Color(0, 255, 0),  // group header foreground
+           new Color(0, 96, 0),   // action button background
+           new Color(0, 96, 0),   // toolbar button background
+           Color.DARK_GRAY), // flat button border color (used in some themes, ignored in others)
 
     GOT_THE_BLUES("Got the blues",
                   new Color(73, 46, 196),    // panel background
@@ -83,7 +88,8 @@ public enum ColorTheme {
                   new Color(70, 130, 180),   // group header background
                   new Color(255, 255, 255),  // group header foreground
                   new Color(100, 149, 237),  // action button background
-                  new Color(100, 149, 237)), // toolbar button background
+                  new Color(100, 149, 237),  // toolbar button background
+                  Color.GRAY), // flat button border color (used in some themes, ignored in others)
 
     SHADES_OF_GRAY("Shades of gray",
                    new Color(192, 192, 192),  // panel background
@@ -92,7 +98,8 @@ public enum ColorTheme {
                    new Color(128, 128, 128),  // group header background
                    new Color(255, 255, 255),  // group header foreground
                    new Color(140, 140, 140),  // action button background
-                   new Color(140, 140, 140)), // toolbar button background
+                   new Color(140, 140, 140),  // toolbar button background
+                   Color.GRAY), // flat button border color (used in some themes, ignored in others)
 
     HOT_DOG_STAND("Hotdog Stand", // Just for fun!
                   new Color(255, 228, 196),  // panel background
@@ -101,7 +108,8 @@ public enum ColorTheme {
                   new Color(255, 69, 0),     // group header background
                   Color.YELLOW,                       // group header foreground
                   new Color(255, 140, 0),    // action button background
-                  new Color(255, 140, 0));   // toolbar button background
+                  new Color(255, 140, 0),    // toolbar button background
+                  Color.YELLOW); // flat button border color (used in some themes, ignored in others)
 
     private final String label;
     private final Color panelBackground;
@@ -111,10 +119,11 @@ public enum ColorTheme {
     private final Color groupHeaderForeground;
     private final Color actionButtonBackground;
     private final Color toolBarButtonBackground;
+    private final Color flatButtonBorderColor;
 
     ColorTheme(String label, Color panelBackground, Color actionBackground, Color actionForeground,
                Color groupHeaderBackground, Color groupHeaderForeground, Color actionButtonBackground,
-               Color toolBarButtonBackground) {
+               Color toolBarButtonBackground, Color flatButtonBorderColor) {
         this.label = label;
         this.panelBackground = panelBackground;
         this.actionBackground = actionBackground;
@@ -123,6 +132,7 @@ public enum ColorTheme {
         this.groupHeaderForeground = groupHeaderForeground;
         this.actionButtonBackground = actionButtonBackground;
         this.toolBarButtonBackground = toolBarButtonBackground;
+        this.flatButtonBorderColor = flatButtonBorderColor;
     }
 
     @Override
@@ -156,5 +166,9 @@ public enum ColorTheme {
 
     public Color getToolBarButtonBackground() {
         return toolBarButtonBackground;
+    }
+
+    public Color getFlatButtonBorderColor() {
+        return flatButtonBorderColor;
     }
 }

@@ -131,6 +131,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private ColorField actionButtonBackgroundField;
     private ColorField groupHeaderForegroundField;
     private ColorField groupHeaderBackgroundField;
+    private ColorField flatButtonBorderColorField;
     private CheckBoxField toolBarButtonsTransparentField;
     private ColorField toolBarButtonBackgroundField;
     private FontField headerFontField;
@@ -239,6 +240,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         actionButtonBackgroundField.setEnabled(isCustom);
         groupHeaderForegroundField.setEnabled(isCustom);
         groupHeaderBackgroundField.setEnabled(isCustom);
+        flatButtonBorderColorField.setEnabled(isCustom);
         actionPanel.setBackground(isCustom ? actionPanelBackgroundField.getColor() : null);
         actionPanel.getColorOptions().setActionForeground(isCustom ? actionForegroundField.getColor() : null);
         actionPanel.getColorOptions().setActionBackground(isCustom ? actionBackgroundField.getColor() : null);
@@ -246,6 +248,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                    .setActionButtonBackground(isCustom ? actionButtonBackgroundField.getColor() : null);
         actionPanel.getColorOptions().setGroupHeaderForeground(isCustom ? groupHeaderForegroundField.getColor() : null);
         actionPanel.getColorOptions().setGroupHeaderBackground(isCustom ? groupHeaderBackgroundField.getColor() : null);
+        actionPanel.getColorOptions().setFlatButtonBorderColor(isCustom ? flatButtonBorderColorField.getColor() : null);
 
         // ToolBar button customization has an extra layer of enabled/disabled:
         if (isCustom) {
@@ -526,6 +529,12 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         groupHeaderBackgroundField.getMargins().setLeft(16);
         groupHeaderBackgroundField.addValueChangedListener(f -> colorSourceFieldChanged());
         formPanel.add(groupHeaderBackgroundField);
+
+        flatButtonBorderColorField = new ColorField("Flat button borders:", ColorSelectionType.SOLID);
+        flatButtonBorderColorField.setColor(Color.GRAY);
+        flatButtonBorderColorField.getMargins().setLeft(16);
+        flatButtonBorderColorField.addValueChangedListener(f -> colorSourceFieldChanged());
+        formPanel.add(flatButtonBorderColorField);
 
         toolBarButtonBackgroundField = new ColorField("Toolbar buttons:", ColorSelectionType.SOLID);
         toolBarButtonBackgroundField.setColor(new Color(160, 160, 160)); // arbitrary, but I like it
@@ -1009,6 +1018,7 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
                     groupHeaderForegroundField.setColor(selectedTheme.getGroupHeaderForeground());
                     actionButtonBackgroundField.setColor(selectedTheme.getActionButtonBackground());
                     toolBarButtonBackgroundField.setColor(selectedTheme.getToolBarButtonBackground());
+                    flatButtonBorderColorField.setColor(selectedTheme.getFlatButtonBorderColor());
                 }
                 finally {
                     // Re-enabling auto-rebuild will trigger a single rebuild now that all colors are set:
