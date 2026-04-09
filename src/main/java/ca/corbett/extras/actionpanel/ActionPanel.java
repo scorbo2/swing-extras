@@ -1829,7 +1829,7 @@ public class ActionPanel extends JPanel {
         // Special case "flat buttons" because their default border handling is very stupid.
         // (they apply padding around buttons, I think as part of their "focus border", and it looks awful,
         //  particularly if you try to set internal spacing to 0.)
-        if (button.getBorder() != null && button.getBorder() instanceof FlatButtonBorder) {
+        if (button.getBorder() instanceof FlatButtonBorder) {
             button.setFocusPainted(false);
             Color borderColor = getColorOptions().getFlatButtonBorderColor();
             if (borderColor == null) {
