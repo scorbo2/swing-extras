@@ -14,6 +14,7 @@ import javax.swing.filechooser.FileFilter;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
  * Contains generic methods for dealing with images and image data.
@@ -33,6 +35,8 @@ import java.util.Locale;
  * @since 2012-09-01
  */
 public class ImageUtil {
+
+    private static final Logger log = Logger.getLogger(ImageUtil.class.getName());
 
     /**
      * JPEG compression quality to use. *
@@ -461,25 +465,49 @@ public class ImageUtil {
     /**
      * Returns a scaled version of the input icon, if it is not already at the
      * given size (assuming square icons). If the input icon is null, null is returned.
+     * If the icon does not contain a BufferedImage, a conversion will be attempted.
+     * If the conversion fails, the original icon is returned at its native size and a
+     * warning is logged.
      *
-     * @param imageIcon Any ImageIcon instance that contains a BufferedImage.
+     * @param imageIcon Any ImageIcon instance.
      * @param size      The requested size (assuming square icons).
-     * @return A scaled ImageIcon instance, or null if the input icon was null or did not contain a BufferedImage.
+     * @return A scaled ImageIcon instance, or null if the input icon was null.
      */
     public static ImageIcon scaleIcon(ImageIcon imageIcon, int size) {
-        BufferedImage image = null;
-        if (imageIcon != null) {
-            if (imageIcon.getImage() == null || !(imageIcon.getImage() instanceof BufferedImage)) {
-                return null; // can't scale non-BufferedImage icons
-            }
-
-            image = (BufferedImage)imageIcon.getImage();
-            if (image.getHeight() != size || image.getWidth() != size) {
-                // Resize the image to match the specified size (assuming square icons):
-                image = generateThumbnailWithTransparency(image, size, size);
-            }
+        if (imageIcon == null) {
+            return null;
         }
-        return image == null ? null : new ImageIcon(image);
+
+        Image img = imageIcon.getImage();
+        if (img == null) {
+            log.warning("scaleIcon: icon contains a null image; returning null.");
+            return null;
+        }
+
+        BufferedImage image;
+        if (img instanceof BufferedImage) {
+            image = (BufferedImage) img;
+        }
+        else {
+            // Attempt to convert to BufferedImage so we can scale it:
+            int w = img.getWidth(null);
+            int h = img.getHeight(null);
+            if (w <= 0 || h <= 0) {
+                log.warning("scaleIcon: cannot scale icon because its dimensions are not available; using native size.");
+                return imageIcon;
+            }
+            log.warning("scaleIcon: icon does not contain a BufferedImage; converting before scaling.");
+            image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = image.createGraphics();
+            g2d.drawImage(img, 0, 0, null);
+            g2d.dispose();
+        }
+
+        if (image.getHeight() != size || image.getWidth() != size) {
+            // Resize the image to match the specified size (assuming square icons):
+            image = generateThumbnailWithTransparency(image, size, size);
+        }
+        return new ImageIcon(image);
     }
 
     /**

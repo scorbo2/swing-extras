@@ -16,6 +16,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
+import java.util.logging.Logger;
 
 /**
  * The HeaderBar consists of an optional icon, a title label, and an expand/collapse button.
@@ -27,6 +28,8 @@ import java.awt.event.MouseAdapter;
  * @since swing-extras 2.8
  */
 class HeaderBar extends JPanel {
+
+    private static final Logger log = Logger.getLogger(HeaderBar.class.getName());
 
     private final ActionPanel actionPanel;
     private final ActionGroup group;
@@ -99,9 +102,20 @@ class HeaderBar extends JPanel {
     private void addIcon() {
         int pad = actionPanel.getHeaderMargins().getInternalSpacing();
         if (group.getIcon() != null && actionPanel.isShowGroupIcons()) {
-            Icon icon = null;
-            if (group.getIcon() instanceof ImageIcon) {
-                icon = ImageUtil.scaleIcon((ImageIcon)group.getIcon(), actionPanel.getHeaderIconSize());
+            Icon icon;
+            if (group.getIcon() instanceof ImageIcon imageIcon) {
+                Icon scaled = ImageUtil.scaleIcon(imageIcon, actionPanel.getHeaderIconSize());
+                if (scaled == null) {
+                    log.warning("addIcon: scaleIcon returned null; using original icon at native size.");
+                    icon = imageIcon;
+                }
+                else {
+                    icon = scaled;
+                }
+            }
+            else {
+                log.warning("addIcon: group icon is not an ImageIcon and cannot be scaled; using native size.");
+                icon = group.getIcon();
             }
             JLabel iconLabel = new JLabel(icon);
             iconLabel.addMouseListener(doubleClickListener);
