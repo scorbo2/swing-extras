@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.swing.ImageIcon;
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -313,11 +315,11 @@ public class ImageUtilTest {
     public void scaleIcon_withNonBufferedImage_shouldConvertAndScale() throws InterruptedException {
         // GIVEN an ImageIcon containing a non-BufferedImage (plain Image via getScaledInstance):
         BufferedImage dummyImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
-        java.awt.Image nonBuffered = dummyImage.getScaledInstance(100, 100, java.awt.Image.SCALE_DEFAULT);
+        Image nonBuffered = dummyImage.getScaledInstance(100, 100, Image.SCALE_DEFAULT);
         ImageIcon icon = new ImageIcon(nonBuffered);
 
         // Use MediaTracker to ensure the image is fully loaded before proceeding:
-        MediaTracker tracker = new MediaTracker(new javax.swing.JPanel());
+        MediaTracker tracker = new MediaTracker(new JPanel());
         tracker.addImage(nonBuffered, 0);
         tracker.waitForAll();
 

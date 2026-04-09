@@ -499,8 +499,12 @@ public class ImageUtil {
             log.warning("scaleIcon: icon does not contain a BufferedImage; converting before scaling.");
             image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = image.createGraphics();
-            g2d.drawImage(img, 0, 0, null);
-            g2d.dispose();
+            try {
+                g2d.drawImage(img, 0, 0, null);
+            }
+            finally {
+                g2d.dispose();
+            }
         }
 
         if (image.getHeight() != size || image.getWidth() != size) {
