@@ -19,6 +19,7 @@ import java.net.URL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
@@ -297,7 +298,7 @@ public class ImageUtilTest {
     }
 
     @Test
-    public void scaleIcon_withBufferedImageAlreadyAtTargetSize_shouldReturnSameSizeIcon() {
+    public void scaleIcon_withBufferedImageAlreadyAtTargetSize_shouldReturnSameIcon() {
         // GIVEN an ImageIcon containing a 32x32 BufferedImage (already at target size):
         BufferedImage dummyImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
         ImageIcon icon = new ImageIcon(dummyImage);
@@ -305,10 +306,27 @@ public class ImageUtilTest {
         // WHEN we scale it to 32x32:
         ImageIcon scaled = ImageUtil.scaleIcon(icon, 32);
 
-        // THEN we should get back a non-null icon still at 32x32:
-        assertNotNull(scaled);
-        assertEquals(32, scaled.getIconWidth());
-        assertEquals(32, scaled.getIconHeight());
+        // THEN the exact same icon instance should be returned (early-return, no-op):
+        assertSame(icon, scaled);
+    }
+
+    @Test
+    public void scaleIcon_withNonBufferedImageAlreadyAtTargetSize_shouldReturnSameIcon() throws InterruptedException {
+        // GIVEN a non-BufferedImage icon that's already at the target size:
+        BufferedImage dummyImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+        Image nonBuffered = dummyImage.getScaledInstance(32, 32, Image.SCALE_DEFAULT);
+        ImageIcon icon = new ImageIcon(nonBuffered);
+
+        // Use MediaTracker to ensure the image is fully loaded before proceeding:
+        MediaTracker tracker = new MediaTracker(new JPanel());
+        tracker.addImage(nonBuffered, 0);
+        tracker.waitForAll();
+
+        // WHEN we scale it to 32x32:
+        ImageIcon scaled = ImageUtil.scaleIcon(icon, 32);
+
+        // THEN the exact same icon instance should be returned (early-return, no-op; no conversion warning):
+        assertSame(icon, scaled);
     }
 
     @Test

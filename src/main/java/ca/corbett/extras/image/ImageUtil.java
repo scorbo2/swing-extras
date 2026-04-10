@@ -484,6 +484,11 @@ public class ImageUtil {
             return null;
         }
 
+        // Early return: no conversion or scaling needed if already at the requested size:
+        if (imageIcon.getIconWidth() == size && imageIcon.getIconHeight() == size) {
+            return imageIcon;
+        }
+
         BufferedImage image;
         if (img instanceof BufferedImage) {
             image = (BufferedImage) img;
