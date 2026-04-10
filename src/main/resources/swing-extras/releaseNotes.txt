@@ -7,6 +7,7 @@ Version 2.9.0 [TODO release date] - Maintenance release
   #431 - FileField: allow customization of chooser button
   #422 - Fix theme misclassification issue in LookAndFeelManager
   #430 - AppProperties.peek() now accepts an optional default value
+  #429 - HeaderBar: graceful fallback for non-BufferedImage icons
   #425 - Better ImageIO wrapping and error handling in ImageUtil
   #424 - Hit ESC to close the image list panel's preview popup
   #421 - ActionPanel: fix hard-coded button border color

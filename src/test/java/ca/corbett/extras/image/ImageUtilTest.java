@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.swing.ImageIcon;
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -14,6 +16,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
@@ -266,5 +272,81 @@ public class ImageUtilTest {
         // THEN we should get an IllegalArgumentException:
         assertThrows(IllegalArgumentException.class,
                 () -> ImageUtil.scaleImageToFitSquareBounds(dummyImage, 0));
+    }
+
+    @Test
+    public void scaleIcon_withNullIcon_shouldReturnNull() {
+        // GIVEN a null ImageIcon:
+        // WHEN we try to scale it:
+        // THEN we should get null back (not an exception):
+        assertNull(ImageUtil.scaleIcon(null, 32));
+    }
+
+    @Test
+    public void scaleIcon_withBufferedImage_shouldReturnScaledIcon() {
+        // GIVEN an ImageIcon containing a 100x100 BufferedImage:
+        BufferedImage dummyImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        ImageIcon icon = new ImageIcon(dummyImage);
+
+        // WHEN we scale it to 32x32:
+        ImageIcon scaled = ImageUtil.scaleIcon(icon, 32);
+
+        // THEN we should get back a non-null icon at the requested size:
+        assertNotNull(scaled);
+        assertEquals(32, scaled.getIconWidth());
+        assertEquals(32, scaled.getIconHeight());
+    }
+
+    @Test
+    public void scaleIcon_withBufferedImageAlreadyAtTargetSize_shouldReturnSameIcon() {
+        // GIVEN an ImageIcon containing a 32x32 BufferedImage (already at target size):
+        BufferedImage dummyImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+        ImageIcon icon = new ImageIcon(dummyImage);
+
+        // WHEN we scale it to 32x32:
+        ImageIcon scaled = ImageUtil.scaleIcon(icon, 32);
+
+        // THEN the exact same icon instance should be returned (early-return, no-op):
+        assertSame(icon, scaled);
+    }
+
+    @Test
+    public void scaleIcon_withNonBufferedImageAlreadyAtTargetSize_shouldReturnSameIcon() throws InterruptedException {
+        // GIVEN a non-BufferedImage icon that's already at the target size:
+        BufferedImage dummyImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+        Image nonBuffered = dummyImage.getScaledInstance(32, 32, Image.SCALE_DEFAULT);
+        ImageIcon icon = new ImageIcon(nonBuffered);
+
+        // Use MediaTracker to ensure the image is fully loaded before proceeding:
+        MediaTracker tracker = new MediaTracker(new JPanel());
+        tracker.addImage(nonBuffered, 0);
+        tracker.waitForAll();
+
+        // WHEN we scale it to 32x32:
+        ImageIcon scaled = ImageUtil.scaleIcon(icon, 32);
+
+        // THEN the exact same icon instance should be returned (early-return, no-op; no conversion warning):
+        assertSame(icon, scaled);
+    }
+
+    @Test
+    public void scaleIcon_withNonBufferedImage_shouldConvertAndScale() throws InterruptedException {
+        // GIVEN an ImageIcon containing a non-BufferedImage (plain Image via getScaledInstance):
+        BufferedImage dummyImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        Image nonBuffered = dummyImage.getScaledInstance(100, 100, Image.SCALE_DEFAULT);
+        ImageIcon icon = new ImageIcon(nonBuffered);
+
+        // Use MediaTracker to ensure the image is fully loaded before proceeding:
+        MediaTracker tracker = new MediaTracker(new JPanel());
+        tracker.addImage(nonBuffered, 0);
+        tracker.waitForAll();
+
+        // WHEN we scale it to 32x32:
+        ImageIcon scaled = ImageUtil.scaleIcon(icon, 32);
+
+        // THEN we should get back a non-null scaled icon (conversion was attempted):
+        assertNotNull(scaled);
+        assertEquals(32, scaled.getIconWidth());
+        assertEquals(32, scaled.getIconHeight());
     }
 }
