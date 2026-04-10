@@ -490,10 +490,17 @@ public class ImageUtil {
         }
         else {
             // Attempt to convert to BufferedImage so we can scale it:
-            int w = img.getWidth(null);
-            int h = img.getHeight(null);
+            int w = imageIcon.getIconWidth();
+            int h = imageIcon.getIconHeight();
+            int loadStatus = imageIcon.getImageLoadStatus();
             if (w <= 0 || h <= 0) {
-                log.warning("scaleIcon: cannot scale icon because its dimensions are not available; using native size.");
+                if (loadStatus == MediaTracker.ERRORED || loadStatus == MediaTracker.ABORTED) {
+                    log.warning("scaleIcon: cannot scale icon because its image failed to load; using native size.");
+                }
+                else {
+                    log.warning("scaleIcon: cannot scale icon because its dimensions are not available "
+                                + "(load status " + loadStatus + "); using native size.");
+                }
                 return imageIcon;
             }
             log.warning("scaleIcon: icon does not contain a BufferedImage; converting before scaling.");
