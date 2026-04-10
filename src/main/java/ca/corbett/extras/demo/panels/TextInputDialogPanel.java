@@ -194,17 +194,22 @@ public class TextInputDialogPanel extends PanelBuilder {
                 dialog.setConfirmLabel(confirm);
             }
 
-            dialog.setAllowBlank(false);
+            int minLength = minLengthField.getCurrentValue().intValue();
+            dialog.setAllowBlank(minLength == 0);
+
+            // Add our custom validator:
             dialog.addValidator(new ExampleValidator());
 
             dialog.setVisible(true);
-
             String result = dialog.getResult();
             if (result == null) {
                 result = "User cancelled the dialog.";
             }
-            if (result.contains(System.lineSeparator())) {
+            else if (result.contains(System.lineSeparator())) {
                 result = "User entered multi-line text.";
+            }
+            else if (result.isBlank()) {
+                result = "User entered blank text.";
             }
             resultLabel.setText(result);
             resultLabel.setVisible(true);
