@@ -82,7 +82,7 @@ public class TextInputDialogPanel extends PanelBuilder {
         disallowedTextField = new ShortTextField("Disallowed text:", 25);
         disallowedTextField.setText("foobar");
         disallowedTextField.setAllowBlank(true);
-        disallowedTextField.setHelpText("Optionally prevent this text from being typed into the field.");
+        disallowedTextField.setHelpText("Optionally prevent this text from being accepted in the dialog.");
         formPanel.add(disallowedTextField);
 
         minLengthField = new NumberField("Minimum length:", 3, 0, 99, 1);
@@ -102,44 +102,62 @@ public class TextInputDialogPanel extends PanelBuilder {
     }
 
     /**
-     * An example validator that will insist on input text having a certain minimum and maximum
-     * length, and will reject text that contains a specific substring. This is just an
-     * example of what you can do with a custom validator. You can create your
-     * own validator to enforce whatever requirements your application has!
+     * Custom validation with a TextInputDialog is extremely easy to implement.
+     * In fact, it uses the same FieldValidator that swing-forms uses, so you
+     * can even re-use existing validators that you may have already implemented.
+     * Here are a couple of example validations that are possible:
+     * <ul>
+     *     <li>Require a minimum length for the input.</li>
+     *     <li>Prevent certain "naughty" words from being entered.</li>
+     * </ul>
+     * <p>
+     *     You can add any custom validation you want, by supplying
+     *     your own FieldValidator implementation.
+     * </p>
      */
     private class ExampleValidator implements FieldValidator<FormField> {
 
         @Override
         public ValidationResult validate(FormField fieldToValidate) {
-            String text = null;
+            String text = getText(fieldToValidate);
+            if (text == null) {
+                return ValidationResult.invalid("Internal error: validator failed to find any text to validate.");
+            }
+
+            // Check minimum length if it's set to something greater than 0:
             final int minimumLength = minLengthField.getCurrentValue().intValue();
             if (minimumLength > 0) {
-                if (fieldToValidate instanceof ShortTextField shortTextField) {
-                    text = shortTextField.getText();
-                }
-                else if (fieldToValidate instanceof LongTextField longTextField) {
-                    text = longTextField.getText();
-                }
-
-                if (text == null) {
-                    return ValidationResult.valid();
-                }
-
                 if (text.length() < minimumLength) {
                     return ValidationResult.invalid("Input must be at least "
                                                             + minimumLength
                                                             + " characters long.");
                 }
+            }
 
-                String naughty = disallowedTextField.getText().toLowerCase(Locale.ROOT).trim();
-                if (!naughty.isBlank()) {
-                    if (text.toLowerCase().contains(naughty)) {
-                        return ValidationResult.invalid("Input cannot contain \"" + naughty + "\".");
-                    }
+            // Check for naughty words if we were given any:
+            String naughty = disallowedTextField.getText().toLowerCase(Locale.ROOT).trim();
+            if (!naughty.isBlank()) {
+                if (text.toLowerCase(Locale.ROOT).contains(naughty)) {
+                    return ValidationResult.invalid("Input cannot contain \"" + naughty + "\".");
                 }
             }
 
             return ValidationResult.valid();
+        }
+
+        /**
+         * Figure out what text was entered by the user.
+         * Can theoretically return null if something very unexpected happens.
+         */
+        private String getText(FormField field) {
+            String text = null;
+            if (field instanceof ShortTextField shortTextField) {
+                text = shortTextField.getText();
+            }
+            else if (field instanceof LongTextField longTextField) {
+                text = longTextField.getText();
+            }
+            return text;
         }
     }
 
@@ -184,6 +202,9 @@ public class TextInputDialogPanel extends PanelBuilder {
             String result = dialog.getResult();
             if (result == null) {
                 result = "User cancelled the dialog.";
+            }
+            if (result.contains(System.lineSeparator())) {
+                result = "User entered multi-line text.";
             }
             resultLabel.setText(result);
             resultLabel.setVisible(true);
