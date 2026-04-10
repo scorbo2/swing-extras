@@ -106,7 +106,7 @@ class HeaderBar extends JPanel {
             if (group.getIcon() instanceof ImageIcon imageIcon) {
                 Icon scaled = ImageUtil.scaleIcon(imageIcon, actionPanel.getHeaderIconSize());
                 if (scaled == null) {
-                    log.warning("addIcon: scaleIcon returned null; using original icon at native size.");
+                    log.warning("addIcon: scaleIcon returned null for group \"" + group.getName() + "\"; using original icon at native size.");
                     icon = imageIcon;
                 }
                 else {
@@ -114,7 +114,7 @@ class HeaderBar extends JPanel {
                 }
             }
             else {
-                log.warning("addIcon: group icon is not an ImageIcon and cannot be scaled; using native size.");
+                log.warning("addIcon: group \"" + group.getName() + "\" icon is not an ImageIcon and cannot be scaled; using native size.");
                 icon = group.getIcon();
             }
             JLabel iconLabel = new JLabel(icon);
