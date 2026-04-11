@@ -243,6 +243,11 @@ public abstract class AppProperties<T extends AppExtension> {
      * Generates and shows a PropertiesDialog to allow the user to view or change any
      * of the current properties. If the user okays the dialog, changes are automatically saved.
      * <p>
+     *     <b>Note:</b> By default, you will get an ActionPanel-style dialog, which is the
+     *     new option introduced in swing-extras 2.8. If you prefer the "classic" style,
+     *     you can invoke setDialogType(DialogType.Classic) before invoking this method.
+     * </p>
+     * <p>
      *     <b>Note:</b> Descendant classes can customize the PropertiesDialog before
      *     it is shown to the user! See the propertiesDialogCreated() method for details.
      * </p>
@@ -257,6 +262,11 @@ public abstract class AppProperties<T extends AppExtension> {
     /**
      * Generates and shows a PropertiesDialog to allow the user to view or change any
      * of the current properties. If the user okays the dialog, changes are automatically saved.
+     * <p>
+     *     <b>Note:</b> By default, you will get an ActionPanel-style dialog, which is the
+     *     new option introduced in swing-extras 2.8. If you prefer the "classic" style,
+     *     you can invoke setDialogType(DialogType.Classic) before invoking this method.
+     * </p>
      * <p>
      *     <b>Note:</b> Descendant classes can customize the PropertiesDialog before
      *     it is shown to the user! See the propertiesDialogCreated() method for details.
