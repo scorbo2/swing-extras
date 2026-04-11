@@ -66,11 +66,22 @@ public abstract class AppProperties<T extends AppExtension> {
 
     private static final Logger logger = Logger.getLogger(AppProperties.class.getName());
 
+    /**
+     * What kind of PropertiesDialog should we generate when the user invokes showPropertiesDialog()?
+     * The default is the new ActionPanel style, introduced in swing-extras 2.8,
+     * but you can specify Classic if you prefer the old style.
+     */
+    public enum DialogType {
+        ActionPanel,
+        Classic
+    }
+
     protected PropertiesManager propsManager;
     protected final ExtensionManager<T> extManager;
 
     private final String appName;
     private final File propsFile;
+    private DialogType dialogType;
 
 
     /**
@@ -85,6 +96,7 @@ public abstract class AppProperties<T extends AppExtension> {
         this.appName = appName;
         this.propsFile = propsFile;
         this.extManager = extManager;
+        this.dialogType = DialogType.ActionPanel;
         reinitialize();
     }
 
@@ -213,6 +225,21 @@ public abstract class AppProperties<T extends AppExtension> {
     }
 
     /**
+     * You can specify which type of PropertiesDialog to generate when the user invokes showPropertiesDialog().
+     * Pass null to return to the default value (ActionPanel).
+     */
+    public void setDialogType(DialogType dialogType) {
+        this.dialogType = dialogType == null ? DialogType.ActionPanel : dialogType;
+    }
+
+    /**
+     * Returns the type of properties dialog that will be generated on the next call to showPropertiesDialog().
+     */
+    public DialogType getDialogType() {
+        return dialogType;
+    }
+
+    /**
      * Generates and shows a PropertiesDialog to allow the user to view or change any
      * of the current properties. If the user okays the dialog, changes are automatically saved.
      * <p>
@@ -241,9 +268,14 @@ public abstract class AppProperties<T extends AppExtension> {
      */
     public boolean showPropertiesDialog(Frame owner, Alignment alignment) {
         reconcileExtensionEnabledStatus();
-        PropertiesDialog dialog = propsManager.generateDialog(owner,
-                                                              appName + " properties",
-                                                                     true);
+        PropertiesDialog dialog = switch (dialogType) {
+            case ActionPanel -> propsManager.generateDialog(owner,
+                                                            appName + " properties",
+                                                            true);
+            case Classic -> propsManager.generateClassicDialog(owner,
+                                                               appName + " properties",
+                                                               true);
+        };
         dialog.setAlignment(alignment);
 
         // Give subclasses a chance to customize this dialog before we show it:
