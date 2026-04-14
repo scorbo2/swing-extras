@@ -480,8 +480,8 @@ public class ImageUtil {
 
         Image img = imageIcon.getImage();
         if (img == null) {
-            log.warning("scaleIcon: icon contains a null image; returning null.");
-            return null;
+            log.warning("scaleIcon: icon contains a null image; using native size.");
+            return imageIcon;
         }
 
         // Early return: no conversion or scaling needed if already at the requested size:
