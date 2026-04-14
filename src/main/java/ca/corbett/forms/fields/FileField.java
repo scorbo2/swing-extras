@@ -145,7 +145,7 @@ public final class FileField extends FormField implements DocumentListener {
             chooseButton.setToolTipText("Choose...");
             chooseButton.setIcon(icon);
             chooseButton.setPreferredSize(null); // let the button resize to fit the icon
-            getFieldComponent().invalidate();
+            getFieldComponent().revalidate();
             getFieldComponent().repaint();
         }
         return this;
@@ -165,7 +165,7 @@ public final class FileField extends FormField implements DocumentListener {
             chooseButton.setToolTipText(null);
             chooseButton.setIcon(null);
             chooseButton.setPreferredSize(null);
-            getFieldComponent().invalidate();
+            getFieldComponent().revalidate();
             getFieldComponent().repaint();
         }
         return this;
