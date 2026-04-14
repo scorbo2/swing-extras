@@ -178,6 +178,8 @@
                 <version>3.8.1</version>
                 <executions>
                     <execution>
+                        <id>resolve-dependency-properties</id>
+                        <phase>initialize</phase>
                         <goals>
                             <goal>properties</goal>
                         </goals>
