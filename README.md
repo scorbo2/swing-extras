@@ -20,7 +20,7 @@ Notable changes in the 2.9 release include:
 - New utility class: `FallbackExceptionHandler`
 - Better error handling in `ImageUtil`'s various image loading methods
 - `FileField` now supports icon-based buttons as well as just text
-- Minor improvements in `AppProperties` 
+- Minor improvements in `AppProperties`
 
 And more! View the [full release notes](src/main/resources/swing-extras/releaseNotes.txt) for details,
 or check out the [archived release announcements](ReleaseAnnouncements.md) for details on previous releases.
