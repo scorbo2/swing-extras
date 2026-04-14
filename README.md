@@ -5,7 +5,6 @@ applications. The library includes a demo application so you can try out the var
 utilities within swing-extras:
 
 ![DemoApp](demo-app.png "Demo app")
-TODO update screenshot for 2.9 release
 
 ## Documentation
 
@@ -13,20 +12,15 @@ You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
 - The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
 
-TODO release announcement for 2.9
-TODO archive the 2.8 announcement
+## NEWS! April 13, 2026 - swing-extras 2.9 is here!
 
-## NEWS! March 8, 2026 - swing-extras 2.8 is here!
+This is a bug fix / maintenance release of the library, with mostly minor improvements.
+Notable changes in the 2.9 release include:
 
-This release introduces the new ActionPanel component, which is a useful
-and highly configurable navigation component. The demo application has been
-modified to use ActionPanel! Additionally, a number of bug fixes and smaller tickets:
-
-- New UI components: ActionPanel, TextInputDialog
-- New FormField: MarginsField / MarginsProperty
-- KeyStrokeManager got many improvements!
-- DirTree: now allows file viewing and double-clicking!
-- BlurLayerUI: add animation options and multi-line text overlay!
+- New utility class: `FallbackExceptionHandler`
+- Better error handling in `ImageUtil`'s various image loading methods
+- `FileField` now supports icon-based buttons as well as just text
+- Minor improvements in `AppProperties` 
 
 And more! View the [full release notes](src/main/resources/swing-extras/releaseNotes.txt) for details,
 or check out the [archived release announcements](ReleaseAnnouncements.md) for details on previous releases.

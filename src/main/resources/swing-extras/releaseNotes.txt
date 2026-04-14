@@ -1,7 +1,7 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
-Version 2.9.0 [TODO release date] - Maintenance release
+Version 2.9.0 [2026-04-13] - Maintenance release
   #446 - AppProperties: make it easier to use classic style dialog
   #437 - New convenience class: FallbackExceptionHandler
   #433 - Fix threading issue in UpdateManager's shutdown hooks
