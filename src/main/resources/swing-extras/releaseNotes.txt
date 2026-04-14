@@ -1,6 +1,18 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 2.9.0 [2026-04-13] - Maintenance release
+  #446 - AppProperties: make it easier to use classic style dialog
+  #437 - New convenience class: FallbackExceptionHandler
+  #433 - Fix threading issue in UpdateManager's shutdown hooks
+  #431 - FileField: allow customization of chooser button
+  #422 - Fix theme misclassification issue in LookAndFeelManager
+  #430 - AppProperties.peek() now accepts an optional default value
+  #429 - HeaderBar: graceful fallback for non-BufferedImage icons
+  #425 - Better ImageIO wrapping and error handling in ImageUtil
+  #424 - Hit ESC to close the image list panel's preview popup
+  #421 - ActionPanel: fix hard-coded button border color
+
 Version 2.8.0 [2026-03-08] - ActionPanel, TextInputDialog
   #417 - DirTree: add support for file viewing in the tree
   #415 - BlurLayerUI: support multi-line text overlay

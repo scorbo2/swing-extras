@@ -66,11 +66,22 @@ public abstract class AppProperties<T extends AppExtension> {
 
     private static final Logger logger = Logger.getLogger(AppProperties.class.getName());
 
+    /**
+     * What kind of PropertiesDialog should we generate when the user invokes showPropertiesDialog()?
+     * The default is the new ActionPanel style, introduced in swing-extras 2.8,
+     * but you can specify Classic if you prefer the old style.
+     */
+    public enum DialogType {
+        ActionPanel,
+        Classic
+    }
+
     protected PropertiesManager propsManager;
     protected final ExtensionManager<T> extManager;
 
     private final String appName;
     private final File propsFile;
+    private DialogType dialogType;
 
 
     /**
@@ -85,6 +96,7 @@ public abstract class AppProperties<T extends AppExtension> {
         this.appName = appName;
         this.propsFile = propsFile;
         this.extManager = extManager;
+        this.dialogType = DialogType.ActionPanel;
         reinitialize();
     }
 
@@ -104,7 +116,29 @@ public abstract class AppProperties<T extends AppExtension> {
      * @return The raw value in String form as it exists in the props file at the time of this call. May be empty.
      */
     public static String peek(File propsFile, String propName) {
-        String result = "";
+        return peek(propsFile, propName, "");
+    }
+
+    /**
+     * Offers a peek directly into the given props file without going through the usual loading mechanism.
+     * This allows direct access to properties (in String form only) exactly as they currently
+     * exist in the given props file. This can be useful in rare cases where an extension needs to know
+     * a property value in order to initialize some other property value. The normal load mechanism prevents
+     * this because property values cannot be read until the AppProperties instance is fully initialized,
+     * leading to a circular problem.
+     * <p>
+     * If the value does not exist or an error occurs while reading the props file, the given defaultValue
+     * is returned instead.
+     * </p>
+     *
+     * @param propsFile    The properties file to read.
+     * @param propName     The fully qualified name of the property in question.
+     * @param defaultValue The value to return if the property does not exist or cannot be read.
+     * @return The raw value in String form as it exists in the props file at the time of this call,
+     *         or defaultValue if not found.
+     */
+    public static String peek(File propsFile, String propName, String defaultValue) {
+        String result = defaultValue;
         try {
             FileBasedProperties tempProps = new FileBasedProperties(propsFile);
             tempProps.load();
@@ -191,8 +225,28 @@ public abstract class AppProperties<T extends AppExtension> {
     }
 
     /**
+     * You can specify which type of PropertiesDialog to generate when the user invokes showPropertiesDialog().
+     * Pass null to return to the default value (ActionPanel).
+     */
+    public void setDialogType(DialogType dialogType) {
+        this.dialogType = dialogType == null ? DialogType.ActionPanel : dialogType;
+    }
+
+    /**
+     * Returns the type of properties dialog that will be generated on the next call to showPropertiesDialog().
+     */
+    public DialogType getDialogType() {
+        return dialogType;
+    }
+
+    /**
      * Generates and shows a PropertiesDialog to allow the user to view or change any
      * of the current properties. If the user okays the dialog, changes are automatically saved.
+     * <p>
+     *     <b>Note:</b> By default, you will get an ActionPanel-style dialog, which is the
+     *     new option introduced in swing-extras 2.8. If you prefer the "classic" style,
+     *     you can invoke setDialogType(DialogType.Classic) before invoking this method.
+     * </p>
      * <p>
      *     <b>Note:</b> Descendant classes can customize the PropertiesDialog before
      *     it is shown to the user! See the propertiesDialogCreated() method for details.
@@ -209,6 +263,11 @@ public abstract class AppProperties<T extends AppExtension> {
      * Generates and shows a PropertiesDialog to allow the user to view or change any
      * of the current properties. If the user okays the dialog, changes are automatically saved.
      * <p>
+     *     <b>Note:</b> By default, you will get an ActionPanel-style dialog, which is the
+     *     new option introduced in swing-extras 2.8. If you prefer the "classic" style,
+     *     you can invoke setDialogType(DialogType.Classic) before invoking this method.
+     * </p>
+     * <p>
      *     <b>Note:</b> Descendant classes can customize the PropertiesDialog before
      *     it is shown to the user! See the propertiesDialogCreated() method for details.
      * </p>
@@ -219,9 +278,14 @@ public abstract class AppProperties<T extends AppExtension> {
      */
     public boolean showPropertiesDialog(Frame owner, Alignment alignment) {
         reconcileExtensionEnabledStatus();
-        PropertiesDialog dialog = propsManager.generateDialog(owner,
-                                                              appName + " properties",
-                                                                     true);
+        PropertiesDialog dialog = switch (dialogType) {
+            case ActionPanel -> propsManager.generateDialog(owner,
+                                                            appName + " properties",
+                                                            true);
+            case Classic -> propsManager.generateClassicDialog(owner,
+                                                               appName + " properties",
+                                                               true);
+        };
         dialog.setAlignment(alignment);
 
         // Give subclasses a chance to customize this dialog before we show it:

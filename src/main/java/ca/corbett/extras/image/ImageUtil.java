@@ -14,6 +14,7 @@ import javax.swing.filechooser.FileFilter;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.logging.Logger;
 
 /**
  * Contains generic methods for dealing with images and image data.
@@ -33,6 +35,8 @@ import java.util.Locale;
  * @since 2012-09-01
  */
 public class ImageUtil {
+
+    private static final Logger log = Logger.getLogger(ImageUtil.class.getName());
 
     /**
      * JPEG compression quality to use. *
@@ -78,11 +82,15 @@ public class ImageUtil {
      * ImagePanel has native support for animated GIF images, but you must
      * supply them as ImageIcon instances and not BufferedImage instances.
      *
-     * @param file The File from which to load the image icon.
+     * @param file The File from which to load the image icon. Must not be null.
      * @return an ImageIcon instance.
+     * @throws IllegalArgumentException If {@code file} is {@code null}.
      * @throws IOException If the image could not be loaded.
      */
     public static ImageIcon loadImageIcon(final File file) throws IOException {
+        if (file == null) {
+            throw new IllegalArgumentException("File cannot be null");
+        }
         return validateImageIcon(new ImageIcon(file.getAbsolutePath()));
     }
 
@@ -94,11 +102,15 @@ public class ImageUtil {
      * ImagePanel has native support for animated GIF images, but you must
      * supply them as ImageIcon instances and not BufferedImage instances.
      *
-     * @param url The URL from which to load the image icon.
+     * @param url The URL from which to load the image icon. Must not be null.
      * @return an ImageIcon instance.
+     * @throws IllegalArgumentException If {@code url} is {@code null}.
      * @throws IOException If the image could not be loaded.
      */
     public static ImageIcon loadImageIcon(final URL url) throws IOException {
+        if (url == null) {
+            throw new IllegalArgumentException("URL cannot be null");
+        }
         return validateImageIcon(new ImageIcon(url));
     }
 
@@ -110,19 +122,21 @@ public class ImageUtil {
      * This extra validation step intercepts the ImageIcon before we return it,
      * and adds an IOException if the image appears to be invalid.
      *
-     * @param image A candidate ImageIcon to evaluate.
+     * @param image A candidate ImageIcon to evaluate. Must not be null.
      * @return The input ImageIcon if it appears valid.
      * @throws IOException If the image appears to be invalid.
      */
     protected static ImageIcon validateImageIcon(final ImageIcon image) throws IOException {
+        if (image == null) {
+            throw new IllegalArgumentException("image cannot be null");
+        }
         // ImageIcon's getImageLoadStatus() method seems to be a bit flakey...
         // Some GIF files will return status ABORTED even though they display perfectly fine.
         // If we reject those here, we may end up rejecting valid images.
         // This makes it a bit tricky to determine whether the image actually loaded successfully.
         // The best we can do is to do some basic sanity checks on the image dimensions,
         // and then only reject images that have an explicit ERRORED status:
-        if (image == null
-                || image.getIconWidth() <= 0
+        if (image.getIconWidth() <= 0
                 || image.getIconHeight() <= 0
                 || image.getImageLoadStatus() == MediaTracker.ERRORED) {
             throw new IOException("Error loading ImageIcon");
@@ -134,35 +148,71 @@ public class ImageUtil {
 
     /**
      * Loads a BufferedImage from the specified URL.
+     * <p>
+     *     <b>NOTE:</b> Java's underlying ImageIO class can actually return null under some conditions,
+     *     if the image could not be loaded. This wrapper class will convert that into an IOException,
+     *     so that callers can be assured that this method will either return non-null, or throw.
+     * </p>
      *
      * @param url The URL of the image to load.
      * @return The BufferedImage contained in that URL.
      * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadImage(final URL url) throws IOException {
-        return ImageIO.read(url);
+        if (url == null) {
+            throw new IllegalArgumentException("URL cannot be null");
+        }
+        BufferedImage image = ImageIO.read(url);
+        if (image == null) {
+            throw new IOException("Error loading image from URL: " + url);
+        }
+        return image;
     }
 
     /**
      * Loads a BufferedImage from the specified file.
+     * <p>
+     *     <b>NOTE:</b> Java's underlying ImageIO class can actually return null under some conditions,
+     *     if the image could not be loaded. This wrapper class will convert that into an IOException,
+     *     so that callers can be assured that this method will either return non-null, or throw.
+     * </p>
      *
      * @param file The file in question. Can be any format supported by javax.imageio.ImageIO.
      * @return A BufferedImage containing the image data.
      * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadImage(final File file) throws IOException {
-        return ImageIO.read(file);
+        if (file == null) {
+            throw new IllegalArgumentException("File cannot be null");
+        }
+        BufferedImage image = ImageIO.read(file);
+        if (image == null) {
+            throw new IOException("Error loading image from file: " + file);
+        }
+        return image;
     }
 
     /**
      * Loads a BufferedImage from the specified input stream.
+     * <p>
+     *     <b>NOTE:</b> Java's underlying ImageIO class can actually return null under some conditions,
+     *     if the image could not be loaded. This wrapper class will convert that into an IOException,
+     *     so that callers can be assured that this method will either return non-null, or throw.
+     * </p>
      *
-     * @param inStream The input stream in question. Must contain an image in a format supported by javax.imageio.ImageIo.
+     * @param inStream The input stream in question. Must contain an image in a format supported by javax.imageio.ImageIO.
      * @return A BufferedImage containing the image data.
      * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadImage(final InputStream inStream) throws IOException {
-        return ImageIO.read(inStream);
+        if (inStream == null) {
+            throw new IllegalArgumentException("inStream cannot be null");
+        }
+        BufferedImage image = ImageIO.read(inStream);
+        if (image == null) {
+            throw new IOException("Error loading image from stream: " + inStream);
+        }
+        return image;
     }
 
     /**
@@ -174,8 +224,12 @@ public class ImageUtil {
      * @throws IOException If the image could not be loaded.
      */
     public static BufferedImage loadFromResource(Class<?> loadingClass, String resourceName) throws IOException {
-        try (InputStream inStream = loadingClass.getResourceAsStream(resourceName)) {
-            return loadImage(inStream);
+        InputStream inStream = loadingClass.getResourceAsStream(resourceName);
+        if (inStream == null) {
+            throw new IOException("Resource not found: " + resourceName + " for class " + loadingClass.getName());
+        }
+        try (InputStream is = inStream) {
+            return loadImage(is);
         }
     }
 
@@ -367,6 +421,11 @@ public class ImageUtil {
 
     /**
      * Converts the given byte array (created via serializeImage) back into a BufferedImage.
+     * <p>
+     *     <b>NOTE:</b> Java's underlying ImageIO class can actually return null under some conditions,
+     *     if the image could not be loaded. This wrapper class will convert that into an IOException,
+     *     so that callers can be assured that this method will either return non-null, or throw.
+     * </p>
      *
      * @param arr A byte array generated by one of the serializeImage methods.
      * @return A BufferedImage representing the image data, or null if the input array was null.
@@ -377,49 +436,94 @@ public class ImageUtil {
             return null;
         }
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
-        return ImageIO.read(is);
+        return loadImage(is);
     }
 
     /**
      * Generates an image thumbnail for the given image file using the given dimensions.
      * Note that the image will be resized proportionally so that it fits inside the max of the
      * specified width and height. For example, an 800x600 image will be shrunk to 150x112.
+     * <p>
+     *     <b>NOTE:</b> Java's underlying ImageIO class can actually return null under some conditions,
+     *     if the image could not be loaded. This wrapper class will convert that into an IOException,
+     *     so that callers can be assured that this method will either return non-null, or throw.
+     * </p>
      *
-     * @param image  The image file in question. Can be any format supported by javax.imageio.ImageIO.
+     * @param file   The image file in question. Can be any format supported by javax.imageio.ImageIO.
      * @param width  The desired max width of the thumbnail.
      * @param height The desired max height of the thumbnail.
      * @return A BufferedImage containing the thumbnail.
      * @throws IOException on input/output error.
      */
-    public static BufferedImage generateThumbnail(final File image,
+    public static BufferedImage generateThumbnail(final File file,
                                                   final int width,
                                                   final int height) throws IOException {
-        BufferedImage sourceImage = ImageIO.read(image);
+        BufferedImage sourceImage = loadImage(file);
         return generateThumbnail(sourceImage, width, height);
     }
 
     /**
      * Returns a scaled version of the input icon, if it is not already at the
      * given size (assuming square icons). If the input icon is null, null is returned.
+     * If the icon does not contain a BufferedImage, a conversion will be attempted.
+     * If the conversion fails, the original icon is returned at its native size and a
+     * warning is logged.
      *
-     * @param imageIcon Any ImageIcon instance that contains a BufferedImage.
+     * @param imageIcon Any ImageIcon instance.
      * @param size      The requested size (assuming square icons).
-     * @return A scaled ImageIcon instance, or null if the input icon was null or did not contain a BufferedImage.
+     * @return A scaled ImageIcon instance, or null if the input icon was null.
      */
     public static ImageIcon scaleIcon(ImageIcon imageIcon, int size) {
-        BufferedImage image = null;
-        if (imageIcon != null) {
-            if (imageIcon.getImage() == null || !(imageIcon.getImage() instanceof BufferedImage)) {
-                return null; // can't scale non-BufferedImage icons
-            }
+        if (imageIcon == null) {
+            return null;
+        }
 
-            image = (BufferedImage)imageIcon.getImage();
-            if (image.getHeight() != size || image.getWidth() != size) {
-                // Resize the image to match the specified size (assuming square icons):
-                image = generateThumbnailWithTransparency(image, size, size);
+        Image img = imageIcon.getImage();
+        if (img == null) {
+            log.warning("scaleIcon: icon contains a null image; using native size.");
+            return imageIcon;
+        }
+
+        // Early return: no conversion or scaling needed if already at the requested size:
+        if (imageIcon.getIconWidth() == size && imageIcon.getIconHeight() == size) {
+            return imageIcon;
+        }
+
+        BufferedImage image;
+        if (img instanceof BufferedImage) {
+            image = (BufferedImage) img;
+        }
+        else {
+            // Attempt to convert to BufferedImage so we can scale it:
+            int w = imageIcon.getIconWidth();
+            int h = imageIcon.getIconHeight();
+            int loadStatus = imageIcon.getImageLoadStatus();
+            if (w <= 0 || h <= 0) {
+                if (loadStatus == MediaTracker.ERRORED || loadStatus == MediaTracker.ABORTED) {
+                    log.warning("scaleIcon: cannot scale icon because its image failed to load; using native size.");
+                }
+                else {
+                    log.warning("scaleIcon: cannot scale icon because its dimensions are not available "
+                                + "(load status " + loadStatus + "); using native size.");
+                }
+                return imageIcon;
+            }
+            log.warning("scaleIcon: icon does not contain a BufferedImage; converting before scaling.");
+            image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = image.createGraphics();
+            try {
+                g2d.drawImage(img, 0, 0, null);
+            }
+            finally {
+                g2d.dispose();
             }
         }
-        return image == null ? null : new ImageIcon(image);
+
+        if (image.getHeight() != size || image.getWidth() != size) {
+            // Resize the image to match the specified size (assuming square icons):
+            image = generateThumbnailWithTransparency(image, size, size);
+        }
+        return new ImageIcon(image);
     }
 
     /**
@@ -464,17 +568,22 @@ public class ImageUtil {
      * The resulting BufferedImage will be rendered with an alpha channel to preserve transparency.
      * Note that the image will be resized proportionally so that it fits inside the max of the
      * specified width and height. For example, an 800x600 image will be shrunk to 150x112.
+     * <p>
+     *     <b>NOTE:</b> Java's underlying ImageIO class can actually return null under some conditions,
+     *     if the image could not be loaded. This wrapper class will convert that into an IOException,
+     *     so that callers can be assured that this method will either return non-null, or throw.
+     * </p>
      *
-     * @param image  The image file in question. Can be any format supported by javax.imageio.ImageIO.
+     * @param file   The image file in question. Can be any format supported by javax.imageio.ImageIO.
      * @param width  The desired max width of the thumbnail.
      * @param height The desired max height of the thumbnail.
      * @return A BufferedImage containing the thumbnail.
      * @throws IOException on input/output error.
      */
-    public static BufferedImage generateThumbnailWithTransparency(final File image,
+    public static BufferedImage generateThumbnailWithTransparency(final File file,
                                                                   final int width,
                                                                   final int height) throws IOException {
-        BufferedImage sourceImage = ImageIO.read(image);
+        BufferedImage sourceImage = loadImage(file);
         return generateThumbnailWithTransparency(sourceImage, width, height);
     }
 
@@ -483,14 +592,20 @@ public class ImageUtil {
      * The resulting BufferedImage will be rendered with an alpha channel to preserve transparency.
      * The image will be resized proportionally to fit into the specified width and height.
      *
-     * @param sourceImage The image in question
-     * @param width       The desired max width of the thumbnail
-     * @param height      The desired max height of the thumbnail
+     * @param sourceImage The image in question. Must not be null.
+     * @param width       The desired max width of the thumbnail. Must be positive.
+     * @param height      The desired max height of the thumbnail. Must be positive.
      * @return A BufferedImage representing the thumbnail
      */
     public static BufferedImage generateThumbnailWithTransparency(final BufferedImage sourceImage,
                                                                   final int width,
                                                                   final int height) {
+        if (sourceImage == null) {
+            throw new IllegalArgumentException("sourceImage cannot be null");
+        }
+        if (width <= 0 || height <= 0) {
+            throw new IllegalArgumentException("width and height must be positive");
+        }
         int srcWidth = sourceImage.getWidth();
         int srcHeight = sourceImage.getHeight();
         float scaleFactor = (srcWidth > srcHeight)
@@ -523,11 +638,14 @@ public class ImageUtil {
      * This is useful for displaying basic information about an image without paying the computational
      * expense of actually loading the whole thing.
      *
-     * @param imageFile The image file in question. Must be in an image format supported by ImageIO.
+     * @param imageFile The image file in question. Must be in an image format supported by ImageIO. Can't be null.
      * @return The dimensions of the image.
      * @throws IOException for unsupported image formats, or if the file is corrupt or missing.
      */
     public static Dimension getImageDimensions(File imageFile) throws IOException {
+        if (imageFile == null) {
+            throw new IllegalArgumentException("imageFile cannot be null");
+        }
         try (ImageInputStream stream = ImageIO.createImageInputStream(imageFile)) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
 
@@ -554,8 +672,13 @@ public class ImageUtil {
      * versus height. A "fuzzy" percentage is applied, such that images don't need to be exactly
      * square to be considered "square". For example, an image of 999x1000 is technically portrait,
      * but really, it could be considered "close enough" to be called square.
+     *
+     * @param imageDim The dimensions of the image in question. Must not be null.
      */
     public static String getAspectRatioDescription(Dimension imageDim) {
+        if (imageDim == null) {
+            throw new IllegalArgumentException("imageDim cannot be null");
+        }
         final double TOLERANCE = 0.05; // five percent is "close enough"
         int width = imageDim.width;
         int height = imageDim.height;
@@ -589,7 +712,7 @@ public class ImageUtil {
      *     force the resulting image to be square.
      * </p>
      *
-     * @param image        The image to scale.
+     * @param image        The image to scale. Must not be null.
      * @param maxDimension The desired largest dimension of the scaled image.
      * @return The scaled image.
      */
@@ -611,12 +734,18 @@ public class ImageUtil {
      * and height are equal, but without distorting the image itself.
      * </p>
      *
-     * @param image        The image to scale.
-     * @param maxDimension The desired largest dimension of the scaled image.
+     * @param image        The image to scale. Must not be null.
+     * @param maxDimension The desired largest dimension of the scaled image. Must be positive.
      * @param makeSquare   If true, will apply transparent padding if needed so the returned image is square.
      * @return The scaled image.
      */
     public static BufferedImage scaleImageToFitSquareBounds(BufferedImage image, int maxDimension, boolean makeSquare) {
+        if (image == null) {
+            throw new IllegalArgumentException("image cannot be null");
+        }
+        if (maxDimension <= 0) {
+            throw new IllegalArgumentException("maxDimension must be positive");
+        }
         int originalWidth = image.getWidth();
         int originalHeight = image.getHeight();
 
@@ -698,11 +827,17 @@ public class ImageUtil {
      * PNG is a lossless format that supports transparency, making it ideal for graphics,
      * screenshots, and images that require an alpha channel.
      *
-     * @param image The BufferedImage to save.
-     * @param file  The File to which to save.
+     * @param image The BufferedImage to save. Must not be null.
+     * @param file  The File to which to save. Must not be null.
      * @throws IOException If the image could not be saved or if no PNG writer is available.
      */
     public static void savePngImage(final BufferedImage image, final File file) throws IOException {
+        if (image == null) {
+            throw new IllegalArgumentException("image cannot be null");
+        }
+        if (file == null) {
+            throw new IllegalArgumentException("file cannot be null");
+        }
         Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName("png");
         ImageWriter imageWriter = null;
         if (iter.hasNext()) {

@@ -38,6 +38,7 @@ class ColorOptionsTest {
         colorOptions.setGroupHeaderBackground(Color.MAGENTA);
         colorOptions.setActionButtonBackground(Color.ORANGE);
         colorOptions.setToolBarButtonBackground(Color.PINK);
+        colorOptions.setFlatButtonBorderColor(Color.YELLOW);
 
         // WHEN we call useSystemDefaults:
         colorOptions.useSystemDefaults();
@@ -50,6 +51,7 @@ class ColorOptionsTest {
         assertNull(colorOptions.getGroupHeaderBackground(), "Group header background should be null after useSystemDefaults");
         assertNull(colorOptions.getActionButtonBackground(), "Action button background should be null after useSystemDefaults");
         assertNull(colorOptions.getToolBarButtonBackground(), "Toolbar button background should be null after useSystemDefaults");
+        assertNull(colorOptions.getFlatButtonBorderColor(), "Flat button border color should be null after useSystemDefaults");
     }
 
     @Test
@@ -63,6 +65,7 @@ class ColorOptionsTest {
         assertNull(colorOptions.getGroupHeaderBackground(), "Group header background should be null by default");
         assertNull(colorOptions.getActionButtonBackground(), "Action button background should be null by default");
         assertNull(colorOptions.getToolBarButtonBackground(), "Toolbar button background should be null by default");
+        assertNull(colorOptions.getFlatButtonBorderColor(), "Flat button border color should be null by default");
     }
 
     @Test
@@ -102,6 +105,8 @@ class ColorOptionsTest {
                 "Action button background should match theme");
         assertEquals(ColorTheme.DEFAULT.getToolBarButtonBackground(), colorOptions.getToolBarButtonBackground(),
                 "Toolbar button background should match theme");
+        assertEquals(ColorTheme.DEFAULT.getFlatButtonBorderColor(), colorOptions.getFlatButtonBorderColor(),
+                "Flat button border color should match theme");
     }
 
     @Test
@@ -277,6 +282,40 @@ class ColorOptionsTest {
     void setToolBarButtonsTransparent_shouldReturnSameInstance_forMethodChaining() {
         assertSame(colorOptions, colorOptions.setToolBarButtonsTransparent(),
                 "setToolBarButtonsTransparent should return the same instance for method chaining");
+    }
+
+    // --- setFlatButtonBorderColor / getFlatButtonBorderColor ---
+
+    @Test
+    void setFlatButtonBorderColor_shouldStoreColor() {
+        colorOptions.setFlatButtonBorderColor(Color.YELLOW);
+        assertEquals(Color.YELLOW, colorOptions.getFlatButtonBorderColor(), "Flat button border color should be YELLOW");
+    }
+
+    @Test
+    void setFlatButtonBorderColor_withNull_shouldClearColor() {
+        colorOptions.setFlatButtonBorderColor(Color.YELLOW);
+        colorOptions.setFlatButtonBorderColor(null);
+        assertNull(colorOptions.getFlatButtonBorderColor(), "Flat button border color should be null after setting null");
+    }
+
+    @Test
+    void setFlatButtonBorderColor_shouldReturnSameInstance_forMethodChaining() {
+        assertSame(colorOptions, colorOptions.setFlatButtonBorderColor(Color.YELLOW),
+                "setFlatButtonBorderColor should return the same instance for method chaining");
+    }
+
+    @Test
+    void setFlatButtonBorderColor_shouldFireOptionsChanged() {
+        // GIVEN a listener is registered:
+        final int[] count = {0};
+        colorOptions.addListener(() -> count[0]++);
+
+        // WHEN we set the flat button border color:
+        colorOptions.setFlatButtonBorderColor(Color.YELLOW);
+
+        // THEN the listener should be notified exactly once:
+        assertEquals(1, count[0], "Options listener should be notified exactly once when flat button border color changes");
     }
 
     // --- getHighlightColor (static) ---
