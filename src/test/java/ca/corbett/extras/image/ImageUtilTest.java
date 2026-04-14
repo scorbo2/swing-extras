@@ -320,7 +320,7 @@ public class ImageUtilTest {
         // Use MediaTracker to ensure the image is fully loaded before proceeding:
         MediaTracker tracker = new MediaTracker(new JPanel());
         tracker.addImage(nonBuffered, 0);
-        tracker.waitForAll();
+        tracker.waitForAll(2500);
 
         // WHEN we scale it to 32x32:
         ImageIcon scaled = ImageUtil.scaleIcon(icon, 32);
@@ -339,7 +339,7 @@ public class ImageUtilTest {
         // Use MediaTracker to ensure the image is fully loaded before proceeding:
         MediaTracker tracker = new MediaTracker(new JPanel());
         tracker.addImage(nonBuffered, 0);
-        tracker.waitForAll();
+        tracker.waitForAll(2500);
 
         // WHEN we scale it to 32x32:
         ImageIcon scaled = ImageUtil.scaleIcon(icon, 32);
