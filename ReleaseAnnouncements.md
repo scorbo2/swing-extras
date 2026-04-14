@@ -2,6 +2,20 @@
 
 Older release announcements for swing-extras releases will be archived here.
 
+## NEWS! March 8, 2026 - swing-extras 2.8 is here!
+
+This release introduces the new ActionPanel component, which is a useful
+and highly configurable navigation component. The demo application has been
+modified to use ActionPanel! Additionally, a number of bug fixes and smaller tickets:
+
+- New UI components: ActionPanel, TextInputDialog
+- New FormField: MarginsField / MarginsProperty
+- KeyStrokeManager got many improvements!
+- DirTree: now allows file viewing and double-clicking!
+- BlurLayerUI: add animation options and multi-line text overlay!
+
+And more! View the [full release notes](src/main/resources/swing-extras/releaseNotes.txt) for a complete list.
+
 ## January 25, 2026 - swing-extras 2.7 is here!
 
 This is a maintenance release of swing-extras with a few new features and some bug fixes.
