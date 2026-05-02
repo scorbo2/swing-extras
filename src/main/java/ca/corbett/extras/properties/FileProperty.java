@@ -95,7 +95,7 @@ public class FileProperty extends AbstractProperty {
     @Override
     public void saveToProps(Properties props) {
         props.setBoolean(fullyQualifiedName + ".allowBlank", allowBlank);
-        props.setString(fullyQualifiedName + ".file", (file == null) ? "" : file.getAbsolutePath());
+        props.setPlatformSafeFilePath(fullyQualifiedName + ".file", (file == null) ? "" : file.getAbsolutePath());
         props.setInteger(fullyQualifiedName + ".cols", columns);
         props.setString(fullyQualifiedName + ".selectionType", selectionType.name());
     }
