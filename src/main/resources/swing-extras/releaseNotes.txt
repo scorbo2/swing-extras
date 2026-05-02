@@ -5,6 +5,7 @@ Version 3.0.0 [TODO - release date] - Major refactoring
   #456 - Upgrade all dependency versions to latest
   #455 - Drop support for JTattoo
   #453 - Fix bug in ActionPanel demo panel
+  #450 - Absorb the FileWatcher class from CryptText
   #443 - Upgrade to Java 25
 
 Version 2.9.0 [2026-04-13] - Maintenance release
