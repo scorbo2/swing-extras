@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,7 +99,14 @@ public class Properties {
             return;
         }
 
-        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+        String osName = System.getProperty("os.name");
+        if (osName == null) {
+            logger.log(Level.WARNING, "System property \"os.name\" is null; " +
+                    "treating as non-Windows for file path storage");
+            props.setProperty(name, path);
+            return;
+        }
+        boolean isWindows = osName.toLowerCase(Locale.ROOT).contains("win");
         if (isWindows) {
             // On Windows, we need to escape backslashes in file paths by doubling them up:
             String escapedPath = path.replace("\\", "\\\\");

@@ -101,7 +101,12 @@ public class FileBasedPropertiesTest {
         }
         finally {
             // Make sure we clean up after ourselves:
-            System.setProperty("os.name", osName);
+            if (osName == null) {
+                System.clearProperty("os.name");
+            }
+            else {
+                System.setProperty("os.name", osName);
+            }
         }
     }
 }
