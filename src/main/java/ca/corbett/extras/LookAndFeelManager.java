@@ -58,6 +58,7 @@ import java.awt.Color;
 import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,21 +74,33 @@ public class LookAndFeelManager {
     private static final Logger logger = Logger.getLogger(LookAndFeelManager.class.getName());
 
     private static final List<ChangeListener> changeListeners = new ArrayList<>();
+    private static boolean installationComplete = false;
 
     /**
      * Can be invoked (ideally at application startup before any GUI elements are shown)
      * to install all the "extra" LaFs that swing-extras supports, namely from the
-     * FlatLaf package and also JTattoo. With the JTattoo themes we have to tweak
-     * them a bit to avoid some wonky default behaviour with menus (it wants to show
-     * a sideways logo in every menu for some reason - we can disable it).
+     * FlatLaf package.
      * <p>
      *     Implementation note: this code is in a public static method instead of
      *     in a static initializer block because your app might not care about
      *     LaF, in which case you can just ignore this method and avoid whatever
-     *     memory penalty in would otherwise incur.
+     *     memory penalty it would otherwise incur.
      * </p>
      */
     public static void installExtraLafs() {
+        // Only do this one:
+        if (installationComplete) {
+            return;
+        }
+
+        // Avoid the dreaded "you can't resize your window" bug on Windows-based systems.
+        String osName = System.getProperty("os.name");
+        if (osName != null && osName.toLowerCase(Locale.ROOT).contains("win")) {
+            // Something about FlatLaf's window decorations disables the click-and-drag-to-resize
+            // functionality on Windows systems (at least with OpenJDK 21 it does). This workaround fixes it.
+            System.setProperty("flatlaf.useWindowDecorations", "false");
+        }
+
         // The "core" themes provided by FlatLaf:
         FlatLightLaf.installLafInfo();
         FlatDarkLaf.installLafInfo();
@@ -140,6 +153,8 @@ public class LookAndFeelManager {
         FlatMTNightOwlIJTheme.installLafInfo();
         FlatMTSolarizedDarkIJTheme.installLafInfo();
         FlatMTSolarizedLightIJTheme.installLafInfo();
+
+        installationComplete = true;
     }
 
     /**
@@ -158,6 +173,11 @@ public class LookAndFeelManager {
      * @param className The name of the LaF class in question.
      */
     public static void switchLaf(String className) {
+        // If we have not yet installed the extra stuff, do it now:
+        if (!installationComplete) {
+            installExtraLafs();
+        }
+
         try {
             UIManager.setLookAndFeel(className);
             for (Window w : Window.getWindows()) {

@@ -16,7 +16,7 @@
 - **Java**: 17 (required - do not change)
 - **Maven**: 3.9.11+
 - **Testing**: JUnit 5.12.1, Mockito 5.14.2
-- **UI Libraries**: FlatLaf 3.6, JTattoo 1.6.13
+- **UI Libraries**: FlatLaf 3.7.1
 - **Serialization**: Gson 2.12.1
 
 ## Build and Test Instructions
