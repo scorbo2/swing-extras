@@ -48,19 +48,6 @@ import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTMoonlightIJT
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTNightOwlIJTheme;
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTSolarizedDarkIJTheme;
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMTSolarizedLightIJTheme;
-import com.jtattoo.plaf.acryl.AcrylLookAndFeel;
-import com.jtattoo.plaf.aero.AeroLookAndFeel;
-import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
-import com.jtattoo.plaf.bernstein.BernsteinLookAndFeel;
-import com.jtattoo.plaf.fast.FastLookAndFeel;
-import com.jtattoo.plaf.graphite.GraphiteLookAndFeel;
-import com.jtattoo.plaf.hifi.HiFiLookAndFeel;
-import com.jtattoo.plaf.luna.LunaLookAndFeel;
-import com.jtattoo.plaf.mcwin.McWinLookAndFeel;
-import com.jtattoo.plaf.mint.MintLookAndFeel;
-import com.jtattoo.plaf.noire.NoireLookAndFeel;
-import com.jtattoo.plaf.smart.SmartLookAndFeel;
-import com.jtattoo.plaf.texture.TextureLookAndFeel;
 
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
@@ -71,11 +58,8 @@ import java.awt.Color;
 import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static javax.swing.UIManager.installLookAndFeel;
 
 /**
  * This is a simple wrapper class to manage the various look and feels that
@@ -156,36 +140,6 @@ public class LookAndFeelManager {
         FlatMTNightOwlIJTheme.installLafInfo();
         FlatMTSolarizedDarkIJTheme.installLafInfo();
         FlatMTSolarizedLightIJTheme.installLafInfo();
-
-        // JTattoo:
-        Properties props = new Properties();
-        props.put("logoString", "");
-        AcrylLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Acryl", AcrylLookAndFeel.class.getName());
-        AeroLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Aero", AeroLookAndFeel.class.getName());
-        AluminiumLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Aluminium", AluminiumLookAndFeel.class.getName());
-        BernsteinLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Bernstein", BernsteinLookAndFeel.class.getName());
-        FastLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Fast", FastLookAndFeel.class.getName());
-        GraphiteLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Graphite", GraphiteLookAndFeel.class.getName());
-        HiFiLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - HiFi", HiFiLookAndFeel.class.getName());
-        LunaLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Luna", LunaLookAndFeel.class.getName());
-        McWinLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - McWin", McWinLookAndFeel.class.getName());
-        MintLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Mint", MintLookAndFeel.class.getName());
-        NoireLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Noire", NoireLookAndFeel.class.getName());
-        SmartLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Smart", SmartLookAndFeel.class.getName());
-        TextureLookAndFeel.setCurrentTheme(props);
-        installLookAndFeel("JTattoo - Texture", TextureLookAndFeel.class.getName());
     }
 
     /**
@@ -282,7 +236,6 @@ public class LookAndFeelManager {
                 || combinedName.contains("noir")  // anything with "noir"/"noire"
                 || combinedName.contains("moon")  // another guess
                 || combinedName.contains("night");// just another guess... sigh.
-
     }
 
     /**

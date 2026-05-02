@@ -6,7 +6,7 @@
 
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>2.9.0</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>swing-extras</name>
@@ -36,8 +36,8 @@
     </scm>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <argLine></argLine> <!-- Needed to keep Surefire happy -->
     </properties>
@@ -53,34 +53,27 @@
             <!-- https://github.com/JFormDesigner/FlatLaf -->
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
-            <version>3.6</version>
+            <version>3.7.1</version>
         </dependency>
 
         <dependency>
             <!-- https://github.com/JFormDesigner/FlatLaf/tree/main/flatlaf-intellij-themes -->
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf-intellij-themes</artifactId>
-            <version>3.6</version>
-        </dependency>
-
-        <dependency>
-            <!-- An oldie but a goodie -->
-            <groupId>com.jtattoo</groupId>
-            <artifactId>JTattoo</artifactId>
-            <version>1.6.13</version>
+            <version>3.7.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.12.1</version>
+            <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.14.2</version>
+            <version>5.23.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
