@@ -1,6 +1,12 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 3.0.0 [TODO - release date] - Major refactoring
+  #456 - Upgrade all dependency versions to latest
+  #455 - Drop support for JTattoo
+  #453 - Fix bug in ActionPanel demo panel
+  #443 - Upgrade to Java 25
+
 Version 2.9.0 [2026-04-13] - Maintenance release
   #446 - AppProperties: make it easier to use classic style dialog
   #437 - New convenience class: FallbackExceptionHandler
