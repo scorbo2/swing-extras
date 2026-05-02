@@ -2,6 +2,7 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.ResourceLoader;
 import ca.corbett.extras.ScrollUtil;
 import ca.corbett.extras.TextInputDialog;
 import ca.corbett.extras.actionpanel.ActionPanel;
@@ -46,6 +47,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -72,8 +74,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private static final Color STEEL_BLUE = new Color(70, 130, 180);
 
     // Sound effects, just for fun:
-    private static final String EXPAND_CLIP = "/swing-extras/audio/swish.wav";
-    private static final String COLLAPSE_CLIP = "/swing-extras/audio/splok.wav";
+    private static final String EXPAND_CLIP = "swing-extras/audio/swish.wav";
+    private static final String COLLAPSE_CLIP = "swing-extras/audio/splok.wav";
 
     // Our action names will double as lookups for their form panel contents:
     private static final String TAB_INTRO = "Intro to ActionPanel";
@@ -160,10 +162,18 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
 
         // Just for fun, load some sound effects:
         try {
+            // AudioSystem will puke if we try to load directly from a resource stream,
+            // so we have to extract to a temp file first. Fun!
+            File tmpExpand = File.createTempFile("expand", ".wav");
+            tmpExpand.deleteOnExit();
+            ResourceLoader.extractResourceToFile(EXPAND_CLIP, tmpExpand);
+            File tmpCollapse = File.createTempFile("collapse", ".wav");
+            tmpCollapse.deleteOnExit();
+            ResourceLoader.extractResourceToFile(COLLAPSE_CLIP, tmpCollapse);
             expandClip = AudioSystem.getClip();
-            expandClip.open(AudioSystem.getAudioInputStream(getClass().getResourceAsStream(EXPAND_CLIP)));
+            expandClip.open(AudioSystem.getAudioInputStream(tmpExpand));
             collapseClip = AudioSystem.getClip();
-            collapseClip.open(AudioSystem.getAudioInputStream(getClass().getResourceAsStream(COLLAPSE_CLIP)));
+            collapseClip.open(AudioSystem.getAudioInputStream(tmpCollapse));
         }
         catch (Exception e) {
             // No fun for you!
