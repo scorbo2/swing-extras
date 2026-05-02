@@ -88,7 +88,7 @@ public class LookAndFeelManager {
      * </p>
      */
     public static void installExtraLafs() {
-        // Only do this one:
+        // Only do this once:
         if (installationComplete) {
             return;
         }
