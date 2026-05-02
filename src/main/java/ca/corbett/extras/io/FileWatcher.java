@@ -221,6 +221,10 @@ public class FileWatcher {
                         //   2) treat it as a change to our file, even though it might not have been.
                         // Neither option is great, but the safest option is 2,
                         // so we will schedule a callback just in case.
+                        Logger.getLogger(FileWatcher.class.getName()).log(Level.WARNING,
+                                "WatchService overflow for watched file {0} in directory {1}; events may have been lost. "
+                                        + "Scheduling a callback conservatively.",
+                                new Object[]{watchedFile.getAbsolutePath(), key.watchable()});
                         scheduleDebounced();
                         continue; // OVERFLOW events have no context, so let's avoid an NPE in the code below.
                     }
