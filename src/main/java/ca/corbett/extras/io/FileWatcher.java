@@ -275,8 +275,10 @@ public class FileWatcher {
             old.cancel(false);
         }
         try {
+            long remainingSuppressMillis = Math.max(0L, suppressUntil - System.currentTimeMillis());
+            long suppressUntilNanos = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(remainingSuppressMillis);
             ScheduledFuture<?> next = debouncer.schedule(() -> {
-                if (running && System.currentTimeMillis() >= suppressUntil) {
+                if (running && System.nanoTime() >= suppressUntilNanos) {
                     onChange.run();
                 }
             }, DEBOUNCE_DELAY_MS, TimeUnit.MILLISECONDS);
