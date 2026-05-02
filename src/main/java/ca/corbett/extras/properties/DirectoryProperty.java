@@ -56,7 +56,7 @@ public class DirectoryProperty extends AbstractProperty {
 
     @Override
     public void saveToProps(Properties props) {
-        props.setString(fullyQualifiedName + ".dir", (dir == null) ? "" : dir.getAbsolutePath());
+        props.setPlatformSafeFilePath(fullyQualifiedName + ".dir", (dir == null) ? "" : dir.getAbsolutePath());
         props.setInteger(fullyQualifiedName + ".cols", columns);
     }
 
