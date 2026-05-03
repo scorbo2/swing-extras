@@ -130,7 +130,7 @@ public class FileSystemUtilTest {
     @Test
     public void testFindFiles_withRecursion_shouldSucceed() {
         assertEquals(1, FileSystemUtil.findFiles(rootDir1, true).size());
-        assertEquals(3, FileSystemUtil.findFiles(rootDir2, true).size());
+        assertEquals(2, FileSystemUtil.findFiles(rootDir2, true).size());
         assertEquals(1, FileSystemUtil.findFiles(rootDir3, true).size());
     }
 

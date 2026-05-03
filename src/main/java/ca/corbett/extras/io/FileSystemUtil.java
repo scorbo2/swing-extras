@@ -9,7 +9,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -131,11 +130,6 @@ public class FileSystemUtil {
             return new ArrayList<>();
         }
 
-        // If the extension list is empty, we match everything. No extension list means "no filter".
-        if (extSet.isEmpty()) {
-            return Arrays.asList(children);
-        }
-
         List<File> fileList = new ArrayList<>();
 
         for (File child : children) {
@@ -152,6 +146,14 @@ public class FileSystemUtil {
                         fileMatched = true;
                         break; // Found match, no need to check other extensions
                     }
+                }
+
+                // Special handling for empty extension list: if extSet is empty, we consider it a match for all files:
+                if (extSet.isEmpty()) {
+                    // If it's a regular, non-inverted search, empty list means "match everything".
+                    // If it's an inverted search, empty list means "exclude nothing".
+                    // "fileMatched" will be interpreted correctly in either case by the logic below.
+                    fileMatched = !invertSearch;
                 }
 
                 // If the file matched an extension and our search is not inverted, it's a hit:
