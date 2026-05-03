@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -130,6 +131,11 @@ public class FileSystemUtil {
             return new ArrayList<>();
         }
 
+        // If the extension list is empty, we match everything. No extension list means "no filter".
+        if (extSet.isEmpty()) {
+            return Arrays.asList(children);
+        }
+
         List<File> fileList = new ArrayList<>();
 
         for (File child : children) {
@@ -140,7 +146,7 @@ public class FileSystemUtil {
                 String filename = child.getName().toLowerCase();
 
                 // if any extensions match, it's a hit:
-                boolean fileMatched = extSet.isEmpty(); // empty list == automatic match
+                boolean fileMatched = false;
                 for (String ext : extSet) {
                     if (filename.endsWith(ext)) {
                         fileMatched = true;
@@ -696,13 +702,16 @@ public class FileSystemUtil {
     }
 
     /**
-     * Given a list of file extensions, which may be null or empty (and the list itself may also be
-     * null or empty), return a Set of normalized extensions. Normalization includes trimming whitespace, converting to
+     * Given a list of file extensions, which may be null or empty,
+     * return a Set of normalized extensions.
+     * Normalization includes trimming whitespace, converting to
      * lowercase, and ensuring that each extension starts with a dot.
+     * <p>
      * If the input list is null or empty, an empty set will be returned.
      * Any entry in the list that is null or blank will be ignored.
      * The returned set may be empty even in cases where the input list is not empty,
      * if all entries in the list are null or blank.
+     * </p>
      */
     static Set<String> normalizeExtensionsToSet(List<String> extensions) {
         if (extensions == null) {

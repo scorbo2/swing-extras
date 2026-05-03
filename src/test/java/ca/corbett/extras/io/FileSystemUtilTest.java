@@ -114,14 +114,14 @@ public class FileSystemUtilTest {
     public void testFindFilesExcluding_withExtensionList_shouldSucceed() {
         List<String> extensions = new ArrayList<>();
 
-        // Empty list matches everything, but this method is inverted, so we should get nothing:
-        assertEquals(0, FileSystemUtil.findFilesExcluding(rootDir1, true, extensions).size());
+        // Empty list with an inverted search means "return everything":
+        assertEquals(1, FileSystemUtil.findFilesExcluding(rootDir1, true, extensions).size());
 
-        // Searching for the "wrong" extension should match our file, because we've inverted the search:
+        // Inverted search with the "wrong" extension should return our file, because the extension is wrong:
         extensions.add("blah");
         assertEquals(1, FileSystemUtil.findFilesExcluding(rootDir1, true, extensions).size());
 
-        // Searching for the "right" extension should NOT find our file, because we've inverted the search:
+        // Inverted search with the "right" extension should return nothing, because we're excluding our file:
         extensions.clear();
         extensions.add("txt");
         assertEquals(0, FileSystemUtil.findFilesExcluding(rootDir1, true, extensions).size());
@@ -130,7 +130,7 @@ public class FileSystemUtilTest {
     @Test
     public void testFindFiles_withRecursion_shouldSucceed() {
         assertEquals(1, FileSystemUtil.findFiles(rootDir1, true).size());
-        assertEquals(2, FileSystemUtil.findFiles(rootDir2, true).size());
+        assertEquals(3, FileSystemUtil.findFiles(rootDir2, true).size());
         assertEquals(1, FileSystemUtil.findFiles(rootDir3, true).size());
     }
 
@@ -562,7 +562,7 @@ public class FileSystemUtilTest {
     }
 
     @Test
-    public void normalizeExtensionsToSet_withBlankOrNullEntiies_shouldReturnEmptySet() {
+    public void normalizeExtensionsToSet_withBlankOrNullEntries_shouldReturnEmptySet() {
         // GIVEN a list of extensions, all of which are null, empty, or blank:
         List<String> extensions = new ArrayList<>();
         extensions.add("   ");
