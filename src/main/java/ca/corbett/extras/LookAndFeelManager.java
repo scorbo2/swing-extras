@@ -59,6 +59,7 @@ import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,7 +75,7 @@ public class LookAndFeelManager {
     private static final Logger logger = Logger.getLogger(LookAndFeelManager.class.getName());
 
     private static final List<ChangeListener> changeListeners = new ArrayList<>();
-    private static boolean installationComplete = false;
+    private final static AtomicBoolean installationComplete = new AtomicBoolean(false);
 
     /**
      * Can be invoked (ideally at application startup before any GUI elements are shown)
@@ -89,7 +90,7 @@ public class LookAndFeelManager {
      */
     public static void installExtraLafs() {
         // Only do this once:
-        if (installationComplete) {
+        if (installationComplete.get()) {
             return;
         }
 
@@ -154,7 +155,7 @@ public class LookAndFeelManager {
         FlatMTSolarizedDarkIJTheme.installLafInfo();
         FlatMTSolarizedLightIJTheme.installLafInfo();
 
-        installationComplete = true;
+        installationComplete.set(true);
     }
 
     /**
@@ -174,7 +175,7 @@ public class LookAndFeelManager {
      */
     public static void switchLaf(String className) {
         // If we have not yet installed the extra stuff, do it now:
-        if (!installationComplete) {
+        if (!installationComplete.get()) {
             installExtraLafs();
         }
 
