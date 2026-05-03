@@ -1,9 +1,8 @@
 package ca.corbett.extras.io;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,11 +11,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -27,23 +24,18 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class FileSystemUtilTest {
 
-    private static File testDir;
-    private static File rootDir1;
-    private static File rootDir2;
-    private static File rootDir3;
+    @TempDir
+    private File testDir;
+    private File rootDir1;
+    private File rootDir2;
+    private File rootDir3;
 
     public FileSystemUtilTest() {
     }
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         try {
-            File tmpdir = new File(System.getProperty("java.io.tmpdir"));
-            testDir = new File(tmpdir.getAbsolutePath() + "/sc-util-io-test");
-            if (testDir.exists()) {
-                tearDownClass();
-            }
-            testDir.mkdir();
             rootDir1 = new File(testDir, "rootDir1");
             rootDir2 = new File(testDir, "rootDir2");
             rootDir3 = new File(testDir, "rootDir3");
@@ -77,11 +69,6 @@ public class FileSystemUtilTest {
         }
     }
 
-    @AfterAll
-    public static void tearDownClass() {
-        delete(testDir);
-    }
-
     /**
      * If the input is a file, delete it, and if it's a directory,
      * recurse through it and delete it and everything it contains.
@@ -103,13 +90,18 @@ public class FileSystemUtilTest {
     @Test
     public void testFindFiles_withFileExtensionList_shouldSucceed() {
         List<String> extensions = new ArrayList<>();
-        assertEquals(0, FileSystemUtil.findFiles(rootDir1, true, extensions).size());
 
+        // Empty list should match our file:
+        assertEquals(1, FileSystemUtil.findFiles(rootDir1, true, extensions).size());
+
+        // Explicit extension search should find it:
         extensions.add("txt");
         assertEquals(1, FileSystemUtil.findFiles(rootDir1, true, extensions).size());
 
+        // Wrong extension search should not find it:
+        extensions.clear();
         extensions.add("blah");
-        assertEquals(1, FileSystemUtil.findFiles(rootDir1, true, extensions).size());
+        assertEquals(0, FileSystemUtil.findFiles(rootDir1, true, extensions).size());
     }
 
     @Test
@@ -121,11 +113,16 @@ public class FileSystemUtilTest {
     @Test
     public void testFindFilesExcluding_withExtensionList_shouldSucceed() {
         List<String> extensions = new ArrayList<>();
-        assertEquals(1, FileSystemUtil.findFilesExcluding(rootDir1, true, extensions).size());
 
+        // Empty list matches everything, but this method is inverted, so we should get nothing:
+        assertEquals(0, FileSystemUtil.findFilesExcluding(rootDir1, true, extensions).size());
+
+        // Searching for the "wrong" extension should match our file, because we've inverted the search:
         extensions.add("blah");
         assertEquals(1, FileSystemUtil.findFilesExcluding(rootDir1, true, extensions).size());
 
+        // Searching for the "right" extension should NOT find our file, because we've inverted the search:
+        extensions.clear();
         extensions.add("txt");
         assertEquals(0, FileSystemUtil.findFilesExcluding(rootDir1, true, extensions).size());
     }
@@ -267,30 +264,6 @@ public class FileSystemUtilTest {
         assertEquals("1.5 MB", FileSystemUtil.getPrintableSize(1024 * 1024 + 499999));
         assertEquals("1.0 GB", FileSystemUtil.getPrintableSize(1024 * 1024 * 1024));
         assertEquals("8192.0 PB", FileSystemUtil.getPrintableSize(Long.MAX_VALUE));
-    }
-
-    /**
-     * This one only works on my machine, and I don't want to check in a jar file as a test resource
-     * just for this purpose. So, this test is disabled by default.
-     * TODO find a better home for these "not really a unit test" tests, or delete them. There's 3 of them in total.
-     */
-    @Disabled
-    @Test
-    public void extractTextFileFromJar_withValidJar_shouldExtract() throws Exception {
-        // GIVEN a valid jar file with some text-based files in it:
-        File jarFile = new File("/home/scorbett/Software/sc-releases/extensions/ImageViewer/2.2/ext-iv-ice-2.2.0.jar");
-
-        // WHEN we try to extract some text files:
-        String value1 = FileSystemUtil.extractTextFileFromJar("extInfo.json", jarFile);
-        String value2 = FileSystemUtil.extractTextFileFromJar("META-INF/MANIFEST.MF", jarFile);
-        String value3 = FileSystemUtil.extractTextFileFromJar("does/not/exist", jarFile);
-
-        // THEN we should see expected results:
-        assertNotNull(value1);
-        assertFalse(value1.isEmpty());
-        assertNotNull(value2);
-        assertFalse(value2.isEmpty());
-        assertNull(value3);
     }
 
     @Test
@@ -580,6 +553,45 @@ public class FileSystemUtilTest {
         if (!conflict1.delete() || !conflict2.delete()) {
             fail("Unable to delete test files!");
         }
+    }
+
+    @Test
+    public void normalizeExtensionsToSet_withEmptyOrNullList_shouldReturnEmptySet() {
+        assertTrue(FileSystemUtil.normalizeExtensionsToSet(null).isEmpty());
+        assertTrue(FileSystemUtil.normalizeExtensionsToSet(new ArrayList<>()).isEmpty());
+    }
+
+    @Test
+    public void normalizeExtensionsToSet_withBlankOrNullEntiies_shouldReturnEmptySet() {
+        // GIVEN a list of extensions, all of which are null, empty, or blank:
+        List<String> extensions = new ArrayList<>();
+        extensions.add("   ");
+        extensions.add("");
+        extensions.add(null);
+
+        // WHEN we try to normalize them to a Set:
+        Set<String> result = FileSystemUtil.normalizeExtensionsToSet(extensions);
+
+        // THEN we should get back an empty Set, because all the entries were invalid:
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void normalizeExtensionsToSet_withMixedCaseExtensionsWithAndWithoutDots_shouldNormalize() {
+        // GIVEN a list of extensions with mixed case and some with leading dots:
+        List<String> extensions = new ArrayList<>();
+        extensions.add("txt");
+        extensions.add(".TXT");
+        extensions.add("BlAh");
+        extensions.add(".bLaH");
+
+        // WHEN we normalize them to a Set:
+        Set<String> result = FileSystemUtil.normalizeExtensionsToSet(extensions);
+
+        // THEN we should get back a Set with the normalized extensions, with dots, lowercase, without duplicates:
+        assertEquals(2, result.size());
+        assertTrue(result.contains(".txt"));
+        assertTrue(result.contains(".blah"));
     }
 
     private static void createNestedTestDir(File rootDir, int dirCount1, int dirCount2, int dirCount3, boolean createFiles)

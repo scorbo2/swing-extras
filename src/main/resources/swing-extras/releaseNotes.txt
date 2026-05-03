@@ -8,6 +8,7 @@ Version 3.0.0 [TODO - release date] - Major refactoring
   #452 - Fix FlatLaf Look and Feel bug on Windows systems
   #451 - Fix Windows-specific bug in File/DirectoryProperty
   #450 - Absorb the FileWatcher class from CryptText
+  #449 - Fix wonky behavior in FileSystemUtil.findFiles()
   #443 - Upgrade to Java 25
 
 Version 2.9.0 [2026-04-13] - Maintenance release

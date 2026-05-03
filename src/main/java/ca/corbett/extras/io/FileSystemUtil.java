@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -75,7 +76,8 @@ public class FileSystemUtil {
     /**
      * Scans the given directory (and optionally all of its subdirectories recursively) looking for
      * files with the given extension. Files matching the extension will be returned, while all
-     * other files will be excluded.
+     * other files will be excluded. If the provided extension is null or blank, ALL files will
+     * be returned, regardless of extension. The returned list is sorted by full path name.
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search sub directories also or not.
@@ -88,7 +90,9 @@ public class FileSystemUtil {
                                        final String extension,
                                        final FileSearchListener listener) {
         List<String> extensions = new ArrayList<>();
-        extensions.add(extension);
+        if (extension != null && !extension.isBlank()) {
+            extensions.add(extension);
+        }
         return findFiles(rootDir, recursive, extensions, listener);
     }
 
@@ -96,6 +100,7 @@ public class FileSystemUtil {
      * Scans the given directory (and optionally all of its subdirectories recursively) looking for
      * files of one of the types specified in the given fileType list. Files matching any of the
      * extensions in that list will be returned, while all other files will be excluded.
+     * If the given list of extensions is null or empty, ALL files will be returned, regardless of extension.
      *
      * @param rootDir    The root directory for the search. Must exist and be readable.
      * @param recursive  Indicates whether to search sub directories also or not.
@@ -105,15 +110,9 @@ public class FileSystemUtil {
      */
     public static List<File> findFiles(final File rootDir,
                                        final boolean recursive,
-                                       final List<String> extensions,
+                                       List<String> extensions,
                                        final FileSearchListener listener) {
-        // Pre-process extensions once (lowercase + add dots)
-        Set<String> extSet = new HashSet<>();
-        for (String ext : extensions) {
-            extSet.add("." + ext.toLowerCase());
-        }
-
-        List<File> result = findFilesRecurse(rootDir, recursive, extSet, listener, false);
+        List<File> result = findFilesRecurse(rootDir, recursive, normalizeExtensionsToSet(extensions), listener, false);
         sortFiles(result); // Sort only once at the end
         return result;
     }
@@ -141,7 +140,7 @@ public class FileSystemUtil {
                 String filename = child.getName().toLowerCase();
 
                 // if any extensions match, it's a hit:
-                boolean fileMatched = false;
+                boolean fileMatched = extSet.isEmpty(); // empty list == automatic match
                 for (String ext : extSet) {
                     if (filename.endsWith(ext)) {
                         fileMatched = true;
@@ -231,13 +230,7 @@ public class FileSystemUtil {
                                                 final boolean recursive,
                                                 final List<String> extensions,
                                                 final FileSearchListener listener) {
-        // Pre-process extensions once (lowercase + add dots)
-        Set<String> extSet = new HashSet<>();
-        for (String ext : extensions) {
-            extSet.add("." + ext.toLowerCase());
-        }
-
-        List<File> result = findFilesRecurse(rootDir, recursive, extSet, listener, true);
+        List<File> result = findFilesRecurse(rootDir, recursive, normalizeExtensionsToSet(extensions), listener, true);
         sortFiles(result); // Sort only once at the end
         return result;
     }
@@ -267,7 +260,7 @@ public class FileSystemUtil {
     public static List<File> findFiles(final File rootDir,
                                        final boolean recursive,
                                        final FileSearchListener listener) {
-        return findFilesExcluding(rootDir, recursive, new ArrayList<>(), listener);
+        return findFiles(rootDir, recursive, new ArrayList<>(), listener);
     }
 
     /**
@@ -700,5 +693,37 @@ public class FileSystemUtil {
 
         // Extremely unlikely, but just in case we hit the limit:
         return new File(destinationDir, nameWithoutExt + System.currentTimeMillis() + ext);
+    }
+
+    /**
+     * Given a list of file extensions, which may be null or empty (and the list itself may also be
+     * null or empty), return a Set of normalized extensions. Normalization includes trimming whitespace, converting to
+     * lowercase, and ensuring that each extension starts with a dot.
+     * If the input list is null or empty, an empty set will be returned.
+     * Any entry in the list that is null or blank will be ignored.
+     * The returned set may be empty even in cases where the input list is not empty,
+     * if all entries in the list are null or blank.
+     */
+    static Set<String> normalizeExtensionsToSet(List<String> extensions) {
+        if (extensions == null) {
+            extensions = new ArrayList<>();
+        }
+
+        // Pre-process extensions once (lowercase + trim + add dots if needed)
+        Set<String> extSet = new HashSet<>();
+        for (String ext : extensions) {
+            if (ext == null || ext.isBlank()) {
+                continue;
+            }
+            ext = ext.trim().toLowerCase(Locale.ROOT);
+            if (!ext.startsWith(".")) {
+                extSet.add("." + ext);
+            }
+            else {
+                extSet.add(ext);
+            }
+        }
+
+        return extSet;
     }
 }
