@@ -66,6 +66,13 @@ import java.util.logging.Logger;
 /**
  * This is a simple wrapper class to manage the various look and feels that
  * spring-extras supports.
+ * <p>
+ * <b>Note for Windows users:</b> there's a weird bug in FlatLaf that will prevent your JFrames
+ * from being resizable. This class automatically provides a workaround of disabling FlatLaf's window decorations
+ * if running on a Windows machine, but this may have cosmetic side effects. You can prevent this workaround
+ * from triggering by explicitly setting "flatlaf.useWindowDecorations" to "true" when starting your application.
+ * The workaround only triggers on Windows-based systems.
+ * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2025-04-22
@@ -99,7 +106,10 @@ public class LookAndFeelManager {
         if (osName != null && osName.toLowerCase(Locale.ROOT).contains("win")) {
             // Something about FlatLaf's window decorations disables the click-and-drag-to-resize
             // functionality on Windows systems (at least with OpenJDK 21 it does). This workaround fixes it.
-            System.setProperty("flatlaf.useWindowDecorations", "false");
+            // Callers can prevent the workaround by explicitly setting "flatlaf.useWindowDecorations" to "true".
+            if (System.getProperty("flatlaf.useWindowDecorations") == null) {
+                System.setProperty("flatlaf.useWindowDecorations", "false");
+            }
         }
 
         // The "core" themes provided by FlatLaf:
