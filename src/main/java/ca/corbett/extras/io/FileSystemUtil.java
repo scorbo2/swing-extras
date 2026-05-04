@@ -304,6 +304,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findSubdirectories without specifying a progress callback.
      * See findSubdirectories(File,boolean,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new DirectoryScannerThread instead.
+     * </p>
      *
      * @param rootDir   see findSubdirectories(File,boolean,FileSearchListener) for details.
      * @param recursive see findSubdirectories(File,boolean,FileSearchListener) for details.
@@ -318,6 +321,9 @@ public class FileSystemUtil {
      * Scans the given directory (and optionally all of its subdirectories recursively) and will
      * return a list of all subdirectories found. The given root directory is NOT included
      * in the results - only subdirectories. The returned list is sorted by full path name.
+     * <p>
+     *     <b>Note:</b> Consider using the new DirectoryScannerThread instead.
+     * </p>
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search subdirectories also or not.

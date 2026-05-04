@@ -60,12 +60,10 @@ public class DirectoryScannerThread extends SimpleProgressWorker {
     private final List<File> results;
     private final List<CompletionListener> completionListeners = new CopyOnWriteArrayList<>();
     private final List<CancelListener> cancelListeners = new CopyOnWriteArrayList<>();
-    private boolean wasCanceled;
 
     public DirectoryScannerThread(File rootDir) {
         this.rootDir = rootDir;
         recursive = true;
-        wasCanceled = false;
         results = new ArrayList<>();
     }
 
@@ -142,7 +140,6 @@ public class DirectoryScannerThread extends SimpleProgressWorker {
             return;
         }
 
-        wasCanceled = false;
         results.clear();
         boolean wasCanceled = false;
         try {

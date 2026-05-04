@@ -102,7 +102,7 @@ class FileScannerThreadTest {
     @Test
     public void run_withExtensionFilter_shouldReturnOnlyMatchingFiles() {
         // GIVEN a FileScannerThread with an extension filter:
-        FileScannerThread thread = new FileScannerThread(tempDir).setExtensionsToMatch(List.of("txt"));
+        FileScannerThread thread = new FileScannerThread(tempDir).addExtensionsToMatch(List.of("txt"));
         SimpleProgressListener listener = Mockito.mock(SimpleProgressListener.class);
         Mockito.when(listener.progressUpdate(Mockito.anyInt(), Mockito.anyString())).thenReturn(true);
         thread.addProgressListener(listener);
@@ -121,7 +121,7 @@ class FileScannerThreadTest {
     public void run_withExtensionFilterAndInvertedSearch_shouldReturnOnlyNonMatchingFiles() {
         // GIVEN a FileScannerThread with an extension filter and inverted search:
         FileScannerThread thread = new FileScannerThread(tempDir)
-                .setExtensionsToMatch(List.of("txt"))
+                .addExtensionsToMatch(List.of("txt"))
                 .setInvertSearch(true);
         SimpleProgressListener listener = Mockito.mock(SimpleProgressListener.class);
         Mockito.when(listener.progressUpdate(Mockito.anyInt(), Mockito.anyString())).thenReturn(true);
@@ -160,7 +160,7 @@ class FileScannerThreadTest {
     public void run_withMultipleExtensions_shouldReturnMatchingFiles() {
         // GIVEN a FileScannerThread with multiple extensions to match:
         FileScannerThread thread = new FileScannerThread(tempDir)
-                .setExtensionsToMatch(List.of("txt", "log"));
+                .addExtensionsToMatch(List.of("txt", "log"));
         SimpleProgressListener listener = Mockito.mock(SimpleProgressListener.class);
         Mockito.when(listener.progressUpdate(Mockito.anyInt(), Mockito.anyString())).thenReturn(true);
         thread.addProgressListener(listener);
@@ -179,7 +179,7 @@ class FileScannerThreadTest {
     public void run_withNoMatchingExtensions_shouldFilterAll() {
         // GIVEN a FileScannerThread with an extension filter that matches nothing:
         FileScannerThread thread = new FileScannerThread(tempDir)
-                .setExtensionsToMatch(List.of("pdf"));
+                .addExtensionsToMatch(List.of("pdf"));
         SimpleProgressListener listener = Mockito.mock(SimpleProgressListener.class);
         Mockito.when(listener.progressUpdate(Mockito.anyInt(), Mockito.anyString())).thenReturn(true);
         thread.addProgressListener(listener);
@@ -220,10 +220,10 @@ class FileScannerThreadTest {
     }
 
     @Test
-    public void setExtensionsToMatch_withMixedCaseExtensions_shouldNormalizeThem() {
+    public void addExtensionsToMatch_withMixedCaseExtensions_shouldNormalizeThem() {
         // GIVEN a FileScannerThread with mixed-case extensions to match:
         FileScannerThread thread = new FileScannerThread(tempDir)
-                .setExtensionsToMatch(List.of("TxT", "LoG", "txt", "TXT"));
+                .addExtensionsToMatch(List.of("TxT", "LoG", "txt", "TXT"));
 
         // WHEN we ask for the list of extensions:
         List<String> extensions = thread.getExtensionsToMatch();
@@ -235,12 +235,12 @@ class FileScannerThreadTest {
     }
 
     @Test
-    public void setsExtensionsToMatch_invokedMultipleTimes_shouldAddTogether() {
+    public void addExtensionsToMatch_invokedMultipleTimes_shouldAddTogether() {
         // GIVEN a FileScannerThread with multiple calls to setExtensionsToMatch:
         FileScannerThread thread = new FileScannerThread(tempDir)
-                .setExtensionsToMatch(List.of("txt"))
-                .setExtensionsToMatch(List.of("log"))
-                .setExtensionsToMatch(List.of("pdf"));
+                .addExtensionsToMatch(List.of("txt"))
+                .addExtensionsToMatch(List.of("log"))
+                .addExtensionsToMatch(List.of("pdf"));
 
         // WHEN we ask for the list of extensions:
         List<String> extensions = thread.getExtensionsToMatch();
@@ -250,5 +250,19 @@ class FileScannerThreadTest {
         assertTrue(extensions.contains(".txt"));
         assertTrue(extensions.contains(".log"));
         assertTrue(extensions.contains(".pdf"));
+    }
+
+    @Test
+    public void clearExtensionsToMatch_shouldRemoveAllExtensions() {
+        // GIVEN a FileScannerThread with some extensions to match:
+        FileScannerThread thread = new FileScannerThread(tempDir)
+                .addExtensionsToMatch(List.of("txt", "log"));
+
+        // WHEN we clear the extensions:
+        thread.clearExtensionsToMatch();
+
+        // THEN the list of extensions should be empty:
+        List<String> extensions = thread.getExtensionsToMatch();
+        assertEquals(0, extensions.size());
     }
 }

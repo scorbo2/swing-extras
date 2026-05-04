@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  * A handy utility class that can wrap the various find methods in FileSystemUtil
  * in the form of a worker thread that can be easily wired up to a MultiProgressDialog.
  * This saves a modest amount of work for client applications that just want to find
- * files or directories in a thread-safe way (that is, without blocking the UI thread).
+ * files in a thread-safe way (that is, without blocking the UI thread).
  * <p>
  * This class also improved progress reporting, compared to the FileSearchListener
  * approach. This class goes through the SimpleProgressListener interface, which provides
@@ -108,7 +108,7 @@ public class FileScannerThread extends SimpleProgressWorker {
     }
 
     /**
-     * Sets the list of extensions that should be matched during the search,
+     * Adds to the list of extensions that should be matched during the search,
      * while also considering whether our search is inverted (see setInvertSearch()).
      * <p>
      * Extensions can include the dot or not: ".txt" and "txt" are treated the same.
@@ -120,8 +120,13 @@ public class FileScannerThread extends SimpleProgressWorker {
      * This means you'll get a list of ALL files in either case.
      * </p>
      */
-    public FileScannerThread setExtensionsToMatch(List<String> extensions) {
+    public FileScannerThread addExtensionsToMatch(List<String> extensions) {
         extensionsToMatch.addAll(FileSystemUtil.normalizeExtensionsToSet(extensions));
+        return this;
+    }
+
+    public FileScannerThread clearExtensionsToMatch() {
+        extensionsToMatch.clear();
         return this;
     }
 
