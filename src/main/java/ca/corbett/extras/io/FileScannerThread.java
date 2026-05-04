@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  * <pre>
  * // Find all text and Markdown files in a directory (recursion is true by default):
  * FileScannerThread scanner = new FileScannerThread(new File("/path/to/search"))
- *     .setExtensionsToMatch(List.of(".txt", ".md"))
+ *     .addExtensionsToMatch(List.of(".txt", ".md"))
  *     .addCompletionListener(results -> handleResults(results))
  *     .addCancelListener(() -> handleCancellation());
  * MultiProgressDialog progressDialog = new MultiProgressDialog(parentFrame, "Scanning for files...");

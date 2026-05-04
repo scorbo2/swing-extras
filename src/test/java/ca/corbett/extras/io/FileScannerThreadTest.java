@@ -236,7 +236,7 @@ class FileScannerThreadTest {
 
     @Test
     public void addExtensionsToMatch_invokedMultipleTimes_shouldAddTogether() {
-        // GIVEN a FileScannerThread with multiple calls to setExtensionsToMatch:
+        // GIVEN a FileScannerThread with multiple calls to addExtensionsToMatch:
         FileScannerThread thread = new FileScannerThread(tempDir)
                 .addExtensionsToMatch(List.of("txt"))
                 .addExtensionsToMatch(List.of("log"))
