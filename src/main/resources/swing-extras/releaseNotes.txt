@@ -10,7 +10,7 @@ Version 3.0.0 [TODO - release date] - Major refactoring
   #450 - Absorb the FileWatcher class from CryptText
   #449 - Fix wonky behavior in FileSystemUtil.findFiles()
   #443 - Upgrade to Java 25
-  #266 - New utility class: ScannerThread
+  #266 - New utility class: FileScannerThread
 
 Version 2.9.0 [2026-04-13] - Maintenance release
   #446 - AppProperties: make it easier to use classic style dialog
