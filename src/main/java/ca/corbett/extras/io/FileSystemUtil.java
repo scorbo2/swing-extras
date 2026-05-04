@@ -46,6 +46,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFiles without specifying a progress callback.
      * See findFiles(File,boolean,String,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   see findFiles(File,boolean,String,FileSearchListener) for details.
      * @param recursive see findFiles(File,boolean,String,FileSearchListener) for details.
@@ -61,6 +64,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFiles without specifying a progress callback.
      * See findFiles(File,boolean,List,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir    see findFiles(File,boolean,List,FileSearchListener) for details.
      * @param recursive  see findFiles(File,boolean,List,FileSearchListener) for details.
@@ -78,6 +84,9 @@ public class FileSystemUtil {
      * files with the given extension. Files matching the extension will be returned, while all
      * other files will be excluded. If the provided extension is null or blank, ALL files will
      * be returned, regardless of extension. The returned list is sorted by full path name.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search sub directories also or not.
@@ -101,6 +110,9 @@ public class FileSystemUtil {
      * files of one of the types specified in the given fileType list. Files matching any of the
      * extensions in that list will be returned, while all other files will be excluded.
      * If the given list of extensions is null or empty, ALL files will be returned, regardless of extension.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir    The root directory for the search. Must exist and be readable.
      * @param recursive  Indicates whether to search sub directories also or not.
@@ -175,6 +187,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFilesExcluding without specifying a progress callback.
      * See findFilesExcluding(File,boolean,String,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   see findFilesExcluding(File,boolean,String,FileSearchListener) for details.
      * @param recursive see findFilesExcluding(File,boolean,String,FileSearchListener) for details.
@@ -190,6 +205,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFilesExcluding without specifying a progress callback.
      * See findFilesExcluding(File,boolean,List,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir    see findFilesExcluding(File,boolean,List,FileSearchListener) for details.
      * @param recursive  see findFilesExcluding(File,boolean,List,FileSearchListener) for details.
@@ -206,6 +224,9 @@ public class FileSystemUtil {
      * Scans the given directory (and optionally all of its subdirectories recursively) looking for
      * any files that do NOT match the given extension. Files that do not match the given
      * extension are returned, while all other files will be excluded.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search sub directories also or not.
@@ -227,6 +248,9 @@ public class FileSystemUtil {
      * any files that do NOT match one of the given extensions. Files that do not match any of
      * the given extensions are returned, while all other files will be excluded. To find and
      * return ALL files, leave "extensions" empty.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir    The root directory for the search. Must exist and be readable.
      * @param recursive  Indicates whether to search sub directories also or not.
@@ -246,6 +270,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFiles without specifying a progress callback.
      * See findFiles(File,boolean,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   see findFiles(File,boolean,FileSearchListener) for details.
      * @param recursive see findFiles(File,boolean,FileSearchListener) for details.
@@ -259,6 +286,9 @@ public class FileSystemUtil {
     /**
      * Scans the given directory (and optionally all of its subdirectories recursively) and will
      * return a list of all files found.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search sub directories also or not.
@@ -274,6 +304,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findSubdirectories without specifying a progress callback.
      * See findSubdirectories(File,boolean,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new DirectoryScannerThread instead.
+     * </p>
      *
      * @param rootDir   see findSubdirectories(File,boolean,FileSearchListener) for details.
      * @param recursive see findSubdirectories(File,boolean,FileSearchListener) for details.
@@ -288,6 +321,9 @@ public class FileSystemUtil {
      * Scans the given directory (and optionally all of its subdirectories recursively) and will
      * return a list of all subdirectories found. The given root directory is NOT included
      * in the results - only subdirectories. The returned list is sorted by full path name.
+     * <p>
+     *     <b>Note:</b> Consider using the new DirectoryScannerThread instead.
+     * </p>
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search subdirectories also or not.
