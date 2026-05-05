@@ -221,6 +221,11 @@ public class DirTree extends JTree {
      * Shorthand way of setting the "show hidden files" option. The tree will be fully reloaded.
      */
     public void setShowHidden(boolean showHidden) {
+        // Reject no-ops so we don't reload unnecessarily:
+        if (showHidden == options.isShowHiddenFiles()) {
+            return;
+        }
+
         // Remember what was selected so we can try to restore it after reload.
         File previousSelection = null;
         TreePath selected = getSelectionPath();
@@ -241,6 +246,11 @@ public class DirTree extends JTree {
      * Shorthand way of setting the "show regular files" option. The tree will be fully reloaded.
      */
     public void setShowFiles(boolean showFiles) {
+        // Reject no-ops so we don't reload unnecessarily:
+        if (showFiles == options.isShowFiles()) {
+            return;
+        }
+
         // Remember what was selected so we can try to restore it after reload.
         File previousSelection = null;
         TreePath selected = getSelectionPath();
