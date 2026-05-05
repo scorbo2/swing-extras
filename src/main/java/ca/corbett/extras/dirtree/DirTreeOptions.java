@@ -64,7 +64,7 @@ public final class DirTreeOptions {
     public static final class Builder {
 
         // Defaults
-        private boolean showHiddenFiles = false;
+        private boolean showHiddenFiles = true;
         private boolean showFiles = false;
 
         public Builder showHiddenFiles(boolean showHiddenFiles) {
