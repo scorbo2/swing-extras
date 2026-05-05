@@ -59,8 +59,12 @@ import java.util.logging.Logger;
  *         return true; // allow
  *     }
  * });
- * tree.addDirTreeSelectionListener(e -> System.out.println("Selected: " + e.getFile()));
- * }</pre>
+ * tree.addDirTreeSelectionListener(new DirTreeSelectionListener() {
+ *     public void fileSelected(DirTreeEvent e) {
+ *         System.out.println("Selected: " + e.getFile());
+ *     }
+ * });
+ * </pre>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  */
