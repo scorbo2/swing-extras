@@ -3,7 +3,10 @@ package ca.corbett.extras.demo.panels;
 import ca.corbett.extras.LookAndFeelManager;
 import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.dirtree.DirTree;
-import ca.corbett.extras.dirtree.DirTreeListener;
+import ca.corbett.extras.dirtree.DirTreeEvent;
+import ca.corbett.extras.dirtree.DirTreeLockListener;
+import ca.corbett.extras.dirtree.DirTreeNodeListener;
+import ca.corbett.extras.dirtree.DirTreeSelectionListener;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ButtonField;
 import ca.corbett.forms.fields.CheckBoxField;
@@ -37,8 +40,8 @@ import java.util.List;
 public class DirTreeDemoPanel extends PanelBuilder {
 
     private DirTree dirTree;
-    private final DirTreeListener loggingDirTreeListener;
-    private final DirTreeListener annoyingDirTreeListener;
+    private final LoggingDirTreeListener loggingDirTreeListener;
+    private final AnnoyingPromptListener annoyingDirTreeListener;
     private LongTextField listenerTextArea;
     private CheckBoxField listenForEventsCheckBox;
     private ComboField<String> colorSchemeField;
@@ -99,18 +102,19 @@ public class DirTreeDemoPanel extends PanelBuilder {
         formPanel.add(buttonField);
 
         // We can have a simple checkbox option to allow for locking the tree to a specific directory:
-        CheckBoxField checkBoxField = new CheckBoxField("Allow right-click to lock/unlock the tree", true);
-        checkBoxField.getMargins().setTop(12);
-        checkBoxField.addValueChangedListener(field -> {
-            dirTree.setAllowLock(((CheckBoxField)field).isChecked());
-        });
-        formPanel.add(checkBoxField);
+        // TODO the new DirTree does not yet support enabling/disabling lock ability
+//        CheckBoxField checkBoxField = new CheckBoxField("Allow right-click to lock/unlock the tree", true);
+//        checkBoxField.getMargins().setTop(12);
+//        checkBoxField.addValueChangedListener(field -> {
+//            dirTree.setAllowLock(((CheckBoxField)field).isChecked());
+//        });
+//        formPanel.add(checkBoxField);
 
         // Starting in swing-extras 2.8, you can customize DirTree cosmetic properties:
         formPanel.add(buildColorCustomizerField());
 
         // And another checkbox for showing/hiding hidden directories: (new in swing-extras 2.7!)
-        checkBoxField = new CheckBoxField("Show hidden items", true);
+        CheckBoxField checkBoxField = new CheckBoxField("Show hidden items", true);
         checkBoxField.addValueChangedListener(field -> {
             boolean isSelected = ((CheckBoxField)field).isChecked();
             dirTree.setShowHidden(isSelected);
@@ -130,10 +134,10 @@ public class DirTreeDemoPanel extends PanelBuilder {
         checkBoxField.addValueChangedListener(field -> {
             boolean isSelected = ((CheckBoxField)field).isChecked();
             if (isSelected) {
-                dirTree.addDirTreeListener(annoyingDirTreeListener);
+                dirTree.addDirTreeNodeListener(annoyingDirTreeListener);
             }
             else {
-                dirTree.removeDirTreeListener(annoyingDirTreeListener);
+                dirTree.removeDirTreeNodeListener(annoyingDirTreeListener);
             }
         });
         formPanel.add(checkBoxField);
@@ -156,11 +160,13 @@ public class DirTreeDemoPanel extends PanelBuilder {
      */
     private void updateListenerTextArea() {
         if (listenForEventsCheckBox.isChecked()) {
-            dirTree.addDirTreeListener(loggingDirTreeListener);
+            dirTree.addDirTreeSelectionListener(loggingDirTreeListener);
+            dirTree.addDirTreeLockListener(loggingDirTreeListener);
             listenerTextArea.setText("Listening for events..." + System.lineSeparator());
         }
         else {
-            dirTree.removeDirTreeListener(loggingDirTreeListener);
+            dirTree.removeDirTreeSelectionListener(loggingDirTreeListener);
+            dirTree.removeDirTreeLockListener(loggingDirTreeListener);
             listenerTextArea.setText("(listener disabled)" + System.lineSeparator());
         }
     }
@@ -186,7 +192,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
                 "Hot dog stand!"
         );
         colorSchemeField = new ComboField<>("Color scheme:", options, 0);
-        colorSchemeField.setVisible(dirTree.getTreeCellRenderer() instanceof DefaultTreeCellRenderer);
+        colorSchemeField.setVisible(dirTree.getCellRenderer() instanceof DefaultTreeCellRenderer);
         colorSchemeField.addValueChangedListener(new ValueChangedListener() {
             @Override
             public void formFieldValueChanged(FormField field) {
@@ -208,7 +214,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
      * such a Look and Feel.
      */
     private void updateColorSchemeVisibility() {
-        boolean isOkay = dirTree.getTreeCellRenderer() instanceof DefaultTreeCellRenderer;
+        boolean isOkay = dirTree.getCellRenderer() instanceof DefaultTreeCellRenderer;
         colorSchemeField.setVisible(isOkay);
         if (!isOkay) {
             // Try to revert it as best we can:
@@ -228,7 +234,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
      * This is easy to do with the LookAndFeelManager utility class.
      */
     private void restoreDefaultColors() {
-        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getTreeCellRenderer();
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getCellRenderer();
         renderer.setBackground(LookAndFeelManager.getLafColor("Tree.background", Color.WHITE));
         renderer.setBackgroundSelectionColor(LookAndFeelManager.getLafColor("Tree.selectionBackground", Color.BLUE));
         renderer.setBackgroundNonSelectionColor(LookAndFeelManager.getLafColor("Tree.textBackground", Color.WHITE));
@@ -242,7 +248,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
      * Sets a green-on-black "Matrix" color scheme, just for fun.
      */
     private void setMatrixColors() {
-        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getTreeCellRenderer();
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getCellRenderer();
         renderer.setBackground(Color.BLACK);
         renderer.setBackgroundSelectionColor(Color.GREEN.darker());
         renderer.setBackgroundNonSelectionColor(Color.BLACK);
@@ -256,7 +262,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
      * Sets a blue color scheme, just for fun.
      */
     private void setBluesColors() {
-        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getTreeCellRenderer();
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getCellRenderer();
         renderer.setBackground(new Color(0xE0F7FA));
         renderer.setBackgroundSelectionColor(new Color(0x0288D1));
         renderer.setBackgroundNonSelectionColor(new Color(0xE0F7FA));
@@ -270,7 +276,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
      * Sets a hot dog stand color scheme, just for fun. Because who doesn't like a good hot dog stand?
      */
     private void setHotDogStandColors() {
-        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getTreeCellRenderer();
+        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer)dirTree.getCellRenderer();
         renderer.setBackground(new Color(0xFFF3E0));
         renderer.setBackgroundSelectionColor(new Color(0xFF5722));
         renderer.setBackgroundNonSelectionColor(new Color(0xFFF3E0));
@@ -286,34 +292,13 @@ public class DirTreeDemoPanel extends PanelBuilder {
      *
      * @since 2.7
      */
-    private static class AnnoyingPromptListener implements DirTreeListener {
+    private static class AnnoyingPromptListener implements DirTreeNodeListener {
         @Override
-        public boolean selectionWillChange(DirTree source, File newSelectedDir) {
+        public boolean nodeWillExpand(DirTreeEvent event) {
             return JOptionPane.showConfirmDialog(DemoApp.getInstance(),
                                                  "Are you sure you wish to change directories?",
                                                  "Confirm selection change",
                                                  JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
-        }
-
-        @Override
-        public void selectionChanged(DirTree source, File selectedDir) {
-        }
-
-        @Override
-        public void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles) {
-
-        }
-
-        @Override
-        public void treeLocked(DirTree source, File lockDir) {
-        }
-
-        @Override
-        public void treeUnlocked(DirTree source) {
-        }
-
-        @Override
-        public void fileDoubleClicked(DirTree source, File file) {
         }
     }
 
@@ -321,37 +306,20 @@ public class DirTreeDemoPanel extends PanelBuilder {
      * An implementation of the DirTreeListener that will simply log all events
      * into our little log panel.
      */
-    private class LoggingDirTreeListener implements DirTreeListener {
+    private class LoggingDirTreeListener implements DirTreeSelectionListener, DirTreeLockListener {
         @Override
-        public boolean selectionWillChange(DirTree source, File newSelectedDir) {
-            return true;
+        public void nodeSelected(DirTreeEvent event) {
+            appendToListenerTextArea("selectionChanged: new dir is " + event.getNode().getFile().getAbsolutePath());
         }
 
         @Override
-        public void selectionChanged(DirTree source, File selectedDir) {
-            appendToListenerTextArea("selectionChanged: new dir is " + selectedDir.getAbsolutePath());
+        public void treeLocked(DirTreeEvent event) {
+            appendToListenerTextArea("treeLocked: lock dir is " + event.getNode().getFile().getAbsolutePath());
         }
 
         @Override
-        public void showHiddenFilesChanged(DirTree source, boolean showHiddenFiles) {
-            appendToListenerTextArea("showHiddenFilesChanged: now "
-                                             + (showHiddenFiles ? "showing" : "hiding")
-                                             + " hidden files");
-        }
-
-        @Override
-        public void treeLocked(DirTree source, File lockDir) {
-            appendToListenerTextArea("treeLocked: lock dir is " + lockDir.getAbsolutePath());
-        }
-
-        @Override
-        public void treeUnlocked(DirTree source) {
+        public void treeUnlocked(DirTreeEvent event) {
             appendToListenerTextArea("treeUnlocked");
-        }
-
-        @Override
-        public void fileDoubleClicked(DirTree source, File file) {
-            appendToListenerTextArea("fileDoubleClicked: " + file.getAbsolutePath());
         }
     }
 
@@ -373,12 +341,14 @@ public class DirTreeDemoPanel extends PanelBuilder {
                                                       JOptionPane.QUESTION_MESSAGE);
             if (path != null && !path.isBlank()) {
                 File pathFile = new File(path);
-                if (!dirTree.selectAndScrollTo(pathFile)) {
-                    JOptionPane.showMessageDialog(DemoApp.getInstance(),
-                                                  "The path \"" + path + "\" could not be found in the DirTree.",
-                                                  "Path not found",
-                                                  JOptionPane.INFORMATION_MESSAGE);
-                }
+                dirTree.navigateTo(pathFile, targetNode -> {
+                    if (targetNode == null) {
+                        JOptionPane.showMessageDialog(DemoApp.getInstance(),
+                                                      "The path \"" + path + "\" could not be found in the DirTree.",
+                                                      "Path not found",
+                                                      JOptionPane.INFORMATION_MESSAGE);
+                    }
+                });
             }
         }
     }

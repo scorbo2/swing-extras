@@ -1,951 +1,788 @@
 package ca.corbett.extras.dirtree;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.DefaultTreeSelectionModel;
-import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeNode;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A component that renders directories in the file system as a navigable tree view.
- * The DirTree can be "locked" to a specific directory, in which case it will only display
- * subdirectories of that directory. When "unlocked", the DirTree will display all
- * filesystem roots (e.g. "/" on Linux-based systems, or all available drives on Windows).
+ * A custom {@link JTree} that displays a filesystem as a navigable, lazy-loading
+ * directory tree.
+ *
+ * <h2>Features</h2>
+ * <ul>
+ *   <li>Cross-platform: works with single-root Linux filesystems and multi-root
+ *       Windows drive-letter filesystems.</li>
+ *   <li>Lazy loading: directory children are loaded on a background thread the
+ *       first time a node is expanded.</li>
+ *   <li>Event-driven: segregated listener interfaces for node events
+ *       ({@link DirTreeNodeListener}), selection / mouse events
+ *       ({@link DirTreeSelectionListener}), and load lifecycle events
+ *       ({@link DirTreeLoaderListener}).</li>
+ *   <li>Vetoable navigation: {@code nodeWillExpand} / {@code nodeWillCollapse}
+ *       listeners can return {@code false} to cancel the action.</li>
+ *   <li>Programmatic navigation: {@link #navigateTo(File)} loads and expands
+ *       all intermediate nodes to bring a given directory into view and select it.</li>
+ *   <li>Loading indicator with a Cancel button shown while a background load is
+ *       in progress.</li>
+ *   <li>Configurable via {@link DirTreeOptions}: show/hide hidden files, show/hide
+ *       regular files.</li>
+ * </ul>
+ *
+ * <h2>Usage</h2>
+ * <pre>{@code
+ * DirTree tree = new DirTree();                       // uses File.listRoots()
+ * DirTree tree = new DirTree(new File("/home/user")); // single custom root
+ *
+ * tree.addDirTreeNodeListener(new DirTreeNodeListener() {
+ *     public boolean nodeWillExpand(DirTreeEvent e) {
+ *         return true; // allow
+ *     }
+ * });
+ * tree.addDirTreeSelectionListener(e -> System.out.println("Selected: " + e.getFile()));
+ * }</pre>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2017-11-09
  */
-public final class DirTree extends JPanel implements TreeSelectionListener {
+public class DirTree extends JTree {
 
     private static final Logger log = Logger.getLogger(DirTree.class.getName());
 
-    // This is used to generate a "fake" root node when in unlocked mode. It is never visible to the user.
-    private static final String FAKE_ROOT_NAME = "_NotARealRoot_";
+    // -------------------------------------------------------------------------
+    // State
+    // -------------------------------------------------------------------------
 
-    private final JScrollPane scrollPane;
-    private final JTree tree = new JTree();
-    private final List<DirTreeListener> listeners = new CopyOnWriteArrayList<>();
+    private DirTreeOptions options;
+    private DirTreeModel dirTreeModel;
 
-    private DirTreeNode fakeRootNode; // The "fake" node at the top of the tree - only used if lockNode == null
-    private DirTreeNode lockNode;     // The node representing the locked root directory (will be null if unlocked)
-    private DirTreeNode currentNode; // May be null if no selection - always represents a filesystem location if set
-    private boolean allowLock;
-    private boolean allowUnlock;
-    private boolean showHidden;
-    private boolean showFiles;
-    private FileFilter fileFilter;
-    private boolean notificationsEnabled = true;
+    /** The node whose background load is currently in progress (if any). */
+    private DirTreeNode loadingNode;
+
+    /** The roots currently displayed by the tree. Updated by {@link #applyRoots}. */
+    private File[] currentRoots;
 
     /**
-     * Creates a DirTree in "unlocked" mode, showing all filesystem roots.
-     * You can then use the lock() method to lock (chroot) the DirTree to a
-     * specific subdirectory.
+     * The roots saved before a {@link #chroot} / {@link #lock} call.
+     * {@code null} when the tree is not locked.
+     */
+    private File[] savedRoots = null;
+
+    // -------------------------------------------------------------------------
+    // Listener lists
+    // -------------------------------------------------------------------------
+
+    private final List<DirTreeNodeListener> nodeListeners = new ArrayList<>();
+    private final List<DirTreeSelectionListener> selectionListeners = new ArrayList<>();
+    private final List<DirTreeLoaderListener> loaderListeners = new ArrayList<>();
+    private final List<DirTreeLockListener> lockListeners = new ArrayList<>();
+
+    // -------------------------------------------------------------------------
+    // UI sub-components (loading indicator)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Panel shown at the bottom of the component during background loads.
+     * This is <em>not</em> added to this JTree itself (which is not a container
+     * in the usual sense) — callers wrap DirTree in a panel via
+     * {@link #buildPanel()}, which includes the loading indicator.
+     */
+    private final JPanel loadingPanel;
+    private final JLabel loadingLabel;
+    private final JButton cancelButton;
+
+    // -------------------------------------------------------------------------
+    // Construction
+    // -------------------------------------------------------------------------
+
+    /**
+     * Creates a DirTree rooted at all physical filesystem roots
+     * (equivalent to {@link File#listRoots()}).
      */
     public DirTree() {
-        allowLock = true;
-        allowUnlock = true;
-        showHidden = true;
-        showFiles = false;
-        fileFilter = null;
+        this(File.listRoots());
+    }
 
-        // Cosmetic adjustments to stock JTree:
-        tree.setRootVisible(false);
-        tree.setShowsRootHandles(true);
-        TreeCellRenderer renderer = tree.getCellRenderer();
-        if (renderer instanceof DefaultTreeCellRenderer) {
-            ((DefaultTreeCellRenderer)renderer).setClosedIcon(null);
-            ((DefaultTreeCellRenderer)renderer).setLeafIcon(null);
-            ((DefaultTreeCellRenderer)renderer).setOpenIcon(null);
+    /**
+     * Creates a DirTree with a single custom root directory.
+     *
+     * @param root the root directory to display
+     */
+    public DirTree(File root) {
+        this(new File[]{root});
+    }
+
+    /**
+     * Creates a DirTree with one or more custom root directories.
+     *
+     * @param roots the root directories to display
+     */
+    public DirTree(File[] roots) {
+        this(roots, new DirTreeOptions.Builder().build());
+    }
+
+    /**
+     * Full constructor.
+     *
+     * @param roots   the root directories to display
+     * @param options initial display options
+     */
+    public DirTree(File[] roots, DirTreeOptions options) {
+        super();
+        this.options = options;
+        this.currentRoots = roots;
+
+        // --- Model ---
+        dirTreeModel = new DirTreeModel(this, roots, options);
+        setModel(dirTreeModel);
+
+        // JTree: hide the invisible synthetic root, show its children as top-level.
+        setRootVisible(false);
+        setShowsRootHandles(true);
+
+        // --- Loading indicator panel ---
+        loadingLabel = new JLabel(" ");
+        cancelButton = new JButton("Cancel");
+        cancelButton.setMargin(new Insets(1, 6, 1, 6));
+        cancelButton.setFocusable(false);
+        cancelButton.addActionListener(e -> cancelCurrentLoad());
+
+        loadingPanel = new JPanel(new BorderLayout(4, 0));
+        loadingPanel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+        loadingPanel.add(loadingLabel, BorderLayout.CENTER);
+        loadingPanel.add(cancelButton, BorderLayout.EAST);
+        loadingPanel.setVisible(false);
+
+        // --- Swing event wiring ---
+        wireTreeWillExpandListener();
+        wireTreeSelectionListener();
+        wireMouseListener();
+    }
+
+    // -------------------------------------------------------------------------
+    // Public convenience: wrap in a panel with the loading indicator
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns a {@link JPanel} that contains this DirTree (inside a
+     * {@link JScrollPane}) and the loading-indicator bar at the bottom.
+     * Callers should add the panel to their layout rather than this JTree directly
+     * if they want to see the loading indicator.
+     *
+     * @return a panel suitable for adding to a layout
+     */
+    public JPanel buildPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(new JScrollPane(this), BorderLayout.CENTER);
+        panel.add(loadingPanel, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    // -------------------------------------------------------------------------
+    // Options
+    // -------------------------------------------------------------------------
+
+    /** Returns the current display options. */
+    public DirTreeOptions getOptions() {
+        return options;
+    }
+
+    /**
+     * Applies new display options. The tree will be fully reloaded.
+     * Must be called on the EDT.
+     *
+     * @param options the new options
+     */
+    public void setOptions(DirTreeOptions options) {
+        this.options = options;
+        dirTreeModel.setOptions(options);
+    }
+
+    /**
+     * Shorthand way of setting the "show hidden files" option. The tree will be fully reloaded.
+     */
+    public void setShowHidden(boolean showHidden) {
+        // Remember what was selected so we can try to restore it after reload.
+        File previousSelection = null;
+        TreePath selected = getSelectionPath();
+        if (selected != null && selected.getLastPathComponent() instanceof DirTreeNode node) {
+            previousSelection = node.getFile();
         }
 
-        // Force single selection and enable lazy load of subdirectories:
-        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        tree.addTreeWillExpandListener(new DirTreeExpandListener());
+        // Change the option and reload the tree:
+        setOptions(options.toBuilder().showHiddenFiles(showHidden).build());
 
-        // This will load and populate our root node(s):
-        unlock(true);
+        // Navigate back to where we were:
+        if (previousSelection != null) {
+            navigateTo(previousSelection);
+        }
+    }
 
-        // Use our custom selection model that allows us to veto selection changes:
-        tree.setSelectionModel(new ValidatingTreeSelectionModel());
+    /**
+     * Shorthand way of setting the "show regular files" option. The tree will be fully reloaded.
+     */
+    public void setShowFiles(boolean showFiles) {
+        // Remember what was selected so we can try to restore it after reload.
+        File previousSelection = null;
+        TreePath selected = getSelectionPath();
+        if (selected != null && selected.getLastPathComponent() instanceof DirTreeNode node) {
+            previousSelection = node.getFile();
+        }
 
-        // Set up our layout and scrollpane:
-        setLayout(new BorderLayout());
-        scrollPane = new JScrollPane(tree);
-        add(scrollPane, BorderLayout.CENTER);
+        // Change the option and reload the tree:
+        setOptions(options.toBuilder().showFiles(showFiles).build());
 
-        // Add our right-click popup menu:
-        setComponentPopupMenu(DirTreePopupMenu.createPopup(this));
+        // Navigate back to where we were:
+        if (previousSelection != null) {
+            navigateTo(previousSelection);
+        }
+    }
 
-        // Make sure we listen for selection events within our tree so we can notify our own listeners:
-        tree.addTreeSelectionListener(this);
+    // -------------------------------------------------------------------------
+    // Programmatic navigation
+    // -------------------------------------------------------------------------
 
-        // Listen for double-clicks on file nodes:
-        tree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-                    if (path != null) {
-                        DirTreeNode node = (DirTreeNode)path.getLastPathComponent();
-                        if (node.isFileNode()) {
-                            fireFileDoubleClickedEvent(node.getDir());
-                        }
-                    }
+    /**
+     * Programmatically navigates to the given directory: loads and expands all
+     * intermediate nodes as necessary, then selects and scrolls to the target.
+     * <p>
+     * This method returns immediately; the actual navigation happens asynchronously
+     * on background threads. The result is delivered via {@code onResult}.
+     *
+     * @param target   the directory to navigate to
+     * @param onResult called on the EDT when navigation completes; receives the
+     *                 {@link DirTreeNode} for the target, or {@code null} on failure
+     * @return {@code false} if the target is {@code null}, does not exist, or lies
+     * outside the current model roots (e.g. the tree is locked to a different
+     * subtree); {@code true} if navigation was initiated (the callback remains
+     * the authoritative source for final success or failure)
+     */
+    public boolean navigateTo(File target, DirTreeModel.NavigationCallback onResult) {
+        return dirTreeModel.navigateTo(target, targetNode -> {
+            if (targetNode != null) {
+                TreePath path = buildTreePath(targetNode);
+                if (path != null) {
+                    setSelectionPath(path);
+                    scrollPathToVisible(path);
                 }
+            }
+            if (onResult != null) {
+                onResult.onResult(targetNode);
             }
         });
     }
 
     /**
-     * Creates a new DirTree instance chrooted to the specified directory.
+     * Programmatically navigates to the given directory without a result callback.
+     *
+     * @param target the directory to navigate to
+     * @return {@code false} if the target is {@code null}, does not exist, or lies
+     *         outside the current model roots; {@code true} if navigation was initiated
      */
-    public DirTree(File rootDir) {
-        this(); // Invoke no-arg constructor to do common initialization
+    public boolean navigateTo(File target) {
+        return navigateTo(target, null);
+    }
 
-        // Check our given rootDir to ensure it makes sense:
-        if (rootDir == null || !rootDir.exists() || !rootDir.isDirectory()) {
-            log.warning("DirTree: given rootDir is null, doesn't exist, or is not a directory."
-                                + " Starting in unlocked mode.");
-            // The no-arg constructor already invoked unlock(), so we're done here:
+    /**
+     * Refreshes (reloads) the entire tree, discarding all loaded children and
+     * re-reading every root from disk.
+     * <p>
+     * If a node is currently selected, the tree will attempt to re-select it
+     * after the refresh completes (the path is navigated to asynchronously).
+     * If the previously selected path no longer exists on disk, the selection
+     * is simply not restored.
+     * Must be called on the EDT.
+     */
+    public void refresh() {
+        // Remember what was selected so we can try to restore it after reload.
+        File previousSelection = null;
+        TreePath selected = getSelectionPath();
+        if (selected != null && selected.getLastPathComponent() instanceof DirTreeNode node) {
+            previousSelection = node.getFile();
+        }
+
+        DirTreeNode syntheticRoot = (DirTreeNode)dirTreeModel.getRoot();
+        for (int i = 0; i < syntheticRoot.getChildCount(); i++) {
+            Object child = syntheticRoot.getChildAt(i);
+            if (child instanceof DirTreeNode rootNode) {
+                dirTreeModel.refresh(rootNode);
+            }
+        }
+
+        if (previousSelection != null) {
+            navigateTo(previousSelection);
+        }
+    }
+
+    /**
+     * Refreshes (reloads) a specific directory node, discarding its loaded
+     * children and re-reading them from disk.
+     * Must be called on the EDT.
+     *
+     * @param node the directory node to refresh; if {@code null} or not a
+     *             directory, falls back to {@link #refresh()} for the entire tree
+     */
+    public void refresh(DirTreeNode node) {
+        if (node != null && node.isDirectory() && !node.isPlaceholder()) {
+            dirTreeModel.refresh(node);
+        }
+        else {
+            refresh();
+        }
+    }
+
+    /**
+     * Refreshes the currently selected directory node. If nothing is selected,
+     * or the selection is not a directory, falls back to refreshing the entire tree.
+     * Must be called on the EDT.
+     */
+    public void refreshSelected() {
+        TreePath selected = getSelectionPath();
+        if (selected != null) {
+            Object last = selected.getLastPathComponent();
+            if (last instanceof DirTreeNode node && node.isDirectory()) {
+                dirTreeModel.refresh(node);
+                return;
+            }
+        }
+        refresh();
+    }
+
+    // -------------------------------------------------------------------------
+    // Chroot / lock / unlock
+    // -------------------------------------------------------------------------
+
+    /**
+     * Restricts the tree to display only {@code dir} and its descendants.
+     * <p>
+     * The current root configuration is saved so that a subsequent call to
+     * {@link #unlock()} can restore it. If the tree is already locked, the
+     * new directory replaces the previous chroot view while the <em>original</em>
+     * pre-lock roots are preserved for the eventual {@code unlock()}.
+     * <p>
+     * If {@code dir} is {@code null}, does not exist, or is not a directory,
+     * the operation is silently ignored and the tree is unchanged.
+     *
+     * @param dir the directory to lock the tree to
+     */
+    public void chroot(File dir) {
+        if (dir == null || !dir.exists() || !dir.isDirectory()) {
             return;
         }
-
-        // Start in "locked" mode chrooted to this directory:
-        lock(rootDir);
+        // Preserve the original roots only on the first lock.
+        if (savedRoots == null) {
+            savedRoots = currentRoots;
+        }
+        applyRoots(new File[]{dir});
+        DirTreeNode lockedNode = (DirTreeNode)((DirTreeNode)dirTreeModel.getRoot()).getChildAt(0);
+        fireLockEvent(new DirTreeEvent(DirTreeEvent.Type.TREE_LOCKED, this, lockedNode));
     }
 
     /**
-     * Creates a defaulted DirTree instance for viewing the first available filesystem root.
-     * Don't use this! It dates back to when DirTree was heavily linux-specific.
-     * On Windows, this will only show the first available drive, which is probably not what you want.
-     * The no-args constructor is the safest way to instantiate a DirTree
-     * in a platform-independent way.
+     * Synonym for {@link #chroot(File)}.
      *
-     * @return The new DirTree instance.
-     * @deprecated Use the constructor instead. This factory method may be removed in a future release.
+     * @param dir the directory to lock the tree to
      */
-    @Deprecated(since = "swing-extras 2.7", forRemoval = true)
-    public static DirTree createDirTree() {
-        return createDirTree(getFilesystemRoots()[0]);
+    public void lock(File dir) {
+        chroot(dir);
     }
 
     /**
-     * Creates a DirTree instance chrooted to the specified directory.
-     * As of swing-extras 2.7, this is exactly equivalent to new DirTree(dir).
-     *
-     * @param dir The directory to which to lock this DirTree (use unlock() to unlock it).
-     * @return The new DirTree instance.
-     * @deprecated Use the constructor instead. This factory method may be removed in a future release.
-     */
-    @Deprecated(since = "swing-extras 2.7", forRemoval = true)
-    public static DirTree createDirTree(File dir) {
-        return new DirTree(dir);
-    }
-
-    /**
-     * Provides access to the {@link TreeCellRenderer} in the underlying {@link JTree}.
-     * By default, the renderer is whatever the current Look and Feel installs on the tree. During
-     * construction, if that default renderer is a {@link DefaultTreeCellRenderer}, {@code DirTree}
-     * clears its icons (sets them to {@code null}) to avoid showing per-node icons.
-     *
-     * @return The {@link TreeCellRenderer} used by the underlying {@link JTree}.
-     */
-    public TreeCellRenderer getTreeCellRenderer() {
-        return tree.getCellRenderer();
-    }
-
-    /**
-     * Allow setting a custom {@link TreeCellRenderer} on the underlying {@link JTree}. By default, {@code DirTree}
-     * uses the renderer installed by the current Look and Feel and, if that renderer is a
-     * {@link DefaultTreeCellRenderer}, it clears its icons (sets them to {@code null}) to avoid showing per-node
-     * icons. If you replace the renderer and still want an iconless appearance, you should configure your custom
-     * renderer accordingly (for example, by setting icons to {@code null} on a {@link DefaultTreeCellRenderer}).
-     *
-     * @param renderer The {@link TreeCellRenderer} to use for rendering tree nodes.
-     * @return This {@code DirTree} instance, for chaining.
-     */
-    public DirTree setTreeCellRenderer(TreeCellRenderer renderer) {
-        tree.setCellRenderer(renderer);
-        return this;
-    }
-
-    /**
-     * This is overridden so that we can ensure the underlying JTree will pick
-     * up the desired background color. If you've changed the background, and you want
-     * to revert to letting the current Look and Feel choose the color selection for you,
-     * you can use LookAndFeelManager.getLafColor() with "Tree.background" as the key name.
-     *
-     * @param color the desired background <code>Color</code>.
-     */
-    @Override
-    public void setBackground(Color color) {
-        super.setBackground(color);
-        if (tree != null) { // this shouldn't be possible, yet I actually saw an NPE here once
-            tree.setBackground(color);
-        }
-        if (scrollPane != null) {
-            scrollPane.setBackground(color);
-            if (scrollPane.getViewport() != null) {
-                scrollPane.getViewport().setBackground(color);
-            }
-        }
-    }
-
-    /**
-     * Returns all filesystem roots for the current platform.
-     * On Unix-like systems, this typically returns a single root ("/").
-     * On Windows, this returns all available drives.
-     *
-     * @return Array of all filesystem roots.
-     */
-    public static File[] getFilesystemRoots() {
-        File[] roots = File.listRoots();
-        return (roots != null)
-                ? roots // Return all found roots
-                : new File[]{new File("/")}; // Fallback to "/", but this *should* never happen
-    }
-
-    /**
-     * Returns the current lock directory, if the tree is locked, otherwise null.
-     *
-     * @return The current lock directory, or null if not locked.
-     */
-    public File getLockDir() {
-        return lockNode == null ? null : lockNode.getDir();
-    }
-
-    /**
-     * Returns the currently selected directory, or null if nothing is selected.
-     *
-     * @return The current directory, or null if nothing selected.
-     */
-    public File getCurrentDir() {
-        return (currentNode == null) ? null : currentNode.getDir();
-    }
-
-    /**
-     * Registers a DirTreeListener with this DirTree.
-     *
-     * @param listener The DirTreeListener which will receive events from us.
-     */
-    public DirTree addDirTreeListener(DirTreeListener listener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
-        }
-        return this;
-    }
-
-    /**
-     * Unregisters a DirTreeListener from this instance.
-     *
-     * @param listener The DirTreeListener to unregister.
-     */
-    public DirTree removeDirTreeListener(DirTreeListener listener) {
-        listeners.remove(listener);
-        return this;
-    }
-
-    /**
-     * Calls to setEnabled are not forwarded from parent components to child components.
-     * So, if someone invokes setEnabled on this DirTree, we have to forward that
-     * message to our contained JTree and scroll pane.
-     */
-    @Override
-    public void setEnabled(boolean enabled) {
-        tree.setEnabled(enabled);
-        scrollPane.setWheelScrollingEnabled(enabled);
-        scrollPane.getHorizontalScrollBar().setEnabled(enabled);
-        scrollPane.getVerticalScrollBar().setEnabled(enabled);
-    }
-
-    /**
-     * Returns the actual JTree component. For internal package use only.
-     *
-     * @return The JTree contained by this component.
-     */
-    JTree getTree() {
-        return tree;
-    }
-
-    /**
-     * Indicates whether this DirTree is "locked" to a specific subdirectory
-     * (similar to chroot). Use unlock() to revert to the default display where all
-     * directories will be shown.
-     *
-     * @return Whether our display is filtered to a specific subdirectory (see getRootDirectory()).
-     */
-    public boolean isLocked() {
-        if (lockNode == null) {
-            return false;
-        }
-
-        // Special case: if we are locked to "/" on a Linux-based system, consider ourselves unlocked:
-        if (lockNode.getDir().getAbsolutePath().equals("/")
-                && getFilesystemRoots().length == 1) {
-            return false;
-        }
-
-        // Otherwise, we are locked:
-        return true;
-    }
-
-    /**
-     * Indicates whether this DirTree allows locking (chrooting). Default is true.
-     *
-     * @return Whether this DirTree allows locking.
-     */
-    public boolean getAllowLock() {
-        return allowLock;
-    }
-
-    /**
-     * Indicates whether this DirTree allows unlocking (de-chrooting). Default is true.
-     *
-     * @return Whether this DirTree allows unlocking.
-     */
-    public boolean getAllowUnlock() {
-        return allowUnlock;
-    }
-
-    /**
-     * Enables or disables locking within this DirTree (chrooting). Passing false will
-     * unlock the DirTree if it is currently locked, and will prevent the "lock" menu
-     * item from appearing in the popup menu. Disallowing a tree lock will also
-     * disallow unlocking.
-     *
-     * @param allow Whether to enable locking.
-     */
-    public DirTree setAllowLock(boolean allow) {
-        allowLock = allow;
-        if (!allowLock) {
-            setAllowUnlock(false); // arguable, but makes sense to do this implicitly
-            unlock(true); // force reload will reselect current dir if possible
-        }
-        setComponentPopupMenu(DirTreePopupMenu.createPopup(this)); // refresh popup menu
-        return this;
-    }
-
-    /**
-     * Enables or disables unlocking within this DirTree (chrooting). Disabling this will
-     * prevent the "unlock" menu item from appearing in the popup menu.
-     *
-     * @param allow Whether to enable unlocking.
-     */
-    public DirTree setAllowUnlock(boolean allow) {
-        allowUnlock = allow;
-        setComponentPopupMenu(DirTreePopupMenu.createPopup(this)); // refresh popup menu
-        return this;
-    }
-
-    /**
-     * Indicates whether hidden directories are shown in this DirTree. Default is true.
-     *
-     * @deprecated Use {@link #getShowHidden()} instead.
-     */
-    @Deprecated(since = "swing-extras 2.8")
-    public boolean getShowHiddenDirs() {
-        return showHidden;
-    }
-
-    /**
-     * Indicates whether hidden items (directories and files) are shown in this DirTree. Default is true.
-     */
-    public boolean getShowHidden() {
-        return showHidden;
-    }
-
-    /**
-     * Controls whether hidden directories are shown in this DirTree. Default is true.
-     * What constitutes a "hidden" directory is platform-dependent.
-     *
-     * @deprecated Use {@link #setShowHidden(boolean)} instead.
-     */
-    @Deprecated(since = "swing-extras 2.8")
-    public DirTree setShowHiddenDirs(boolean showHiddenDirs) {
-        return setShowHidden(showHiddenDirs);
-    }
-
-    /**
-     * Controls whether hidden items (directories and files) are shown in this DirTree. Default is true.
-     * What constitutes a "hidden" item is platform-dependent.
-     */
-    public DirTree setShowHidden(boolean showHidden) {
-        boolean oldValue = this.showHidden;
-        this.showHidden = showHidden;
-
-        // Don't reload or notify if the value didn't actually change:
-        if (oldValue == showHidden) {
-            return this;
-        }
-
-        notificationsEnabled = false; // be silent about it
-        try {
-            reload(); // force a reload to apply the new setting
-        }
-        finally {
-            notificationsEnabled = true;
-        }
-        fireHiddenFilesChangedEvent(); // notify listeners of the change
-        return this;
-    }
-
-    /**
-     * Indicates whether files are shown in this DirTree. Default is false.
-     * When enabled, files are shown as leaf nodes within directories.
-     */
-    public boolean getShowFiles() {
-        return showFiles;
-    }
-
-    /**
-     * Controls whether files are shown in this DirTree. Default is false.
-     * When enabled, files are shown as leaf nodes within directories.
-     *
-     * @param showFiles Whether to show files in the tree.
-     */
-    public DirTree setShowFiles(boolean showFiles) {
-        boolean oldValue = this.showFiles;
-        this.showFiles = showFiles;
-
-        if (oldValue == showFiles) {
-            return this;
-        }
-
-        notificationsEnabled = false;
-        try {
-            reload();
-        }
-        finally {
-            notificationsEnabled = true;
-        }
-        return this;
-    }
-
-    /**
-     * Returns the current FileFilter used to restrict which files are shown.
-     * Returns null if no filter is set (all files are shown).
-     */
-    public FileFilter getFileFilter() {
-        return fileFilter;
-    }
-
-    /**
-     * Sets an optional FileFilter to restrict which files are shown in the tree.
-     * Only relevant when {@code showFiles} is enabled. If null, all files are shown.
-     *
-     * @param fileFilter The FileFilter to apply, or null to show all files.
-     */
-    public DirTree setFileFilter(FileFilter fileFilter) {
-        FileFilter oldValue = this.fileFilter;
-        this.fileFilter = fileFilter;
-
-        if (oldValue == fileFilter) {
-            return this;
-        }
-
-        if (showFiles) {
-            notificationsEnabled = false;
-            try {
-                reload();
-            }
-            finally {
-                notificationsEnabled = true;
-            }
-        }
-        return this;
-    }
-
-    /**
-     * Reloads this DirTree. When the reload is complete, the currently selected
-     * directory (if any) will be re-selected.
-     */
-    public void reload() {
-        File currentDir = getCurrentDir();
-
-        notificationsEnabled = false; // be silent about it
-        try {
-            // If we're locked, we need to reload the locked directory:
-            if (lockNode != null) {
-                lock(lockNode.getDir(), true);
-            }
-
-            // Otherwise, just unlock with forceReload to reload the entire tree:
-            else {
-                unlock(true);
-            }
-        }
-        finally {
-            notificationsEnabled = true;
-        }
-
-
-        // Re-select the previously selected directory (if any):
-        if (currentDir != null) {
-            selectAndScrollTo(currentDir);
-        }
-    }
-
-    /**
-     * "Locks" this DirTree to the given directory, meaning that only subdirectories
-     * of the given directory will be shown. This is similar to chrooting.
-     * If the given directory does not exist, or is null, this method does nothing.
-     *
-     * @param newRootDir The new root directory.
-     */
-    public void lock(File newRootDir) {
-        lock(newRootDir, false);
-    }
-
-    /**
-     * Invoked internally to lock to the specified directory, with an option to force
-     * a reload even if already locked to the same directory.
-     */
-    void lock(File newRootDir, boolean isForceReload) {
-        if (newRootDir == null || !newRootDir.exists()) {
-            log.warning("DirTree: given rootDir is null or doesn't exist. Ignoring request.");
-            return;
-        }
-
-        // All of this is just to try to accommodate case-insensitive filesystems:
-        String newRootDirCanonicalPath;
-        String lockNodeCanonicalPath;
-        try {
-            newRootDirCanonicalPath = newRootDir.getCanonicalPath();
-            lockNodeCanonicalPath = (lockNode == null)
-                    ? null
-                    : lockNode.getDir().getCanonicalPath();
-        }
-        catch (IOException ioe) {
-            // Fallback to absolute paths... this may fail on case-insensitive filesystems
-            // if the paths differ only by case, but it's the best we can do:
-            newRootDirCanonicalPath = newRootDir.getAbsolutePath();
-            lockNodeCanonicalPath = (lockNode == null)
-                    ? null
-                    : lockNode.getDir().getAbsolutePath();
-            log.log(Level.WARNING, "DirTree.lock(): IOException while getting canonical paths.", ioe);
-        }
-
-        // If the new rootDir is the same as the current one, nothing to do, unless we're forcing a reload:
-        if (lockNode != null
-                && newRootDirCanonicalPath.equals(lockNodeCanonicalPath)
-                && !isForceReload) {
-            return;
-        }
-
-        // Load up the new root node:
-        lockNode = new DirTreeNode(newRootDir, showHidden, showFiles, fileFilter);
-        File[] files = newRootDir.listFiles();
-        if (files != null) {
-            Arrays.sort(files, Comparator.comparing(o -> o.getName().toLowerCase()));
-
-            // First pass: add directories
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    if (file.isHidden() && !showHidden) {
-                        continue;
-                    }
-                    lockNode.add(new DirTreeNode(file, showHidden, showFiles, fileFilter));
-                }
-            }
-
-            // Second pass: add files (if showFiles is enabled)
-            if (showFiles) {
-                for (File file : files) {
-                    if (file.isFile()) {
-                        if (file.isHidden() && !showHidden) {
-                            continue;
-                        }
-                        if (fileFilter != null && !fileFilter.accept(file)) {
-                            continue;
-                        }
-                        lockNode.add(new DirTreeNode(file, showHidden, showFiles, fileFilter));
-                    }
-                }
-            }
-        }
-
-        // Create a new tree model based on our new root node:
-        DefaultTreeModel treeModel = new DefaultTreeModel(lockNode);
-        treeModel.setAsksAllowsChildren(true);
-        tree.setModel(treeModel);
-
-        // We are officially locked. Let listeners know:
-        fireLockEvent();
-    }
-
-    /**
-     * Unlocking the DirTree reverts it back to showing all filesystem roots.
+     * Restores the tree to the root configuration it had before the most recent
+     * {@link #chroot} / {@link #lock} call. If the tree is not currently locked,
+     * this method does nothing.
      */
     public void unlock() {
-        unlock(false);
+        if (savedRoots == null) {
+            return;
+        }
+        applyRoots(savedRoots);
+        savedRoots = null;
+        fireLockEvent(new DirTreeEvent(DirTreeEvent.Type.TREE_UNLOCKED, this, null));
     }
 
     /**
-     * Invoked internally to unlock the DirTree, with an option to force a reload
-     * even if the tree is not currently locked.
+     * Returns {@code true} if the tree is currently locked to a chroot directory.
      *
-     * @param forceReload Reload tree contents even if not locked.
+     * @return true if locked
      */
-    void unlock(boolean forceReload) {
-        // If we're not locked, nothing to do, unless we're forcing a reload:
-        if (lockNode == null && !forceReload) {
-            return;
-        }
+    public boolean isLocked() {
+        return savedRoots != null;
+    }
 
-        // Make a note of what's currently selected, so we can select it after refreshing the tree:
-        DirTreeNode oldNode = currentNode;
-        if (oldNode == null) {
-            // If nothing's selected, but we're locked, we can use the lock node as the "old" node:
-            oldNode = lockNode;
-        }
+    // -------------------------------------------------------------------------
+    // Listener registration
+    // -------------------------------------------------------------------------
 
-        // Get our list of filesystem roots:
-        File[] roots = getFilesystemRoots();
+    /** Adds a {@link DirTreeNodeListener} to receive structural node events. */
+    public void addDirTreeNodeListener(DirTreeNodeListener listener) {
+        if (listener != null) { nodeListeners.add(listener); }
+    }
 
-        // If there's only one, force a lock to it (this avoids the annoyance of a fake root with one child):
-        if (roots.length == 1) {
-            // Don't send a lockEvent!
-            notificationsEnabled = false;
-            try {
-                lock(roots[0], forceReload);
-                if (oldNode != null) {
-                    selectAndScrollTo(oldNode.getDir());
-                }
+    /** Removes a previously registered {@link DirTreeNodeListener}. */
+    public void removeDirTreeNodeListener(DirTreeNodeListener listener) {
+        nodeListeners.remove(listener);
+    }
+
+    /** Adds a {@link DirTreeSelectionListener} to receive selection/mouse events. */
+    public void addDirTreeSelectionListener(DirTreeSelectionListener listener) {
+        if (listener != null) { selectionListeners.add(listener); }
+    }
+
+    /** Removes a previously registered {@link DirTreeSelectionListener}. */
+    public void removeDirTreeSelectionListener(DirTreeSelectionListener listener) {
+        selectionListeners.remove(listener);
+    }
+
+    /** Adds a {@link DirTreeLoaderListener} to receive load lifecycle events. */
+    public void addDirTreeLoaderListener(DirTreeLoaderListener listener) {
+        if (listener != null) { loaderListeners.add(listener); }
+    }
+
+    /** Removes a previously registered {@link DirTreeLoaderListener}. */
+    public void removeDirTreeLoaderListener(DirTreeLoaderListener listener) {
+        loaderListeners.remove(listener);
+    }
+
+    /** Adds a {@link DirTreeLockListener} to receive lock/unlock events. */
+    public void addDirTreeLockListener(DirTreeLockListener listener) {
+        if (listener != null) { lockListeners.add(listener); }
+    }
+
+    /** Removes a previously registered {@link DirTreeLockListener}. */
+    public void removeDirTreeLockListener(DirTreeLockListener listener) {
+        lockListeners.remove(listener);
+    }
+
+    // -------------------------------------------------------------------------
+    // Event firing (package-private — called from DirTreeLoader)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Fires a lock lifecycle event to all registered {@link DirTreeLockListener}s.
+     * Called on the EDT.
+     */
+    private void fireLockEvent(DirTreeEvent event) {
+        for (DirTreeLockListener l : new ArrayList<>(lockListeners)) {
+            switch (event.getType()) {
+                case TREE_LOCKED -> l.treeLocked(event);
+                case TREE_UNLOCKED -> l.treeUnlocked(event);
+                default -> { }
             }
-            finally {
-                notificationsEnabled = true;
-            }
-            fireUnlockEvent(); // Technically, we are locked, but from the user's perspective we are unlocked
-            return;
         }
-
-        // In unlocked mode with multiple filesystem roots, we use a "fake" root node to contain those roots:
-        lockNode = null;
-        fakeRootNode = new DirTreeNode(new File(FAKE_ROOT_NAME), showHidden, showFiles, fileFilter);
-        fakeRootNode.setAllowsChildren(true); // Override DirTreeNode logic for this fake root
-        for (File root : roots) {
-            fakeRootNode.add(new DirTreeNode(root, showHidden, showFiles, fileFilter));
-        }
-
-        // Use our new root node to reset the tree model:
-        DefaultTreeModel treeModel = new DefaultTreeModel(fakeRootNode);
-        treeModel.setAsksAllowsChildren(true);
-        tree.setModel(treeModel);
-
-        // Select the old root (if there was one):
-        if (oldNode != null) {
-            selectAndScrollTo(oldNode.getDir());
-        }
-
-        // We are officially unlocked. Let listeners know:
-        fireUnlockEvent();
     }
 
     /**
-     * Selects and scrolls to the given directory. Does nothing if the directory doesn't exist.
-     *
-     * @param dir The directory to select.
+     * Fires a loader lifecycle event to all registered {@link DirTreeLoaderListener}s.
+     * Also manages the visibility of the loading indicator panel.
+     * Called on the EDT.
      */
-    public boolean selectAndScrollTo(File dir) {
-        if (dir == null) {
-            log.warning("DirTree.selectAndScrollTo(): given dir is null. Ignoring request.");
-            return false;
-        }
-        if (!dir.exists() || !dir.isDirectory()) {
-            log.warning("DirTree.selectAndScrollTo(): given dir \"" + dir.getAbsolutePath() + "\""
-                                + " doesn't exist, or is not a directory. Ignoring request.");
-            return false;
-        }
-
-        try {
-            DirTreeNode startingNode = null;
-            Path targetPath = Paths.get(dir.getAbsolutePath()).toRealPath();
-
-            // If we're locked, make sure the given dir is within the locked tree:
-            if (lockNode != null) { // We don't call isLocked() here because of our special "/" case
-                Path lockPath = Paths.get(lockNode.getDir().getAbsolutePath()).toRealPath();
-                if (!targetPath.startsWith(lockPath)) {
-                    log.warning("DirTree.selectAndScrollTo(): given dir is outside locked tree."
-                                        + " Ignoring request.");
-                    return false;
-                }
-
-                // Our "starting node" for the search will be the lock node:
-                startingNode = lockNode;
+    void fireLoaderEvent(DirTreeEvent event) {
+        switch (event.getType()) {
+            case LOAD_STARTED -> {
+                loadingNode = event.getNode();
+                updateLoadingIndicator(true, "Loading " + event.getNode() + "\u2026");
             }
+            case LOAD_COMPLETE, LOAD_CANCELLED, LOAD_FAILED -> {
+                loadingNode = null;
+                updateLoadingIndicator(false, " ");
+            }
+            default -> { /* LOAD_PROGRESS — indicator already visible */ }
+        }
 
-            // If we're not locked, we need to find the starting node among the filesystem roots:
-            else {
-                for (int i = 0; i < fakeRootNode.getChildCount(); i++) {
-                    DirTreeNode candidate = (DirTreeNode)fakeRootNode.getChildAt(i);
-                    if (targetPath.startsWith(Paths.get(candidate.getDir().getAbsolutePath()).toRealPath())) {
-                        startingNode = candidate;
-                        break;
+        for (DirTreeLoaderListener l : new ArrayList<>(loaderListeners)) {
+            switch (event.getType()) {
+                case LOAD_STARTED -> l.loadStarted(event);
+                case LOAD_PROGRESS -> l.loadProgress(event);
+                case LOAD_COMPLETE -> l.loadComplete(event);
+                case LOAD_CANCELLED -> l.loadCancelled(event);
+                case LOAD_FAILED -> l.loadFailed(event);
+                default -> { }
+            }
+        }
+    }
+
+    /**
+     * Called by the model when a load completes; forwards to the model, then
+     * fires {@link DirTreeEvent.Type#NODE_EXPANDED} for the node.
+     */
+    void onLoadComplete(DirTreeNode node, List<File> results) {
+        dirTreeModel.onLoadComplete(node, results);
+        // If the node is still expanded in the UI, fire nodeExpanded.
+        TreePath path = buildTreePath(node);
+        if (path != null && isExpanded(path)) {
+            DirTreeEvent event = new DirTreeEvent(DirTreeEvent.Type.NODE_EXPANDED, this, node);
+            for (DirTreeNodeListener l : new ArrayList<>(nodeListeners)) {
+                l.nodeExpanded(event);
+            }
+        }
+    }
+
+    /**
+     * Called by the model when a load fails; forwards to the model.
+     */
+    void onLoadFailed(DirTreeNode node) {
+        dirTreeModel.onLoadFailed(node);
+    }
+
+    // -------------------------------------------------------------------------
+    // Swing event wiring
+    // -------------------------------------------------------------------------
+
+    private void wireTreeWillExpandListener() {
+        addTreeWillExpandListener(new TreeWillExpandListener() {
+            @Override
+            public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+                Object last = event.getPath().getLastPathComponent();
+                if (!(last instanceof DirTreeNode node)) { return; }
+                if (node.isPlaceholder()) { throw new ExpandVetoException(event, "placeholder"); }
+
+                // Fire vetoable nodeWillExpand to all listeners.
+                DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_WILL_EXPAND, DirTree.this, node);
+                for (DirTreeNodeListener l : new ArrayList<>(nodeListeners)) {
+                    if (!l.nodeWillExpand(dirEvent)) {
+                        throw new ExpandVetoException(event, "vetoed by listener");
                     }
                 }
 
-                // This *should* never happen, but just in case:
-                if (startingNode == null) {
-                    log.warning("DirTree.selectAndScrollTo(): given dir is outside filesystem roots."
-                                        + " Ignoring request.");
-                    return false;
+                // Trigger lazy load if not yet loaded.
+                if (node.getLoadState() == DirTreeNode.LoadState.UNLOADED
+                        || node.getLoadState() == DirTreeNode.LoadState.ERROR) {
+                    dirTreeModel.startLoad(node);
                 }
             }
 
-            // Now, we can start searching based on our starting node:
-            Path treeRootPath = Paths.get(startingNode.getDir().getAbsolutePath()).toRealPath();
+            @Override
+            public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+                Object last = event.getPath().getLastPathComponent();
+                if (!(last instanceof DirTreeNode node)) { return; }
+                if (node.isPlaceholder()) { return; }
 
-            // One more sanity check, just to be sure:
-            if (!targetPath.startsWith(treeRootPath)) {
-                log.warning("DirTree.selectAndScrollTo(): given dir is outside starting node tree."
-                                    + " Ignoring request.");
-                return false;
+                DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_WILL_COLLAPSE, DirTree.this, node);
+                for (DirTreeNodeListener l : new ArrayList<>(nodeListeners)) {
+                    if (!l.nodeWillCollapse(dirEvent)) {
+                        throw new ExpandVetoException(event, "vetoed by listener");
+                    }
+                }
+            }
+        });
+
+        // Informational post-collapse event.
+        addTreeExpansionListener(new javax.swing.event.TreeExpansionListener() {
+            @Override
+            public void treeExpanded(TreeExpansionEvent event) {
+                // NODE_EXPANDED is fired from onLoadComplete to ensure children are present.
+                // If already loaded, fire it directly here.
+                Object last = event.getPath().getLastPathComponent();
+                if (!(last instanceof DirTreeNode node)) { return; }
+                if (node.getLoadState() == DirTreeNode.LoadState.LOADED) {
+                    DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_EXPANDED, DirTree.this, node);
+                    for (DirTreeNodeListener l : new ArrayList<>(nodeListeners)) {
+                        l.nodeExpanded(dirEvent);
+                    }
+                }
             }
 
-            // Get the relative path from tree root to target
-            Path relativePath = treeRootPath.relativize(targetPath);
+            @Override
+            public void treeCollapsed(TreeExpansionEvent event) {
+                Object last = event.getPath().getLastPathComponent();
+                if (!(last instanceof DirTreeNode node)) { return; }
+                DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_COLLAPSED, DirTree.this, node);
+                for (DirTreeNodeListener l : new ArrayList<>(nodeListeners)) {
+                    l.nodeCollapsed(dirEvent);
+                }
+            }
+        });
+    }
 
-            // Start from tree root and expand down
-            Path currentPath = treeRootPath;
-            expandNodeAtPath(currentPath); // Expand the root itself
+    private void wireTreeSelectionListener() {
+        addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                TreePath path = e.getNewLeadSelectionPath();
+                if (path == null) {
+                    DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_DESELECTED, DirTree.this, null);
+                    for (DirTreeSelectionListener l : new ArrayList<>(selectionListeners)) {
+                        l.nodeDeselected(dirEvent);
+                    }
+                    return;
+                }
+                Object last = path.getLastPathComponent();
+                if (!(last instanceof DirTreeNode node)) { return; }
+                if (node.isPlaceholder()) { return; }
 
-            // Walk through each component of the relative path
-            for (int i = 0; i < relativePath.getNameCount(); i++) {
-                currentPath = currentPath.resolve(relativePath.getName(i));
-                expandNodeAtPath(currentPath);
+                DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_SELECTED, DirTree.this, node);
+                for (DirTreeSelectionListener l : new ArrayList<>(selectionListeners)) {
+                    l.nodeSelected(dirEvent);
+                }
+            }
+        });
+    }
+
+    private void wireMouseListener() {
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                // JTree's built-in behaviour selects on left-click mousePressed.
+                // Mirror that for right-clicks so the selection always reflects
+                // the clicked node before any popup-trigger listener fires.
+                if (!SwingUtilities.isRightMouseButton(e)) {
+                    return;
+                }
+                int row = getRowForLocation(e.getX(), e.getY());
+                if (row < 0) { return; }
+                TreePath path = getPathForRow(row);
+                if (path == null) { return; }
+                Object last = path.getLastPathComponent();
+                if (!(last instanceof DirTreeNode node) || node.isPlaceholder()) { return; }
+                setSelectionPath(path);
+                maybeShowPopup(e);
             }
 
-            // Now we should be able to find the old root node, unless something went wrong:
-            TreePath pathToOldRoot = findPathToNode(new DirTreeNode(dir, showHidden, showFiles, fileFilter));
-            tree.getSelectionModel().setSelectionPath(pathToOldRoot);
-            tree.scrollPathToVisible(pathToOldRoot);
-            return true;
-        }
-        catch (IOException ioe) {
-            log.log(Level.SEVERE, "DirTree.selectAndScrollTo(): IOException while resolving paths.", ioe);
-            return false;
-        }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = getRowForLocation(e.getX(), e.getY());
+                if (row < 0) { return; }
+                TreePath path = getPathForRow(row);
+                if (path == null) { return; }
+                Object last = path.getLastPathComponent();
+                if (!(last instanceof DirTreeNode node)) { return; }
+                if (node.isPlaceholder()) { return; }
+
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    // Selection was already applied in mousePressed; just fire the event.
+                    DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_RIGHT_CLICKED, DirTree.this, node);
+                    for (DirTreeSelectionListener l : new ArrayList<>(selectionListeners)) {
+                        l.nodeRightClicked(dirEvent);
+                    }
+                }
+                else if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_DOUBLE_CLICKED, DirTree.this, node);
+                    for (DirTreeSelectionListener l : new ArrayList<>(selectionListeners)) {
+                        l.nodeDoubleClicked(dirEvent);
+                    }
+                }
+                maybeShowPopup(e);
+            }
+
+            private void maybeShowPopup(MouseEvent e) {
+                if (!e.isPopupTrigger()) {
+                    return;
+                }
+                TreePath path = getPathForLocation(e.getX(), e.getY());
+                DirTreeNode node = (path != null && path.getLastPathComponent() instanceof DirTreeNode n)
+                        ? n : null;
+
+                JPopupMenu popup = new JPopupMenu();
+
+                JMenuItem lockItem = new JMenuItem("Lock tree to this directory");
+                lockItem.setEnabled(node != null && node.isDirectory() && !node.isPlaceholder());
+                lockItem.addActionListener(ae -> {
+                    if (node == null) {
+                        unlock();
+                    }
+                    else {
+                        chroot(node.getFile());
+                    }
+                });
+                popup.add(lockItem);
+
+                if (isLocked()) {
+                    JMenuItem unlockItem = new JMenuItem("Unlock tree");
+                    unlockItem.addActionListener(ae -> unlock());
+                    popup.add(unlockItem);
+                }
+
+                if (node != null && node.isDirectory() && !node.isPlaceholder()) {
+                    JMenuItem refreshItem = new JMenuItem("Refresh");
+                    refreshItem.addActionListener(ae -> {
+                        refresh(node);
+                    });
+                    popup.add(refreshItem);
+                }
+
+                JMenuItem showHiddenItems = new JCheckBoxMenuItem("Show hidden items",
+                                                                  getOptions().isShowHiddenFiles());
+                showHiddenItems.addActionListener(ev -> setShowHidden(showHiddenItems.isSelected()));
+                popup.add(showHiddenItems);
+
+                popup.show(DirTree.this, e.getX(), e.getY());
+            }
+        });
     }
 
-    /**
-     * Given a path, expands the corresponding node in the tree.
-     */
-    private void expandNodeAtPath(Path path) {
-        DirTreeNode tmpNode = new DirTreeNode(path.toFile(), showHidden, showFiles, fileFilter);
-        TreePath treePath = findPathToNode(tmpNode);
-        if (treePath != null) {
-            ((DirTreeNode)treePath.getLastPathComponent()).loadChildren();
-            tree.expandPath(treePath);
-        }
-    }
+    // -------------------------------------------------------------------------
+    // Internal helpers
+    // -------------------------------------------------------------------------
 
     /**
-     * Finds and returns a specific tree path by looking for the given node.
-     * Implementation note: you may be wondering why not just invoke dirNode.getPath(). Well,
-     * when locking and unlocking the tree, we play havoc with the "actual" path to any given
-     * node (by converting a child node into a "root" (or chroot) node). So, this method
-     * ignores getPath() and instead searches the entire tree looking for a node whose
-     * directory matches the given node's directory. Inefficient but accurate.
+     * Replaces the tree model with a new one built from the given roots.
+     * Cancels any in-progress loads first. Must be called on the EDT.
      *
-     * @param dirNode The DirTreeNode whose path we want to look up.
-     * @return The TreePath for this node.
+     * @param roots the new filesystem roots to display
      */
-    private TreePath findPathToNode(DirTreeNode dirNode) {
-        // Our "root" node depends on whether we're locked or not:
-        DirTreeNode rootNode = (lockNode != null) ? lockNode : fakeRootNode;
-
-        // The rest of this logic is a brute-force search through the tree:
-        File targetDir = dirNode.getDir();
-        Enumeration<TreeNode> e = rootNode.depthFirstEnumeration();
-        while (e.hasMoreElements()) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode)e.nextElement();
-            if (((DirTreeNode)node).getDir().equals(targetDir)) {
-                return new TreePath(node.getPath());
-            }
-        }
-
-        return null;
+    private void applyRoots(File[] roots) {
+        dirTreeModel.cancelAllLoaders();
+        dirTreeModel = new DirTreeModel(this, roots, options);
+        setModel(dirTreeModel);
+        currentRoots = roots;
     }
 
     /**
-     * Overridden from TreeSelectionListener, so we can listen for selection events within
-     * our JTree and notify our own listeners that the selection has changed.
+     * Cancels the currently in-progress background load (if any).
+     * Called when the user presses the Cancel button in the loading indicator.
+     */
+    private void cancelCurrentLoad() {
+        if (loadingNode != null) {
+            dirTreeModel.cancelLoad(loadingNode);
+        }
+    }
+
+    /**
+     * Shows or hides the loading indicator and updates its label text.
+     * Must be called on the EDT.
+     */
+    private void updateLoadingIndicator(boolean visible, String message) {
+        loadingLabel.setText(message);
+        loadingPanel.setVisible(visible);
+        loadingPanel.revalidate();
+    }
+
+    /**
+     * Builds a {@link TreePath} from the synthetic root to the given node by
+     * walking up the node's parent chain.
      *
-     * @param e The TreeSelectionEvent.
+     * @param node the target node
+     * @return the tree path, or {@code null} if the node is not in the model
      */
-    @Override
-    public void valueChanged(TreeSelectionEvent e) {
-        if (e.getNewLeadSelectionPath() == null
-                || e.getNewLeadSelectionPath().getLastPathComponent() == null) {
-            currentNode = null;
-            return;
+    TreePath buildTreePath(DirTreeNode node) {
+        List<Object> pathList = new ArrayList<>();
+        DirTreeNode cursor = node;
+        while (cursor != null) {
+            pathList.add(0, cursor);
+            Object parent = cursor.getParent();
+            cursor = (parent instanceof DirTreeNode p) ? p : null;
         }
-
-        DirTreeNode selectedNode = (DirTreeNode)e.getNewLeadSelectionPath().getLastPathComponent();
-
-        // File nodes don't update currentNode or fire selectionChanged:
-        if (selectedNode.isFileNode()) {
-            return;
-        }
-
-        currentNode = selectedNode;
-        fireSelectionChangedEvent(currentNode);
-    }
-
-    /**
-     * Used internally to notify listeners that this tree has been locked (chrooted) to a
-     * specific subdirectory.
-     */
-    private void fireLockEvent() {
-        if (!notificationsEnabled) {
-            return; // ignored
-        }
-
-        for (DirTreeListener listener : new ArrayList<>(listeners)) {
-            listener.treeLocked(this, lockNode.getDir());
-        }
-    }
-
-    /**
-     * Used internally to notify listeners that this tree has been unlocked.
-     */
-    private void fireUnlockEvent() {
-        if (!notificationsEnabled) {
-            return; // ignored
-        }
-
-        for (DirTreeListener listener : new ArrayList<>(listeners)) {
-            listener.treeUnlocked(this);
-        }
-    }
-
-    /**
-     * Used internally to notify listeners that the selection has changed.
-     *
-     * @param node The newly selected node.
-     */
-    private void fireSelectionChangedEvent(DirTreeNode node) {
-        if (!notificationsEnabled) {
-            return; // ignored
-        }
-
-        File selectedDir = (node == null) ? null : node.getDir();
-        for (DirTreeListener listener : new ArrayList<>(listeners)) {
-            listener.selectionChanged(this, selectedDir);
-        }
-    }
-
-    /**
-     * Fired internally to notify listeners that the "show hidden files" setting has changed.
-     */
-    private void fireHiddenFilesChangedEvent() {
-        if (!notificationsEnabled) {
-            return; // ignored
-        }
-
-        for (DirTreeListener listener : new ArrayList<>(listeners)) {
-            listener.showHiddenFilesChanged(this, showHidden);
-        }
-    }
-
-    /**
-     * Fired internally to notify listeners that the selection in the tree is about to change.
-     * Listeners can veto this change by returning false.
-     *
-     * @param newNode The node that is about to be selected.
-     * @return True to allow the selection change, false to veto it.
-     */
-    private boolean fireSelectionWillChangeEvent(DirTreeNode newNode) {
-        if (!notificationsEnabled) {
-            return true; // ignored, and assumed allowed
-        }
-
-        File newSelectedDir = (newNode == null) ? null : newNode.getDir();
-        for (DirTreeListener listener : new ArrayList<>(listeners)) {
-            if (!listener.selectionWillChange(this, newSelectedDir)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Fired internally to notify listeners that a file node was double-clicked.
-     *
-     * @param file The file that was double-clicked.
-     */
-    private void fireFileDoubleClickedEvent(File file) {
-        if (!notificationsEnabled) {
-            return;
-        }
-
-        for (DirTreeListener listener : new ArrayList<>(listeners)) {
-            listener.fileDoubleClicked(this, file);
-        }
-    }
-
-    /**
-     * A custom TreeSelectionModel that intercepts selection changes before they are finalized,
-     * and gives us a way to veto the selection change if any of our listeners object to it.
-     */
-    private class ValidatingTreeSelectionModel extends DefaultTreeSelectionModel {
-
-        @Override
-        public void setSelectionPaths(TreePath[] paths) {
-            if (paths != null && paths.length > 0 && canChangeSelection(paths[0])) {
-                super.setSelectionPaths(paths);
-            }
-        }
-
-        private boolean canChangeSelection(TreePath newPath) {
-            TreePath[] currentPaths = getSelectionPaths();
-
-            // If nothing is currently selected, allow the change:
-            if (currentPaths == null || currentPaths.length == 0) {
-                return true;
-            }
-
-            // If we're somehow selecting the same thing, just allow it:
-            if (currentPaths.length == 1 && currentPaths[0].equals(newPath)) {
-                return true;
-            }
-
-            // Get a DirTreeNode for the new selection:
-            DirTreeNode newNode = (DirTreeNode)newPath.getLastPathComponent();
-
-            // File nodes are always allowed without veto:
-            if (newNode.isFileNode()) {
-                return true;
-            }
-
-            // Give our listeners a chance to veto the selection change:
-            // (For example, if there are unsaved changes in the UI that need to be addressed first)
-            return fireSelectionWillChangeEvent(newNode);
-        }
+        if (pathList.isEmpty()) { return null; }
+        return new TreePath(pathList.toArray());
     }
 }

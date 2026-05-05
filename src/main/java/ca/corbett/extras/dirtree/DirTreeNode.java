@@ -2,193 +2,146 @@ package ca.corbett.extras.dirtree;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.File;
-import java.io.FileFilter;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Objects;
 
 /**
- * Represents a single node (directory or file) within our DirTree.
+ * A tree node that wraps a {@link File} (directory or regular file) for use
+ * inside a {@link DirTree}.
+ * <p>
+ * Each node starts in {@link LoadState#UNLOADED} and carries a single
+ * <em>placeholder</em> child so that {@code JTree} renders the expand arrow
+ * before the first real load. The placeholder is replaced with real children
+ * once the background loader finishes.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
- * @since 2017-11-09
  */
-public final class DirTreeNode extends DefaultMutableTreeNode {
-    private final File dir;
-    private volatile boolean childrenLoaded;
-    private final boolean hasChildren;
-    private final boolean showHidden;
-    private final boolean showFiles;
-    private final FileFilter fileFilter;
+public class DirTreeNode extends DefaultMutableTreeNode {
 
     /**
-     * Creates a new DirTreeNode for the given directory.
-     *
-     * @param dir            The directory (or file) this node represents.
-     * @param showHiddenDirs Whether to show hidden directories and files.
-     * @deprecated Use {@link #DirTreeNode(File, boolean, boolean, FileFilter)} instead.
+     * Tracks the loading lifecycle of a node's children.
      */
-    @Deprecated(since = "swing-extras 2.8")
-    public DirTreeNode(File dir, boolean showHiddenDirs) {
-        this(dir, showHiddenDirs, false, null);
+    public enum LoadState {
+        /** Children have never been loaded. A placeholder child is present. */
+        UNLOADED,
+        /** A background load is in progress. */
+        LOADING,
+        /** Children have been loaded successfully. */
+        LOADED,
+        /** The last load attempt failed (I/O error, permission denied, etc.). */
+        ERROR
     }
 
+    // Sentinel node used as a placeholder child before the first real load.
+    // All DirTreeNode instances that are directories share a reference to this.
+    static final DirTreeNode LOADING_PLACEHOLDER = new DirTreeNode(null, false);
+
+    private final File file;
+    private final boolean isDirectory;
+    private LoadState loadState;
+
+    // -------------------------------------------------------------------------
+    // Construction
+    // -------------------------------------------------------------------------
+
     /**
-     * Creates a new DirTreeNode for the given directory or file.
+     * Creates a node for the given file.
      *
-     * @param dir        The directory (or file) this node represents.
-     * @param showHidden Whether to show hidden directories and files.
-     * @param showFiles  Whether to show files as child nodes of directories.
-     * @param fileFilter An optional FileFilter to restrict which files are shown (null means all files).
+     * @param file        the file or directory this node represents; may be {@code null}
+     *                    only for the invisible synthetic root node
+     * @param isDirectory whether this node should behave as a directory (expandable)
      */
-    public DirTreeNode(File dir, boolean showHidden, boolean showFiles, FileFilter fileFilter) {
-        super(dir.getName());
-        this.dir = dir;
-        this.showHidden = showHidden;
-        this.showFiles = showFiles;
-        this.fileFilter = fileFilter;
-        if (dir.isFile()) {
-            this.hasChildren = false;
+    public DirTreeNode(File file, boolean isDirectory) {
+        super(file);
+        this.file = file;
+        this.isDirectory = isDirectory;
+
+        if (isDirectory) {
+            loadState = LoadState.UNLOADED;
+            setAllowsChildren(true);
+            // Add a placeholder so JTree shows the expand arrow immediately.
+            super.add(LOADING_PLACEHOLDER);
         }
         else {
-            this.hasChildren = hasChildren();
+            // Files are always leaves — no placeholder needed, no expand arrow.
+            loadState = LoadState.LOADED;
+            setAllowsChildren(false);
         }
-        setAllowsChildren(hasChildren);
-        childrenLoaded = false;
     }
 
+    // -------------------------------------------------------------------------
+    // Public API
+    // -------------------------------------------------------------------------
+
+    /** Returns the {@link File} this node represents, or {@code null} for the synthetic root. */
+    public File getFile() {
+        return file;
+    }
+
+    /** Returns {@code true} if this node represents a directory. */
+    public boolean isDirectory() {
+        return isDirectory;
+    }
+
+    /** Returns the current {@link LoadState} of this node. */
+    public LoadState getLoadState() {
+        return loadState;
+    }
+
+    /** Updates the load state. Should be called on the EDT. */
+    public void setLoadState(LoadState loadState) {
+        this.loadState = loadState;
+    }
+
+    /**
+     * Returns {@code true} if this node is the shared loading placeholder sentinel.
+     */
+    public boolean isPlaceholder() {
+        return this == LOADING_PLACEHOLDER;
+    }
+
+    /**
+     * Removes the placeholder child (if present) without affecting real children.
+     * Should be called on the EDT before inserting real children.
+     */
+    public void removePlaceholder() {
+        if (getChildCount() > 0) {
+            DirTreeNode first = (DirTreeNode)getChildAt(0);
+            if (first.isPlaceholder()) {
+                super.remove(0);
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // JTree / TreeNode overrides
+    // -------------------------------------------------------------------------
+
+    /**
+     * A directory node is always reported as a non-leaf so that JTree shows the
+     * expand arrow, even before children are loaded. A file node is always a leaf.
+     */
     @Override
     public boolean isLeaf() {
-        return !hasChildren;
-    }
-
-    public File getDir() {
-        return dir;
+        return !isDirectory;
     }
 
     /**
-     * Returns whether this node represents a file (as opposed to a directory).
-     *
-     * @return true if this node represents a file.
+     * Returns a human-readable label for this node. For the invisible synthetic root
+     * and for the loading placeholder, special strings are returned.
      */
-    public boolean isFileNode() {
-        return dir.isFile();
-    }
-
-    /**
-     * Indicates whether hidden directories and files are shown.
-     *
-     * @deprecated Use {@link #isShowHidden()} instead.
-     */
-    @Deprecated(since = "swing-extras 2.8")
-    public boolean isShowHiddenDirs() {
-        return showHidden;
-    }
-
-    /**
-     * Indicates whether hidden directories and files are shown.
-     */
-    public boolean isShowHidden() {
-        return showHidden;
-    }
-
-    public void loadChildren() {
-        if (dir.isFile()) {
-            return;
-        }
-        if (!childrenLoaded && dir.canRead()) {
-            synchronized(this) {
-                // Double-check after lock
-                if (childrenLoaded) {
-                    return;
-                }
-                int childCount = 0;
-                String[] fileNames = dir.list();
-                if (fileNames != null) {
-                    Arrays.sort(fileNames, Comparator.comparing(String::toLowerCase));
-
-                    // First pass: add directories
-                    for (String fileName : fileNames) {
-                        File file = new File(dir, fileName);
-                        if (file.isDirectory()) {
-                            if (file.isHidden() && !showHidden) {
-                                continue;
-                            }
-                            add(new DirTreeNode(file, showHidden, showFiles, fileFilter));
-                            childCount++;
-                        }
-                    }
-
-                    // Second pass: add files (if showFiles is enabled)
-                    if (showFiles) {
-                        for (String fileName : fileNames) {
-                            File file = new File(dir, fileName);
-                            if (file.isFile()) {
-                                if (file.isHidden() && !showHidden) {
-                                    continue;
-                                }
-                                if (fileFilter != null && !fileFilter.accept(file)) {
-                                    continue;
-                                }
-                                add(new DirTreeNode(file, showHidden, showFiles, fileFilter));
-                                childCount++;
-                            }
-                        }
-                    }
-
-                    childrenLoaded = true;
-                    setAllowsChildren(childCount > 0);
-                }
-            }
-        }
-    }
-
-    public boolean hasChildren() {
-        if (dir.isFile()) {
-            return false;
-        }
-        File[] files = dir.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    if (file.isHidden() && !showHidden) {
-                        continue;
-                    }
-                    return true;
-                }
-            }
-            // If showFiles is enabled, check for matching files too:
-            if (showFiles) {
-                for (File file : files) {
-                    if (file.isFile()) {
-                        if (file.isHidden() && !showHidden) {
-                            continue;
-                        }
-                        if (fileFilter != null && !fileFilter.accept(file)) {
-                            continue;
-                        }
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof DirTreeNode that)) { return false; }
-        if (dir == null && that.dir != null) {
-            return false;
+    public String toString() {
+        if (isPlaceholder()) {
+            return "Loading\u2026"; // "Loading…"
         }
-        if (dir != null && that.dir == null) {
-            return false;
+        if (file == null) {
+            return "";  // synthetic root — should never be visible
         }
-        return dir == null || dir.getAbsolutePath().equals(that.dir.getAbsolutePath());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(dir);
+        // On Windows, File.listRoots() entries look like "C:\"; getName() returns "".
+        String name = file.getName();
+        if (name.isEmpty()) {
+            return file.getAbsolutePath();
+        }
+        return name;
     }
 }
+
