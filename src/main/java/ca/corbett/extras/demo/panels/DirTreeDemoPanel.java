@@ -62,11 +62,12 @@ public class DirTreeDemoPanel extends PanelBuilder {
     @Override
     public JPanel build() {
         dirTree = new DirTree();
-        dirTree.setPreferredSize(new Dimension(200, 1));
 
         JPanel containerPanel = new JPanel();
         containerPanel.setLayout(new BorderLayout());
-        containerPanel.add(dirTree.buildPanel(), BorderLayout.WEST);
+        JPanel dirTreePanel = dirTree.buildPanel();
+        dirTreePanel.setPreferredSize(new Dimension(200, 1));
+        containerPanel.add(dirTreePanel, BorderLayout.WEST);
 
         containerPanel.add(buildFormPanel(), BorderLayout.CENTER);
 
