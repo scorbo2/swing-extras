@@ -39,6 +39,9 @@ public final class DirTreeEvent {
 
         // --- Selection / mouse events ---
 
+        /** Fired before a node is selected. Vetoable. */
+        NODE_WILL_SELECT,
+
         /** Fired when the user single-clicks to select a node. */
         NODE_SELECTED,
 

@@ -1,5 +1,7 @@
 package ca.corbett.extras.dirtree;
 
+import ca.corbett.extras.ScrollUtil;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -39,8 +41,8 @@ import java.util.logging.Logger;
  *       ({@link DirTreeNodeListener}), selection / mouse events
  *       ({@link DirTreeSelectionListener}), and load lifecycle events
  *       ({@link DirTreeLoaderListener}).</li>
- *   <li>Vetoable navigation: {@code nodeWillExpand} / {@code nodeWillCollapse}
- *       listeners can return {@code false} to cancel the action.</li>
+ *   <li>Vetoable navigation: {@code nodeWillExpand} / {@code nodeWillCollapse} /
+ *       {@code nodeWillSelect} listeners can return {@code false} to cancel the action.</li>
  *   <li>Programmatic navigation: {@link #navigateTo(File)} loads and expands
  *       all intermediate nodes to bring a given directory into view and select it.</li>
  *   <li>Loading indicator with a Cancel button shown while a background load is
@@ -196,7 +198,7 @@ public class DirTree extends JTree {
      */
     public JPanel buildPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JScrollPane(this), BorderLayout.CENTER);
+        panel.add(ScrollUtil.buildScrollPane(this), BorderLayout.CENTER);
         panel.add(loadingPanel, BorderLayout.SOUTH);
         return panel;
     }
@@ -629,11 +631,19 @@ public class DirTree extends JTree {
     }
 
     private void wireTreeSelectionListener() {
-        addTreeSelectionListener(new TreeSelectionListener() {
+        // We hold a reference to the listener so we can temporarily remove it when
+        // restoring a vetoed selection (to avoid infinite recursion).
+        TreeSelectionListener[] listenerRef = new TreeSelectionListener[1];
+
+        // Tracks the last successfully accepted selection path (null = nothing selected).
+        TreePath[] previousPath = new TreePath[1];
+
+        listenerRef[0] = new TreeSelectionListener() {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
                 TreePath path = e.getNewLeadSelectionPath();
                 if (path == null) {
+                    previousPath[0] = null;
                     DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_DESELECTED, DirTree.this, null);
                     for (DirTreeSelectionListener l : new ArrayList<>(selectionListeners)) {
                         l.nodeDeselected(dirEvent);
@@ -644,12 +654,26 @@ public class DirTree extends JTree {
                 if (!(last instanceof DirTreeNode node)) { return; }
                 if (node.isPlaceholder()) { return; }
 
+                // Fire vetoable nodeWillSelect to all listeners.
+                DirTreeEvent willSelectEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_WILL_SELECT, DirTree.this, node);
+                for (DirTreeSelectionListener l : new ArrayList<>(selectionListeners)) {
+                    if (!l.nodeWillSelect(willSelectEvent)) {
+                        // Veto: restore the previous selection without re-triggering this listener.
+                        removeTreeSelectionListener(listenerRef[0]);
+                        setSelectionPath(previousPath[0]);
+                        addTreeSelectionListener(listenerRef[0]);
+                        return;
+                    }
+                }
+
+                previousPath[0] = path;
                 DirTreeEvent dirEvent = new DirTreeEvent(DirTreeEvent.Type.NODE_SELECTED, DirTree.this, node);
                 for (DirTreeSelectionListener l : new ArrayList<>(selectionListeners)) {
                     l.nodeSelected(dirEvent);
                 }
             }
-        });
+        };
+        addTreeSelectionListener(listenerRef[0]);
     }
 
     private void wireMouseListener() {

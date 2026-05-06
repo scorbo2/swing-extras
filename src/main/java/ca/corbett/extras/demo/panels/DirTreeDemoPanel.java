@@ -5,7 +5,6 @@ import ca.corbett.extras.demo.DemoApp;
 import ca.corbett.extras.dirtree.DirTree;
 import ca.corbett.extras.dirtree.DirTreeEvent;
 import ca.corbett.extras.dirtree.DirTreeLockListener;
-import ca.corbett.extras.dirtree.DirTreeNodeListener;
 import ca.corbett.extras.dirtree.DirTreeSelectionListener;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.ButtonField;
@@ -67,7 +66,7 @@ public class DirTreeDemoPanel extends PanelBuilder {
 
         JPanel containerPanel = new JPanel();
         containerPanel.setLayout(new BorderLayout());
-        containerPanel.add(dirTree, BorderLayout.WEST);
+        containerPanel.add(dirTree.buildPanel(), BorderLayout.WEST);
 
         containerPanel.add(buildFormPanel(), BorderLayout.CENTER);
 
@@ -134,10 +133,10 @@ public class DirTreeDemoPanel extends PanelBuilder {
         checkBoxField.addValueChangedListener(field -> {
             boolean isSelected = ((CheckBoxField)field).isChecked();
             if (isSelected) {
-                dirTree.addDirTreeNodeListener(annoyingDirTreeListener);
+                dirTree.addDirTreeSelectionListener(annoyingDirTreeListener);
             }
             else {
-                dirTree.removeDirTreeNodeListener(annoyingDirTreeListener);
+                dirTree.removeDirTreeSelectionListener(annoyingDirTreeListener);
             }
         });
         formPanel.add(checkBoxField);
@@ -292,9 +291,9 @@ public class DirTreeDemoPanel extends PanelBuilder {
      *
      * @since 2.7
      */
-    private static class AnnoyingPromptListener implements DirTreeNodeListener {
+    private static class AnnoyingPromptListener implements DirTreeSelectionListener {
         @Override
-        public boolean nodeWillExpand(DirTreeEvent event) {
+        public boolean nodeWillSelect(DirTreeEvent event) {
             return JOptionPane.showConfirmDialog(DemoApp.getInstance(),
                                                  "Are you sure you wish to change directories?",
                                                  "Confirm selection change",
