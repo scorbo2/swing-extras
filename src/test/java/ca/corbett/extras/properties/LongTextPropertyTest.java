@@ -4,6 +4,8 @@ import ca.corbett.forms.fields.LongTextField;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class LongTextPropertyTest extends AbstractPropertyBaseTests {
 
     @Override
@@ -30,5 +32,23 @@ class LongTextPropertyTest extends AbstractPropertyBaseTests {
         // THEN we should see our change listener got invoked:
         // (note: we only made one change, but we get 2 events, because DocumentListener is broken)
         Mockito.verify(listener, Mockito.times(2)).valueChanged(Mockito.any());
+    }
+
+    @Test
+    public void ofDynamicSizingMultiLine_defaultOverload_shouldUseZeroRows() {
+        LongTextProperty property = LongTextProperty.ofDynamicSizingMultiLine("name", "label");
+
+        LongTextField field = (LongTextField)property.generateFormField();
+
+        assertEquals(0, field.getTextArea().getRows());
+    }
+
+    @Test
+    public void ofDynamicSizingMultiLine_withRows_shouldUseSpecifiedRows() {
+        LongTextProperty property = LongTextProperty.ofDynamicSizingMultiLine("name", "label", 5);
+
+        LongTextField field = (LongTextField)property.generateFormField();
+
+        assertEquals(5, field.getTextArea().getRows());
     }
 }

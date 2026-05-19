@@ -61,7 +61,16 @@ public class LongTextProperty extends AbstractProperty {
      * the width of whatever FormPanel it is added to.
      */
     public static LongTextProperty ofDynamicSizingMultiLine(String name, String label) {
-        return new LongTextProperty(name, label, TextFieldType.MULTI_LINE_DYNAMIC, 0, 0);
+        return ofDynamicSizingMultiLine(name, label, 0);
+    }
+
+    /**
+     * Creates a multi-line TextField which will automatically expand to fill
+     * the width of whatever FormPanel it is added to, with the specified
+     * row limit.
+     */
+    public static LongTextProperty ofDynamicSizingMultiLine(String name, String label, int rows) {
+        return new LongTextProperty(name, label, TextFieldType.MULTI_LINE_DYNAMIC, 0, rows);
     }
 
     public String getValue() {

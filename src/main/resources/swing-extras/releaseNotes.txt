@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 2.9.0 [2026-04-13] - Maintenance release
+  #475 - LongTextProperty: dynamic multiline can limit rows
   #446 - AppProperties: make it easier to use classic style dialog
   #437 - New convenience class: FallbackExceptionHandler
   #433 - Fix threading issue in UpdateManager's shutdown hooks
