@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 3.0.0 [TODO - release date] - Major refactoring
+  #475 - LongTextProperty: add row limit for dynamic multiline
   #456 - Upgrade all dependency versions to latest
   #455 - Drop support for JTattoo
   #453 - Fix bug in ActionPanel demo panel
@@ -13,7 +14,6 @@ Version 3.0.0 [TODO - release date] - Major refactoring
   #266 - New utility classes: File/Directory scanner threads
 
 Version 2.9.0 [2026-04-13] - Maintenance release
-  #475 - LongTextProperty: dynamic multiline can limit rows
   #446 - AppProperties: make it easier to use classic style dialog
   #437 - New convenience class: FallbackExceptionHandler
   #433 - Fix threading issue in UpdateManager's shutdown hooks
