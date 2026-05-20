@@ -52,12 +52,31 @@ import java.util.logging.Logger;
  *
  * <h2>Application extensions</h2>
  * <p>
- * Application extensions can use this class to load resources from the application's jar file, but
- * they cannot use this to load resources from their own extension jar files. Extension developers
- * need to implement the loadJarResources() method in their AppExtension subclass and use
- * that class's class loader to load resources from the extension jar. Refer to the javadocs
- * in AppExtension and ExtensionManager for more details, or refer to the
- * <A href="https://www.corbett.ca/swing-extras-book/">swing-extras book</A> for a complete example.
+ * Application extensions can use this class to load resources from the application's jar file, by
+ * using the methods that do NOT accept a class loader argument. These methods use this class's class loader,
+ * which will load resources from the application's jar file. For example:
+ * </p>
+ * <pre>
+ * // Loads application resources:
+ * BufferedImage logo = ResourceLoader.getImage("images/app-logo.png");
+ * String helpText = ResourceLoader.getTextResource("docs/app-help.txt");
+ * // And so on...
+ * </pre>
+ * <p>
+ * If an extension wishes to use this class to load resources from ITS OWN jar file, then
+ * it must supply its own class loader to the overloads that accept a class loader argument.
+ * For example:
+ * </p>
+ * <pre>
+ * // Loads extension resources:
+ * BufferedImage logo = ResourceLoader.getImage("images/extension-logo.png",
+ *                                              extensionClassLoader);
+ * </pre>
+ * <p>
+ * Remember that application extensions only have access to their own class loader
+ * either in the constructor of the main extension class, or in the loadJarResources() method!
+ * After the extension is fully instantiated, its class loader is closed.
+ * Refer to the swing-extras documentation for more details on application extensions and class loaders.
  * </p>
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
@@ -94,17 +113,34 @@ public class ResourceLoader {
 
     /**
      * Attempts to read the given text resource from the jar and return it as a List of lines.
+     * Uses this class's class loader to locate the resource.
      * You can use setPrefix() to avoid having to specify a full path each time.
      * Otherwise, the given path is expected to be the full resource path within the jar.
      * Will return null if the resource cannot be found.
      * If you request a resource that is not text, the result will be garbage.
      */
     public static List<String> getTextResourceAsLines(String resourcePath) {
+        return getTextResourceAsLines(resourcePath, ResourceLoader.class.getClassLoader());
+    }
+
+    /**
+     * Attempts to read the given text resource from the jar and return it as a List of lines.
+     * Uses the specified class loader to locate the resource.
+     * You can use setPrefix() to avoid having to specify a full path each time.
+     * Otherwise, the given path is expected to be the full resource path within the jar.
+     * Will return null if the resource cannot be found.
+     * If you request a resource that is not text, the result will be garbage.
+     *
+     * @param resourcePath the path to the resource within the jar
+     * @param classLoader  the class loader to use for locating the resource
+     * @return a list of lines from the resource, or null if the resource cannot be found
+     */
+    public static List<String> getTextResourceAsLines(String resourcePath, ClassLoader classLoader) {
         if (resourcePath == null) {
             log.warning("getTextResourceAsLines(null) invoked.");
         }
         String path = prefix + (resourcePath == null ? "" : resourcePath);
-        URL url = ResourceLoader.class.getClassLoader().getResource(path);
+        URL url = classLoader.getResource(path);
         if (url == null) {
             log.severe("Unable to load text resource from path: " + path);
             return null;
@@ -126,6 +162,7 @@ public class ResourceLoader {
 
     /**
      * Attempts to read the given text resource from the jar and return it as a String.
+     * Uses this class's class loader to locate the resource.
      * You can use setPrefix() to avoid having to specify a full path each time.
      * Otherwise, the given path is expected to be the full resource path within the jar.
      * Will return null if the resource cannot be found.
@@ -137,7 +174,28 @@ public class ResourceLoader {
      * </P>
      */
     public static String getTextResource(String resourcePath) {
-        List<String> lines = getTextResourceAsLines(resourcePath);
+        return getTextResource(resourcePath, ResourceLoader.class.getClassLoader());
+    }
+
+    /**
+     * Attempts to read the given text resource from the jar and return it as a String.
+     * Uses the specified class loader to locate the resource.
+     * You can use setPrefix() to avoid having to specify a full path each time.
+     * Otherwise, the given path is expected to be the full resource path within the jar.
+     * Will return null if the resource cannot be found.
+     * If you request a resource that is not text, the result will be garbage.
+     * <p>
+     * Note: This method joins lines using the system line separator, regardless
+     * of what line endings are present in the original resource. If you'd rather
+     * process the lines separately, use getTextResourceAsLines() instead.
+     * </P>
+     *
+     * @param resourcePath the path to the resource within the jar
+     * @param classLoader  the class loader to use for locating the resource
+     * @return the text resource as a String, or null if the resource cannot be found
+     */
+    public static String getTextResource(String resourcePath, ClassLoader classLoader) {
+        List<String> lines = getTextResourceAsLines(resourcePath, classLoader);
         if (lines == null) {
             return null;
         }
@@ -146,16 +204,33 @@ public class ResourceLoader {
 
     /**
      * Attempts to extract the given jar resource to the specified output file.
+     * Uses this class's class loader to locate the resource.
      * You can use setPrefix() to avoid having to specify a full path each time.
      * Otherwise, the given path is expected to be the full resource path within the jar.
      * Returns true if successful, false otherwise.
      */
     public static boolean extractResourceToFile(String resourcePath, File outFile) {
+        return extractResourceToFile(resourcePath, outFile, ResourceLoader.class.getClassLoader());
+    }
+
+    /**
+     * Attempts to extract the given jar resource to the specified output file.
+     * Uses the specified class loader to locate the resource.
+     * You can use setPrefix() to avoid having to specify a full path each time.
+     * Otherwise, the given path is expected to be the full resource path within the jar.
+     * Returns true if successful, false otherwise.
+     *
+     * @param resourcePath the path to the resource within the jar
+     * @param outFile      the file to write the resource to
+     * @param classLoader  the class loader to use for locating the resource
+     * @return true if extraction was successful, false otherwise
+     */
+    public static boolean extractResourceToFile(String resourcePath, File outFile, ClassLoader classLoader) {
         if (resourcePath == null) {
             log.warning("extractResourceToFile(null, outFile) invoked.");
         }
         String path = prefix + (resourcePath == null ? "" : resourcePath);
-        URL url = ResourceLoader.class.getClassLoader().getResource(path);
+        URL url = classLoader.getResource(path);
         if (url == null) {
             log.severe("Unable to load resource from path: " + path);
             return false;
@@ -181,31 +256,64 @@ public class ResourceLoader {
 
     /**
      * Loads the given image resource as a BufferedImage and returns it at its natural size.
+     * Uses this class's class loader to locate the resource.
      * You can use setPrefix() to avoid having to specify a full path each time.
      * Otherwise, the given path is expected to be the full resource path within the jar.
      * Will return null if the resource cannot be found.
      */
     public static BufferedImage getImage(String imagePath) {
+        return getImage(imagePath, ResourceLoader.class.getClassLoader());
+    }
+
+    /**
+     * Loads the given image resource as a BufferedImage and returns it at its natural size.
+     * Uses the specified class loader to locate the resource.
+     * You can use setPrefix() to avoid having to specify a full path each time.
+     * Otherwise, the given path is expected to be the full resource path within the jar.
+     * Will return null if the resource cannot be found.
+     *
+     * @param imagePath   the path to the image resource within the jar
+     * @param classLoader the class loader to use for locating the resource
+     * @return the image as a BufferedImage, or null if the resource cannot be found
+     */
+    public static BufferedImage getImage(String imagePath, ClassLoader classLoader) {
         if (imagePath == null) {
             log.warning("getImage(null) invoked.");
         }
         String path = prefix + (imagePath == null ? "" : imagePath);
-        URL url = ResourceLoader.class.getClassLoader().getResource(path);
+        URL url = classLoader.getResource(path);
         return loadImage(url, 0);
     }
 
     /**
      * Loads the named image resource, scales it to the specified size, and returns it as an ImageIcon.
+     * Uses this class's class loader to locate the resource.
      * You can use setPrefix() to avoid having to specify a full path each time.
      * Otherwise, the given path is expected to be the full resource path within the jar.
      * Will return null if the resource cannot be found.
      */
     public static ImageIcon getIcon(String imagePath, int iconSize) {
+        return getIcon(imagePath, iconSize, ResourceLoader.class.getClassLoader());
+    }
+
+    /**
+     * Loads the named image resource, scales it to the specified size, and returns it as an ImageIcon.
+     * Uses the specified class loader to locate the resource.
+     * You can use setPrefix() to avoid having to specify a full path each time.
+     * Otherwise, the given path is expected to be the full resource path within the jar.
+     * Will return null if the resource cannot be found.
+     *
+     * @param imagePath   the path to the image resource within the jar
+     * @param iconSize    the desired size of the icon
+     * @param classLoader the class loader to use for locating the resource
+     * @return the image as an ImageIcon, or null if the resource cannot be found
+     */
+    public static ImageIcon getIcon(String imagePath, int iconSize, ClassLoader classLoader) {
         if (imagePath == null) {
             log.warning("getIcon(null) invoked.");
         }
         String path = prefix + (imagePath == null ? "" : imagePath);
-        URL url = ResourceLoader.class.getClassLoader().getResource(path);
+        URL url = classLoader.getResource(path);
         return loadIcon(url, iconSize);
     }
 
