@@ -6,7 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 /**
- * A FieldValidator that enforces yyyy-mm-dd format on a given TextField.
+ * A FieldValidator that enforces yyyy-MM-dd format on a given TextField.
  * This is a bit cheesy but will do until and unless I ever put in a proper calendar chooser.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>

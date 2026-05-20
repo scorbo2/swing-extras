@@ -5,7 +5,7 @@ import ca.corbett.forms.fields.FileField;
 import java.io.File;
 
 /**
- * A FieldValidator that ensures that the chosen Directory can be read.
+ * A FieldValidator that ensures that the chosen file or directory can be read.
  * The validator respects the field's allowBlankValues property, so blank values are validated as expected.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
