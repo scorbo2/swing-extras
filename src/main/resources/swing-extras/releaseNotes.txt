@@ -1,6 +1,17 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 3.0.0 [TODO - release date] - Major refactoring
+  #456 - Upgrade all dependency versions to latest
+  #455 - Drop support for JTattoo
+  #453 - Fix bug in ActionPanel demo panel
+  #452 - Fix FlatLaf Look and Feel bug on Windows systems
+  #451 - Fix Windows-specific bug in File/DirectoryProperty
+  #450 - Absorb the FileWatcher class from CryptText
+  #449 - Fix wonky behavior in FileSystemUtil.findFiles()
+  #443 - Upgrade to Java 25
+  #266 - New utility classes: File/Directory scanner threads
+
 Version 2.9.0 [2026-04-13] - Maintenance release
   #475 - LongTextProperty: dynamic multiline can limit rows
   #446 - AppProperties: make it easier to use classic style dialog

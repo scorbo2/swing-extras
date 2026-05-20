@@ -10,7 +10,9 @@ import java.io.File;
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2017-12-02
+ * @deprecated Use FileScannerThread or DirectoryScannerThread instead. This interface may be removed in a future release.
  */
+@Deprecated(since = "swing-extras 3.0")
 public interface FileSearchListener {
 
     /**

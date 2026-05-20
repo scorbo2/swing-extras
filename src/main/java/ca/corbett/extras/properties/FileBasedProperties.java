@@ -262,6 +262,14 @@ public final class FileBasedProperties extends Properties {
     }
 
     @Override
+    public void setPlatformSafeFilePath(String name, String path) {
+        super.setPlatformSafeFilePath(name, path);
+        if (eagerSave) {
+            saveWithoutException();
+        }
+    }
+
+    @Override
     public void setFont(String name, Font font) {
         super.setFont(name, font);
         if (eagerSave) {

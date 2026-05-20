@@ -94,7 +94,7 @@ public class SliderField extends FormField {
             ((ColorInterpolatingSliderUI)slider.getUI()).setColorStops(colorStops);
         }
         else {
-            lastGeneratedUI = new ColorInterpolatingSliderUI(colorStops);
+            lastGeneratedUI = new ColorInterpolatingSliderUI(slider, colorStops);
             slider.setUI(lastGeneratedUI);
         }
         return this;
@@ -122,7 +122,7 @@ public class SliderField extends FormField {
             ((ColorInterpolatingSliderUI)slider.getUI()).setStopLabels(labels);
         }
         else {
-            lastGeneratedUI = new ColorInterpolatingSliderUI(null, labels);
+            lastGeneratedUI = new ColorInterpolatingSliderUI(slider, null, labels);
             slider.setUI(lastGeneratedUI);
         }
         updateValueLabel();
@@ -250,11 +250,12 @@ public class SliderField extends FormField {
         private String[] stopLabels;
         private float[] stopLabelFractions;
 
-        public ColorInterpolatingSliderUI(List<Color> colorList) {
-            this(colorList, null);
+        public ColorInterpolatingSliderUI(JSlider slider, List<Color> colorList) {
+            this(slider, colorList, null);
         }
 
-        public ColorInterpolatingSliderUI(List<Color> colorList, List<String> labels) {
+        public ColorInterpolatingSliderUI(JSlider slider, List<Color> colorList, List<String> labels) {
+            super(slider);
             if (colorList == null || colorList.isEmpty()) {
                 setColorStops(List.of(Color.RED, Color.GREEN));
             }

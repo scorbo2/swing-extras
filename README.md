@@ -12,6 +12,11 @@ You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
 - The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
 
+## TODO: add release announcement for 3.0 when ready, and archive the 2.9 one.
+
+If you're reading this, it means I forgot to write a release announcement for the 3.0 release. Oops!
+TODO fix this!
+
 ## NEWS! April 13, 2026 - swing-extras 2.9 is here!
 
 This is a bug fix / maintenance release of the library, with mostly minor improvements.
@@ -48,7 +53,7 @@ To use the archetype, run the following command:
 mvn archetype:generate \
   -DarchetypeGroupId=ca.corbett \
   -DarchetypeArtifactId=swing-extras-archetype \
-  -DarchetypeVersion=2.9.0 \
+  -DarchetypeVersion=3.0.0 \
   -DgroupId=com.example \
   -DartifactId=my-app \
   -Dversion=1.0.0 \
@@ -74,7 +79,7 @@ then start from scratch building your Swing application using the various compon
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>2.9.0</version>
+    <version>3.0.0</version>
   </dependency>
 </dependencies>
 ```
@@ -95,7 +100,7 @@ cd swing-extras
 mvn package
 
 # Run the built-in demo app:
-java -jar target/swing-extras-2.9.0-jar-with-dependencies.jar 
+java -jar target/swing-extras-3.0.0-jar-with-dependencies.jar 
 ```
 
 ## License

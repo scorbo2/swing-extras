@@ -2,6 +2,7 @@ package ca.corbett.extras.demo.panels;
 
 import ca.corbett.extras.EnhancedAction;
 import ca.corbett.extras.LookAndFeelManager;
+import ca.corbett.extras.ResourceLoader;
 import ca.corbett.extras.ScrollUtil;
 import ca.corbett.extras.TextInputDialog;
 import ca.corbett.extras.actionpanel.ActionPanel;
@@ -30,6 +31,7 @@ import ca.corbett.forms.fields.PanelField;
 import ca.corbett.forms.fields.ShortTextField;
 import ca.corbett.forms.validators.ValidationResult;
 
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.AbstractAction;
@@ -46,6 +48,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -72,8 +75,8 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
     private static final Color STEEL_BLUE = new Color(70, 130, 180);
 
     // Sound effects, just for fun:
-    private static final String EXPAND_CLIP = "/swing-extras/audio/swish.wav";
-    private static final String COLLAPSE_CLIP = "/swing-extras/audio/splok.wav";
+    private static final String EXPAND_CLIP = "swing-extras/audio/swish.wav";
+    private static final String COLLAPSE_CLIP = "swing-extras/audio/splok.wav";
 
     // Our action names will double as lookups for their form panel contents:
     private static final String TAB_INTRO = "Intro to ActionPanel";
@@ -159,15 +162,49 @@ public class ActionPanelDemoPanel extends PanelBuilder implements ExpandListener
         ((CardLayout)cardPanel.getLayout()).show(cardPanel, TAB_INTRO);
 
         // Just for fun, load some sound effects:
+        AudioInputStream expandInputStream = null;
+        AudioInputStream collapseInputStream = null;
         try {
+            // AudioSystem will puke if we try to load directly from a resource stream,
+            // so we have to extract to a temp file first. Fun!
+            File tmpExpand = File.createTempFile("expand", ".wav");
+            tmpExpand.deleteOnExit();
+            if (!ResourceLoader.extractResourceToFile(EXPAND_CLIP, tmpExpand)) {
+                throw new Exception("Failed to extract resource " + EXPAND_CLIP + " to temp file");
+            }
+            File tmpCollapse = File.createTempFile("collapse", ".wav");
+            tmpCollapse.deleteOnExit();
+            if (!ResourceLoader.extractResourceToFile(COLLAPSE_CLIP, tmpCollapse)) {
+                throw new Exception("Failed to extract resource " + COLLAPSE_CLIP + " to temp file");
+            }
             expandClip = AudioSystem.getClip();
-            expandClip.open(AudioSystem.getAudioInputStream(getClass().getResourceAsStream(EXPAND_CLIP)));
+            expandInputStream = AudioSystem.getAudioInputStream(tmpExpand);
+            expandClip.open(expandInputStream);
             collapseClip = AudioSystem.getClip();
-            collapseClip.open(AudioSystem.getAudioInputStream(getClass().getResourceAsStream(COLLAPSE_CLIP)));
+            collapseInputStream = AudioSystem.getAudioInputStream(tmpCollapse);
+            collapseClip.open(collapseInputStream);
         }
         catch (Exception e) {
             // No fun for you!
             log.log(Level.SEVERE, "Could not load sound effects :(", e);
+        }
+        finally {
+            if (expandInputStream != null) {
+                try {
+                    expandInputStream.close();
+                }
+                catch (Exception e) {
+                    log.log(Level.WARNING, "Failed to close audio input stream for expand clip");
+                }
+            }
+            if (collapseInputStream != null) {
+                try {
+                    collapseInputStream.close();
+                }
+                catch (Exception e) {
+                    log.log(Level.WARNING, "Failed to close audio input stream for collapse clip");
+                }
+            }
         }
 
         // Register for L&F updates so we can keep our demo panels updated if the user changes L&F:
