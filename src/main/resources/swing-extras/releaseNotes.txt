@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 3.0.0 [TODO - release date] - Major refactoring
+  #475 - LongTextProperty: add row limit for dynamic multiline
   #456 - Upgrade all dependency versions to latest
   #455 - Drop support for JTattoo
   #453 - Fix bug in ActionPanel demo panel
