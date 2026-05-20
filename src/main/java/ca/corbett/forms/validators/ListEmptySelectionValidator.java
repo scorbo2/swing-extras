@@ -6,7 +6,8 @@ import ca.corbett.forms.fields.ListSubsetField;
 
 /**
  * A field validator that works with both ListField and ListSubsetField to ensure that
- * at least one item is selected.
+ * at least one item is selected. If attached to any other field type, this validator will always silently pass,
+ * without considering the field value.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since swing-extras 2.6
