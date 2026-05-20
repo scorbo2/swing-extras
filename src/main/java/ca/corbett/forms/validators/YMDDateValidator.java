@@ -31,7 +31,7 @@ public class YMDDateValidator implements FieldValidator<ShortTextField> {
             format.parse(currentStr);
         }
         catch (ParseException e) {
-            return ValidationResult.invalid("Value must be in format: yyyy-mm-dd");
+            return ValidationResult.invalid("Value must be in format: yyyy-MM-dd");
         }
         return ValidationResult.valid();
     }

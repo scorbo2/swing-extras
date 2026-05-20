@@ -4,6 +4,12 @@ import ca.corbett.forms.fields.FileField;
 
 import java.io.File;
 
+/**
+ * A simple validator that can be attached to any FileField to ensure that the selected file is not a directory.
+ * The validator respects the field's allowBlankValues property, so blank values are validated as expected.
+ *
+ * @author <a href="https://github.com/scorbo2">scorbo2</a>
+ */
 public class FileMustNotBeDirectoryValidator implements FieldValidator<FileField> {
     @Override
     public ValidationResult validate(FileField fieldToValidate) {

@@ -7,9 +7,11 @@
  * <p>
  * You can, of course, provide your own FieldValidator implementation, if you have
  * specific business logic or validation rules that you need to use.
+ * </p>
  * <p>
  * If multiple FieldValidators are assigned to a FormField, they will each be invoked,
  * and all of them must return a successful validation in order for the field to
  * be considered valid.
+ * </p>
  */
 package ca.corbett.forms.validators;

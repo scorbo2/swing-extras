@@ -4,6 +4,7 @@ Author: Steve Corbett
 Version 3.0.0 [TODO - release date] - Major refactoring
   #475 - LongTextProperty: add row limit for dynamic multiline
   #470 - Make ResourceLoader more flexible with class loaders
+  #467 - Minor javadoc cleanup for form validators
   #456 - Upgrade all dependency versions to latest
   #455 - Drop support for JTattoo
   #453 - Fix bug in ActionPanel demo panel

@@ -7,6 +7,7 @@ import java.io.File;
 /**
  * The opposite of FileMustExistValidator, this one ensures that the selected file or directory
  * does not already exist (such as for a save dialog).
+ * The validator respects the field's allowBlankValues property, so blank values are validated as expected.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24
