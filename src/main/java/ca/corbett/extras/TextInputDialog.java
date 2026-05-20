@@ -256,6 +256,15 @@ public class TextInputDialog extends JDialog {
      */
     public TextInputDialog setConfirmLabel(String label) {
         okButton.setText(label);
+
+        // The button was initialized with a hard-coded size which may no longer fit the label.
+        // Let's remove the hard-coded size and let the button resize itself to fit the new label:
+        okButton.setPreferredSize(null);
+        int newWidth = Math.max(okButton.getPreferredSize().width, 100); // enforce a minimum width of 100
+        newWidth = Math.min(newWidth, 200); // enforce a maximum width of 200 to prevent it from getting absurdly wide
+        okButton.setPreferredSize(new Dimension(newWidth, 24)); // keep the right height
+        getContentPane().revalidate();
+        getContentPane().repaint();
         return this;
     }
 
