@@ -139,6 +139,10 @@ public class ResourceLoader {
         if (resourcePath == null) {
             log.warning("getTextResourceAsLines(null) invoked.");
         }
+        if (classLoader == null) {
+            log.warning("getTextResourceAsLines(resourcePath, null) invoked. Falling back to default class loader.");
+            classLoader = ResourceLoader.class.getClassLoader();
+        }
         String path = prefix + (resourcePath == null ? "" : resourcePath);
         URL url = classLoader.getResource(path);
         if (url == null) {
@@ -229,6 +233,11 @@ public class ResourceLoader {
         if (resourcePath == null) {
             log.warning("extractResourceToFile(null, outFile) invoked.");
         }
+        if (classLoader == null) {
+            log.warning("extractResourceToFile(resourcePath, outFile, null) invoked. " +
+                                "Falling back to default class loader.");
+            classLoader = ResourceLoader.class.getClassLoader();
+        }
         String path = prefix + (resourcePath == null ? "" : resourcePath);
         URL url = classLoader.getResource(path);
         if (url == null) {
@@ -280,6 +289,10 @@ public class ResourceLoader {
         if (imagePath == null) {
             log.warning("getImage(null) invoked.");
         }
+        if (classLoader == null) {
+            log.warning("getImage(imagePath, null) invoked. Falling back to default class loader.");
+            classLoader = ResourceLoader.class.getClassLoader();
+        }
         String path = prefix + (imagePath == null ? "" : imagePath);
         URL url = classLoader.getResource(path);
         return loadImage(url, 0);
@@ -311,6 +324,10 @@ public class ResourceLoader {
     public static ImageIcon getIcon(String imagePath, int iconSize, ClassLoader classLoader) {
         if (imagePath == null) {
             log.warning("getIcon(null) invoked.");
+        }
+        if (classLoader == null) {
+            log.warning("getIcon(imagePath, iconSize, null) invoked. Falling back to default class loader.");
+            classLoader = ResourceLoader.class.getClassLoader();
         }
         String path = prefix + (imagePath == null ? "" : imagePath);
         URL url = classLoader.getResource(path);
