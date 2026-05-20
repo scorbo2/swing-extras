@@ -67,7 +67,7 @@ public class LongTextProperty extends AbstractProperty {
     /**
      * Creates a multi-line TextField which will automatically expand to fill
      * the width of whatever FormPanel it is added to, with the specified
-     * row limit.
+     * number of rows.
      */
     public static LongTextProperty ofDynamicSizingMultiLine(String name, String label, int rows) {
         return new LongTextProperty(name, label, TextFieldType.MULTI_LINE_DYNAMIC, 0, rows);
