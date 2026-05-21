@@ -746,7 +746,7 @@ public class ExtensionManagerTest {
     }
 
     /**
-     * This extension tries to access its configProperties in the loadJarResource() method,
+     * This extension tries to access its configProperties in the loadJarResources() method,
      * which is a no-no because loadJarResources() is called before createConfigProperties().
      */
     public static class MisbehavingExtension extends AppExtension {
@@ -772,7 +772,12 @@ public class ExtensionManagerTest {
 
         @Override
         protected void loadJarResources() {
-            configProperties.clear(); // Whoops! This list doesn't exist yet. Hello, NullPointerException!
+            // Whoops! We ignored the javadocs in AppExtension, and we're trying to manipulate
+            // our configProperties list before it's been properly initialized!
+            // ExtensionManager should catch this and log a nag warning:
+            configProperties.add(new IntegerProperty("shouldNotBeAccessingConfigProperties",
+                                                     "shouldNotBeAccessingConfigProperties",
+                                                     1));
         }
 
         @Override

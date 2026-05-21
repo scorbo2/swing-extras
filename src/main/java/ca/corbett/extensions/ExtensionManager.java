@@ -386,12 +386,12 @@ public abstract class ExtensionManager<T extends AppExtension> {
         wrapper.isEnabled = isEnabled;
         wrapper.extension = extension;
 
-        try {
-            // internal extensions load resources from the application's jar file, but for consistency
-            // with the "load from jar file" flow, we will invoke this method here.
-            extension.loadJarResources();
-        }
-        catch (NullPointerException ignored) {
+        // internal extensions load resources from the application's jar file, but for consistency
+        // with the "load from jar file" flow, we will invoke this method here.
+        List<AbstractProperty> dummyList = new ArrayList<>();
+        extension.configProperties = dummyList;
+        extension.loadJarResources();
+        if (!dummyList.isEmpty()) {
             logger.warning("Don't try to access configProperties from the loadJarResources() method!");
         }
 
@@ -787,10 +787,10 @@ public abstract class ExtensionManager<T extends AppExtension> {
                             // We can also invoke loadJarResources now while the class loader is still open:
                             // An extension should use this as an opportunity to load resources from its jar file,
                             // because we're about to close the class loader that loaded it!
-                            try {
-                                result.loadJarResources();
-                            }
-                            catch (NullPointerException ignored) {
+                            List<AbstractProperty> dummyList = new ArrayList<>();
+                            result.configProperties = dummyList;
+                            result.loadJarResources();
+                            if (!dummyList.isEmpty()) {
                                 logger.warning("Don't try to access configProperties " +
                                                        "from the loadJarResources() method!");
                             }

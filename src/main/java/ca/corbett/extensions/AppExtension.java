@@ -92,7 +92,7 @@ public abstract class AppExtension {
      * If your extension has resources (images, sound effects, icons, text files,
      * config files, or any other resource type) that you wish it to load from its jar file
      * via class.getResource() or class.getResourceAsStream(), you MUST do it either in the extension
-     * constructor or in this method. Attempting to load jar resources anywhere else in you
+     * constructor or in this method. Attempting to load jar resources anywhere else in your
      * extension will fail, because the URLClassLoader that loads the extension is closed.
      * No default implementation is provided so that extensions are forced to implement
      * this method (even if empty, in the case of an extension with no resources to load).
@@ -105,8 +105,8 @@ public abstract class AppExtension {
      * </p>
      * <p>
      * <b>NOTE:</b> the extension's configProperties list has not yet been initialized! Don't try
-     * to access it here. ExtensionManager will catch the NullPointerException and log a warning, so it
-     * won't break the load, but it is bad form and should be avoided.
+     * to access it here. It won't break the load if you do, but the list will be empty, and trying
+     * to manipulate it will not have any effect (other than a nag warning in the log from ExtensionManager).
      * </p>
      */
     protected abstract void loadJarResources();
