@@ -37,7 +37,7 @@ public abstract class AppExtension {
     /**
      * Return a list of configuration properties for this extension. This list may be
      * empty if the extension has no config properties. This method is final to
-     * prevent extensions from overriding its behaviour. The intention is to force
+     * prevent extensions from overriding its behavior. The intention is to force
      * extensions to implement createConfigProperties() to create the list.
      * The createConfigProperties() method is guaranteed to only be invoked
      * by the ExtensionManager once, whereas getConfigProperties() can be invoked
@@ -72,21 +72,42 @@ public abstract class AppExtension {
      * AbstractProperty instances representing the config for this extension.
      * It's fine to return null or an empty list if your extension does
      * not require any configuration.
+     * <p>
+     * Note that this method is invoked (exactly once) by ExtensionManager, <b>after</b> the
+     * <code>loadJarResources</code> method is invoked. So, if your extension's config properties
+     * depend on resources that need to be loaded from the extension's jar file,
+     * you can safely reference those loaded resources in your implementation of this method.
+     * </p>
      *
      * @return A List of AbstractProperty instance. May be null or empty.
      */
     protected abstract List<AbstractProperty> createConfigProperties();
 
     /**
-     * This method is invoked exactly once when an extension is dynamically loaded from
-     * a jar file. If the extension has resources (images, sound effects, icons, text files,
-     * config files, or any other resource type) that it wishes to load from its jar file
-     * via class.getResource() or class.getResourceAsStream(), it MUST do it either in its
-     * constructor or in this method. Attempting to load jar resources anywhere else in the
-     * extension will fail, because the URLClassLoader that loads the extension is closed
-     * by ExtensionManager immediately after the extension is instantiated.
+     * This method is invoked exactly once when an extension is loaded.
+     * For internal extensions, this is largely irrelevant, since resources are loaded
+     * from the application's jar file and can be done from anywhere in the extension.
+     * But, if your extension is externally loaded, it is important to note that the URLClassLoader
+     * that loads your extension will be closed by ExtensionManager after your extension is initialized!
+     * If your extension has resources (images, sound effects, icons, text files,
+     * config files, or any other resource type) that you wish it to load from its jar file
+     * via class.getResource() or class.getResourceAsStream(), you MUST do it either in the extension
+     * constructor or in this method. Attempting to load jar resources anywhere else in your
+     * extension will fail, because the URLClassLoader that loads the extension is closed.
      * No default implementation is provided so that extensions are forced to implement
      * this method (even if empty, in the case of an extension with no resources to load).
+     * <p>
+     * This method is invoked by ExtensionManager immediately after the extension is instantiated, and before
+     * the createConfigProperties() method is invoked. So, if your extension's config properties
+     * depend on resources that need to be loaded from the extension's jar file, you can
+     * safely load those resources in this method, and then reference the loaded resources
+     * in your implementation of createConfigProperties().
+     * </p>
+     * <p>
+     * <b>NOTE:</b> the extension's configProperties list has not yet been initialized! Don't try
+     * to access it here. It won't break the load if you do, but the list will be empty, and trying
+     * to manipulate it will not have any effect (other than a nag warning in the log from ExtensionManager).
+     * </p>
      */
     protected abstract void loadJarResources();
 }
