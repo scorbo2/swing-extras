@@ -84,13 +84,16 @@ public abstract class AppExtension {
     protected abstract List<AbstractProperty> createConfigProperties();
 
     /**
-     * This method is invoked exactly once when an extension is dynamically loaded from
-     * a jar file. If the extension has resources (images, sound effects, icons, text files,
-     * config files, or any other resource type) that it wishes to load from its jar file
-     * via class.getResource() or class.getResourceAsStream(), it MUST do it either in its
-     * constructor or in this method. Attempting to load jar resources anywhere else in the
-     * extension will fail, because the URLClassLoader that loads the extension is closed
-     * by ExtensionManager immediately after the extension is instantiated.
+     * This method is invoked exactly once when an extension is loaded.
+     * For internal extensions, this is largely irrelevant, since resources are loaded
+     * from the application's jar file and can be done from anywhere in the extension.
+     * But, if your extension is externally loaded, it is important to note that the URLClassLoader
+     * that loads your extension will be closed by ExtensionManager after your extension is initialized!
+     * If your extension has resources (images, sound effects, icons, text files,
+     * config files, or any other resource type) that you wish it to load from its jar file
+     * via class.getResource() or class.getResourceAsStream(), you MUST do it either in the extension
+     * constructor or in this method. Attempting to load jar resources anywhere else in you
+     * extension will fail, because the URLClassLoader that loads the extension is closed.
      * No default implementation is provided so that extensions are forced to implement
      * this method (even if empty, in the case of an extension with no resources to load).
      * <p>
@@ -99,6 +102,11 @@ public abstract class AppExtension {
      * depend on resources that need to be loaded from the extension's jar file, you can
      * safely load those resources in this method, and then reference the loaded resources
      * in your implementation of createConfigProperties().
+     * </p>
+     * <p>
+     * <b>NOTE:</b> the extension's configProperties list has not yet been initialized! Don't try
+     * to access it here. ExtensionManager will catch the NullPointerException and log a warning, so it
+     * won't break the load, but it is bad form and should be avoided.
      * </p>
      */
     protected abstract void loadJarResources();

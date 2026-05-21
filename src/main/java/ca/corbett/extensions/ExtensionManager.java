@@ -385,7 +385,16 @@ public abstract class ExtensionManager<T extends AppExtension> {
         wrapper.sourceJar = null;
         wrapper.isEnabled = isEnabled;
         wrapper.extension = extension;
-        extension.loadJarResources(); // internal extensions load resources from the application's jar file, but okay
+
+        try {
+            // internal extensions load resources from the application's jar file, but for consistency
+            // with the "load from jar file" flow, we will invoke this method here.
+            extension.loadJarResources();
+        }
+        catch (NullPointerException ignored) {
+            logger.warning("Don't try to access configProperties from the loadJarResources() method!");
+        }
+
         List<AbstractProperty> configProperties = extension.createConfigProperties();
         extension.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
         loadedExtensions.put(extension.getClass().getName(), wrapper);
@@ -778,7 +787,13 @@ public abstract class ExtensionManager<T extends AppExtension> {
                             // We can also invoke loadJarResources now while the class loader is still open:
                             // An extension should use this as an opportunity to load resources from its jar file,
                             // because we're about to close the class loader that loaded it!
-                            result.loadJarResources();
+                            try {
+                                result.loadJarResources();
+                            }
+                            catch (NullPointerException ignored) {
+                                logger.warning("Don't try to access configProperties " +
+                                                       "from the loadJarResources() method!");
+                            }
 
                             // Invoke createConfigProperties() and set the configProperties list for this extension:
                             // (this was formerly invoked from the extension constructor, but that was BAD...

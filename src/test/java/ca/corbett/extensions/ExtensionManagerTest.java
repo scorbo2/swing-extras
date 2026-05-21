@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -151,7 +152,24 @@ public class ExtensionManagerTest {
         AppExtensionImpl1 extension = new AppExtensionImpl1("test");
         boolean success = extManager.addExtension(extension, true);
         assertTrue(success);
-        assertTrue(extension.isJarResourcesWereLoadedBeforeConfigPropertiesCreated());
+        assertTrue(extension.isJarResourcesLoadedBeforeConfigPropertiesCreated());
+    }
+
+    @Test
+    public void testLoadLogic_accessConfigPropertiesInLoadJarResources_shouldLogWarning() {
+        // Use our log capturing mechanism to spy on ExtensionManager:
+        AppPropertiesTest.TestLogHandler logHandler = new AppPropertiesTest.TestLogHandler();
+        Logger testLogger = Logger.getLogger(ExtensionManager.class.getName());
+        testLogger.addHandler(logHandler);
+
+        try {
+            extManager.addExtension(new MisbehavingExtension("misbehaving"), true);
+            assertTrue(logHandler.hasWarningContaining(
+                    "Don't try to access configProperties from the loadJarResources() method!"));
+        }
+        finally {
+            testLogger.removeHandler(logHandler);
+        }
     }
 
     @Test
@@ -645,12 +663,12 @@ public class ExtensionManagerTest {
 
         private final String name;
         private boolean jarResourcesLoaded;
-        private boolean jarResourcesWereLoadedBeforeConfigPropertiesCreated;
+        private boolean jarResourcesLoadedBeforeConfigPropertiesCreated;
 
         public AppExtensionImpl1(String name) {
             this.name = name;
             jarResourcesLoaded = false;
-            jarResourcesWereLoadedBeforeConfigPropertiesCreated = false;
+            jarResourcesLoadedBeforeConfigPropertiesCreated = false;
         }
 
         @Override
@@ -666,8 +684,8 @@ public class ExtensionManagerTest {
                     .build();
         }
 
-        public boolean isJarResourcesWereLoadedBeforeConfigPropertiesCreated() {
-            return jarResourcesWereLoadedBeforeConfigPropertiesCreated;
+        public boolean isJarResourcesLoadedBeforeConfigPropertiesCreated() {
+            return jarResourcesLoadedBeforeConfigPropertiesCreated;
         }
 
         @Override
@@ -680,7 +698,7 @@ public class ExtensionManagerTest {
             if (jarResourcesLoaded) {
                 // Testing the fix for issue 469 - loadJarResources() should be called
                 // before createConfigProperties(), so jarResourcesLoaded should be true here.
-                jarResourcesWereLoadedBeforeConfigPropertiesCreated = true;
+                jarResourcesLoadedBeforeConfigPropertiesCreated = true;
             }
             return null;
         }
@@ -720,6 +738,46 @@ public class ExtensionManagerTest {
             List<AbstractProperty> list = new ArrayList<>();
             list.add(new IntegerProperty("testProperty", "testProperty", 1));
             return list;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    /**
+     * This extension tries to access its configProperties in the loadJarResource() method,
+     * which is a no-no because loadJarResources() is called before createConfigProperties().
+     */
+    public static class MisbehavingExtension extends AppExtension {
+
+        private final String name;
+
+        public MisbehavingExtension(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public AppExtensionInfo getInfo() {
+            return new AppExtensionInfo.Builder(name)
+                    .setAuthor("me2")
+                    .setVersion("1.1")
+                    .setTargetAppName("Test app")
+                    .setTargetAppVersion("1.1")
+                    .setShortDescription("Misbehaving")
+                    .setLongDescription("I fought the law and the law won")
+                    .setReleaseNotes("v1.1 - initial release")
+                    .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
+            configProperties.clear(); // Whoops! This list doesn't exist yet. Hello, NullPointerException!
+        }
+
+        @Override
+        protected List<AbstractProperty> createConfigProperties() {
+            return null;
         }
 
         public String getName() {
