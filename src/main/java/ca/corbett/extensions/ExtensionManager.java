@@ -385,6 +385,7 @@ public abstract class ExtensionManager<T extends AppExtension> {
         wrapper.sourceJar = null;
         wrapper.isEnabled = isEnabled;
         wrapper.extension = extension;
+        extension.loadJarResources(); // internal extensions load resources from the application's jar file, but okay
         List<AbstractProperty> configProperties = extension.createConfigProperties();
         extension.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
         loadedExtensions.put(extension.getClass().getName(), wrapper);

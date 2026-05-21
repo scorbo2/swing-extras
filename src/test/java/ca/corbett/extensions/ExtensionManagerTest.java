@@ -146,6 +146,15 @@ public class ExtensionManagerTest {
     }
 
     @Test
+    public void testLoadOrder_jarResourcesShouldBeLoadedBeforeConfigPropertiesCreated() {
+        // Issue #469 - loadJarResources() must be called before createConfigProperties:
+        AppExtensionImpl1 extension = new AppExtensionImpl1("test");
+        boolean success = extManager.addExtension(extension, true);
+        assertTrue(success);
+        assertTrue(extension.isJarResourcesWereLoadedBeforeConfigPropertiesCreated());
+    }
+
+    @Test
     public void testUnloadExtension() {
         boolean success = extManager.addExtension(ext1, true);
         assertTrue(success);
@@ -635,9 +644,13 @@ public class ExtensionManagerTest {
     public static class AppExtensionImpl1 extends AppExtension {
 
         private final String name;
+        private boolean jarResourcesLoaded;
+        private boolean jarResourcesWereLoadedBeforeConfigPropertiesCreated;
 
         public AppExtensionImpl1(String name) {
             this.name = name;
+            jarResourcesLoaded = false;
+            jarResourcesWereLoadedBeforeConfigPropertiesCreated = false;
         }
 
         @Override
@@ -653,12 +666,22 @@ public class ExtensionManagerTest {
                     .build();
         }
 
+        public boolean isJarResourcesWereLoadedBeforeConfigPropertiesCreated() {
+            return jarResourcesWereLoadedBeforeConfigPropertiesCreated;
+        }
+
         @Override
         protected void loadJarResources() {
+            jarResourcesLoaded = true;
         }
 
         @Override
         protected List<AbstractProperty> createConfigProperties() {
+            if (jarResourcesLoaded) {
+                // Testing the fix for issue 469 - loadJarResources() should be called
+                // before createConfigProperties(), so jarResourcesLoaded should be true here.
+                jarResourcesWereLoadedBeforeConfigPropertiesCreated = true;
+            }
             return null;
         }
 
