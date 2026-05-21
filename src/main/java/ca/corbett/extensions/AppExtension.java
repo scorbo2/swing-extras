@@ -37,7 +37,7 @@ public abstract class AppExtension {
     /**
      * Return a list of configuration properties for this extension. This list may be
      * empty if the extension has no config properties. This method is final to
-     * prevent extensions from overriding its behaviour. The intention is to force
+     * prevent extensions from overriding its behavior. The intention is to force
      * extensions to implement createConfigProperties() to create the list.
      * The createConfigProperties() method is guaranteed to only be invoked
      * by the ExtensionManager once, whereas getConfigProperties() can be invoked
@@ -72,6 +72,12 @@ public abstract class AppExtension {
      * AbstractProperty instances representing the config for this extension.
      * It's fine to return null or an empty list if your extension does
      * not require any configuration.
+     * <p>
+     * Note that this method is invoked (exactly once) by ExtensionManager, <b>after</b> the
+     * <code>loadJarResources</code> method is invoked. So, if your extension's config properties
+     * depend on resources that need to be loaded from the extension's jar file,
+     * you can safely reference those loaded resources in your implementation of this method.
+     * </p>
      *
      * @return A List of AbstractProperty instance. May be null or empty.
      */
@@ -87,6 +93,13 @@ public abstract class AppExtension {
      * by ExtensionManager immediately after the extension is instantiated.
      * No default implementation is provided so that extensions are forced to implement
      * this method (even if empty, in the case of an extension with no resources to load).
+     * <p>
+     * This method is invoked by ExtensionManager immediately after the extension is instantiated, and before
+     * the createConfigProperties() method is invoked. So, if your extension's config properties
+     * depend on resources that need to be loaded from the extension's jar file, you can
+     * safely load those resources in this method, and then reference the loaded resources
+     * in your implementation of createConfigProperties().
+     * </p>
      */
     protected abstract void loadJarResources();
 }

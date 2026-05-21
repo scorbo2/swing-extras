@@ -774,17 +774,17 @@ public abstract class ExtensionManager<T extends AppExtension> {
                                 continue;
                             }
 
+                            // We can also invoke loadJarResources now while the class loader is still open:
+                            // An extension should use this as an opportunity to load resources from its jar file,
+                            // because we're about to close the class loader that loaded it!
+                            result.loadJarResources();
+
                             // Invoke createConfigProperties() and set the configProperties list for this extension:
                             // (this was formerly invoked from the extension constructor, but that was BAD...
                             //  see issue https://github.com/scorbo2/swing-extras/issues/116 for details.
-                            //  We can safely do it from here.)
+                            //  We can safely do it from here, now that the instance is initialized.)
                             List<AbstractProperty> configProperties = result.createConfigProperties();
                             result.configProperties = configProperties == null ? new ArrayList<>() : configProperties;
-
-                            // We can also invoke loadJarResources now while the class loader is still open:
-                            // This is an extension class's last opportunity to load resources from its jar file,
-                            // because we're about to close the class loader that loaded it!
-                            result.loadJarResources();
                         }
                         catch (NoSuchMethodException ignored) {
                             // Extensions must supply a no-argument constructor:

@@ -5,6 +5,7 @@ Version 3.0.0 [TODO - release date] - Major refactoring
   #475 - LongTextProperty: add row limit for dynamic multiline
   #472 - TextInputDialog: better resizing of confirm button
   #470 - Make ResourceLoader more flexible with class loaders
+  #469 - Minor tweak to ExtensionManager's load order logic
   #467 - Minor javadoc cleanup for form validators
   #456 - Upgrade all dependency versions to latest
   #455 - Drop support for JTattoo
