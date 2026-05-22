@@ -38,6 +38,7 @@ public class TextInputDialogPanel extends PanelBuilder {
     private ShortTextField disallowedTextField;
     private ComboField<String> inputTypeCombo;
     private NumberField minLengthField;
+    private ShortTextField helpTextField;
     private LabelField resultLabel;
 
     @Override
@@ -89,6 +90,10 @@ public class TextInputDialogPanel extends PanelBuilder {
         minLengthField.setHelpText("<html>Adding custom validation is easy! Here's one possible example.<br>" +
                                            "Set to 0 to disable this validator.</html>");
         formPanel.add(minLengthField);
+
+        helpTextField = new ShortTextField("Help text:", 25);
+        helpTextField.setHelpText("Sets optional help text to appear beside the input field.");
+        formPanel.add(helpTextField);
 
         ButtonField buttonField = new ButtonField(List.of(new LaunchDialogAction()));
         formPanel.add(buttonField);
@@ -196,6 +201,8 @@ public class TextInputDialogPanel extends PanelBuilder {
 
             int minLength = minLengthField.getCurrentValue().intValue();
             dialog.setAllowBlank(minLength == 0);
+
+            dialog.setHelpText(helpTextField.getText().trim());
 
             // Add our custom validator:
             dialog.addValidator(new ExampleValidator());

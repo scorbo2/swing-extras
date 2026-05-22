@@ -76,7 +76,7 @@ public class TextInputDialog extends JDialog {
         longTextField = LongTextField.ofDynamicSizingMultiLine(DEFAULT_PROMPT, getRows());
         formPanel.add(inputType == InputType.SingleLine ? shortTextField : longTextField);
         Dimension dim = switch (inputType) {
-            case SingleLine -> new Dimension(350, 150);
+            case SingleLine -> new Dimension(380, 150);
             case MultiLine -> new Dimension(400, 300);
         };
         setSize(dim);
@@ -157,6 +157,30 @@ public class TextInputDialog extends JDialog {
         }
         dialog.setVisible(true);
         return dialog.getResult();
+    }
+
+    /**
+     * Optionally, you can specify help text to attach to the text input field.
+     * The default is no help text. If specified, an information icon will appear
+     * next to the text field, and hovering over it will show the given help text in a tooltip.
+     *
+     * @param helpText Any help text. Use html tags with br tags for multi-line help text. Null or blank disables help.
+     * @return This dialog, for method chaining.
+     */
+    public TextInputDialog setHelpText(String helpText) {
+        shortTextField.setHelpText(helpText);
+        longTextField.setHelpText(helpText);
+        return this;
+    }
+
+    /**
+     * Returns the current help text attached to the text input field, or null if no help text is set.
+     *
+     * @return The current help text attached to the text input field, or null if no help text is set.
+     */
+    public String getHelpText() {
+        // both fields will always have the same help text, so just return from one of them:
+        return shortTextField.getHelpText();
     }
 
     /**
