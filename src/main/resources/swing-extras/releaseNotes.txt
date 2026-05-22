@@ -3,6 +3,7 @@ Author: Steve Corbett
 
 Version 3.0.0 [TODO - release date] - Major refactoring
   #475 - LongTextProperty: add row limit for dynamic multiline
+  #473 - TextInputDialog: allow setting help text for input field
   #472 - TextInputDialog: better resizing of confirm button
   #470 - Make ResourceLoader more flexible with class loaders
   #469 - Minor tweak to ExtensionManager's load order logic
