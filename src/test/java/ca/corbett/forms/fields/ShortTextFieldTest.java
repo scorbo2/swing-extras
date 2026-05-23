@@ -98,6 +98,16 @@ class ShortTextFieldTest extends FormFieldBaseTests {
         assertTrue(urlField.isValid());
         urlField.setText("https://www.github.com");
         assertTrue(urlField.isValid());
+
+        // By default, blank values should be allowed:
+        urlField.setText("");
+        assertTrue(urlField.isValid());
+
+        // But we have the option of disallowing them:
+        ShortTextField urlFieldNoBlank = new ShortTextField("URL", 20);
+        urlFieldNoBlank.addFieldValidator(new UrlValidator(false));
+        urlFieldNoBlank.setText("");
+        assertFalse(urlFieldNoBlank.isValid());
     }
 
     @Test

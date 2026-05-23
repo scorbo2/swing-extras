@@ -51,7 +51,7 @@ public class UrlValidator implements FieldValidator<ShortTextField> {
      */
     public static boolean isValidUrl(String url) {
         try {
-            URL _ = new URI(url).toURL(); // this will catch both URISyntaxException and MalformedURLException
+            URL ignored = new URI(url).toURL(); // this will catch both URISyntaxException and MalformedURLException
             return true;
         }
         catch (URISyntaxException | MalformedURLException ignored) {
