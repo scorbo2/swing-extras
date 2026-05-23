@@ -4,6 +4,7 @@ import ca.corbett.extras.io.KeyStrokeManager;
 import ca.corbett.forms.Alignment;
 import ca.corbett.forms.FormPanel;
 import ca.corbett.forms.fields.FormField;
+import ca.corbett.forms.fields.LabelField;
 import ca.corbett.forms.fields.LongTextField;
 import ca.corbett.forms.fields.ShortTextField;
 import ca.corbett.forms.validators.FieldValidator;
@@ -43,6 +44,7 @@ public class TextInputDialog extends JDialog {
     protected final InputType inputType;
     protected final KeyStrokeManager keyStrokeManager;
     protected FormPanel formPanel;
+    protected LabelField overviewLabel;
     protected ShortTextField shortTextField;
     protected LongTextField longTextField;
     protected JButton okButton;
@@ -72,6 +74,11 @@ public class TextInputDialog extends JDialog {
 
         formPanel = new FormPanel(Alignment.TOP_CENTER);
         formPanel.setBorderMargin(12);
+
+        overviewLabel = new LabelField("");
+        overviewLabel.setVisible(false);
+        formPanel.add(overviewLabel);
+
         shortTextField = new ShortTextField(DEFAULT_PROMPT, getCols());
         longTextField = LongTextField.ofDynamicSizingMultiLine(DEFAULT_PROMPT, getRows());
         formPanel.add(inputType == InputType.SingleLine ? shortTextField : longTextField);
@@ -170,6 +177,32 @@ public class TextInputDialog extends JDialog {
     public TextInputDialog setHelpText(String helpText) {
         shortTextField.setHelpText(helpText);
         longTextField.setHelpText(helpText);
+        return this;
+    }
+
+    /**
+     * Sets optional overview text to appear at the top of the dialog, above the text input field.
+     * This is useful for providing context as to what the user is supposed to input, or any other relevant information.
+     * By default, no overview text is shown. The form panel will scroll vertically if needed, but you might
+     * want to increase the height of the dialog if your overview text is large.
+     * <p>
+     * <b>Multi-line overview text:</b> you can accomplish this by wrapping the label text in html tags,
+     * and using br tags for line breaks.
+     * </p>
+     *
+     * @param overviewText Any overview text. Null or blank values hides the overview label.
+     * @return This dialog, for method chaining.
+     */
+    public TextInputDialog setOverviewText(String overviewText) {
+        overviewLabel.setText(overviewText);
+        boolean oldVisibility = overviewLabel.isVisible();
+        boolean newVisibility = overviewText != null && !overviewText.isBlank();
+        overviewLabel.setVisible(newVisibility);
+        if (oldVisibility != newVisibility) {
+            // If the visibility changed, we need to revalidate and repaint to update the layout:
+            formPanel.revalidate();
+            formPanel.repaint();
+        }
         return this;
     }
 
