@@ -26,8 +26,9 @@ import java.awt.event.WindowEvent;
 /**
  * A dialog for showing some kind of agreement, license text, terms of use, or some other text
  * that must be agreed to or confirmed before allowing the user to confirm.
- * The dialog cannot be confirmed until the user checks the agreement checkbox, which is disabled by default.
- * The text of the checkbox is configurable, as is the text for the confirm button.
+ * The dialog cannot be confirmed until the user checks the agreement checkbox; the confirm button
+ * is disabled until the checkbox is selected. The text of the checkbox is configurable,
+ * as is the text for the confirm button.
  * <p>
  * The dialog also supports optional overview text that appears at the top of the dialog, above the agreement field.
  * This is useful for providing context as to what the user is agreeing to, or any other relevant information.
@@ -59,7 +60,6 @@ public class AgreementDialog extends JDialog {
     public AgreementDialog(Window owner, String title) {
         super(owner, title, ModalityType.APPLICATION_MODAL);
         this.keyStrokeManager = new KeyStrokeManager(this);
-        wasAgreed = false;
 
         formPanel = new FormPanel(Alignment.TOP_CENTER);
         formPanel.setBorderMargin(new Margins(12, 0, 12, 12, 0));
@@ -118,6 +118,8 @@ public class AgreementDialog extends JDialog {
             // Configure our keyboard shortcuts when the dialog is shown:
             // (want to avoid doing this in the constructor as it is overridable)
             configureKeyboardShortcuts();
+
+            wasAgreed = false;
         }
         super.setVisible(visible);
     }
@@ -203,9 +205,7 @@ public class AgreementDialog extends JDialog {
     }
 
     /**
-     * Returns the current agreement text.
-     *
-     * @return The current agreement text.
+     * Returns the current help text for the agreement field (if any).
      */
     public String getHelpText() {
         return agreementTextField.getHelpText();
@@ -227,6 +227,13 @@ public class AgreementDialog extends JDialog {
         agreementTextField.setText(text);
 
         return this;
+    }
+
+    /**
+     * Returns the current agreement text that will be shown in the dialog.
+     */
+    public String getAgreementText() {
+        return agreementTextField.getText();
     }
 
     /**

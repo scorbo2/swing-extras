@@ -48,7 +48,7 @@ public class AgreementDialogPanel extends PanelBuilder {
     public JPanel build() {
         FormPanel formPanel = buildFormPanel("AgreementDialog");
 
-        String sb = "<html>The Agreement class allows you to display<br>" +
+        String sb = "<html>The AgreementDialog class allows you to display<br>" +
                 " a license agreement, terms of use, or some other<br>" +
                 "text that must be agreed to or confirmed before<br>" +
                 "allowing the user to confirm." +
@@ -96,7 +96,7 @@ public class AgreementDialogPanel extends PanelBuilder {
     }
 
     /**
-     * An example action that will fire up a AgreementDialog with the selected options.
+     * An example action that will fire up an AgreementDialog with the selected options.
      */
     private class LaunchDialogAction extends EnhancedAction {
 
@@ -111,7 +111,10 @@ public class AgreementDialogPanel extends PanelBuilder {
 
             dialog.setAgreementText(agreementTextField.getText().trim());
             dialog.setCheckboxText(checkboxTextField.getText().trim());
-            dialog.setConfirmLabel(confirmField.getText().trim());
+            String confirmLabel = confirmField.getText().trim();
+            if (!confirmLabel.isBlank()) {
+                dialog.setConfirmLabel(confirmLabel);
+            }
             dialog.setHelpText(helpTextField.getText().trim());
 
             // Give it a little extra vertical height if the user gave us overview text:
