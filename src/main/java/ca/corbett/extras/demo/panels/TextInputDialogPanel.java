@@ -39,6 +39,7 @@ public class TextInputDialogPanel extends PanelBuilder {
     private ComboField<String> inputTypeCombo;
     private NumberField minLengthField;
     private ShortTextField helpTextField;
+    private ShortTextField overviewTextField;
     private LabelField resultLabel;
 
     @Override
@@ -94,6 +95,11 @@ public class TextInputDialogPanel extends PanelBuilder {
         helpTextField = new ShortTextField("Help text:", 25);
         helpTextField.setHelpText("Sets optional help text to appear beside the input field.");
         formPanel.add(helpTextField);
+
+        overviewTextField = new ShortTextField("Overview text:", 25);
+        overviewTextField.setHelpText("Sets optional overview text to appear at the top of the dialog.");
+        overviewTextField.setText("<html><b>Overview</b><br>You can set optional overview text, if you want.</html>");
+        formPanel.add(overviewTextField);
 
         ButtonField buttonField = new ButtonField(List.of(new LaunchDialogAction()));
         formPanel.add(buttonField);
@@ -203,6 +209,12 @@ public class TextInputDialogPanel extends PanelBuilder {
             dialog.setAllowBlank(minLength == 0);
 
             dialog.setHelpText(helpTextField.getText().trim());
+
+            // Give it a little extra vertical height if the user gave us overview text:
+            if (!overviewTextField.getText().trim().isBlank()) {
+                dialog.setOverviewText(overviewTextField.getText().trim());
+                dialog.setSize(dialog.getWidth(), dialog.getHeight() + 50);
+            }
 
             // Add our custom validator:
             dialog.addValidator(new ExampleValidator());
