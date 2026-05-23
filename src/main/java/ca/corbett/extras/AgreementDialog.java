@@ -73,6 +73,7 @@ public class AgreementDialog extends JDialog {
         overviewLabel.setVisible(false);
         formPanel.add(overviewLabel);
         agreementTextField = LongTextField.ofDynamicSizingMultiLine("", 12);
+        agreementTextField.setEditable(false); // can't edit agreement text - like it or lump it
         formPanel.add(agreementTextField);
 
         agreementCheckBox = new CheckBoxField(DEFAULT_AGREEMENT_TEXT, false);
