@@ -184,7 +184,22 @@ public class FileWatcher {
      * Any already-pending debounced event is also cancelled.
      */
     public void ignoreSelfTriggeredChanges() {
-        suppressUntil = System.currentTimeMillis() + SUPPRESS_DURATION_MS;
+        ignoreSelfTriggeredChanges(SUPPRESS_DURATION_MS);
+    }
+
+    /**
+     * Suppresses change event(s) for the given window after a self-initiated write.
+     * Call this immediately <em>before</em> initiating the write operation.
+     * Any already-pending debounced event is also cancelled.
+     *
+     * @param suppressDurationMs How long (in milliseconds) to suppress callbacks.
+     * @throws IllegalArgumentException if {@code suppressDurationMs} is zero or negative.
+     */
+    public void ignoreSelfTriggeredChanges(long suppressDurationMs) {
+        if (suppressDurationMs <= 0) {
+            throw new IllegalArgumentException("suppressDurationMs must be positive");
+        }
+        suppressUntil = System.currentTimeMillis() + suppressDurationMs;
         ScheduledFuture<?> pending = pendingEvent.getAndSet(null);
         if (pending != null) {
             pending.cancel(false);

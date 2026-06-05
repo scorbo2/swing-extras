@@ -160,9 +160,6 @@ class FileWatcherTest {
         AtomicInteger callCount = new AtomicInteger(0);
         CountDownLatch latch = new CountDownLatch(1);
 
-        // Use a FileWatcher with a very short suppression window for this test:
-        // (We cannot easily override the constant, so we rely on the 1-second default
-        //  and wait for it to expire before making a new change.)
         watcher = new FileWatcher(file, () -> {
             callCount.incrementAndGet();
             latch.countDown();
@@ -170,14 +167,24 @@ class FileWatcherTest {
         watcher.start();
 
         // WHEN we suppress, wait past the window, then modify:
-        watcher.ignoreSelfTriggeredChanges();
-        Thread.sleep(1200); // wait for the 1-second suppression window to expire
+        watcher.ignoreSelfTriggeredChanges(200);
+        Thread.sleep(400);
         Files.writeString(file.toPath(), "external content");
 
         // THEN the callback SHOULD be invoked now that the window has expired:
         boolean called = latch.await(3, TimeUnit.SECONDS);
         assertTrue(called, "Callback should fire after suppression window has expired");
         assertEquals(1, callCount.get());
+    }
+
+    @Test
+    void ignoreSelfTriggeredChanges_withInvalidSuppressionWindow_shouldThrowException() throws Exception {
+        File file = File.createTempFile("fwt", ".txt", tempDir);
+        watcher = new FileWatcher(file, () -> {
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> watcher.ignoreSelfTriggeredChanges(0));
+        assertThrows(IllegalArgumentException.class, () -> watcher.ignoreSelfTriggeredChanges(-1));
     }
 
     // ---- stop ----
