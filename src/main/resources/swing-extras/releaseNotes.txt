@@ -2,6 +2,7 @@ swing-extras Release Notes
 Author: Steve Corbett
 
 Version 3.0.0 [TODO - release date] - Major refactoring
+  #486 - FileWatcher: configurable self-change suppression window
   #475 - LongTextProperty: add row limit for dynamic multiline
   #473 - TextInputDialog: allow setting help text for input field
   #472 - TextInputDialog: better resizing of confirm button
