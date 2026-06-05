@@ -192,7 +192,7 @@ public class FileWatcher {
      * Call this immediately <em>before</em> initiating the write operation.
      * Any already-pending debounced event is also cancelled.
      *
-     * @param suppressDurationMs How long (in milliseconds) to suppress callbacks.
+     * @param suppressDurationMs How long (in milliseconds) to suppress callbacks; must be > 0.
      * @throws IllegalArgumentException if {@code suppressDurationMs} is zero or negative.
      */
     public void ignoreSelfTriggeredChanges(long suppressDurationMs) {
