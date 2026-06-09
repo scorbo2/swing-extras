@@ -40,6 +40,7 @@
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <argLine></argLine> <!-- Needed to keep Surefire happy -->
+        <gpg.skip>true</gpg.skip> <!-- Set to false to enable artifact signing (for Central publishing) -->
     </properties>
 
     <dependencies>
@@ -90,7 +91,7 @@
                     <checksums>all</checksums>
                     <centralBaseUrl>https://central.sonatype.com</centralBaseUrl>
                     <centralSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</centralSnapshotsUrl>
-                    <skipPublishing>false</skipPublishing>
+                    <skipPublishing>true</skipPublishing> <!-- Set to false to enable Central publishing -->
                 </configuration>
             </plugin>
             <plugin>
@@ -154,7 +155,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -162,6 +163,9 @@
                         <goals>
                             <goal>sign</goal>
                         </goals>
+                        <configuration>
+                            <skip>${gpg.skip}</skip>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
