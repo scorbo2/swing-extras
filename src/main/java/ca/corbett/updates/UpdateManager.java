@@ -414,14 +414,14 @@ public class UpdateManager {
             // This is important because if there are shutdown hooks registered that need to
             // show confirmation prompts (unsaved changes or such), then we don't want them to
             // have to fight against the modality of the dialog we just showed here.
-            if (parent instanceof JDialog && ((JDialog)parent).isModal()) {
+            if (parent instanceof JDialog parentDialog && parentDialog.isModal()) {
                 // If it's our own ExtensionManagerDialog, suppress the "restart required" flag.
                 // This avoids redundant "restart required" prompts when we close it.
-                if (parent instanceof ExtensionManagerDialog<?> extDialog) {
+                if (parentDialog instanceof ExtensionManagerDialog<?> extDialog) {
                     extDialog.setNoRestartRequired();
                 }
 
-                ((JDialog)parent).dispose();
+                parentDialog.dispose();
             }
 
             restartApplication();
