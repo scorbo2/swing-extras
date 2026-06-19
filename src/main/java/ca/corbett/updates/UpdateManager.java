@@ -1,5 +1,6 @@
 package ca.corbett.updates;
 
+import ca.corbett.extensions.ui.ExtensionManagerDialog;
 import ca.corbett.extras.crypt.SignatureUtil;
 import ca.corbett.extras.image.ImageUtil;
 import ca.corbett.extras.io.DownloadAdapter;
@@ -7,6 +8,7 @@ import ca.corbett.extras.io.DownloadManager;
 import ca.corbett.extras.io.DownloadThread;
 import com.google.gson.JsonSyntaxException;
 
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
@@ -407,6 +409,21 @@ public class UpdateManager {
                                           promptText,
                                           "Restart required",
                                           JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+
+            // If the given parent component is a modal dialog, let's close it before proceeding.
+            // This is important because if there are shutdown hooks registered that need to
+            // show confirmation prompts (unsaved changes or such), then we don't want them to
+            // have to fight against the modality of the dialog we just showed here.
+            if (parent instanceof JDialog parentDialog && parentDialog.isModal()) {
+                // If it's our own ExtensionManagerDialog, suppress the "restart required" flag.
+                // This avoids redundant "restart required" prompts when we close it.
+                if (parentDialog instanceof ExtensionManagerDialog<?> extDialog) {
+                    extDialog.setNoRestartRequired();
+                }
+
+                parentDialog.dispose();
+            }
+
             restartApplication();
         }
     }

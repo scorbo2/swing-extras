@@ -133,6 +133,19 @@ public class ExtensionManagerDialog<T extends AppExtension> extends JDialog {
         return wasModified;
     }
 
+    /**
+     * Suppress the "restart required" status flag.
+     * (Invoked by UpdateManager on application restart to avoid redundant "restart required" prompts).
+     */
+    public void setNoRestartRequired() {
+        if (installedExtensionsPanel != null) {
+            installedExtensionsPanel.setRestartRequired(false);
+        }
+        if (availableExtensionsPanel != null) {
+            availableExtensionsPanel.setRestartRequired(false);
+        }
+    }
+
     public boolean isRestartRequired() {
         return (installedExtensionsPanel != null && installedExtensionsPanel.isRestartRequired())
                 || (availableExtensionsPanel != null && availableExtensionsPanel.isRestartRequired());
