@@ -81,6 +81,10 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
         initComponents();
     }
 
+    public void setRestartRequired(boolean required) {
+        isRestartRequired = required;
+    }
+
     /**
      * Indicates whether any change made on this panel requires an application restart.
      * (Extension uninstalled perhaps).
