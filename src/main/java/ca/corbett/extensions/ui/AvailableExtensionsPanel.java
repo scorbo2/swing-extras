@@ -100,7 +100,7 @@ public class AvailableExtensionsPanel extends JPanel {
         initComponents();
     }
 
-    public void setRestartRequired(boolean required) {
+    void setRestartRequired(boolean required) {
         isRestartRequired = required;
     }
 

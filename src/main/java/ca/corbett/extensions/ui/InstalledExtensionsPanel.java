@@ -81,7 +81,7 @@ public class InstalledExtensionsPanel<T extends AppExtension> extends JPanel {
         initComponents();
     }
 
-    public void setRestartRequired(boolean required) {
+    void setRestartRequired(boolean required) {
         isRestartRequired = required;
     }
 
