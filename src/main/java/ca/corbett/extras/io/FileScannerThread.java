@@ -245,8 +245,7 @@ public class FileScannerThread extends SimpleProgressWorker {
      * @return True if the file should be added to the results list, false to ignore it.
      */
     private boolean fileMatches(File file) {
-        String filename = file.getName().toLowerCase();
-
+        String filename = file.getName().toLowerCase(java.util.Locale.ROOT);
         // if any extensions match, it's a hit:
         boolean fileMatched = false;
         for (String ext : extensionsToMatch) {
