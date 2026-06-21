@@ -103,8 +103,7 @@ public class LookAndFeelManager {
 
         // Avoid the dreaded "you can't resize your window" bug on Windows-based systems.
         String osName = System.getProperty("os.name");
-        if (osName != null && osName.toLowerCase(Locale.ROOT).contains("win")) {
-            // Something about FlatLaf's window decorations disables the click-and-drag-to-resize
+        if (osName != null && osName.toLowerCase(Locale.ROOT).contains("windows")) {
             // functionality on Windows systems (at least with OpenJDK 21 it does). This workaround fixes it.
             // Callers can prevent the workaround by explicitly setting "flatlaf.useWindowDecorations" to "true".
             if (System.getProperty("flatlaf.useWindowDecorations") == null) {
