@@ -107,6 +107,7 @@ public class Properties {
             return;
         }
         boolean isWindows = osName.toLowerCase(Locale.ROOT).contains("windows");
+        if (isWindows) {
             // On Windows, we need to escape backslashes in file paths by doubling them up:
             String escapedPath = path.replace("\\", "\\\\");
             props.setProperty(name, escapedPath);
