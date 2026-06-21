@@ -1,7 +1,7 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
-Version 3.0.0 [TODO - release date] - Major refactoring
+Version 3.0.0 [2026-06-21] - Moving to Java 25!
   #490 - Fix modal dialog problem on application restart
   #486 - FileWatcher: configurable self-change suppression window
   #475 - LongTextProperty: add row limit for dynamic multiline
