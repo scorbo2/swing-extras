@@ -6,6 +6,7 @@ import java.io.File;
 
 /**
  * A FieldValidator that ensures that the chosen File can be written.
+ * The validator respects the field's allowBlankValues property, so blank values are validated as expected.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-24

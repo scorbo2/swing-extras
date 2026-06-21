@@ -12,15 +12,16 @@ You can browse the full documentation online:
 - <http://www.corbett.ca/swing-extras-book/>
 - The [javadocs](http://www.corbett.ca/swing-extras-javadocs/) are also available.
 
-## NEWS! April 13, 2026 - swing-extras 2.9 is here!
+## NEWS! June 21, 2026 - swing-extras 3.0 is here!
 
-This is a bug fix / maintenance release of the library, with mostly minor improvements.
-Notable changes in the 2.9 release include:
+The `3.0` release moves the project from Java 17 to the latest LTS Java version (Java 25).
+The following improvements and additions are also included in this release:
 
-- New utility class: `FallbackExceptionHandler`
-- Better error handling in `ImageUtil`'s various image loading methods
-- `FileField` now supports icon-based buttons as well as just text
-- Minor improvements in `AppProperties`
+- Improvements to file/directory searching in the `io` package
+- New `FileWatcher` utility class for monitoring file system changes
+- Numerous Windows-specific bug fixes for better cross-platform compatibility
+- Numerous improvements to the `TextInputDialog` component
+- New `AgreementDialog` component for displaying terms of service and similar agreements
 
 And more! View the [full release notes](src/main/resources/swing-extras/releaseNotes.txt) for details,
 or check out the [archived release announcements](ReleaseAnnouncements.md) for details on previous releases.
@@ -48,7 +49,7 @@ To use the archetype, run the following command:
 mvn archetype:generate \
   -DarchetypeGroupId=ca.corbett \
   -DarchetypeArtifactId=swing-extras-archetype \
-  -DarchetypeVersion=2.9.0 \
+  -DarchetypeVersion=3.0.0 \
   -DgroupId=com.example \
   -DartifactId=my-app \
   -Dversion=1.0.0 \
@@ -74,7 +75,7 @@ then start from scratch building your Swing application using the various compon
   <dependency>
     <groupId>ca.corbett</groupId>
     <artifactId>swing-extras</artifactId>
-    <version>2.9.0</version>
+    <version>3.0.0</version>
   </dependency>
 </dependencies>
 ```
@@ -95,7 +96,7 @@ cd swing-extras
 mvn package
 
 # Run the built-in demo app:
-java -jar target/swing-extras-2.9.0-jar-with-dependencies.jar 
+java -jar target/swing-extras-3.0.0-jar-with-dependencies.jar 
 ```
 
 ## License

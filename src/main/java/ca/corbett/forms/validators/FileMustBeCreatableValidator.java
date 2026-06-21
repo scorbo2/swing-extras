@@ -9,6 +9,7 @@ import java.io.File;
  * is in a location that can be written. Specifically, if you're browsing
  * for a new File which does NOT exist, it should be in a location where
  * we have permission to create a new file.
+ * The validator respects the field's allowBlankValues property, so blank values are validated as expected.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-27

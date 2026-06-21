@@ -5,18 +5,18 @@
 **swing-extras** is a Java Swing component library providing custom UI components and utilities for Java desktop applications. The library includes form fields, property management, extensions system, image/audio utilities, and a comprehensive demo application.
 
 - **Type**: Maven-based Java library
-- **Language**: Java 17
+- **Language**: Java 25
 - **Size**: ~219 source files, ~88 test files
 - **Main Output**: JAR library + runnable demo application
-- **Version**: 2.7.0 is in production
+- **Version**: 3.0.0 is in production
 - **License**: MIT
 
 ## Key Dependencies and Frameworks
 
-- **Java**: 17 (required - do not change)
+- **Java**: 25 (required - do not change)
 - **Maven**: 3.9.11+
-- **Testing**: JUnit 5.12.1, Mockito 5.14.2
-- **UI Libraries**: FlatLaf 3.6, JTattoo 1.6.13
+- **Testing**: JUnit 6.0.3, Mockito 5.23.0
+- **UI Libraries**: FlatLaf 3.7.1
 - **Serialization**: Gson 2.12.1
 
 ## Build and Test Instructions
@@ -46,7 +46,7 @@
    xvfb-run mvn test
    ```
    - Takes ~12 seconds
-   - Runs 1325 tests (3 tests are skipped - this is normal)
+   - Runs 1793 tests (2 tests are skipped - this is normal)
    - **MUST** use `xvfb-run` prefix or tests will fail with "No X11 DISPLAY variable was set" errors
    - **WITHOUT** xvfb-run: many errors occur due to headless environment
    - Adding `-Djava.awt.headless=true` does NOT fix the issue - still causes failures
@@ -56,10 +56,10 @@
    mvn package -DskipTests
    ```
    Takes ~15 seconds. Creates:
-   - `target/swing-extras-2.7.0.jar` (1MB - library only)
-   - `target/swing-extras-2.7.0-jar-with-dependencies.jar` (3.7MB - runnable with demo)
-   - `target/swing-extras-2.7.0-sources.jar` (794KB)
-   - `target/swing-extras-2.7.0-javadoc.jar` (1.8MB)
+   - `target/swing-extras-3.0.0.jar` (1MB - library only)
+   - `target/swing-extras-3.0.0-jar-with-dependencies.jar` (3.7MB - runnable with demo)
+   - `target/swing-extras-3.0.0-sources.jar` (794KB)
+   - `target/swing-extras-3.0.0-javadoc.jar` (1.8MB)
 
 5. **Full build with tests**:
    ```bash
@@ -82,7 +82,7 @@
 
 After building with `mvn package`:
 ```bash
-java -jar target/swing-extras-2.7.0-jar-with-dependencies.jar
+java -jar target/swing-extras-3.0.0-jar-with-dependencies.jar
 ```
 Note: Requires a graphical environment. Main class: `ca.corbett.extras.demo.DemoAppLauncher`
 
@@ -128,6 +128,7 @@ src/
 │   │   │   └── demo/           - Extension demos
 │   │   ├── extras/             - Utility components
 │   │   │   ├── about/          - About dialog
+│   │   │   ├── actionpanel/    - Custom action grouping UI component
 │   │   │   ├── audio/          - Audio waveform visualization
 │   │   │   ├── crypt/          - Cryptography utilities (hashing, signing)
 │   │   │   ├── demo/           - Main demo application
@@ -168,7 +169,7 @@ src/
 ### Configuration Files
 
 **Maven** (`pom.xml`):
-- Compiler source/target: Java 17
+- Compiler source/target: Java 25
 - Main plugins: maven-compiler-plugin, maven-surefire-plugin, maven-assembly-plugin, maven-javadoc-plugin, maven-source-plugin, maven-gpg-plugin
 - Assembly creates jar-with-dependencies for demo app
 - Main class: `ca.corbett.extras.demo.DemoAppLauncher`
@@ -226,14 +227,14 @@ src/
 - GPG signing (verify phase) will fail without configured keys - this is expected for local development
 
 ### Java Version Requirements
-- **Java 17 is required** - set in pom.xml as `maven.compiler.source` and `maven.compiler.target`
+- **Java 25 is required** - set in pom.xml as `maven.compiler.source` and `maven.compiler.target`
 - Do not change Java version without testing all Swing components
 - Modern Java features (records, pattern matching) are NOT widely used in this codebase
 
 ### Test Execution
 - **ALWAYS** use `xvfb-run mvn test` for running tests
 - Never use `-Djava.awt.headless=true` - it doesn't work for Swing tests
-- 3 skipped tests is normal (likely environment-dependent tests)
+- 2 skipped tests is normal (likely environment-dependent tests)
 - Test execution time: ~12 seconds
 
 ### Code Modification Guidelines
@@ -245,7 +246,7 @@ src/
 ## Trust These Instructions
 
 These instructions have been validated by running all commands successfully. If you encounter different behavior:
-1. Verify you're using Java 17 and Maven 3.9.11+
+1. Verify you're using Java 25 and Maven 3.9.11+
 2. Ensure you're in the project root directory
 3. Check that `xvfb-run` is available for test execution
 4. Only search for additional information if these instructions are incomplete or incorrect for your specific task

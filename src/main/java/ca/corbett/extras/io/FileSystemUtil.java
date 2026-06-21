@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -45,6 +46,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFiles without specifying a progress callback.
      * See findFiles(File,boolean,String,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   see findFiles(File,boolean,String,FileSearchListener) for details.
      * @param recursive see findFiles(File,boolean,String,FileSearchListener) for details.
@@ -60,6 +64,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFiles without specifying a progress callback.
      * See findFiles(File,boolean,List,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir    see findFiles(File,boolean,List,FileSearchListener) for details.
      * @param recursive  see findFiles(File,boolean,List,FileSearchListener) for details.
@@ -75,7 +82,11 @@ public class FileSystemUtil {
     /**
      * Scans the given directory (and optionally all of its subdirectories recursively) looking for
      * files with the given extension. Files matching the extension will be returned, while all
-     * other files will be excluded.
+     * other files will be excluded. If the provided extension is null or blank, ALL files will
+     * be returned, regardless of extension. The returned list is sorted by full path name.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search sub directories also or not.
@@ -88,7 +99,9 @@ public class FileSystemUtil {
                                        final String extension,
                                        final FileSearchListener listener) {
         List<String> extensions = new ArrayList<>();
-        extensions.add(extension);
+        if (extension != null && !extension.isBlank()) {
+            extensions.add(extension);
+        }
         return findFiles(rootDir, recursive, extensions, listener);
     }
 
@@ -96,6 +109,10 @@ public class FileSystemUtil {
      * Scans the given directory (and optionally all of its subdirectories recursively) looking for
      * files of one of the types specified in the given fileType list. Files matching any of the
      * extensions in that list will be returned, while all other files will be excluded.
+     * If the given list of extensions is null or empty, ALL files will be returned, regardless of extension.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir    The root directory for the search. Must exist and be readable.
      * @param recursive  Indicates whether to search sub directories also or not.
@@ -105,15 +122,9 @@ public class FileSystemUtil {
      */
     public static List<File> findFiles(final File rootDir,
                                        final boolean recursive,
-                                       final List<String> extensions,
+                                       List<String> extensions,
                                        final FileSearchListener listener) {
-        // Pre-process extensions once (lowercase + add dots)
-        Set<String> extSet = new HashSet<>();
-        for (String ext : extensions) {
-            extSet.add("." + ext.toLowerCase());
-        }
-
-        List<File> result = findFilesRecurse(rootDir, recursive, extSet, listener, false);
+        List<File> result = findFilesRecurse(rootDir, recursive, normalizeExtensionsToSet(extensions), listener, false);
         sortFiles(result); // Sort only once at the end
         return result;
     }
@@ -149,6 +160,14 @@ public class FileSystemUtil {
                     }
                 }
 
+                // Special handling for empty extension list: if extSet is empty, we consider it a match for all files:
+                if (extSet.isEmpty()) {
+                    // If it's a regular, non-inverted search, empty list means "match everything".
+                    // If it's an inverted search, empty list means "exclude nothing".
+                    // "fileMatched" will be interpreted correctly in either case by the logic below.
+                    fileMatched = !invertSearch;
+                }
+
                 // If the file matched an extension and our search is not inverted, it's a hit:
                 // OR if the file did NOT match any extension and our search IS inverted, it's a hit:
                 if ((fileMatched && !invertSearch) || (!fileMatched && invertSearch)) {
@@ -168,6 +187,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFilesExcluding without specifying a progress callback.
      * See findFilesExcluding(File,boolean,String,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   see findFilesExcluding(File,boolean,String,FileSearchListener) for details.
      * @param recursive see findFilesExcluding(File,boolean,String,FileSearchListener) for details.
@@ -183,6 +205,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFilesExcluding without specifying a progress callback.
      * See findFilesExcluding(File,boolean,List,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir    see findFilesExcluding(File,boolean,List,FileSearchListener) for details.
      * @param recursive  see findFilesExcluding(File,boolean,List,FileSearchListener) for details.
@@ -199,6 +224,9 @@ public class FileSystemUtil {
      * Scans the given directory (and optionally all of its subdirectories recursively) looking for
      * any files that do NOT match the given extension. Files that do not match the given
      * extension are returned, while all other files will be excluded.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search sub directories also or not.
@@ -220,6 +248,9 @@ public class FileSystemUtil {
      * any files that do NOT match one of the given extensions. Files that do not match any of
      * the given extensions are returned, while all other files will be excluded. To find and
      * return ALL files, leave "extensions" empty.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir    The root directory for the search. Must exist and be readable.
      * @param recursive  Indicates whether to search sub directories also or not.
@@ -231,13 +262,7 @@ public class FileSystemUtil {
                                                 final boolean recursive,
                                                 final List<String> extensions,
                                                 final FileSearchListener listener) {
-        // Pre-process extensions once (lowercase + add dots)
-        Set<String> extSet = new HashSet<>();
-        for (String ext : extensions) {
-            extSet.add("." + ext.toLowerCase());
-        }
-
-        List<File> result = findFilesRecurse(rootDir, recursive, extSet, listener, true);
+        List<File> result = findFilesRecurse(rootDir, recursive, normalizeExtensionsToSet(extensions), listener, true);
         sortFiles(result); // Sort only once at the end
         return result;
     }
@@ -245,6 +270,9 @@ public class FileSystemUtil {
     /**
      * Shorthand for findFiles without specifying a progress callback.
      * See findFiles(File,boolean,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   see findFiles(File,boolean,FileSearchListener) for details.
      * @param recursive see findFiles(File,boolean,FileSearchListener) for details.
@@ -258,6 +286,9 @@ public class FileSystemUtil {
     /**
      * Scans the given directory (and optionally all of its subdirectories recursively) and will
      * return a list of all files found.
+     * <p>
+     *     <b>Note:</b> Consider using the new FileScannerThread instead.
+     * </p>
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search sub directories also or not.
@@ -267,12 +298,15 @@ public class FileSystemUtil {
     public static List<File> findFiles(final File rootDir,
                                        final boolean recursive,
                                        final FileSearchListener listener) {
-        return findFilesExcluding(rootDir, recursive, new ArrayList<>(), listener);
+        return findFiles(rootDir, recursive, new ArrayList<>(), listener);
     }
 
     /**
      * Shorthand for findSubdirectories without specifying a progress callback.
      * See findSubdirectories(File,boolean,FileSearchListener) for details.
+     * <p>
+     *     <b>Note:</b> Consider using the new DirectoryScannerThread instead.
+     * </p>
      *
      * @param rootDir   see findSubdirectories(File,boolean,FileSearchListener) for details.
      * @param recursive see findSubdirectories(File,boolean,FileSearchListener) for details.
@@ -287,6 +321,9 @@ public class FileSystemUtil {
      * Scans the given directory (and optionally all of its subdirectories recursively) and will
      * return a list of all subdirectories found. The given root directory is NOT included
      * in the results - only subdirectories. The returned list is sorted by full path name.
+     * <p>
+     *     <b>Note:</b> Consider using the new DirectoryScannerThread instead.
+     * </p>
      *
      * @param rootDir   The root directory for the search. Must exist and be readable.
      * @param recursive Indicates whether to search subdirectories also or not.
@@ -700,5 +737,40 @@ public class FileSystemUtil {
 
         // Extremely unlikely, but just in case we hit the limit:
         return new File(destinationDir, nameWithoutExt + System.currentTimeMillis() + ext);
+    }
+
+    /**
+     * Given a list of file extensions, which may be null or empty,
+     * return a Set of normalized extensions.
+     * Normalization includes trimming whitespace, converting to
+     * lowercase, and ensuring that each extension starts with a dot.
+     * <p>
+     * If the input list is null or empty, an empty set will be returned.
+     * Any entry in the list that is null or blank will be ignored.
+     * The returned set may be empty even in cases where the input list is not empty,
+     * if all entries in the list are null or blank.
+     * </p>
+     */
+    static Set<String> normalizeExtensionsToSet(List<String> extensions) {
+        if (extensions == null) {
+            extensions = new ArrayList<>();
+        }
+
+        // Pre-process extensions once (lowercase + trim + add dots if needed)
+        Set<String> extSet = new HashSet<>();
+        for (String ext : extensions) {
+            if (ext == null || ext.isBlank()) {
+                continue;
+            }
+            ext = ext.trim().toLowerCase(Locale.ROOT);
+            if (!ext.startsWith(".")) {
+                extSet.add("." + ext);
+            }
+            else {
+                extSet.add(ext);
+            }
+        }
+
+        return extSet;
     }
 }

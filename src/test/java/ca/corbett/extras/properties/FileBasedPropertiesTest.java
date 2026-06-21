@@ -71,4 +71,42 @@ public class FileBasedPropertiesTest {
         assertEquals(0, props.getColor("invisibleGrey", null).getAlpha());
         assertEquals(255, props.getColor("noAlphaSpecified", null).getAlpha());
     }
+
+    @Test
+    public void roundTripSaveRestore_withWindowsPath_shouldRestoreCorrectly() throws IOException {
+        String osName = System.getProperty("os.name");
+        try {
+            // GIVEN that we are running on a Windows-based system (or pretending to be, anyway):
+            System.setProperty("os.name", "Windows ME super real edition, totally not a lie");
+
+            // and GIVEN a save attempt with some Windows-style paths:
+            File file = File.createTempFile("test", ".test");
+            file.deleteOnExit();
+            FileBasedProperties props = new FileBasedProperties(file);
+            final String path1 = "C:\\Users\\Test\\file.txt";
+            final String path2 = "D:\\Data\\my file.txt";
+            props.setPlatformSafeFilePath("winPath1", path1);
+            props.setPlatformSafeFilePath("winPath2", path2);
+            props.save();
+
+            // WHEN we load those properties back:
+            FileBasedProperties props2 = new FileBasedProperties(file);
+            props2.load();
+            String actualPath1 = props2.getString("winPath1", "");
+            String actualPath2 = props2.getString("winPath2", "");
+
+            // THEN they should have survived the trip:
+            assertEquals(path1, actualPath1);
+            assertEquals(path2, actualPath2);
+        }
+        finally {
+            // Make sure we clean up after ourselves:
+            if (osName == null) {
+                System.clearProperty("os.name");
+            }
+            else {
+                System.setProperty("os.name", osName);
+            }
+        }
+    }
 }

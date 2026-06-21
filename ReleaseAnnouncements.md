@@ -2,7 +2,19 @@
 
 Older release announcements for swing-extras releases will be archived here.
 
-## NEWS! March 8, 2026 - swing-extras 2.8 is here!
+## April 13, 2026 - swing-extras 2.9 is here!
+
+This is a bug fix / maintenance release of the library, with mostly minor improvements.
+Notable changes in the 2.9 release include:
+
+- New utility class: `FallbackExceptionHandler`
+- Better error handling in `ImageUtil`'s various image loading methods
+- `FileField` now supports icon-based buttons as well as just text
+- Minor improvements in `AppProperties`
+
+And more! View the [full release notes](src/main/resources/swing-extras/releaseNotes.txt) for details.
+
+## March 8, 2026 - swing-extras 2.8 is here!
 
 This release introduces the new ActionPanel component, which is a useful
 and highly configurable navigation component. The demo application has been

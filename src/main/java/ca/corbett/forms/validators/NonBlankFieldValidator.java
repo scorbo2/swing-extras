@@ -7,7 +7,8 @@ import ca.corbett.forms.fields.ShortTextField;
 
 /**
  * A simple field validator for text fields that ensures that the field does not have a blank value.
- * Currently works with ShortTextField and LongTextField.
+ * Currently works with ShortTextField, LongTextField, and PasswordField. If attached to any other
+ * field type, this validator will always silently pass, without considering the field value.
  *
  * @author <a href="https://github.com/scorbo2">scorbo2</a>
  * @since 2019-11-23

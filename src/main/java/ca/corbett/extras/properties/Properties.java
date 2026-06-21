@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -75,6 +76,45 @@ public class Properties {
             return;
         }
         props.setProperty(name, value);
+    }
+
+    /**
+     * Accepts the given String as a file path, and will ensure it is stored in a platform-safe way.
+     * Specifically, this involves changing single backslash path separators on a Windows-based system
+     * into double backslashes, so that they are escaped properly when read back out.
+     * On non-Windows systems, the path is stored as-is.
+     *
+     * @param name The property name.
+     * @param path The file path to store.
+     */
+    public void setPlatformSafeFilePath(String name, String path) {
+        if (path == null) {
+            logger.log(Level.WARNING, "Ignoring null String value for property \"{0}\"", name);
+            return;
+        }
+
+        // Special-case blank values to avoid unnecessary overhead:
+        if (path.isBlank()) {
+            props.setProperty(name, path);
+            return;
+        }
+
+        String osName = System.getProperty("os.name");
+        if (osName == null) {
+            logger.log(Level.WARNING, "System property \"os.name\" is null; " +
+                    "treating as non-Windows for file path storage");
+            props.setProperty(name, path);
+            return;
+        }
+        boolean isWindows = osName.toLowerCase(Locale.ROOT).contains("windows");
+            // On Windows, we need to escape backslashes in file paths by doubling them up:
+            String escapedPath = path.replace("\\", "\\\\");
+            props.setProperty(name, escapedPath);
+        }
+        else {
+            // On non-Windows systems, we can store the path as-is:
+            props.setProperty(name, path);
+        }
     }
 
     /**

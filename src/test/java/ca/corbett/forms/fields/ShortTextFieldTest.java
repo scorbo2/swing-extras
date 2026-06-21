@@ -1,6 +1,7 @@
 package ca.corbett.forms.fields;
 
 import ca.corbett.forms.validators.FieldValidator;
+import ca.corbett.forms.validators.UrlValidator;
 import ca.corbett.forms.validators.ValidationResult;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -79,6 +80,34 @@ class ShortTextFieldTest extends FormFieldBaseTests {
         actual.removeValueChangedListener(listener);
         actualField.setText("Hello");
         Mockito.verify(listener, Mockito.times(0)).formFieldValueChanged(actual);
+    }
+
+    @Test
+    public void urlValidatorTests() {
+        ShortTextField urlField = new ShortTextField("URL", 20);
+        urlField.addFieldValidator(new UrlValidator());
+
+        // GIVEN invalid URLs, should fail validation:
+        urlField.setText("Not a url");
+        assertFalse(urlField.isValid());
+        urlField.setText("htttttp://www.yourmomshouse.example");
+        assertFalse(urlField.isValid());
+
+        // GIVEN valid URLs, should pass validation:
+        urlField.setText("ftp://10.0.0.1/file.txt");
+        assertTrue(urlField.isValid());
+        urlField.setText("https://www.github.com");
+        assertTrue(urlField.isValid());
+
+        // By default, blank values should be allowed:
+        urlField.setText("");
+        assertTrue(urlField.isValid());
+
+        // But we have the option of disallowing them:
+        ShortTextField urlFieldNoBlank = new ShortTextField("URL", 20);
+        urlFieldNoBlank.addFieldValidator(new UrlValidator(false));
+        urlFieldNoBlank.setText("");
+        assertFalse(urlFieldNoBlank.isValid());
     }
 
     @Test

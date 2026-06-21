@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -143,6 +144,32 @@ public class ExtensionManagerTest {
         success = extManager.addExtension(new AppExtensionImpl2WithDuplicateConfigProperty("dupe"), true);
         assertTrue(success);
         assertEquals(1, extManager.getAllEnabledExtensionProperties().size()); // shouldn't change
+    }
+
+    @Test
+    public void testLoadOrder_jarResourcesShouldBeLoadedBeforeConfigPropertiesCreated() {
+        // Issue #469 - loadJarResources() must be called before createConfigProperties:
+        AppExtensionImpl1 extension = new AppExtensionImpl1("test");
+        boolean success = extManager.addExtension(extension, true);
+        assertTrue(success);
+        assertTrue(extension.isJarResourcesLoadedBeforeConfigPropertiesCreated());
+    }
+
+    @Test
+    public void testLoadLogic_accessConfigPropertiesInLoadJarResources_shouldLogWarning() {
+        // Use our log capturing mechanism to spy on ExtensionManager:
+        AppPropertiesTest.TestLogHandler logHandler = new AppPropertiesTest.TestLogHandler();
+        Logger testLogger = Logger.getLogger(ExtensionManager.class.getName());
+        testLogger.addHandler(logHandler);
+
+        try {
+            extManager.addExtension(new MisbehavingExtension("misbehaving"), true);
+            assertTrue(logHandler.hasWarningContaining(
+                    "Don't try to access configProperties from the loadJarResources() method!"));
+        }
+        finally {
+            testLogger.removeHandler(logHandler);
+        }
     }
 
     @Test
@@ -635,9 +662,13 @@ public class ExtensionManagerTest {
     public static class AppExtensionImpl1 extends AppExtension {
 
         private final String name;
+        private boolean jarResourcesLoaded;
+        private boolean jarResourcesLoadedBeforeConfigPropertiesCreated;
 
         public AppExtensionImpl1(String name) {
             this.name = name;
+            jarResourcesLoaded = false;
+            jarResourcesLoadedBeforeConfigPropertiesCreated = false;
         }
 
         @Override
@@ -653,12 +684,22 @@ public class ExtensionManagerTest {
                     .build();
         }
 
+        public boolean isJarResourcesLoadedBeforeConfigPropertiesCreated() {
+            return jarResourcesLoadedBeforeConfigPropertiesCreated;
+        }
+
         @Override
         protected void loadJarResources() {
+            jarResourcesLoaded = true;
         }
 
         @Override
         protected List<AbstractProperty> createConfigProperties() {
+            if (jarResourcesLoaded) {
+                // Testing the fix for issue 469 - loadJarResources() should be called
+                // before createConfigProperties(), so jarResourcesLoaded should be true here.
+                jarResourcesLoadedBeforeConfigPropertiesCreated = true;
+            }
             return null;
         }
 
@@ -697,6 +738,51 @@ public class ExtensionManagerTest {
             List<AbstractProperty> list = new ArrayList<>();
             list.add(new IntegerProperty("testProperty", "testProperty", 1));
             return list;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    /**
+     * This extension tries to access its configProperties in the loadJarResources() method,
+     * which is a no-no because loadJarResources() is called before createConfigProperties().
+     */
+    public static class MisbehavingExtension extends AppExtension {
+
+        private final String name;
+
+        public MisbehavingExtension(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public AppExtensionInfo getInfo() {
+            return new AppExtensionInfo.Builder(name)
+                    .setAuthor("me2")
+                    .setVersion("1.1")
+                    .setTargetAppName("Test app")
+                    .setTargetAppVersion("1.1")
+                    .setShortDescription("Misbehaving")
+                    .setLongDescription("I fought the law and the law won")
+                    .setReleaseNotes("v1.1 - initial release")
+                    .build();
+        }
+
+        @Override
+        protected void loadJarResources() {
+            // Whoops! We ignored the javadocs in AppExtension, and we're trying to manipulate
+            // our configProperties list before it's been properly initialized!
+            // ExtensionManager should catch this and log a nag warning:
+            configProperties.add(new IntegerProperty("shouldNotBeAccessingConfigProperties",
+                                                     "shouldNotBeAccessingConfigProperties",
+                                                     1));
+        }
+
+        @Override
+        protected List<AbstractProperty> createConfigProperties() {
+            return null;
         }
 
         public String getName() {

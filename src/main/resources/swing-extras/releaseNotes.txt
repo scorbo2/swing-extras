@@ -1,6 +1,28 @@
 swing-extras Release Notes
 Author: Steve Corbett
 
+Version 3.0.0 [2026-06-21] - Moving to Java 25!
+  #490 - Fix modal dialog problem on application restart
+  #486 - FileWatcher: configurable self-change suppression window
+  #475 - LongTextProperty: add row limit for dynamic multiline
+  #473 - TextInputDialog: allow setting help text for input field
+  #472 - TextInputDialog: better resizing of confirm button
+  #471 - TextInputDialog: add optional overview label
+  #470 - Make ResourceLoader more flexible with class loaders
+  #469 - Minor tweak to ExtensionManager's load order logic
+  #467 - Minor javadoc cleanup for form validators
+  #466 - New FieldValidator: UrlValidator
+  #465 - New UI component: AgreementDialog
+  #456 - Upgrade all dependency versions to latest
+  #455 - Drop support for JTattoo
+  #453 - Fix bug in ActionPanel demo panel
+  #452 - Fix FlatLaf Look and Feel bug on Windows systems
+  #451 - Fix Windows-specific bug in File/DirectoryProperty
+  #450 - Absorb the FileWatcher class from CryptText
+  #449 - Fix wonky behavior in FileSystemUtil.findFiles()
+  #443 - Upgrade to Java 25
+  #266 - New utility classes: File/Directory scanner threads
+
 Version 2.9.0 [2026-04-13] - Maintenance release
   #446 - AppProperties: make it easier to use classic style dialog
   #437 - New convenience class: FallbackExceptionHandler
